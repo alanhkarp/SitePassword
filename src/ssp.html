@@ -1,0 +1,138 @@
+<!--
+Copyright 2011 Hewlett-Packard Company. This library is free software;
+you can redistribute it and/or modify it under the terms of the GNU
+Lesser General Public License (LGPL) as published by the Free Software
+Foundation; either version 2.1 of the License, or (at your option) any
+later version. This library is distributed in the hope that it will
+be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details. You should have
+received a copy of the GNU Lesser General Public License (LGPL) along
+with this library; if not, write to the Free Software Foundation,
+Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+Please contact the Hewlett-Packard Company <www.hp.com> for
+
+information regarding how to obtain the source code for this library.
+-->
+<html>
+<head>
+    <script src="ssp.js"></script>
+    <link type="text/css" href="ssp.css" rel="Stylesheet" />
+        <title>Site Password</title>
+</head>
+<body>
+  <div id="ssp">
+    <div class="sspform">
+      <div id="sspform">
+        <h1>
+            Site Passwords for 
+            <input id="persona" type="text" size=25 value="Everyone"/>
+        </h1>
+            <label>Domain name</label>
+            <input id="domainname" type="text" size=25 value="" READONLY>
+	    <label>Your password:</label> 
+	    <input value="" id="masterpw" size=25 type="password"
+		   placeholder="Use a strong password"/><br>
+	    <label>Site name:</label>
+	    <input value="" id="sitename" size=25
+		   placeholder="Your nickname for this site"/><br>
+	    <label>User name:</label>
+	    <input value="" id="username" size=25
+		   placeholder="Your userid for this site"/><br>
+	    <label>Site password:</label>
+	    <input value="" id="sitepass" READONLY size=25
+		   placeholder="Your password for this site"/><br>
+	    <div class="warning" id="nopw" style="display:none">
+	      <span id="nopwtext">
+		Site Password can't compute a password with these settings.
+		You either need to enable some characters, increase the
+                pasword length or reduce the number of special characters 
+                you're asking for.
+	      <span>
+            </div>
+            <div class="warning" id="multiple" style="display:none">
+               <span id="multipletext">
+                 Site Password found more than one password field
+                 on this page.  Your site password will be on the
+                 clipboard.
+               </span>
+            </div>
+            <div class="warning" id="zero" style="display:none">
+               <span id="zerotext">
+                 Site Password did not find any password fields
+                 on this page.  Your site password will be on the
+                 clipboard.
+               </span>
+            </div>
+	    <div class="warning" id="phishing" style="display:none">
+	        <span id="phishingtext">
+		  Warning: The URL in the address bar is different from what you saved for this site name.  You may be at a fake site that is trying to steal your password.
+	        </span><br>
+	        <button id="warningbutton" type="button", style="background-color:#FF0000">
+	            I'm willing to risk it.
+	        </button>
+                <button id="cancelwarning" type="button", style="background-color:#00FF00">
+                    I don't want to risk it.
+                </button>
+		<br>
+	    </div>
+      </div>
+        <div id="buttons">
+            <button id="settingsshowbutton" type="button" style="display:inline">More</button>
+	    <button id="settingshidebutton" type="button" style="display:none">Less</button>
+	<div id="settings" style="display:none">
+            <hr>
+	    <input id="clearmasterpw" type="checkbox"/>
+	    <span>
+	      Clear master password on use.<br>
+	    </span>
+            <hr>
+	    Password Length
+	    <input id="pwlength" type="text" value="12" size="3"><br>
+	    <input id="startwithletter" type="checkbox" checked>
+	    <label>Start with letter</label><br>
+	    <input id="allowlowercheckbox" type="checkbox" checked>
+            <span id="allowlower" style="display:none">
+	        Allow lowercase letters<br>
+            </span>
+            <span id="requirelower">
+	        Require at least
+	        <input id="minlower" type="text" min="0" value="0" size="3">
+	        lowercase letters<br>
+            </span>
+	    <input id="allowuppercheckbox" type="checkbox" checked>
+            <span id="allowupper" style="display:none">
+	        Allow upper case letters<br>
+            </span>
+            <span id="requireupper">
+                Require at least
+	        <input id="minupper" type="text" min="0" value="0" size="3">
+                upper case letters<br>
+            </span>
+	    <input id="allownumbercheckbox" type="checkbox" checked>
+            <span id="allownumber" style="display:none">
+	        Allow numbers<br>
+            </span>
+            <span id="requirenumber">
+                Require at least
+	        <input id="minnumber" type="text" min="0" value="0" size="3">
+	        <label>numbers</label><br>
+            </span>
+	    <input id="allowspecialcheckbox" type="checkbox">
+            <span id="allowspecial">
+	        Allow special characters
+            </span>
+            <span id="requirespecial" style="display:none">
+                Require at least
+	        <input id="minspecial" type="text" size="3">
+	        of
+	        <input id="specials" type="text" value="!@#$%^&*" size="10"><br>
+            </span>
+	    <hr>
+            <button id="sitedatagetbutton" type="button" style="dislay:inline" target="_blank">Download Site Data</button>
+            <a id="data" href="data:application/octet-stream,xxx" target='_blank' style="display:none" download="SiteData.html">SiteData.html</a>
+	</div>
+    </div>
+  </div>
+</body>
+</html>

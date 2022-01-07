@@ -1,0 +1,33 @@
+.sitedata {
+    width: 20em;
+    height: 20em;
+    background-color: white;
+    border: 2px solid black;
+    padding: 2px;
+    overflow-x: scroll;
+    overflow-y: auto;
+}
+table, th, td {
+    align: left;
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+.sspform {
+	width: 22em;
+	background-color: #87CEFA;
+	border: 1em solid black;
+	padding: 1em;
+}
+label {
+	display:inline-block;
+	width: 8em;
+	text-align: left;
+}
+h1 {
+	text-align: center;
+}
+.warning {
+        border : 3pt solid red;
+        background-color : white;
+        padding : 1em;
+}
