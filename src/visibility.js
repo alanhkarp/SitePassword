@@ -26,7 +26,7 @@
  * Description: Checks if a DOM element is truly visible.
  * Package URL: https://github.com/UseAllFive/true-visibility
  */
-Element.prototype.isVisible = function() {
+Element.prototype.isVisible = function () {
 
     'use strict';
 
@@ -48,33 +48,33 @@ Element.prototype.isVisible = function() {
      */
     function _isVisible(el, t, r, b, l, w, h) {
         var p = el.parentNode,
-                VISIBLE_PADDING = 2;
+            VISIBLE_PADDING = 2;
 
-        if ( !_elementInDocument(el) ) {
+        if (!_elementInDocument(el)) {
             return false;
         }
 
         //-- Return true for document node
-        if ( 9 === p.nodeType ) {
+        if (9 === p.nodeType) {
             return true;
         }
 
         //-- Return false if our element is invisible
         if (
-             '0' === _getStyle(el, 'opacity') ||
-             'none' === _getStyle(el, 'display') ||
-             'hidden' === _getStyle(el, 'visibility')
+            '0' === _getStyle(el, 'opacity') ||
+            'none' === _getStyle(el, 'display') ||
+            'hidden' === _getStyle(el, 'visibility')
         ) {
             return false;
         }
 
         if (
-            'undefined' === typeof(t) ||
-            'undefined' === typeof(r) ||
-            'undefined' === typeof(b) ||
-            'undefined' === typeof(l) ||
-            'undefined' === typeof(w) ||
-            'undefined' === typeof(h)
+            'undefined' === typeof (t) ||
+            'undefined' === typeof (r) ||
+            'undefined' === typeof (b) ||
+            'undefined' === typeof (l) ||
+            'undefined' === typeof (w) ||
+            'undefined' === typeof (h)
         ) {
             t = el.offsetTop;
             l = el.offsetLeft;
@@ -84,9 +84,9 @@ Element.prototype.isVisible = function() {
             h = el.offsetHeight;
         }
         //-- If we have a parent, let's continue:
-        if ( p ) {
+        if (p) {
             //-- Check if the parent can hide its children.
-            if ( ('hidden' === _getStyle(p, 'overflow') || 'scroll' === _getStyle(p, 'overflow')) ) {
+            if (('hidden' === _getStyle(p, 'overflow') || 'scroll' === _getStyle(p, 'overflow'))) {
                 //-- Only check if the offset is different for the parent
                 if (
                     //-- If the target element is to the right of the parent elm
@@ -103,7 +103,7 @@ Element.prototype.isVisible = function() {
                 }
             }
             //-- Add the offset parent's left/top coords to our element's offset:
-            if ( el.offsetParent === p ) {
+            if (el.offsetParent === p) {
                 l += p.offsetLeft;
                 t += p.offsetTop;
             }
@@ -115,10 +115,10 @@ Element.prototype.isVisible = function() {
 
     //-- Cross browser method to get style properties:
     function _getStyle(el, property) {
-        if ( window.getComputedStyle ) {
-            return document.defaultView.getComputedStyle(el,null)[property];
+        if (window.getComputedStyle) {
+            return document.defaultView.getComputedStyle(el, null)[property];
         }
-        if ( el.currentStyle ) {
+        if (el.currentStyle) {
             return el.currentStyle[property];
         }
     }
@@ -126,7 +126,7 @@ Element.prototype.isVisible = function() {
     function _elementInDocument(element) {
         while (element = element.parentNode) {
             if (element == document) {
-                    return true;
+                return true;
             }
         }
         return false;
