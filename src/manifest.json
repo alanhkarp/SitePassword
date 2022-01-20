@@ -1,34 +1,20 @@
 {
-    "manifest_version": 2,
+    "manifest_version": 3,
     "name": "Site Password",
     "short_name": "Site Password",
     "description": "Don't remember your passwords. Don't store them.  Calculate them!",
-    "version": "0.98",
-    "content_scripts": [
-        {
-            "js": [
-                "findpw.js",
-                "visibility.js"
-            ],
-            "matches": [
-                "*://*/*"
-            ],
-            "run_at": "document_end"
-        }
-    ],
+    "version": "0.99",
+    "action": {
+        "default_icon": "ssp.png",
+        "default_popup": "ssp.html"
+    },
     "background": {
-        "scripts": [
-            "bg.js",
-            "sha256.js"
-        ]
+        "service_worker": "background.js"
     },
     "permissions": [
         "tabs",
         "background",
-        "https://*/*"
-    ],
-    "browser_action": {
-        "default_icon": "ssp.png",
-        "default_popup": "ssp.html"
-    }
+        "bookmarks",
+        "storage"
+    ]
 }

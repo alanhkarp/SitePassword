@@ -7,7 +7,7 @@ window.onload = function () {
 	var cpi = countpwid();
 	if (cpi.pwfield) cpi.pwfield.placeholder = pwdmsg1;
 	sendpageinfo(cpi, false, true);
-	chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	chrome.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
 		var cpi = countpwid();
 		switch (request.cmd) {
 			case "fillfields":

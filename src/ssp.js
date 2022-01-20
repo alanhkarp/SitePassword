@@ -1,11 +1,11 @@
 'use strict';
-console.log("Version 0.98");
+console.log("Version 0.99");
 var persona;
 var domainname;
 var debugssp = false;
 var bg = chrome.extension.getBackgroundPage();
 console.log("islegacy " + bg.legacy);
-window.onunload = function () { bg.persistObject("hpSPG", bg.hpSPG); }
+window.onunload = function () { bg.persistMetadata(bg.hpSPG); }
 window.onload = function () {
     get("ssp").onmouseleave = function () {
         bg.settings.sitename = get("sitename").value;
@@ -192,7 +192,7 @@ function clearmasterpw() {
 function getsettings() {
     var personaname = getlowertrim("persona");
     var domainname = getlowertrim("domainname");
-    var sitename = getlowertrim("sitename");
+    // var sitename = getlowertrim("sitename");
     persona = bg.hpSPG.personas[personaname];
     if (!persona) {
         bg.hpSPG.personas[personaname] = clone(bg.hpSPG.personas.default);
@@ -215,7 +215,7 @@ function ask2generate() {
     var n = get("sitename").value;
     var m = get("masterpw").value;
     var p = "";
-    chrome.tabs.sendMessage(bg.activetabid, { cmd: "gettabinfo" }, function (response) {
+    chrome.tabs.sendMessage(bg.activetabid, { cmd: "gettabinfo" }, function (_response) {
         if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
             msgon("nopw");
         } else {
@@ -295,7 +295,7 @@ function pwoptions(options) {
     }
 }
 function sitedataHTML() {
-    var stored = bg.retrieveObject("hpSPG");
+    // var stored = bg.retrieveObject("hpSPG");
     var sites = persona.sites
     var sitenames = persona.sitenames;
     var sorted = Object.keys(sites).sort(function (x, y) {
@@ -385,9 +385,8 @@ function clone(object) {
     return JSON.parse(JSON.stringify(object))
 }
 function copyToClipboard() {
-    setfocus(get("sitepass"));
-    document.execCommand("SelectAll");
-    document.execCommand("Copy", false, null);
+    let sitepass = get("sitepass").innerHTML;
+    navigator.clipboard.writeText(sitepass);
 }
 // Messages in priority order high to low
 var messages = [{ name: "phishing", ison: false, transient: false },

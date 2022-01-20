@@ -1,39 +1,41 @@
-var legacy = false;  // true to emulate HP Antiphishing Toolbar
+let legacy = false;  // true to emulate HP Antiphishing Toolbar
 'use strict';
 // State I want to keep around that doesn't appear in the file system
 var activetabid;
 var hpSPG;
+var bkmkid;
 var masterpw = "";
 var domainname = "";
 var protocol = "";
 var persona;
 var pwcount = 0;
 var settings = {};
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+
+chrome.runtime.onMessage.addListener(function (request, sender, _sendResponse) {
     activetabid = sender.tab.id;
     domainname = request.domainname;
     protocol = request.protocol;
     pwcount = request.count;
-    var pr;
+    let pr;
     if (request.clicked) {
-        pr = generate(settings);
+        pr = generate(setup);
         if (persona.clearmasterpw) masterpw = "";
         chrome.tabs.sendMessage(activetabid,
             { cmd: "fillfields", "u": "", "p": pr.p });
     } else if (request.onload) {
-        init();
-        pr = generate(settings);
+        retrieveMetadata();
+        pr = generate(setup);
     }
 });
 chrome.tabs.onActivated.addListener(function (activeinfo) {
     activetabid = activeinfo.tabId;
     chrome.tabs.sendMessage(activeinfo.tabId, { cmd: "gettabinfo" });
 });
-init();
-function init() {
-    hpSPG = retrieveObject("hpSPG");
-    if (!hpSPG) {
-        hpSPG = {
+retrieveMetadata();
+
+function gotMetadata(hpSPGlocal) {
+    if (!hpSPGlocal) {
+        hpSPGlocal = {
             digits: "0123456789",
             lower: "abcdefghijklmnopqrstuvwxyz",
             upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -69,25 +71,87 @@ function init() {
                 }
             }
         }
-        hpSPG.personas.default.sitenames.default.specials = hpSPG.specials;
-        var defaultsettings = hpSPG.personas.default.sitenames.default;
+        hpSPG = hpSPGlocal;
+        hpSPGlocal.personas.default.sitenames.default.specials = hpSPGlocal.specials;
+        let defaultsettings = hpSPGlocal.personas.default.sitenames.default;
         defaultsettings.characters = characters(defaultsettings);
-        hpSPG.personas.everyone = clone(hpSPG.personas.default);
-        persona = hpSPG.personas.everyone;
+        hpSPGlocal.personas.everyone = clone(hpSPGlocal.personas.default);
+        persona = hpSPGlocal.personas.everyone;
         persona.personaname = "Everyone";
-        hpSPG.lastpersona = persona.personaname;
-        persistObject("hpSPG", hpSPG);
+        hpSPGlocal.lastpersona = persona.personaname;
+        persistMetadata(bkmkid, hpSPGlocal);
     }
-    persona = hpSPG.personas[hpSPG.lastpersona.toLowerCase().trim()];
-    if (persona.sites[domainname]) {
-        settings = clone(persona.sitenames[persona.sites[domainname]]);
-    } else {
-        settings = clone(persona.sitenames.default);
+    hpSPG = hpSPGlocal;
+}
+function persistMetadata(bkmkid, hpSPG) {
+    // localStorage[name] = JSON.stringify(value);
+    chrome.bookmarks.update(bkmkid, { "url": "ssp://" + JSON.stringify(hpSPG) }, (_node) => {
+        persona = hpSPG.personas[hpSPG.lastpersona.toLowerCase().trim()];
+        if (persona.sites[domainname]) {
+            setup = clone(persona.sitenames[persona.sites[domainname]]);
+        } else {
+            setup = clone(persona.sitenames.default);
+        }
+        setup.domainname = domainname;
+    });
+}
+function retrieveMetadata() {
+    // return JSON.parse(localStorage[name]);
+    console.log("Retrieving metadata")
+    chrome.storage.local.get(["hpSPG"], (hpSPG) => {
+        // I have no idea why I get hpSPG.hpSPG.bkmkid instead of hpSPG.bkmkid
+        if (hpSPG && hpSPG.hpSPG) bkmkid = hpSPG.hpSPG.bkmkid;
+        if (bkmkid) {
+            console.log("Got SSP bookmark ID " + bkmkid);
+            chrome.bookmarks.get(bkmkid, (bkmk) => {
+                hpSPG = parseBkmk(bkmk[0]);
+                gotMetadata(hpSPG);
+            });
+        } else {
+            // Find ssp bookmark
+            chrome.bookmarks.getTree((tree) => {
+                console.log("Find SSP bookmark");
+                let found = false;
+                tree[0].children[0].children.forEach((bkmk, _index) => {
+                    if (!found && bkmk.url.substring(0, 6) == "ssp://") {
+                        found = true;
+                        console.log("Found bookmark");
+                        bkmkid = bkmk.id;
+                        let value = { "bkmkid": bkmkid };
+                        chrome.storage.local.set({ "hpSPG": value });
+                        hpSPG = parseBkmk(bkmk);
+                        gotMetadata(hpSPG);
+                    }
+                });
+                if (!found) {
+                    chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData", "url": "ssp://" }, (bkmk) => {
+                        console.log("Creating SSP bookmark");
+                        bkmkid = bkmk.id;
+                        let value = { "bkmkid": bkmkid };
+                        chrome.storage.local.set({ "hpSPG": value }, () => {
+                            console.log("Bookmark id: " + bkmkid);
+                            hpSPG = undefined;
+                            gotMetadata(hpSPG);
+                        });
+                    });
+                }
+            });
+        }
+    })
+}
+function parseBkmk(bkmk) {
+    console.log("Parsing bookmark");
+    try {
+        // JSON.stringify turns some of my " into %22
+        hpSPG = JSON.parse(bkmk.url.substr(6).replace(/%22/g, "\""));
+    } catch (e) {
+        console.error("Error parsing metadata " + e);
+        hpSPG = undefined;
     }
-    settings.domainname = domainname;
+    return hpSPG;
 }
 function generate(settings) {
-    var d = settings.domainname;
+    // let d = settings.domainname;
     if (legacy) {
         var n = settings.sitename;
         var u = settings.username;
@@ -95,12 +159,12 @@ function generate(settings) {
         var n = settings.sitename.toLowerCase().trim();
         var u = settings.username.toLowerCase().trim();
     }
-    var m = masterpw;
+    let m = masterpw;
     if (!m) {
         return { p: "", r: pwcount };
     }
-    var s = n.toString() + u.toString() + m.toString();
-    var p = compute(s, settings);
+    let s = n.toString() + u.toString() + m.toString();
+    let p = compute(s, settings);
     if ((pwcount == 1) && u && n && m) {
         chrome.tabs.sendMessage(activetabid, { cmd: "fillfields", "u": u, "p": "" });
     }
@@ -109,18 +173,18 @@ function generate(settings) {
 function compute(s, settings) {
     s = Utf8Encode(s);
 
-    var h = core_sha256(str2binb(s), s.length * chrsz);
+    let h = core_sha256(str2binb(s), s.length * chrsz);
     for (iter = 1; iter < hpSPG.miniter; iter++) {
         h = core_sha256(h, 16 * chrsz);
     }
-    var ok = false;
+    // let ok = false;
     while (iter < hpSPG.maxiter) {
         h = core_sha256(h, 16 * chrsz);
-        var hswap = Array(h.length);
+        let hswap = Array(h.length);
         for (i = 0; i < h.length; i++) {
             hswap[i] = swap32(h[i]);
         }
-        var sitePassword = binl2b64(hswap, settings.characters).substr(0, settings.length);
+        let sitePassword = binl2b64(hswap, settings.characters).substring(0, settings.length);
         if (verify(sitePassword, settings)) break;
         iter++;
         if (iter >= hpSPG.maxiter) {
@@ -130,17 +194,17 @@ function compute(s, settings) {
     return sitePassword;
 }
 function verify(p, settings) {
-    var counts = { lower: 0, upper: 0, number: 0, special: 0 };
+    let counts = { lower: 0, upper: 0, number: 0, special: 0 };
     for (i = 0; i < p.length; i++) {
-        var c = p.substr(i, 1);
+        let c = p.substr(i, 1);
         if (-1 < hpSPG.lower.indexOf(c)) counts.lower++;
         if (-1 < hpSPG.upper.indexOf(c)) counts.upper++;
         if (-1 < hpSPG.digits.indexOf(c)) counts.number++;
         if (-1 < settings.specials.indexOf(c)) counts.special++;
     }
-    var valOK = true;
+    let valOK = true;
     if (settings.startwithletter) {
-        var start = p.substr(0, 1).toLowerCase();
+        let start = p.substr(0, 1).toLowerCase();
         valOK = valOK && -1 < hpSPG.lower.indexOf(start);
     }
     if (settings.allowlower) valOK = valOK && (counts.lower >= settings.minlower)
@@ -161,22 +225,8 @@ function verify(p, settings) {
     }
     return valOK;
 }
-function persistObject(name, value) {
-    try {
-        localStorage[name] = JSON.stringify(value);
-    } catch (e) {
-        return undefined;
-    }
-}
-function retrieveObject(name) {
-    try {
-        return JSON.parse(localStorage[name]);
-    } catch (e) {
-        return undefined;
-    }
-}
 function characters(settings) {
-    var chars = hpSPG.lower + hpSPG.upper + hpSPG.digits + hpSPG.lower.substr(0, 2);
+    let chars = hpSPG.lower + hpSPG.upper + hpSPG.digits + hpSPG.lower.substr(0, 2);
     if (settings.allowspecial) {
         if (legacy) {
             // Use for AntiPhishing Toolbar passwords
