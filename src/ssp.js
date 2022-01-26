@@ -5,7 +5,12 @@ var domainname;
 var debugssp = false;
 var bg;
 //console.log("islegacy " + bg.legacy);
-window.onunload = function () { bg.persistMetadata(bg.hpSPG); }
+// window.onunload appears to only work for background pages, which
+// no longer work.  Fortunately, using the password requires a click
+// outside the popup window.
+window.onblur = function() {
+    if ( bg ) bg.persistMetadata(bkmkid);
+}
 window.onload = async function () {
     console.log("Window loaded");
     bg = await retrieveMetadata();

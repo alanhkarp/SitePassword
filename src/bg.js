@@ -79,21 +79,21 @@ function gotMetadata(hpSPGlocal) {
         persona = hpSPGlocal.personas.everyone;
         persona.personaname = "Everyone";
         hpSPGlocal.lastpersona = persona.personaname;
-        persistMetadata(bkmkid, hpSPGlocal);
+        persistMetadata(bkmkid);
     }
     hpSPG = hpSPGlocal;
 }
-function persistMetadata(bkmkid, hpSPG) {
+async function persistMetadata(bkmkid) {
     // localStorage[name] = JSON.stringify(value);
-    chrome.bookmarks.update(bkmkid, { "url": "ssp://" + JSON.stringify(hpSPG) }, (_node) => {
-        persona = hpSPG.personas[hpSPG.lastpersona.toLowerCase().trim()];
-        if (persona.sites[domainname]) {
-            setup = clone(persona.sitenames[persona.sites[domainname]]);
-        } else {
-            setup = clone(persona.sitenames.default);
-        }
-        setup.domainname = domainname;
-    });
+    let update = "ssp://" + JSON.stringify(bg.hpSPG);
+    let promise = await chrome.bookmarks.update(bkmkid, { "url": update });
+    persona = hpSPG.personas[hpSPG.lastpersona.toLowerCase().trim()];
+    if (persona.sites[domainname]) {
+        setup = clone(persona.sitenames[persona.sites[domainname]]);
+    } else {
+        setup = clone(persona.sitenames.default);
+    }
+    setup.domainname = domainname;
 }
 async function retrieveMetadata() {
     // return JSON.parse(localStorage[name]);
