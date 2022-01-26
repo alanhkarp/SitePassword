@@ -1,18 +1,19 @@
-let legacy = false;  // true to emulate HP Antiphishing Toolbar
 'use strict';
 // State I want to keep around that doesn't appear in the file system
-var activetabid;
-var hpSPG;
+var activetab
+var hpSPG = {};
 var bkmkid;
+let legacy = false;  // true to emulate HP Antiphishing Toolbar
 var masterpw = "";
 var domainname = "";
 var protocol = "";
 var persona;
 var pwcount = 0;
 var settings = {};
+var setup;
 
 chrome.runtime.onMessage.addListener(function (request, sender, _sendResponse) {
-    activetabid = sender.tab.id;
+    let activetabid = sender.tab.id;
     domainname = request.domainname;
     protocol = request.protocol;
     pwcount = request.count;
@@ -31,7 +32,6 @@ chrome.tabs.onActivated.addListener(function (activeinfo) {
     activetabid = activeinfo.tabId;
     chrome.tabs.sendMessage(activeinfo.tabId, { cmd: "gettabinfo" });
 });
-retrieveMetadata();
 
 function gotMetadata(hpSPGlocal) {
     if (!hpSPGlocal) {
@@ -95,49 +95,61 @@ function persistMetadata(bkmkid, hpSPG) {
         setup.domainname = domainname;
     });
 }
-function retrieveMetadata() {
+async function retrieveMetadata() {
     // return JSON.parse(localStorage[name]);
     console.log("Retrieving metadata")
-    chrome.storage.local.get(["hpSPG"], (hpSPG) => {
-        // I have no idea why I get hpSPG.hpSPG.bkmkid instead of hpSPG.bkmkid
-        if (hpSPG && hpSPG.hpSPG) bkmkid = hpSPG.hpSPG.bkmkid;
-        if (bkmkid) {
-            console.log("Got SSP bookmark ID " + bkmkid);
-            chrome.bookmarks.get(bkmkid, (bkmk) => {
-                hpSPG = parseBkmk(bkmk[0]);
-                gotMetadata(hpSPG);
-            });
-        } else {
-            // Find ssp bookmark
-            chrome.bookmarks.getTree((tree) => {
-                console.log("Find SSP bookmark");
-                let found = false;
-                tree[0].children[0].children.forEach((bkmk, _index) => {
-                    if (!found && bkmk.url.substring(0, 6) == "ssp://") {
-                        found = true;
-                        console.log("Found bookmark");
-                        bkmkid = bkmk.id;
-                        let value = { "bkmkid": bkmkid };
-                        chrome.storage.local.set({ "hpSPG": value });
-                        hpSPG = parseBkmk(bkmk);
-                        gotMetadata(hpSPG);
-                    }
-                });
-                if (!found) {
-                    chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData", "url": "ssp://" }, (bkmk) => {
-                        console.log("Creating SSP bookmark");
-                        bkmkid = bkmk.id;
-                        let value = { "bkmkid": bkmkid };
-                        chrome.storage.local.set({ "hpSPG": value }, () => {
-                            console.log("Bookmark id: " + bkmkid);
-                            hpSPG = undefined;
-                            gotMetadata(hpSPG);
-                        });
-                    });
-                }
-            });
+    let hpSPGsaved = localStorage["hpSPGsaved"];
+    // I have no idea why I get hpSPGsaved.hpSPGsaved.bkmkid instead of hpSPG.bkmkid
+    if (hpSPGsaved && hpSPGsaved.hpSPGsaved) bkmkid = hpSPGsaved.hpSPGsaved.bkmkid;
+    if (bkmkid) {
+        console.log("Got SSP bookmark ID " + bkmkid);
+        let bkmk = await chrome.bookmarks.get(bkmkid);
+        console.log("Got bookmark: ", bkmk);
+        hpSPG = parseBkmk(bkmk);
+    } else {
+        // Find ssp bookmark
+        let tree = await chrome.bookmarks.getTree();
+        console.log("Find SSP bookmark");
+        let found = false;
+        tree[0].children[0].children.forEach((bkmk, _index) => {
+            if (!found && bkmk.url.substring(0, 6) == "ssp://") {
+                found = true;
+                console.log("Found bookmark: ", bkmk);
+                bkmkid = bkmk.id;
+                let value = { "bkmkid": bkmkid };
+                localStorage["hpSPGsaved"] = JSON.stringify(value);
+                hpSPG = parseBkmk(bkmk);
+            }
+        });
+        if (!found) {
+            let bkmk = await chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData", "url": "ssp://" });
+            console.log("Creating SSP bookmark");
+            bkmkid = bkmk.id;
+            let value = { "bkmkid": bkmkid };
+            localStorage["hpSPGsaved"] = JSON.stringify(value);
+            console.log("Bookmark id: " + bkmkid);
+            hpSPG = undefined;
         }
-    })
+    }
+    gotMetadata(hpSPG);
+    // Doing it this way because bg.js used to be a background page, 
+    // and I don't want to change a lot of code after I moved it to
+    // the popup.
+    let bg = {
+        "activetab": activetab,
+        "characters": characters,
+        "generate": generate,
+        "hpSPG": hpSPG,
+        "init": init,
+        "legacy": legacy,
+        "masterpw": masterpw,
+        "persistMetadata": persistMetadata,
+        "protocol": protocol,
+        "pwcount": pwcount,
+        "settings": settings,
+        "Utf8Encode": Utf8Encode
+    }
+    return bg;
 }
 function parseBkmk(bkmk) {
     console.log("Parsing bookmark");
@@ -159,32 +171,34 @@ function generate(settings) {
         var n = settings.sitename.toLowerCase().trim();
         var u = settings.username.toLowerCase().trim();
     }
-    let m = masterpw;
+    let m = bg.masterpw;
     if (!m) {
         return { p: "", r: pwcount };
     }
     let s = n.toString() + u.toString() + m.toString();
     let p = compute(s, settings);
     if ((pwcount == 1) && u && n && m) {
-        chrome.tabs.sendMessage(activetabid, { cmd: "fillfields", "u": u, "p": "" });
+        chrome.tabs.sendMessage(activetab.id, { cmd: "fillfields", "u": u, "p": "" });
     }
     return { p: p, r: pwcount };
 }
 function compute(s, settings) {
-    s = Utf8Encode(s);
+    s = bg.Utf8Encode(s);
 
     let h = core_sha256(str2binb(s), s.length * chrsz);
+    let iter;
     for (iter = 1; iter < hpSPG.miniter; iter++) {
         h = core_sha256(h, 16 * chrsz);
     }
     // let ok = false;
+    let sitePassword;
     while (iter < hpSPG.maxiter) {
         h = core_sha256(h, 16 * chrsz);
         let hswap = Array(h.length);
-        for (i = 0; i < h.length; i++) {
+        for (let i = 0; i < h.length; i++) {
             hswap[i] = swap32(h[i]);
         }
-        let sitePassword = binl2b64(hswap, settings.characters).substring(0, settings.length);
+        sitePassword = binl2b64(hswap, settings.characters).substring(0, settings.length);
         if (verify(sitePassword, settings)) break;
         iter++;
         if (iter >= hpSPG.maxiter) {
@@ -195,7 +209,7 @@ function compute(s, settings) {
 }
 function verify(p, settings) {
     let counts = { lower: 0, upper: 0, number: 0, special: 0 };
-    for (i = 0; i < p.length; i++) {
+    for (let i = 0; i < p.length; i++) {
         let c = p.substr(i, 1);
         if (-1 < hpSPG.lower.indexOf(c)) counts.lower++;
         if (-1 < hpSPG.upper.indexOf(c)) counts.upper++;

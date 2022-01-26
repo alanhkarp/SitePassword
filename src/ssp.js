@@ -3,10 +3,13 @@ console.log("Version 0.99");
 var persona;
 var domainname;
 var debugssp = false;
-var bg = chrome.extension.getBackgroundPage();
-console.log("islegacy " + bg.legacy);
+var bg;
+//console.log("islegacy " + bg.legacy);
 window.onunload = function () { bg.persistMetadata(bg.hpSPG); }
-window.onload = function () {
+window.onload = async function () {
+    console.log("Window loaded");
+    bg = await retrieveMetadata();
+    console.log("ssp hpSPG: ", JSON.stringify(hpSPG));
     get("ssp").onmouseleave = function () {
         bg.settings.sitename = get("sitename").value;
         if (bg.settings.sitename) {
@@ -158,12 +161,12 @@ function setfocus(element) {
     element.focus();
 }
 function init() {
-    bg.init();
     persona = bg.hpSPG.personas[bg.hpSPG.lastpersona.toLowerCase()];
     get("persona").value = persona.personaname;
     bg.settings = clone(persona.sitenames.default);
     var a = document.createElement('a');
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        console.log("tabs: ", tabs);
         bg.activetab = tabs[0];
         a.href = tabs[0].url;
         if (persona.sites[a.hostname]) {
@@ -215,35 +218,33 @@ function ask2generate() {
     var n = get("sitename").value;
     var m = get("masterpw").value;
     var p = "";
-    chrome.tabs.sendMessage(bg.activetabid, { cmd: "gettabinfo" }, function (_response) {
-        if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
-            msgon("nopw");
-        } else {
+    if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
+        msgon("nopw");
+    } else {
+        msgoff("nopw");
+        var r = bg.generate(bg.settings);
+        p = r.p;
+        if (p) {
             msgoff("nopw");
-            var r = bg.generate(bg.settings);
-            p = r.p;
-            if (p) {
-                msgoff("nopw");
-            } else {
-                p = "";
-                if (get("masterpw").value) {
-                    msgon("nopw");
-                }
+        } else {
+            p = "";
+            if (get("masterpw").value) {
+                msgon("nopw");
             }
         }
-        get("sitepass").value = p;
-        if ((r.r == 1) && u && n && m && "https:" == bg.protocol) {
-            chrome.tabs.sendMessage(bg.activetab.id,
-                { cmd: "fillfields", "u": u, "p": "" });
-            msgoff("multiple");
-            msgoff("zero");
-        } else {
-            if (m) chrome.tabs.sendMessage(bg.activetab.id,
-                { cmd: "fillfields", "u": u, "p": "" });
-            message("multiple", r.r > 1);
-            message("zero", r.r == 0);
-        }
-    });
+    }
+    get("sitepass").value = p;
+    if ((r.r == 1) && u && n && m && "https:" == bg.protocol) {
+        chrome.tabs.sendMessage(bg.activetab.id,
+            { cmd: "fillfields", "u": u, "p": "" });
+        msgoff("multiple");
+        msgoff("zero");
+    } else {
+        if (m) chrome.tabs.sendMessage(bg.activetab.id,
+            { cmd: "fillfields", "u": u, "p": "" });
+        message("multiple", r.r > 1);
+        message("zero", r.r == 0);
+    }
 }
 function fill() {
     if (persona.sites[bg.settings.domainname]) {
