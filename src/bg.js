@@ -1,6 +1,6 @@
 'use strict';
 // State I want to keep around that doesn't appear in the file system
-var activetab
+var activetab;
 var hpSPG = {};
 var bkmkid;
 let legacy = false;  // true to emulate HP Antiphishing Toolbar
@@ -13,6 +13,7 @@ var settings = {};
 var setup;
 
 chrome.runtime.onMessage.addListener(function (request, sender, _sendResponse) {
+    console.log("bg 1");
     let activetabid = sender.tab.id;
     domainname = request.domainname;
     protocol = request.protocol;
@@ -29,7 +30,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, _sendResponse) {
     }
 });
 chrome.tabs.onActivated.addListener(function (activeinfo) {
-    activetabid = activeinfo.tabId;
     chrome.tabs.sendMessage(activeinfo.tabId, { cmd: "gettabinfo" });
 });
 
@@ -86,7 +86,7 @@ function gotMetadata(hpSPGlocal) {
 async function persistMetadata(bkmkid) {
     // localStorage[name] = JSON.stringify(value);
     let update = "ssp://" + JSON.stringify(bg.hpSPG);
-    let promise = await chrome.bookmarks.update(bkmkid, { "url": update });
+    await chrome.bookmarks.update(bkmkid, { "url": update });
     persona = hpSPG.personas[hpSPG.lastpersona.toLowerCase().trim()];
     if (persona.sites[domainname]) {
         setup = clone(persona.sitenames[persona.sites[domainname]]);
@@ -135,7 +135,7 @@ async function retrieveMetadata() {
     // Doing it this way because bg.js used to be a background page, 
     // and I don't want to change a lot of code after I moved it to
     // the popup.
-    let bg = {
+     let bg = {
         "activetab": activetab,
         "characters": characters,
         "generate": generate,
@@ -164,6 +164,7 @@ function parseBkmk(bkmk) {
 }
 function generate(settings) {
     // let d = settings.domainname;
+    let pwcount = bg.pwcount;
     if (legacy) {
         var n = settings.sitename;
         var u = settings.username;
@@ -178,7 +179,7 @@ function generate(settings) {
     let s = n.toString() + u.toString() + m.toString();
     let p = compute(s, settings);
     if ((pwcount == 1) && u && n && m) {
-        chrome.tabs.sendMessage(activetab.id, { cmd: "fillfields", "u": u, "p": "" });
+        chrome.tabs.sendMessage(bg.activetab.id, { cmd: "fillfields", "u": u, "p": "" });
     }
     return { p: p, r: pwcount };
 }

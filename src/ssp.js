@@ -8,14 +8,17 @@ var bg;
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
 // outside the popup window.
-window.onblur = function() {
-    if ( bg ) bg.persistMetadata(bkmkid);
+window.onblur = function () {
+    if (bg) bg.persistMetadata(bkmkid);
 }
 window.onload = async function () {
     console.log("Window loaded");
     bg = await retrieveMetadata();
-    console.log("ssp hpSPG: ", JSON.stringify(hpSPG));
-    get("ssp").onmouseleave = function () {
+    let counted = countpwid();
+     bg.pwcount = counted.count;
+    message("zero", bg.pwcount === 0);
+    message("multiple", bg.pwcount > 1);
+     get("ssp").onmouseleave = function () {
         bg.settings.sitename = get("sitename").value;
         if (bg.settings.sitename) {
             persona.sitenames[bg.settings.sitename] = clone(bg.settings);
@@ -24,6 +27,7 @@ window.onload = async function () {
             delete persona.sites[bg.settings.domainname];
         }
         bg.hpSPG.lastpersona = get("persona").value;
+        console.log("ssp: pwcount " + pwcount);
         if (bg.pwcount != 1 &&
             get("sitepass").value &&
             !isphishing(get("sitename").value)) {
@@ -227,7 +231,7 @@ function ask2generate() {
         msgon("nopw");
     } else {
         msgoff("nopw");
-        var r = bg.generate(bg.settings);
+        var r = generate(bg.settings);
         p = r.p;
         if (p) {
             msgoff("nopw");
@@ -247,6 +251,7 @@ function ask2generate() {
     } else {
         if (m) chrome.tabs.sendMessage(bg.activetab.id,
             { cmd: "fillfields", "u": u, "p": "" });
+        console.log("ask2generate", r);
         message("multiple", r.r > 1);
         message("zero", r.r == 0);
     }
@@ -395,10 +400,12 @@ function copyToClipboard() {
     navigator.clipboard.writeText(sitepass);
 }
 // Messages in priority order high to low
-var messages = [{ name: "phishing", ison: false, transient: false },
-{ name: "nopw", ison: false, transient: false },
-{ name: "zero", ison: false, transient: false },
-{ name: "multiple", ison: false, transient: false }];
+var messages = [
+    { name: "phishing", ison: false, transient: false },
+    { name: "nopw", ison: false, transient: false },
+    { name: "zero", ison: false, transient: false },
+    { name: "multiple", ison: false, transient: false }
+];
 function msgon(msgname) {
     message(msgname, true);
 }
