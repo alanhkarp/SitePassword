@@ -27,7 +27,6 @@ window.onload = async function () {
             delete persona.sites[bg.settings.domainname];
         }
         bg.hpSPG.lastpersona = get("persona").value;
-        console.log("ssp: pwcount " + pwcount);
         if (bg.pwcount != 1 &&
             get("sitepass").value &&
             !isphishing(get("sitename").value)) {
@@ -251,7 +250,6 @@ function ask2generate() {
     } else {
         if (m) chrome.tabs.sendMessage(bg.activetab.id,
             { cmd: "fillfields", "u": u, "p": "" });
-        console.log("ask2generate", r);
         message("multiple", r.r > 1);
         message("zero", r.r == 0);
     }
