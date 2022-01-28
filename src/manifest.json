@@ -4,11 +4,26 @@
     "short_name": "Site Password",
     "description": "Don't remember your passwords. Don't store them.  Calculate them!",
     "version": "0.99",
+    "background": {
+        "service_worker": "background.js"
+    },
     "action": {
         "default_icon": "ssp.png",
         "default_popup": "ssp.html"
     },
+    "content_scripts": [
+        {
+            "matches": ["https://*/*"],
+            "run_at": "document_idle",
+            "js": [
+                "bg.js",
+                "findpw.js", 
+                "visibility.js"
+            ]
+        }
+    ],
     "permissions": [
+        "activeTab",
         "tabs",
         "background",
         "bookmarks",

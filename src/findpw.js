@@ -2,15 +2,19 @@
 'use strict';
 var pwdmsg1 = "Click SitePassword";
 var pwdmsg2 = "Click here for password";
+console.log("findpw.js loaded");
 window.onload = function () {
+	console.log("findpw.js running");
 	var userid = "";
 	var cpi = countpwid();
 	if (cpi.pwfield) cpi.pwfield.placeholder = pwdmsg1;
+	console.log("findpw 1: sending cpi", cpi);
 	sendpageinfo(cpi, false, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
 		var cpi = countpwid();
 		switch (request.cmd) {
 			case "fillfields":
+				console.log("findpw filling fields");
 				if (!userid) userid = request.u;
 				fillfield(cpi.idfield, request.u);
 				if (userid) {
@@ -19,6 +23,7 @@ window.onload = function () {
 				}
 				break;
 			case "gettabinfo":
+				console.log("findpw 2: sending cpi", cpi);
 				sendpageinfo(cpi, false, false);
 				break;
 			default:
@@ -27,11 +32,13 @@ window.onload = function () {
 	});
 	if (cpi.pwfield) {
 		cpi.pwfield.onclick = function () {
+			console.log("findpw 3: sending cpi", cpi);
 			sendpageinfo(cpi, true, false);
 		}
 	}
 }
 function fillfield(field, text) {
+	console.log("findpw: fillfield");
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
 		field.value = text.trim();
@@ -68,5 +75,6 @@ function countpwid() {
 			}
 		}
 	}
+	console.log("findpw: countpwid", c, passwordfield, useridfield);
 	return { count: c, pwfield: passwordfield, idfield: useridfield, };
 }

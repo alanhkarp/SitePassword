@@ -4,7 +4,6 @@ var persona;
 var domainname;
 var debugssp = false;
 var bg;
-//console.log("islegacy " + bg.legacy);
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
 // outside the popup window.
@@ -14,11 +13,12 @@ window.onblur = function () {
 window.onload = async function () {
     console.log("Window loaded");
     bg = await retrieveMetadata();
+    console.log("islegacy " + bg.legacy);
     let counted = countpwid();
-     bg.pwcount = counted.count;
+    bg.pwcount = counted.count;
     message("zero", bg.pwcount === 0);
     message("multiple", bg.pwcount > 1);
-     get("ssp").onmouseleave = function () {
+    get("ssp").onmouseleave = function () {
         bg.settings.sitename = get("sitename").value;
         if (bg.settings.sitename) {
             persona.sitenames[bg.settings.sitename] = clone(bg.settings);

@@ -1,5 +1,5 @@
 try {
-    importScripts("bg.js", "sha256.js");
+    console.log("No background script");
 } catch (e) {
     console.error(e);
 }

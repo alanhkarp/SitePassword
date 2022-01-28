@@ -13,8 +13,11 @@ var settings = {};
 var setup;
 
 chrome.runtime.onMessage.addListener(function (request, sender, _sendResponse) {
-    console.log("bg 1");
-    let activetabid = sender.tab.id;
+    console.log("bg.js got message request, sender", request, sender);
+    let activetabid = -1;
+    if (sender.tab) {
+        activetabid = sender.tab.id;
+    }
     domainname = request.domainname;
     protocol = request.protocol;
     pwcount = request.count;
@@ -22,16 +25,21 @@ chrome.runtime.onMessage.addListener(function (request, sender, _sendResponse) {
     if (request.clicked) {
         pr = generate(setup);
         if (persona.clearmasterpw) masterpw = "";
+        console.log("bg sending pr", pr);
         chrome.tabs.sendMessage(activetabid,
             { cmd: "fillfields", "u": "", "p": pr.p });
     } else if (request.onload) {
+        console.log("bg retrieving metadata")
         retrieveMetadata();
         pr = generate(setup);
     }
 });
-chrome.tabs.onActivated.addListener(function (activeinfo) {
-    chrome.tabs.sendMessage(activeinfo.tabId, { cmd: "gettabinfo" });
-});
+if (chrome.tabs) {
+    chrome.tabs.onActivated.addListener(function (activeinfo) {
+        console.log("bg sending gettabinfo request");
+        chrome.tabs.sendMessage(activeinfo.tabId, { cmd: "gettabinfo" });
+    });
+}
 
 function gotMetadata(hpSPGlocal) {
     if (!hpSPGlocal) {
@@ -105,7 +113,7 @@ async function retrieveMetadata() {
         console.log("Got SSP bookmark ID " + bkmkid);
         let bkmk = await chrome.bookmarks.get(bkmkid);
         console.log("Got bookmark: ", bkmk);
-        hpSPG = parseBkmk(bkmk);
+        hpSPG = parseBkmk(bkmk[0]);
     } else {
         // Find ssp bookmark
         let tree = await chrome.bookmarks.getTree();
@@ -135,7 +143,7 @@ async function retrieveMetadata() {
     // Doing it this way because bg.js used to be a background page, 
     // and I don't want to change a lot of code after I moved it to
     // the popup.
-     let bg = {
+    let bg = {
         "activetab": activetab,
         "characters": characters,
         "generate": generate,
