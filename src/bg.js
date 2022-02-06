@@ -1,45 +1,68 @@
 'use strict';
 // State I want to keep around that doesn't appear in the file system
+var bg;
 var activetab;
 var hpSPG = {};
 var bkmkid;
-let legacy = false;  // true to emulate HP Antiphishing Toolbar
-var masterpw = "";
+var legacy = false;  // true to emulate HP Antiphishing Toolbar
 var domainname = "";
 var protocol = "";
 var persona;
 var pwcount = 0;
 var settings = {};
 var setup;
+var masterpw = "";
+var sitepass = "";
 
-chrome.runtime.onMessage.addListener(function (request, sender, _sendResponse) {
+console.log("bg starting");
+
+retrieveMetadata().then((bg) => {
+    console.log("bg metadata retrieved", bg);
+})
+chrome.runtime.onStartup.addListener(() => {
+    console.log("bg onStartup");
+});
+
+chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
     console.log("bg.js got message request, sender", request, sender);
     let activetabid = -1;
     if (sender.tab) {
         activetabid = sender.tab.id;
     }
-    domainname = request.domainname;
     protocol = request.protocol;
     pwcount = request.count;
-    let pr;
-    if (request.clicked) {
-        pr = generate(setup);
+    if (request.cmd === "getMetadata") {
+        console.log("bg request getMetadata: sending response", bg);
+        chrome.runtime.sendMessage({"metadata": bg});
+    } else if (request.cmd === "persistMetadata") {
+        console.log("bg request persistMetadata", request.bg);
+        hpSPG = request.bg.hpSPG;
+        persistMetadata(bkmkid);
+    } else if (request.cmd === "getPassword") {
+        console.log("bg sending sitepass", sitepass);
+        sendResponse(sitepass);
+    } else if (request.masterpw) {
+        console.log("bg got masterpw", request.masterpw);
+        masterpw = request.masterpw;
+        sitepass = request.sitepass;
+    } else if (request.clicked) {
         if (persona.clearmasterpw) masterpw = "";
-        console.log("bg sending pr", pr);
-        chrome.tabs.sendMessage(activetabid,
-            { cmd: "fillfields", "u": "", "p": pr.p });
+        domainname = request.domainname;
+        console.log("bg clicked: sending response", bg);
+        sendResponse(bg);
     } else if (request.onload) {
-        console.log("bg retrieving metadata")
-        retrieveMetadata();
-        pr = generate(setup);
+        bg.pwcount = request.count;
+        domainname = request.domainname;
+        console.log("bg pwcount, domainname", bg.pwcount, domainname);
+        let persona = bg.hpSPG.personas[bg.hpSPG.lastpersona.toLowerCase()];
+        let sitename = persona.sites[domainname];
+        let username = persona.sitenames[sitename].username;
+        chrome.tabs.sendMessage(activetabid,
+            { cmd: "fillfields", "u": username, "p": "", "exensionid": chrome.runtime.id });
     }
+    console.log("bg addListener returning");
+    return true;
 });
-if (chrome.tabs) {
-    chrome.tabs.onActivated.addListener(function (activeinfo) {
-        console.log("bg sending gettabinfo request");
-        chrome.tabs.sendMessage(activeinfo.tabId, { cmd: "gettabinfo" });
-    });
-}
 
 function gotMetadata(hpSPGlocal) {
     if (!hpSPGlocal) {
@@ -87,13 +110,14 @@ function gotMetadata(hpSPGlocal) {
         persona = hpSPGlocal.personas.everyone;
         persona.personaname = "Everyone";
         hpSPGlocal.lastpersona = persona.personaname;
+        hpSPG = hpSPGlocal;
         persistMetadata(bkmkid);
     }
     hpSPG = hpSPGlocal;
 }
 async function persistMetadata(bkmkid) {
     // localStorage[name] = JSON.stringify(value);
-    let update = "ssp://" + JSON.stringify(bg.hpSPG);
+    let update = "ssp://" + JSON.stringify(hpSPG);
     await chrome.bookmarks.update(bkmkid, { "url": update });
     persona = hpSPG.personas[hpSPG.lastpersona.toLowerCase().trim()];
     if (persona.sites[domainname]) {
@@ -106,7 +130,8 @@ async function persistMetadata(bkmkid) {
 async function retrieveMetadata() {
     // return JSON.parse(localStorage[name]);
     console.log("Retrieving metadata")
-    let hpSPGsaved = localStorage["hpSPGsaved"];
+    let hpSPGsaved = await chrome.storage.local.get(["hpSPGsaved"]);
+    console.log("bg got hpSPGsaved", hpSPGsaved);
     // I have no idea why I get hpSPGsaved.hpSPGsaved.bkmkid instead of hpSPG.bkmkid
     if (hpSPGsaved && hpSPGsaved.hpSPGsaved) bkmkid = hpSPGsaved.hpSPGsaved.bkmkid;
     if (bkmkid) {
@@ -125,7 +150,7 @@ async function retrieveMetadata() {
                 console.log("Found bookmark: ", bkmk);
                 bkmkid = bkmk.id;
                 let value = { "bkmkid": bkmkid };
-                localStorage["hpSPGsaved"] = JSON.stringify(value);
+                chrome.storage.local.set({ "hpSPGsaved": JSON.stringify(value) });
                 hpSPG = parseBkmk(bkmk);
             }
         });
@@ -134,7 +159,7 @@ async function retrieveMetadata() {
             console.log("Creating SSP bookmark");
             bkmkid = bkmk.id;
             let value = { "bkmkid": bkmkid };
-            localStorage["hpSPGsaved"] = JSON.stringify(value);
+            chrome.storage.local.set({ "hpSPGsaved": JSON.stringify(value) });
             console.log("Bookmark id: " + bkmkid);
             hpSPG = undefined;
         }
@@ -143,20 +168,16 @@ async function retrieveMetadata() {
     // Doing it this way because bg.js used to be a background page, 
     // and I don't want to change a lot of code after I moved it to
     // the popup.
-    let bg = {
+    bg = {
         "activetab": activetab,
-        "characters": characters,
-        "generate": generate,
         "hpSPG": hpSPG,
-        "init": init,
         "legacy": legacy,
         "masterpw": masterpw,
-        "persistMetadata": persistMetadata,
         "protocol": protocol,
         "pwcount": pwcount,
         "settings": settings,
-        "Utf8Encode": Utf8Encode
-    }
+     }
+    console.log("bg = ", bg);
     return bg;
 }
 function parseBkmk(bkmk) {
@@ -169,108 +190,6 @@ function parseBkmk(bkmk) {
         hpSPG = undefined;
     }
     return hpSPG;
-}
-function generate(settings) {
-    // let d = settings.domainname;
-    let pwcount = bg.pwcount;
-    if (legacy) {
-        var n = settings.sitename;
-        var u = settings.username;
-    } else {
-        var n = settings.sitename.toLowerCase().trim();
-        var u = settings.username.toLowerCase().trim();
-    }
-    let m = bg.masterpw;
-    if (!m) {
-        return { p: "", r: pwcount };
-    }
-    let s = n.toString() + u.toString() + m.toString();
-    let p = compute(s, settings);
-    if ((pwcount == 1) && u && n && m) {
-        chrome.tabs.sendMessage(bg.activetab.id, { cmd: "fillfields", "u": u, "p": "" });
-    }
-    return { p: p, r: pwcount };
-}
-function compute(s, settings) {
-    s = bg.Utf8Encode(s);
-
-    let h = core_sha256(str2binb(s), s.length * chrsz);
-    let iter;
-    for (iter = 1; iter < hpSPG.miniter; iter++) {
-        h = core_sha256(h, 16 * chrsz);
-    }
-    // let ok = false;
-    let sitePassword;
-    while (iter < hpSPG.maxiter) {
-        h = core_sha256(h, 16 * chrsz);
-        let hswap = Array(h.length);
-        for (let i = 0; i < h.length; i++) {
-            hswap[i] = swap32(h[i]);
-        }
-        sitePassword = binl2b64(hswap, settings.characters).substring(0, settings.length);
-        if (verify(sitePassword, settings)) break;
-        iter++;
-        if (iter >= hpSPG.maxiter) {
-            sitePassword = "";
-        }
-    }
-    return sitePassword;
-}
-function verify(p, settings) {
-    let counts = { lower: 0, upper: 0, number: 0, special: 0 };
-    for (let i = 0; i < p.length; i++) {
-        let c = p.substr(i, 1);
-        if (-1 < hpSPG.lower.indexOf(c)) counts.lower++;
-        if (-1 < hpSPG.upper.indexOf(c)) counts.upper++;
-        if (-1 < hpSPG.digits.indexOf(c)) counts.number++;
-        if (-1 < settings.specials.indexOf(c)) counts.special++;
-    }
-    let valOK = true;
-    if (settings.startwithletter) {
-        let start = p.substr(0, 1).toLowerCase();
-        valOK = valOK && -1 < hpSPG.lower.indexOf(start);
-    }
-    if (settings.allowlower) valOK = valOK && (counts.lower >= settings.minlower)
-    if (settings.allowupper) {
-        valOK = valOK && (counts.upper >= settings.minupper)
-    } else {
-        valOK = valOK && (counts.upper == 0);
-    }
-    if (settings.allownumber) {
-        valOK = valOK && (counts.number >= settings.minnumber);
-    } else {
-        valOK = valOK && (counts.number == 0);
-    }
-    if (settings.allowspecial) {
-        valOK = valOK && (counts.special >= settings.minspecial);
-    } else {
-        valOK = valOK && (counts.special == 0);
-    }
-    return valOK;
-}
-function characters(settings) {
-    let chars = hpSPG.lower + hpSPG.upper + hpSPG.digits + hpSPG.lower.substr(0, 2);
-    if (settings.allowspecial) {
-        if (legacy) {
-            // Use for AntiPhishing Toolbar passwords
-            chars = chars.substr(0, 32) + settings.specials.substr(1) + chars.substr(31 + settings.specials.length);
-        } else {
-            // Use for SitePassword passwords
-            chars = settings.specials + hpSPG.lower.substr(settings.specials.length - 2) + hpSPG.upper + hpSPG.digits;
-        }
-    }
-    if (!settings.allowlower) chars = chars.toUpperCase();
-    if (!settings.allowupper) chars = chars.toLowerCase();
-    if (!(settings.allowlower || settings.allowupper)) {
-        chars = hpSPG.digits + hpSPG.digits + hpSPG.digits +
-            hpSPG.digits + hpSPG.digits + hpSPG.digits;
-        if (settings.allowspecials) {
-            chars = chars + persona.specials.substr(0, 4);
-        } else {
-            chars = chars + hpSPG.digits.substr(0, 4);
-        }
-    }
-    return chars;
 }
 function clone(object) {
     return JSON.parse(JSON.stringify(object))

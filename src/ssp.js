@@ -4,20 +4,38 @@ var persona;
 var domainname;
 var debugssp = false;
 var bg;
+console.log("popup starting");
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
 // outside the popup window.
 window.onblur = function () {
-    if (bg) bg.persistMetadata(bkmkid);
+    if (bg) {
+        console.log("ssp sending bg", bg);
+        chrome.runtime.sendMessage({"cmd": "persistMetadata", "bg": bg});
+    }
 }
+window.onunload = function () {
+    alert("popup unloading");
+}
+chrome.runtime.onMessage.addListener((request, sender) => {
+    console.log("popup got message", request, sender);
+    if (request.metadata) {
+        bg = request.metadata;
+        console.log("islegacy " + bg.legacy);
+        message("zero", bg.pwcount === 0);
+        message("multiple", bg.pwcount > 1);
+        init();
+    }
+    return true;
+});
 window.onload = async function () {
-    console.log("Window loaded");
-    bg = await retrieveMetadata();
-    console.log("islegacy " + bg.legacy);
-    let counted = countpwid();
-    bg.pwcount = counted.count;
-    message("zero", bg.pwcount === 0);
-    message("multiple", bg.pwcount > 1);
+    console.log("Popup window loaded");
+    if (bg) {
+        console.log("popup: bg is defined");
+        return;
+    }
+    console.log("popup: bg is not defined");
+    chrome.runtime.sendMessage({ "cmd": "getMetadata"});
     get("ssp").onmouseleave = function () {
         bg.settings.sitename = get("sitename").value;
         if (bg.settings.sitename) {
@@ -59,6 +77,10 @@ window.onload = async function () {
     get("masterpw").onkeyup = function () {
         bg.masterpw = get("masterpw").value;
         ask2generate();
+    }
+    get("masterpw").onblur = function () {
+        console.log("ssp sending masterpw to bg", get("masterpw").value);
+        chrome.runtime.sendMessage({"masterpw": get("masterpw").value, "sitepass": get("sitepass").value});
     }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
@@ -145,14 +167,13 @@ window.onload = async function () {
             window.close();
         });
     }
-    init();
 }
 function handlekeyup(element, field) {
     handleblur(element, field);
 }
 function handleblur(element, field) {
     bg.settings[field] = get(element).value;
-    bg.settings.characters = bg.characters(bg.settings);
+    bg.settings.characters = characters(bg.settings);
     ask2generate();
 }
 function handleclick(which) {
@@ -162,7 +183,7 @@ function handleclick(which) {
         bg.settings.startwithletter = false;
         get("startwithletter").checked = false;
     }
-    bg.settings.characters = bg.characters(bg.settings)
+    bg.settings.characters = characters(bg.settings)
     ask2generate();
 }
 function setfocus(element) {
@@ -253,6 +274,109 @@ function ask2generate() {
         message("multiple", r.r > 1);
         message("zero", r.r == 0);
     }
+}
+function generate(settings) {
+    let pwcount = bg.pwcount;
+    if (bg.legacy) {
+        var n = settings.sitename;
+        var u = settings.username;
+    } else {
+        var n = settings.sitename.toLowerCase().trim();
+        var u = settings.username.toLowerCase().trim();
+    }
+    let m = bg.masterpw;
+    if (!m) {
+        return { p: "", r: pwcount };
+    }
+    let s = n.toString() + u.toString() + m.toString();
+    let p = compute(s, settings);
+    if ((pwcount == 1) && u && n && m) {
+        chrome.tabs.sendMessage(bg.activetab.id, { cmd: "fillfields", "u": u, "p": "" });
+    }
+    return { p: p, r: pwcount };
+}
+function compute(s, settings) {
+    s = Utf8Encode(s);
+    let hpSPG = bg.hpSPG;
+    let h = core_sha256(str2binb(s), s.length * chrsz);
+    let iter;
+    for (iter = 1; iter < hpSPG.miniter; iter++) {
+        h = core_sha256(h, 16 * chrsz);
+    }
+    // let ok = false;
+    let sitePassword;
+    while (iter < hpSPG.maxiter) {
+        h = core_sha256(h, 16 * chrsz);
+        let hswap = Array(h.length);
+        for (let i = 0; i < h.length; i++) {
+            hswap[i] = swap32(h[i]);
+        }
+        sitePassword = binl2b64(hswap, settings.characters).substring(0, settings.length);
+        if (verify(sitePassword, settings)) break;
+        iter++;
+        if (iter >= hpSPG.maxiter) {
+            sitePassword = "";
+        }
+    }
+    return sitePassword;
+}
+function verify(p, settings) {
+    let hpSPG = bg.hpSPG;
+    let counts = { lower: 0, upper: 0, number: 0, special: 0 };
+    for (let i = 0; i < p.length; i++) {
+        let c = p.substr(i, 1);
+        if (-1 < hpSPG.lower.indexOf(c)) counts.lower++;
+        if (-1 < hpSPG.upper.indexOf(c)) counts.upper++;
+        if (-1 < hpSPG.digits.indexOf(c)) counts.number++;
+        if (-1 < settings.specials.indexOf(c)) counts.special++;
+    }
+    let valOK = true;
+    if (settings.startwithletter) {
+        let start = p.substr(0, 1).toLowerCase();
+        valOK = valOK && -1 < hpSPG.lower.indexOf(start);
+    }
+    if (settings.allowlower) valOK = valOK && (counts.lower >= settings.minlower)
+    if (settings.allowupper) {
+        valOK = valOK && (counts.upper >= settings.minupper)
+    } else {
+        valOK = valOK && (counts.upper == 0);
+    }
+    if (settings.allownumber) {
+        valOK = valOK && (counts.number >= settings.minnumber);
+    } else {
+        valOK = valOK && (counts.number == 0);
+    }
+    if (settings.allowspecial) {
+        valOK = valOK && (counts.special >= settings.minspecial);
+    } else {
+        valOK = valOK && (counts.special == 0);
+    }
+    return valOK;
+}
+function characters(settings) {
+    let hpSPG = bg.hpSPG;
+    let chars = hpSPG.lower + hpSPG.upper + hpSPG.digits + hpSPG.lower.substr(0, 2);
+    if (settings.allowspecial) {
+        if (bg.legacy) {
+            // Use for AntiPhishing Toolbar passwords
+            chars = chars.substr(0, 32) + settings.specials.substr(1) + chars.substr(31 + settings.specials.length);
+        } else {
+            // Use for SitePassword passwords
+            chars = settings.specials + hpSPG.lower.substr(settings.specials.length - 2) + hpSPG.upper + hpSPG.digits;
+        }
+    }
+    if (!settings.allowlower) chars = chars.toUpperCase();
+    if (!settings.allowupper) chars = chars.toLowerCase();
+    if (!(settings.allowlower || settings.allowupper)) {
+        chars = hpSPG.digits + hpSPG.digits + hpSPG.digits +
+            hpSPG.digits + hpSPG.digits + hpSPG.digits;
+        if (settings.allowspecials) {
+            chars = chars + persona.specials.substr(0, 4);
+        } else {
+            chars = chars + hpSPG.digits.substr(0, 4);
+        }
+    }
+    return chars;
 }
 function fill() {
     if (persona.sites[bg.settings.domainname]) {

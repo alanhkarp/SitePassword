@@ -16,7 +16,6 @@
             "matches": ["https://*/*"],
             "run_at": "document_idle",
             "js": [
-                "bg.js",
                 "findpw.js", 
                 "visibility.js"
             ]
