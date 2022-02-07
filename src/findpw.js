@@ -17,13 +17,17 @@ window.onload = function () {
 			case "fillfields":
 				console.log("findpw filling fields");
 				extensionid = request.extensionid;
-				if (!userid) userid = request.u;
+				userid = request.u;
 				fillfield(cpi.idfield, request.u);
 				if (userid) {
 					fillfield(cpi.pwfield, request.p);
-					if (cpi.pwfield.onclick) cpi.pwfield.placeholder = pwdmsg2;
 				}
-				break;
+				if (request.hasMasterpw && userid) {
+					cpi.pwfield.placeholder = pwdmsg2;
+				} else {
+					cpi.pwfield.placeholder = pwdmsg1;
+				}
+			break;
 			case "gettabinfo":
 				console.log("findpw 2: sending cpi", cpi);
 				sendpageinfo(cpi, false, false);
@@ -38,12 +42,13 @@ window.onload = function () {
 			chrome.runtime.sendMessage({"cmd": "getPassword"}, (response) => {
 				console.log("findpw 4: got password", response);
 				cpi.pwfield.value = response;
-			})
+			});
+			return true;
 		}
 	}
 }
 function fillfield(field, text) {
-	console.log("findpw: fillfield");
+	console.log("findpw: fillfield", field, text);
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
 		field.value = text.trim();

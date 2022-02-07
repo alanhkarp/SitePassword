@@ -5,7 +5,8 @@
     "description": "Don't remember your passwords. Don't store them.  Calculate them!",
     "version": "0.99",
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "bg.js", 
+        "type": "module"
     },
     "action": {
         "default_icon": "ssp.png",

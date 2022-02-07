@@ -6,10 +6,10 @@
 *  Original code by Angel Marin, Paul Johnston.
 *
 **/
-var chrsz = 16;// 8; UTF8 or UTF16
+export var chrsz = 16;// 8; UTF8 or UTF16
 var hexcase = 0;
 
-function core_sha256(m, l) {
+export function core_sha256(m, l) {
 
 	function S(X, n) { return (X >>> n) | (X << (32 - n)); }
 	function R(X, n) { return (X >>> n); }
@@ -66,7 +66,7 @@ function core_sha256(m, l) {
 	}
 	return HASH;
 }
-function swap32(val) {
+export function swap32(val) {
 	return ((val & 0xFF) << 24)
 		| ((val & 0xFF00) << 8)
 		| ((val >> 8) & 0xFF00)
@@ -78,7 +78,7 @@ function safe_add(x, y) {
 	return (msw << 16) | (lsw & 0xFFFF);
 }
 
-function str2binb(str) {
+export function str2binb(str) {
 	var bin = Array();
 	var mask = (1 << chrsz) - 1;
 	for (var i = 0; i < str.length * chrsz; i += chrsz) {
@@ -87,7 +87,7 @@ function str2binb(str) {
 	return bin;
 }
 
-function Utf8Encode(string) {
+export function Utf8Encode(string) {
 	string = string.replace(/\r\n/g, "\n");
 	var utftext = "";
 	for (var n = 0; n < string.length; n++) {
@@ -108,7 +108,7 @@ function Utf8Encode(string) {
 	return utftext;
 }
 
-function binb2hex(binarray) {
+export function binb2hex(binarray) {
 	var hex_tab = hexcase ? "0123456789ABCDEF" : "0123456789abcdef";
 	var str = "";
 	for (var i = 0; i < binarray.length * 4; i++) {
@@ -120,7 +120,7 @@ function binb2hex(binarray) {
 /*
  * Convert an array of little-endian words to a base-64 string
  */
-function binl2b64(binarray, characters) {
+export function binl2b64(binarray, characters) {
 	var tab = characters;
 	var b64pad = "";
 	var str = "";

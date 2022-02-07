@@ -1,4 +1,5 @@
 'use strict';
+import {generate} from "./generate.js";
 // State I want to keep around that doesn't appear in the file system
 var bg;
 var activetab;
@@ -12,7 +13,6 @@ var pwcount = 0;
 var settings = {};
 var setup;
 var masterpw = "";
-var sitepass = "";
 
 console.log("bg starting");
 
@@ -38,13 +38,9 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
         console.log("bg request persistMetadata", request.bg);
         hpSPG = request.bg.hpSPG;
         persistMetadata(bkmkid);
-    } else if (request.cmd === "getPassword") {
-        console.log("bg sending sitepass", sitepass);
-        sendResponse(sitepass);
     } else if (request.masterpw) {
         console.log("bg got masterpw", request.masterpw);
         masterpw = request.masterpw;
-        sitepass = request.sitepass;
     } else if (request.clicked) {
         if (persona.clearmasterpw) masterpw = "";
         domainname = request.domainname;
@@ -56,9 +52,14 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
         console.log("bg pwcount, domainname", bg.pwcount, domainname);
         let persona = bg.hpSPG.personas[bg.hpSPG.lastpersona.toLowerCase()];
         let sitename = persona.sites[domainname];
-        let username = persona.sitenames[sitename].username;
+        let username;
+        if (persona.sitenames[sitename]) {
+            username = persona.sitenames[sitename].username;
+        }
+        let hasMasterpw = false;
+        if (masterpw) { hasMasterpw = true; }
         chrome.tabs.sendMessage(activetabid,
-            { cmd: "fillfields", "u": username, "p": "", "exensionid": chrome.runtime.id });
+            { cmd: "fillfields", "u": username, "p": "", "hasMasterpw": hasMasterpw });
     }
     console.log("bg addListener returning");
     return true;

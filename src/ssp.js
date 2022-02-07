@@ -1,8 +1,7 @@
 'use strict';
+import {generate} from "./generate.js";
 console.log("Version 0.99");
 var persona;
-var domainname;
-var debugssp = false;
 var bg;
 console.log("popup starting");
 // window.onunload appears to only work for background pages, which
@@ -17,7 +16,7 @@ window.onblur = function () {
 window.onunload = function () {
     alert("popup unloading");
 }
-chrome.runtime.onMessage.addListener((request, sender) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("popup got message", request, sender);
     if (request.metadata) {
         bg = request.metadata;
@@ -25,6 +24,10 @@ chrome.runtime.onMessage.addListener((request, sender) => {
         message("zero", bg.pwcount === 0);
         message("multiple", bg.pwcount > 1);
         init();
+     } else if (request.cmd === "getPassword") {
+        let p = get("sitepass").value;
+        console.log("popup sending", p);
+        sendResponse(p);
     }
     return true;
 });
@@ -195,7 +198,6 @@ function init() {
     bg.settings = clone(persona.sitenames.default);
     var a = document.createElement('a');
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        console.log("tabs: ", tabs);
         bg.activetab = tabs[0];
         a.href = tabs[0].url;
         if (persona.sites[a.hostname]) {
@@ -251,7 +253,7 @@ function ask2generate() {
         msgon("nopw");
     } else {
         msgoff("nopw");
-        var r = generate(bg.settings);
+        var r = generate(bg);
         p = r.p;
         if (p) {
             msgoff("nopw");
@@ -274,84 +276,7 @@ function ask2generate() {
         message("multiple", r.r > 1);
         message("zero", r.r == 0);
     }
-}
-function generate(settings) {
-    let pwcount = bg.pwcount;
-    if (bg.legacy) {
-        var n = settings.sitename;
-        var u = settings.username;
-    } else {
-        var n = settings.sitename.toLowerCase().trim();
-        var u = settings.username.toLowerCase().trim();
-    }
-    let m = bg.masterpw;
-    if (!m) {
-        return { p: "", r: pwcount };
-    }
-    let s = n.toString() + u.toString() + m.toString();
-    let p = compute(s, settings);
-    if ((pwcount == 1) && u && n && m) {
-        chrome.tabs.sendMessage(bg.activetab.id, { cmd: "fillfields", "u": u, "p": "" });
-    }
-    return { p: p, r: pwcount };
-}
-function compute(s, settings) {
-    s = Utf8Encode(s);
-    let hpSPG = bg.hpSPG;
-    let h = core_sha256(str2binb(s), s.length * chrsz);
-    let iter;
-    for (iter = 1; iter < hpSPG.miniter; iter++) {
-        h = core_sha256(h, 16 * chrsz);
-    }
-    // let ok = false;
-    let sitePassword;
-    while (iter < hpSPG.maxiter) {
-        h = core_sha256(h, 16 * chrsz);
-        let hswap = Array(h.length);
-        for (let i = 0; i < h.length; i++) {
-            hswap[i] = swap32(h[i]);
-        }
-        sitePassword = binl2b64(hswap, settings.characters).substring(0, settings.length);
-        if (verify(sitePassword, settings)) break;
-        iter++;
-        if (iter >= hpSPG.maxiter) {
-            sitePassword = "";
-        }
-    }
-    return sitePassword;
-}
-function verify(p, settings) {
-    let hpSPG = bg.hpSPG;
-    let counts = { lower: 0, upper: 0, number: 0, special: 0 };
-    for (let i = 0; i < p.length; i++) {
-        let c = p.substr(i, 1);
-        if (-1 < hpSPG.lower.indexOf(c)) counts.lower++;
-        if (-1 < hpSPG.upper.indexOf(c)) counts.upper++;
-        if (-1 < hpSPG.digits.indexOf(c)) counts.number++;
-        if (-1 < settings.specials.indexOf(c)) counts.special++;
-    }
-    let valOK = true;
-    if (settings.startwithletter) {
-        let start = p.substr(0, 1).toLowerCase();
-        valOK = valOK && -1 < hpSPG.lower.indexOf(start);
-    }
-    if (settings.allowlower) valOK = valOK && (counts.lower >= settings.minlower)
-    if (settings.allowupper) {
-        valOK = valOK && (counts.upper >= settings.minupper)
-    } else {
-        valOK = valOK && (counts.upper == 0);
-    }
-    if (settings.allownumber) {
-        valOK = valOK && (counts.number >= settings.minnumber);
-    } else {
-        valOK = valOK && (counts.number == 0);
-    }
-    if (settings.allowspecial) {
-        valOK = valOK && (counts.special >= settings.minspecial);
-    } else {
-        valOK = valOK && (counts.special == 0);
-    }
-    return valOK;
+    return true;
 }
 function characters(settings) {
     let hpSPG = bg.hpSPG;
@@ -388,6 +313,7 @@ function fill() {
         bg.settings.username = getlowertrim("username");
     }
     get("masterpw").value = bg.masterpw;
+    console.log("ssp fill with", bg.settings.domainname, bg.masterpw, bg.settings.sitename, bg.settings.username);
     get("clearmasterpw").checked = persona.clearmasterpw;
     get("pwlength").value = bg.settings.length;
     get("startwithletter").checked = bg.settings.startwithletter;
