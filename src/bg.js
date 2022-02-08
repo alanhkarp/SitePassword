@@ -31,6 +31,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     }
     protocol = request.protocol;
     pwcount = request.count;
+    bg.masterpw = bg.masterpw || masterpw;
     if (request.cmd === "getMetadata") {
         console.log("bg request getMetadata: sending response", bg);
         chrome.runtime.sendMessage({"metadata": bg});
@@ -38,9 +39,11 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
         console.log("bg request persistMetadata", request.bg);
         hpSPG = request.bg.hpSPG;
         persistMetadata(bkmkid);
-    } else if (request.masterpw) {
-        console.log("bg got masterpw", request.masterpw);
-        masterpw = request.masterpw;
+    } else if (request.cmd === "getPassword") {
+        bg.masterpw = request.masterpw;
+        let pr = generate(bg);
+        console.log("bg calculated sitepw", p);
+        sendResponse(pr.p);
     } else if (request.clicked) {
         if (persona.clearmasterpw) masterpw = "";
         domainname = request.domainname;
@@ -49,7 +52,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     } else if (request.onload) {
         bg.pwcount = request.count;
         domainname = request.domainname;
-        console.log("bg pwcount, domainname", bg.pwcount, domainname);
+        console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw);
         let persona = bg.hpSPG.personas[bg.hpSPG.lastpersona.toLowerCase()];
         let sitename = persona.sites[domainname];
         let username;
@@ -61,8 +64,8 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
         chrome.tabs.sendMessage(activetabid,
             { cmd: "fillfields", "u": username, "p": "", "hasMasterpw": hasMasterpw });
     }
-    console.log("bg addListener returning");
-    return true;
+    console.log("bg addListener returning: masterpw", masterpw||"nomasterpw");
+    return Promise.resolve("bg listener");
 });
 
 function gotMetadata(hpSPGlocal) {

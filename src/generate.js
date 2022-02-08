@@ -17,9 +17,7 @@ export function generate(bg) {
     }
     let s = n.toString() + u.toString() + m.toString();
     let p = compute(s, settings, bg);
-    console.log("generate p", p);
     if ((pwcount == 1) && u && n && m) {
-        console.log("ssp sending blank password to tab");
         chrome.tabs.sendMessage(bg.activetab.id, { cmd: "fillfields", "u": u, "p": "" });
     }
     return { p: p, r: pwcount };

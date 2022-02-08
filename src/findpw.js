@@ -34,7 +34,7 @@ window.onload = function () {
 				break;
 			default:
 		}
-		return true;
+		return Promise.resolve("findpw listener");
 	});
 	if (cpi.pwfield) {
 		cpi.pwfield.onclick = function () {
@@ -48,7 +48,6 @@ window.onload = function () {
 	}
 }
 function fillfield(field, text) {
-	console.log("findpw: fillfield", field, text);
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
 		field.value = text.trim();

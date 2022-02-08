@@ -20,6 +20,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("popup got message", request, sender);
     if (request.metadata) {
         bg = request.metadata;
+        if (bg.masterpw) {
+            get("masterpw").value = bg.masterpw;
+        }
         console.log("islegacy " + bg.legacy);
         message("zero", bg.pwcount === 0);
         message("multiple", bg.pwcount > 1);
@@ -29,7 +32,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         console.log("popup sending", p);
         sendResponse(p);
     }
-    return true;
+    return Promise.resolve("ssp listener");
 });
 window.onload = async function () {
     console.log("Popup window loaded");
