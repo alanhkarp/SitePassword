@@ -17,9 +17,6 @@ export function generate(bg) {
     }
     let s = n.toString() + u.toString() + m.toString();
     let p = compute(s, settings, bg);
-    if ((pwcount == 1) && u && n && m) {
-        chrome.tabs.sendMessage(bg.activetab.id, { cmd: "fillfields", "u": u, "p": "" });
-    }
     return { p: p, r: pwcount };
 }
 function compute(s, settings, bg) {

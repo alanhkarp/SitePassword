@@ -1,14 +1,14 @@
 // Content script for ssp
 'use strict';
-var pwdmsg1 = "Click SitePassword";
-var pwdmsg2 = "Click here for password";
+var clickSitePassword = "Click SitePassword";
+var clickHere = "Click here for password";
 var extensionid = "";
 console.log("findpw.js loaded");
 window.onload = function () {
 	console.log("findpw.js running");
 	var userid = "";
 	var cpi = countpwid();
-	if (cpi.pwfield) cpi.pwfield.placeholder = pwdmsg1;
+	if (cpi.pwfield) cpi.pwfield.placeholder = clickSitePassword;
 	sendpageinfo(cpi, false, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
 		console.log("findpw got", request);
@@ -23,9 +23,9 @@ window.onload = function () {
 					fillfield(cpi.pwfield, request.p);
 				}
 				if (request.hasMasterpw && userid) {
-					cpi.pwfield.placeholder = pwdmsg2;
+					cpi.pwfield.placeholder = clickHere;
 				} else {
-					cpi.pwfield.placeholder = pwdmsg1;
+					cpi.pwfield.placeholder = clickSitePassword;
 				}
 			break;
 			case "gettabinfo":
@@ -40,8 +40,9 @@ window.onload = function () {
 		cpi.pwfield.onclick = function () {
 			console.log("findpw 3: get sitepass");
 			chrome.runtime.sendMessage({"cmd": "getPassword"}, (response) => {
-				console.log("findpw 4: got password", response);
+				console.log("findpw 4: got password", cpi.pwfield, response);
 				cpi.pwfield.value = response;
+				return true;
 			});
 			return true;
 		}
@@ -61,6 +62,14 @@ function sendpageinfo(cpi, clicked, onload) {
 		count: cpi.count,
 		clicked: clicked,
 		onload: onload
+	}, (response) => {
+		if (response) {
+			console.log("findpw set msg", clickHere);
+			cpi.pwfield.placeholder = clickHere;
+		} else {
+			console.log("findpw set msg", clickSitePassword);
+			cpi.pwfield.placeholder = clickSitePassword;
+		}
 	});
 }
 function countpwid() {

@@ -13,6 +13,7 @@ var pwcount = 0;
 var settings = {};
 var setup;
 var masterpw = "";
+console.log("bg clear masterpw");
 
 console.log("bg starting");
 
@@ -31,21 +32,28 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     }
     protocol = request.protocol;
     pwcount = request.count;
-    bg.masterpw = bg.masterpw || masterpw;
     if (request.cmd === "getMetadata") {
         console.log("bg request getMetadata: sending response", bg);
         chrome.runtime.sendMessage({"metadata": bg});
+    } else if (request.masterpw) {
+        masterpw = request.masterpw;
+        bg.masterpw = masterpw;
+        console.log("bg setting masterpw", masterpw);
     } else if (request.cmd === "persistMetadata") {
         console.log("bg request persistMetadata", request.bg);
         hpSPG = request.bg.hpSPG;
         persistMetadata(bkmkid);
     } else if (request.cmd === "getPassword") {
-        bg.masterpw = request.masterpw;
+        let domainname = getdomainname(sender.url);
+        bg.settings = bgsettings(bg.hpSPG.lastpersona.toLowerCase(), domainname);
         let pr = generate(bg);
-        console.log("bg calculated sitepw", p);
+        console.log("bg calculated sitepw", pr);
         sendResponse(pr.p);
     } else if (request.clicked) {
-        if (persona.clearmasterpw) masterpw = "";
+        if (persona.clearmasterpw) {
+            masterpw = "";
+            console.log("bg clear masterpw")
+        }
         domainname = request.domainname;
         console.log("bg clicked: sending response", bg);
         sendResponse(bg);
@@ -59,10 +67,15 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
         if (persona.sitenames[sitename]) {
             username = persona.sitenames[sitename].username;
         }
-        let hasMasterpw = false;
-        if (masterpw) { hasMasterpw = true; }
+        let hasSitepass = masterpw && sitename && username;
+        if (hasSitepass) {
+            console.log("bg hasSitepass");
+        } else {
+            console.log("bg does not have sitePass");
+        }
+        sendResponse(hasSitepass);
         chrome.tabs.sendMessage(activetabid,
-            { cmd: "fillfields", "u": username, "p": "", "hasMasterpw": hasMasterpw });
+            { cmd: "fillfields", "u": username, "p": "" });
     }
     console.log("bg addListener returning: masterpw", masterpw||"nomasterpw");
     return Promise.resolve("bg listener");
@@ -77,7 +90,7 @@ function gotMetadata(hpSPGlocal) {
             specials: "/!=@?._-",
             miniter: 10,
             maxiter: 1000,
-            lastpersona: "everyone",
+            lastpersona: "Everyone",
             personas: {
                 default: {
                     personaname: "default",
@@ -194,6 +207,51 @@ function parseBkmk(bkmk) {
         hpSPG = undefined;
     }
     return hpSPG;
+}
+// Copy of code in ssp.js because when I try to import it,
+// ssp.js says "Object window is not defined"
+export function bgsettings(personaname, domainname) {
+    let persona = bg.hpSPG.personas[personaname];
+    if (!persona) {
+        bg.hpSPG.personas[personaname] = clone(bg.hpSPG.personas.default);
+        persona = bg.hpSPG.personas[personaname];
+        bg.settings = clone(persona.sitenames.default);
+        persona.personaname = personaname;
+        bg.settings.domainname = domainname;
+        bg.settings.characters = characters(bg.settings);
+    }
+    if (persona.sites[domainname]) {
+        bg.settings = clone(persona.sitenames[persona.sites[domainname]]);
+    } else {
+        bg.settings = clone(persona.sitenames.default);
+        bg.settings.domainname = domainname;
+    }
+    return bg.settings;
+}
+function characters(settings) {
+    let hpSPG = bg.hpSPG;
+    let chars = hpSPG.lower + hpSPG.upper + hpSPG.digits + hpSPG.lower.substr(0, 2);
+    if (settings.allowspecial) {
+        if (bg.legacy) {
+            // Use for AntiPhishing Toolbar passwords
+            chars = chars.substr(0, 32) + settings.specials.substr(1) + chars.substr(31 + settings.specials.length);
+        } else {
+            // Use for SitePassword passwords
+            chars = settings.specials + hpSPG.lower.substr(settings.specials.length - 2) + hpSPG.upper + hpSPG.digits;
+        }
+    }
+    if (!settings.allowlower) chars = chars.toUpperCase();
+    if (!settings.allowupper) chars = chars.toLowerCase();
+    if (!(settings.allowlower || settings.allowupper)) {
+        chars = hpSPG.digits + hpSPG.digits + hpSPG.digits +
+            hpSPG.digits + hpSPG.digits + hpSPG.digits;
+        if (settings.allowspecials) {
+            chars = chars + persona.specials.substr(0, 4);
+        } else {
+            chars = chars + hpSPG.digits.substr(0, 4);
+        }
+    }
+    return chars;
 }
 function clone(object) {
     return JSON.parse(JSON.stringify(object))

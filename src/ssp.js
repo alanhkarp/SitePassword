@@ -1,5 +1,6 @@
 'use strict';
 import {generate} from "./generate.js";
+import {bgsettings} from "./bg.js";
 console.log("Version 0.99");
 var persona;
 var bg;
@@ -16,7 +17,7 @@ window.onblur = function () {
 window.onunload = function () {
     alert("popup unloading");
 }
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender) => {
     console.log("popup got message", request, sender);
     if (request.metadata) {
         bg = request.metadata;
@@ -27,11 +28,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         message("zero", bg.pwcount === 0);
         message("multiple", bg.pwcount > 1);
         init();
-     } else if (request.cmd === "getPassword") {
-        let p = get("sitepass").value;
-        console.log("popup sending", p);
-        sendResponse(p);
-    }
+     }
     return Promise.resolve("ssp listener");
 });
 window.onload = async function () {
@@ -230,22 +227,7 @@ function getsettings() {
     var personaname = getlowertrim("persona");
     var domainname = getlowertrim("domainname");
     // var sitename = getlowertrim("sitename");
-    persona = bg.hpSPG.personas[personaname];
-    if (!persona) {
-        bg.hpSPG.personas[personaname] = clone(bg.hpSPG.personas.default);
-        persona = bg.hpSPG.personas[personaname];
-        bg.settings = clone(persona.sitenames.default);
-        persona.personaname = get("persona").value;
-        bg.settings.domainname = domainname;
-        bg.settings.characters = bg.characters(bg.settings);
-    }
-    if (persona.sites[domainname]) {
-        bg.settings = clone(persona.sitenames[persona.sites[domainname]]);
-    } else {
-        bg.settings = clone(persona.sitenames.default);
-        bg.settings.domainname = domainname;
-    }
-    return bg.settings;
+    return bgsettings(personaname, domainname);
 }
 function ask2generate() {
     var u = get("username").value;
@@ -280,31 +262,6 @@ function ask2generate() {
         message("zero", r.r == 0);
     }
     return true;
-}
-function characters(settings) {
-    let hpSPG = bg.hpSPG;
-    let chars = hpSPG.lower + hpSPG.upper + hpSPG.digits + hpSPG.lower.substr(0, 2);
-    if (settings.allowspecial) {
-        if (bg.legacy) {
-            // Use for AntiPhishing Toolbar passwords
-            chars = chars.substr(0, 32) + settings.specials.substr(1) + chars.substr(31 + settings.specials.length);
-        } else {
-            // Use for SitePassword passwords
-            chars = settings.specials + hpSPG.lower.substr(settings.specials.length - 2) + hpSPG.upper + hpSPG.digits;
-        }
-    }
-    if (!settings.allowlower) chars = chars.toUpperCase();
-    if (!settings.allowupper) chars = chars.toLowerCase();
-    if (!(settings.allowlower || settings.allowupper)) {
-        chars = hpSPG.digits + hpSPG.digits + hpSPG.digits +
-            hpSPG.digits + hpSPG.digits + hpSPG.digits;
-        if (settings.allowspecials) {
-            chars = chars + persona.specials.substr(0, 4);
-        } else {
-            chars = chars + hpSPG.digits.substr(0, 4);
-        }
-    }
-    return chars;
 }
 function fill() {
     if (persona.sites[bg.settings.domainname]) {
