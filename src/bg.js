@@ -74,8 +74,14 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
             console.log("bg does not have sitePass");
         }
         sendResponse(hasSitepass);
+        let hasMasterpw;
+        if (masterpw) {
+            hasMasterpw = true;
+        } else {
+            hasMasterpw = false;
+        }
         chrome.tabs.sendMessage(activetabid,
-            { cmd: "fillfields", "u": username, "p": "" });
+            { cmd: "fillfields", "u": username, "p": "", "hasMasterpw": masterpw });
     }
     console.log("bg addListener returning: masterpw", masterpw||"nomasterpw");
     return Promise.resolve("bg listener");
