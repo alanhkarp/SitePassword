@@ -34,11 +34,13 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     pwcount = request.count;
     if (request.cmd === "getMetadata") {
         console.log("bg request getMetadata: sending response", bg);
-        chrome.runtime.sendMessage({"metadata": bg});
-    } else if (request.masterpw) {
+        chrome.runtime.sendMessage({ "metadata": bg });
+    } else if (request.cmd === "siteData") {
         masterpw = request.masterpw;
         bg.masterpw = masterpw;
-        console.log("bg setting masterpw", masterpw);
+        bg.hpSPG.personas[bg.hpSPG.lastpersona.toLowerCase()].sitenames[request.sitename] = request.settings;
+        persistMetadata(bkmkid);
+        console.log("bg setting masterpw", masterpw, bg);
     } else if (request.cmd === "persistMetadata") {
         console.log("bg request persistMetadata", request.bg);
         hpSPG = request.bg.hpSPG;
@@ -83,7 +85,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
         chrome.tabs.sendMessage(activetabid,
             { cmd: "fillfields", "u": username, "p": "", "hasMasterpw": masterpw });
     }
-    console.log("bg addListener returning: masterpw", masterpw||"nomasterpw");
+    console.log("bg addListener returning: masterpw", masterpw || "nomasterpw");
     return Promise.resolve("bg listener");
 });
 
@@ -199,7 +201,7 @@ async function retrieveMetadata() {
         "protocol": protocol,
         "pwcount": pwcount,
         "settings": settings,
-     }
+    };
     console.log("bg = ", bg);
     return bg;
 }
@@ -227,14 +229,14 @@ export function bgsettings(personaname, domainname) {
         bg.settings.characters = characters(bg.settings);
     }
     if (persona.sites[domainname]) {
-        bg.settings = clone(persona.sitenames[persona.sites[domainname]]);
+        bg.settings = persona.sitenames[persona.sites[domainname]];
     } else {
-        bg.settings = clone(persona.sitenames.default);
+        bg.settings = persona.sitenames.default;
         bg.settings.domainname = domainname;
     }
     return bg.settings;
 }
-function characters(settings) {
+export function characters(settings) {
     let hpSPG = bg.hpSPG;
     let chars = hpSPG.lower + hpSPG.upper + hpSPG.digits + hpSPG.lower.substr(0, 2);
     if (settings.allowspecial) {

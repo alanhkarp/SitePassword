@@ -1,6 +1,6 @@
 'use strict';
 import {generate} from "./generate.js";
-import {bgsettings} from "./bg.js";
+import {bgsettings, characters} from "./bg.js";
 console.log("Version 0.99");
 var persona;
 var bg;
@@ -10,7 +10,7 @@ console.log("popup starting");
 // outside the popup window.
 window.onblur = function () {
     if (bg) {
-        console.log("ssp sending bg", bg);
+        console.log("popup sending bg", bg);
         chrome.runtime.sendMessage({"cmd": "persistMetadata", "bg": bg});
     }
 }
@@ -53,6 +53,8 @@ window.onload = async function () {
             !isphishing(get("sitename").value)) {
             copyToClipboard();
         }
+        let masterpw = get("masterpw").value;
+        chrome.runtime.sendMessage({"cmd": "siteData", "masterpw": masterpw, "sitename": sitename, "settings": bg.settings});
     }
     get("persona").onkeyup = function () {
         get("masterpw").value = "";
@@ -80,10 +82,6 @@ window.onload = async function () {
     get("masterpw").onkeyup = function () {
         bg.masterpw = get("masterpw").value;
         ask2generate();
-    }
-    get("masterpw").onblur = function () {
-        console.log("ssp sending masterpw to bg", get("masterpw").value);
-        chrome.runtime.sendMessage({"masterpw": get("masterpw").value, "sitepass": get("sitepass").value});
     }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
@@ -135,19 +133,19 @@ window.onload = async function () {
     get("allowspecialcheckbox").onclick = function () {
         handleclick("special");
     }
-    get("minlower").onblur = function () {
+    get("minlower").onmouseleave = function () {
         handleblur("minlower", "minlower");
     }
-    get("minupper").onblur = function () {
+    get("minupper").onmouseleave = function () {
         handleblur("minupper", "minupper");
     }
-    get("minnumber").onblur = function () {
+    get("minnumber").onmouseleave = function () {
         handleblur("minnumber", "minnumber");
     }
-    get("minspecial").onblur = function () {
+    get("minspecial").onmouseleave = function () {
         handleblur("minspecial", "minspecial");
     }
-    get("specials").onblur = function () {
+    get("specials").onmouseleave = function () {
         handleblur("specials", "specials");
     }
     get("sitedatagetbutton").onclick = sitedataHTML;
@@ -175,7 +173,13 @@ function handlekeyup(element, field) {
     handleblur(element, field);
 }
 function handleblur(element, field) {
-    bg.settings[field] = get(element).value;
+    let value = get(element).value;
+    try {
+        value = parseInt(value, 10);
+    } catch(err) {
+       // Keep value in field 
+    }
+    bg.settings[field] = value;
     bg.settings.characters = characters(bg.settings);
     ask2generate();
 }
