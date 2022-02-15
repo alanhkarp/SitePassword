@@ -2,7 +2,6 @@
 'use strict';
 var clickSitePassword = "Click SitePassword";
 var clickHere = "Click here for password";
-var extensionid = "";
 console.log("findpw.js loaded");
 window.onload = function () {
 	console.log("findpw.js running");
@@ -11,12 +10,11 @@ window.onload = function () {
 	if (cpi.pwfield) cpi.pwfield.placeholder = clickSitePassword;
 	sendpageinfo(cpi, false, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
-		console.log("findpw got", request);
+		console.log(Date.now(), "findpw got", request);
 		var cpi = countpwid();
 		switch (request.cmd) {
 			case "fillfields":
 				console.log("findpw filling fields");
-				extensionid = request.extensionid;
 				userid = request.u;
 				fillfield(cpi.idfield, request.u);
 				if (userid) {
@@ -27,24 +25,21 @@ window.onload = function () {
 				} else {
 					cpi.pwfield.placeholder = clickSitePassword;
 				}
-			break;
+				break;
 			case "gettabinfo":
 				console.log("findpw 2: sending cpi", cpi);
 				sendpageinfo(cpi, false, false);
 				break;
 			default:
 		}
-		return Promise.resolve("findpw listener");
 	});
 	if (cpi.pwfield) {
 		cpi.pwfield.onclick = function () {
 			console.log("findpw 3: get sitepass");
-			chrome.runtime.sendMessage({"cmd": "getPassword"}, (response) => {
+			chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
 				console.log("findpw 4: got password", cpi.pwfield, response);
 				cpi.pwfield.value = response;
-				return true;
 			});
-			return true;
 		}
 	}
 }
@@ -55,17 +50,25 @@ function fillfield(field, text) {
 	}
 }
 function sendpageinfo(cpi, clicked, onload) {
-	console.log("findpw sending page info: pwcount = ", cpi.count);
+	console.log(Date.now(), "findpw sending page info: pwcount = ", cpi.count);
 	chrome.runtime.sendMessage({
-		domainname: location.hostname,
-		protocol: location.protocol,
-		count: cpi.count,
-		clicked: clicked,
-		onload: onload
+		"domainname": location.hostname,
+		"protocol": location.protocol,
+		"count": cpi.count,
+		"clicked": clicked,
+		"onload": onload
 	}, (response) => {
+		console.log(Date.now(), "findw error", chrome.runtime.lastError);
+		console.log(Date.now(), "findpw response", response);
 		if (response) {
 			console.log("findpw set msg", clickHere);
 			cpi.pwfield.placeholder = clickHere;
+			console.log("findpw filling fields");
+			let userid = response.u;
+			fillfield(cpi.idfield, response.u);
+			if (userid) {
+				fillfield(cpi.pwfield, response.p);
+			}
 		} else {
 			console.log("findpw set msg", clickSitePassword);
 			cpi.pwfield.placeholder = clickSitePassword;

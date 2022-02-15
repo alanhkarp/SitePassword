@@ -1,6 +1,6 @@
 'use strict';
-import {generate} from "./generate.js";
-import {bgsettings, characters} from "./bg.js";
+import { generate } from "./generate.js";
+import { characters } from "./bg.js";
 console.log("Version 0.99");
 var persona;
 var bg;
@@ -11,35 +11,50 @@ console.log("popup starting");
 window.onblur = function () {
     if (bg) {
         console.log("popup sending bg", bg);
-        chrome.runtime.sendMessage({"cmd": "persistMetadata", "bg": bg});
+        chrome.runtime.sendMessage({ "cmd": "persistMetadata", "bg": bg });
     }
 }
 window.onunload = function () {
     alert("popup unloading");
 }
-chrome.runtime.onMessage.addListener((request, sender) => {
-    console.log("popup got message", request, sender);
-    if (request.metadata) {
-        bg = request.metadata;
-        if (bg.masterpw) {
-            get("masterpw").value = bg.masterpw;
-        }
-        console.log("islegacy " + bg.legacy);
-        message("zero", bg.pwcount === 0);
-        message("multiple", bg.pwcount > 1);
-        init();
-     }
-    return Promise.resolve("ssp listener");
-});
-window.onload = async function () {
-    console.log("Popup window loaded");
-    if (bg) {
-        console.log("popup: bg is defined");
-        return;
+function init() {
+    if (!get("persona").value) {
+        persona = bg.lastpersona;
+        get("persona").persona;
     }
-    console.log("popup: bg is not defined");
-    chrome.runtime.sendMessage({ "cmd": "getMetadata"});
-    get("ssp").onmouseleave = function () {
+    var page = document.createElement('a');
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        bg.activetab = tabs[0];
+        page.href = tabs[0].url;
+        bg.protocol = page.protocol;
+        get("domainname").value = page.domainname;
+        bg.settings.domainname = page.domainname;
+        bg.settings.url = page.href;
+        console.log("popup added page info", bg);
+        fill();
+        defaultfocus();
+    });
+}
+window.onload = async function () {
+    console.log(Date.now(), "popup getting metadata");
+    chrome.runtime.sendMessage({
+        "cmd": "getMetadata",
+        "persona": get("persona").value,
+        "domainname": get("domainname").value
+    }, (response) => {
+        if (response) {
+            bg = response;
+            console.log(Date.now(), "popup got metadata", bg);
+            console.log("islegacy " + bg.legacy);
+            message("zero", bg.pwcount === 0);
+            message("multiple", bg.pwcount > 1);
+            init();
+        } else {
+            console.log("popup lastError", chrome.runtime.lastError);
+        }
+    });
+// UI Event handlers
+    get("ssp").onblur = function () {
         bg.settings.sitename = get("sitename").value;
         if (bg.settings.sitename) {
             persona.sitenames[bg.settings.sitename] = clone(bg.settings);
@@ -47,14 +62,14 @@ window.onload = async function () {
         } else {
             delete persona.sites[bg.settings.domainname];
         }
-        bg.hpSPG.lastpersona = get("persona").value;
+        bg.lastpersona = get("persona").value;
         if (bg.pwcount != 1 &&
             get("sitepass").value &&
             !isphishing(get("sitename").value)) {
             copyToClipboard();
         }
         let masterpw = get("masterpw").value;
-        chrome.runtime.sendMessage({"cmd": "siteData", "masterpw": masterpw, "sitename": sitename, "settings": bg.settings});
+        chrome.runtime.sendMessage({ "cmd": "siteData", "masterpw": masterpw, "sitename": sitename, "settings": bg.settings });
     }
     get("persona").onkeyup = function () {
         get("masterpw").value = "";
@@ -66,7 +81,7 @@ window.onload = async function () {
     get("persona").onblur = function () {
         getsettings();
         fill();
-        bg.hpSPG.lastpersona = get("persona").value;
+        bg.lastpersona = get("persona").value;
         bg.masterpw = "";
         get("masterpw").value = "";
     }
@@ -176,8 +191,8 @@ function handleblur(element, field) {
     let value = get(element).value;
     try {
         value = parseInt(value, 10);
-    } catch(err) {
-       // Keep value in field 
+    } catch (err) {
+        // Keep value in field 
     }
     bg.settings[field] = value;
     bg.settings.characters = characters(bg.settings);
@@ -196,25 +211,6 @@ function handleclick(which) {
 function setfocus(element) {
     element.focus();
 }
-function init() {
-    persona = bg.hpSPG.personas[bg.hpSPG.lastpersona.toLowerCase()];
-    get("persona").value = persona.personaname;
-    bg.settings = clone(persona.sitenames.default);
-    var a = document.createElement('a');
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        bg.activetab = tabs[0];
-        a.href = tabs[0].url;
-        if (persona.sites[a.hostname]) {
-            bg.settings = clone(persona.sitenames[persona.sites[a.hostname]]);
-        }
-        bg.protocol = a.protocol;
-        get("domainname").value = a.hostname;
-        bg.settings.domainname = a.hostname;
-        bg.settings.url = a.href;
-        fill();
-        defaultfocus();
-    });
-}
 function defaultfocus() {
     if (!get("username").value) setfocus(get("username"));
     if (!get("sitename").value) setfocus(get("sitename"));
@@ -227,11 +223,11 @@ function clearmasterpw() {
         get("sitepass").value = "";
     }
 }
-function getsettings() {
+async function getsettings() {
     var personaname = getlowertrim("persona");
     var domainname = getlowertrim("domainname");
     // var sitename = getlowertrim("sitename");
-    return bgsettings(personaname, domainname);
+    bg = await chrome.runtime.sendMessage({ "cmd": "getMetadata", "domainname": domainname, "personaname": personaname });
 }
 function ask2generate() {
     var u = get("username").value;
@@ -268,17 +264,17 @@ function ask2generate() {
     return true;
 }
 function fill() {
-    if (persona.sites[bg.settings.domainname]) {
+    if (bg.settings[domainname]) {
         if (!get("username").value) get("username").value = bg.settings.username;
         if (!get("sitename").value) get("sitename").value = bg.settings.sitename;
     } else {
-        bg.settings.domainname = getlowertrim("domainname").value;
+        bg.settings.domainname = getlowertrim("domainname");
         bg.settings.sitename = getlowertrim("sitename");
         bg.settings.username = getlowertrim("username");
     }
     get("masterpw").value = bg.masterpw;
     console.log("ssp fill with", bg.settings.domainname, bg.masterpw, bg.settings.sitename, bg.settings.username);
-    get("clearmasterpw").checked = persona.clearmasterpw;
+    get("clearmasterpw").checked = bg.lastpersona.clearmasterpw;
     get("pwlength").value = bg.settings.length;
     get("startwithletter").checked = bg.settings.startwithletter;
     get("minnumber").value = bg.settings.minnumber;
@@ -318,7 +314,6 @@ function pwoptions(options) {
     }
 }
 function sitedataHTML() {
-    // var stored = bg.retrieveObject("hpSPG");
     var sites = persona.sites
     var sitenames = persona.sitenames;
     var sorted = Object.keys(sites).sort(function (x, y) {
