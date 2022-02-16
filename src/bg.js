@@ -2,6 +2,7 @@
 import { generate } from "./generate.js";
 // State I want to keep around that doesn't appear in the file system
 var bg;
+var masterpw;
 var activetab;
 var hpSPG = {};
 var bkmkid;
@@ -34,7 +35,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
         console.log("bg.js sending response", bg);
         sendResponse(bg);
     } else if (request.cmd === "siteData") {
-        bg.masterpw = request.masterpw;
+        masterpw = request.masterpw;
         hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = request.settings;
         persistMetadata(bkmkid);
         console.log("bg setting masterpw", bg);
@@ -53,7 +54,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
         console.log("bg clicked: sending response", bg);
         sendResponse(bg);
         if (persona.clearmasterpw) {
-            bg.masterpw = "";
+            masterpw = "";
             console.log("bg clear masterpw")
         }
     } else if (request.onload, sender) {
@@ -61,21 +62,21 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
             activetab = sender.tab;
             bg.pwcount = request.count;
             domainname = request.domainname;
-            console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, bg.masterpw);
+            console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw);
             let persona = hpSPG.personas[bg.lastpersona];
             let sitename = persona.sites[domainname];
             let username;
             if (persona.sitenames[sitename]) {
                 username = persona.sitenames[sitename].username;
             }
-            let hasSitepass = bg.masterpw && sitename && username;
+            let hasSitepass = masterpw && sitename && username;
             if (hasSitepass) {
                 console.log("bg hasSitepass");
             } else {
                 console.log("bg does not have sitePass");
             }
             let hasMasterpw;
-            if (bg.masterpw) {
+            if (masterpw) {
                 hasMasterpw = true;
             } else {
                 hasMasterpw = false;
@@ -84,7 +85,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
             sendResponse({ cmd: "fillfields", "u": username, "p": "", "hasMasterpw": hasMasterpw });
             console.log(Date.now(), "bg.js last error", chrome.runtime.lastError);
      }
-    console.log(Date.now(), "bg addListener returning: masterpw", bg.masterpw || "nomasterpw");
+    console.log(Date.now(), "bg addListener returning: masterpw", masterpw || "nomasterpw");
     return true;
 });
 async function waitForMetadata() {
@@ -195,7 +196,6 @@ async function retrieveMetadata() {
         "activetab": activetab,
         "lastpersona": lastpersona,
         "legacy": legacy,
-        "masterpw": "",
         "protocol": protocol,
         "pwcount": pwcount,
         "settings": settings,
