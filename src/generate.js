@@ -1,7 +1,7 @@
 'use strict';
-import {core_sha256, swap32, chrsz} from "./sha256.js";
-import {Utf8Encode, str2binb, binl2b64} from "./sha256.js";
-export function generate(bg) {
+import { core_sha256, swap32, chrsz } from "./sha256.js";
+import { Utf8Encode, str2binb, binl2b64 } from "./sha256.js";
+export function generate(bg, hpSPG) {
     let settings = bg.settings;
     let pwcount = bg.pwcount;
     if (bg.legacy) {
@@ -16,11 +16,10 @@ export function generate(bg) {
         return { p: "", r: pwcount };
     }
     let s = n.toString() + u.toString() + m.toString();
-    let p = compute(s, settings, bg);
+    let p = compute(s, settings, hpSPG);
     return { p: p, r: pwcount };
 }
-function compute(s, settings, bg) {
-    let hpSPG = bg.hpSPG;
+function compute(s, settings, hpSPG) {
     s = Utf8Encode(s);
     let h = core_sha256(str2binb(s), s.length * chrsz);
     let iter;
@@ -36,7 +35,7 @@ function compute(s, settings, bg) {
             hswap[i] = swap32(h[i]);
         }
         sitePassword = binl2b64(hswap, settings.characters).substring(0, settings.length);
-        if (verify(sitePassword, settings, bg)) break;
+        if (verify(sitePassword, settings, hpSPG)) break;
         iter++;
         if (iter >= hpSPG.maxiter) {
             sitePassword = "";
@@ -44,8 +43,7 @@ function compute(s, settings, bg) {
     }
     return sitePassword;
 }
-function verify(p, settings, bg) {
-    let hpSPG = bg.hpSPG;
+function verify(p, settings, hpSPG) {
     let counts = { lower: 0, upper: 0, number: 0, special: 0 };
     for (let i = 0; i < p.length; i++) {
         let c = p.substr(i, 1);
@@ -76,4 +74,28 @@ function verify(p, settings, bg) {
         valOK = valOK && (counts.special == 0);
     }
     return valOK;
+}
+export function characters(settings, hpSPG) {
+    let chars = hpSPG.lower + hpSPG.upper + hpSPG.digits + hpSPG.lower.substr(0, 2);
+    if (settings.allowspecial) {
+        if (bg.legacy) {
+            // Use for AntiPhishing Toolbar passwords
+            chars = chars.substr(0, 32) + settings.specials.substr(1) + chars.substr(31 + settings.specials.length);
+        } else {
+            // Use for SitePassword passwords
+            chars = settings.specials + hpSPG.lower.substr(settings.specials.length - 2) + hpSPG.upper + hpSPG.digits;
+        }
+    }
+    if (!settings.allowlower) chars = chars.toUpperCase();
+    if (!settings.allowupper) chars = chars.toLowerCase();
+    if (!(settings.allowlower || settings.allowupper)) {
+        chars = hpSPG.digits + hpSPG.digits + hpSPG.digits +
+            hpSPG.digits + hpSPG.digits + hpSPG.digits;
+        if (settings.allowspecials) {
+            chars = chars + persona.specials.substr(0, 4);
+        } else {
+            chars = chars + hpSPG.digits.substr(0, 4);
+        }
+    }
+    return chars;
 }

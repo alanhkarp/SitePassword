@@ -9,8 +9,8 @@ window.onload = function () {
 	var cpi = countpwid();
 	if (cpi.pwfield) cpi.pwfield.placeholder = clickSitePassword;
 	sendpageinfo(cpi, false, true);
-	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
-		console.log(Date.now(), "findpw got", request);
+	chrome.runtime.onMessage.addListener(function (request, sender, _sendResponse) {
+		console.log(Date.now(), "findpw got", request, sender);
 		var cpi = countpwid();
 		switch (request.cmd) {
 			case "fillfields":
@@ -58,7 +58,7 @@ function sendpageinfo(cpi, clicked, onload) {
 		"clicked": clicked,
 		"onload": onload
 	}, (response) => {
-		console.log(Date.now(), "findw error", chrome.runtime.lastError);
+		if (chrome.runtime.lastError) console.log(Date.now(), "findpw error", chrome.runtime.lastError);
 		console.log(Date.now(), "findpw response", response);
 		if (response) {
 			console.log("findpw set msg", clickHere);

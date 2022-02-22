@@ -1,9 +1,10 @@
 'use strict';
-import { generate } from "./generate.js";
-import { characters } from "./bg.js";
+import { characters, generate } from "./generate.js";
 console.log("Version 0.99");
+var activetab;
 var persona;
 var bg;
+var hpSPG;
 console.log("popup starting");
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
@@ -18,42 +19,43 @@ window.onunload = function () {
     alert("popup unloading");
 }
 function init() {
-    if (!get("persona").value) {
-        persona = bg.lastpersona;
-        get("persona").persona;
-    }
-    var page = document.createElement('a');
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        bg.activetab = tabs[0];
-        page.href = tabs[0].url;
-        bg.protocol = page.protocol;
-        get("domainname").value = page.domainname;
-        bg.settings.domainname = page.domainname;
-        bg.settings.url = page.href;
-        console.log("popup added page info", bg);
-        fill();
-        defaultfocus();
+    console.log("islegacy " + bg.legacy);
+    get("persona").value = bg.lastpersona;
+    get("domainname").value = bg.settings.domainname;
+    get("sitename").value = bg.settings.sitename;
+    get("username").value = bg.settings.username;
+}
+function getMetadata() {
+    getsettings(() => {
+        message("zero", bg.pwcount === 0);
+        message("multiple", bg.pwcount > 1);
+        init();
+        console.log("popup got metadata", bg, hpSPG);
+        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
     });
 }
-window.onload = async function () {
-    console.log(Date.now(), "popup getting metadata");
+function getsettings(gotMetadata) {
+    // var sitename = getlowertrim("sitename");
     chrome.runtime.sendMessage({
         "cmd": "getMetadata",
-        "persona": get("persona").value,
-        "domainname": get("domainname").value
+        "domainname": getlowertrim("domainname"),
+        "persona": getlowertrim("persona"),
+        "sitename": getlowertrim("sitename")
     }, (response) => {
-        if (response) {
-            bg = response;
-            console.log(Date.now(), "popup got metadata", bg);
-            console.log("islegacy " + bg.legacy);
-            message("zero", bg.pwcount === 0);
-            message("multiple", bg.pwcount > 1);
-            init();
-        } else {
-            console.log("popup lastError", chrome.runtime.lastError);
-        }
+        bg = response.bg;
+        hpSPG = response.hpSPG;
+        gotMetadata();
     });
-// UI Event handlers
+}
+window.onload = function () {
+    console.log("popup getting active tab");
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
+        activetab = tabs[0];
+        console.log("popup got tab", activetab.id);
+    });
+    console.log(Date.now(), "popup getting metadata");
+    getMetadata();
+    // UI Event handlers
     get("ssp").onblur = function () {
         bg.settings.sitename = get("sitename").value;
         if (bg.settings.sitename) {
@@ -62,7 +64,7 @@ window.onload = async function () {
         } else {
             delete persona.sites[bg.settings.domainname];
         }
-        bg.lastpersona = get("persona").value;
+        bg.lastpersona = getlowertrim("persona").value;
         if (bg.pwcount != 1 &&
             get("sitepass").value &&
             !isphishing(get("sitename").value)) {
@@ -78,21 +80,15 @@ window.onload = async function () {
         get("sitepass").value = "";
         bg.masterpw = "";
     }
-    get("persona").onblur = function () {
-        getsettings();
-        fill();
-        bg.lastpersona = get("persona").value;
-        bg.masterpw = "";
-        get("masterpw").value = "";
-    }
     get("domainname").onkeyup = function () {
         get("sitename").value = "";
     }
     get("domainname").onblur = function () {
         get("sitename").value = "";
-        getsettings();
-        fill();
-        ask2generate();
+        getsettings(() => {
+            fill();
+            ask2generate();
+        });
     }
     get("masterpw").onkeyup = function () {
         bg.masterpw = get("masterpw").value;
@@ -102,9 +98,6 @@ window.onload = async function () {
         handlekeyup("sitename", "sitename");
     }
     get("sitename").onblur = function () {
-        getsettings();
-        bg.settings.domainname = get("domainname").value;
-        bg.settings.sitename = get("sitename").value;
         if (isphishing(bg.settings.sitename)) {
             msgon("phishing");
             get("domainname").value = bg.settings.domainname;
@@ -178,24 +171,16 @@ window.onload = async function () {
     get("cancelwarning").onclick = function () {
         msgoff("phishing");
         get("domainname").value = "";
-        chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tab) {
-            chrome.tabs.update(tab[0].id, { url: "chrome://newtab" });
-            window.close();
-        });
+        chrome.tabs.update(activtab.id, { url: "chrome://newtab" });
+        window.close();
     }
 }
 function handlekeyup(element, field) {
     handleblur(element, field);
 }
 function handleblur(element, field) {
-    let value = get(element).value;
-    try {
-        value = parseInt(value, 10);
-    } catch (err) {
-        // Keep value in field 
-    }
-    bg.settings[field] = value;
-    bg.settings.characters = characters(bg.settings);
+    bg.settings[field] = get(element).value;
+    bg.settings.characters = characters(bg.settings, hpSPG);
     ask2generate();
 }
 function handleclick(which) {
@@ -205,7 +190,7 @@ function handleclick(which) {
         bg.settings.startwithletter = false;
         get("startwithletter").checked = false;
     }
-    bg.settings.characters = characters(bg.settings)
+    bg.settings.characters = characters(bg.settings, hpSPG)
     ask2generate();
 }
 function setfocus(element) {
@@ -223,12 +208,6 @@ function clearmasterpw() {
         get("sitepass").value = "";
     }
 }
-async function getsettings() {
-    var personaname = getlowertrim("persona");
-    var domainname = getlowertrim("domainname");
-    // var sitename = getlowertrim("sitename");
-    bg = await chrome.runtime.sendMessage({ "cmd": "getMetadata", "domainname": domainname, "personaname": personaname });
-}
 function ask2generate() {
     var u = get("username").value;
     var n = get("sitename").value;
@@ -238,7 +217,7 @@ function ask2generate() {
         msgon("nopw");
     } else {
         msgoff("nopw");
-        var r = generate(bg);
+        var r = generate(bg, hpSPG);
         p = r.p;
         if (p) {
             msgoff("nopw");
@@ -251,13 +230,13 @@ function ask2generate() {
     }
     get("sitepass").value = p;
     if ((r.r == 1) && u && n && m && "https:" == bg.protocol) {
-        chrome.tabs.sendMessage(bg.activetab.id,
-            { cmd: "fillfields", "u": u, "p": "" });
+        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "hasMasterpw": true });
         msgoff("multiple");
         msgoff("zero");
     } else {
-        if (m) chrome.tabs.sendMessage(bg.activetab.id,
-            { cmd: "fillfields", "u": u, "p": "" });
+        if (m) {
+            chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "hasMasterpw": false });
+        }
         message("multiple", r.r > 1);
         message("zero", r.r == 0);
     }
@@ -273,7 +252,7 @@ function fill() {
         bg.settings.username = getlowertrim("username");
     }
     get("masterpw").value = bg.masterpw;
-    console.log("ssp fill with", bg.settings.domainname, bg.masterpw, bg.settings.sitename, bg.settings.username);
+    console.log("popup fill with", bg.settings.domainname, bg.masterpw, bg.settings.sitename, bg.settings.username);
     get("clearmasterpw").checked = bg.lastpersona.clearmasterpw;
     get("pwlength").value = bg.settings.length;
     get("startwithletter").checked = bg.settings.startwithletter;
@@ -368,8 +347,9 @@ function sitedataHTML() {
 }
 function isphishing(sitename) {
     if (!sitename) return false;
+    var persona = get("persona").value;
     var domainname = get("domainname").value.toLowerCase().trim();
-    var domains = Object.keys(persona.sites);
+    var domains = Object.keys(hpSPG.personas[persona].sites);
     var phishing = false;
     domains.forEach(function (d) {
         if ((persona.sites[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
