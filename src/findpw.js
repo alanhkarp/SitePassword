@@ -9,8 +9,7 @@ window.onload = function () {
 	var cpi = countpwid();
 	if (cpi.pwfield) cpi.pwfield.placeholder = clickSitePassword;
 	sendpageinfo(cpi, false, true);
-	chrome.runtime.onMessage.addListener(function (request, sender, _sendResponse) {
-		console.log(Date.now(), "findpw got", request, sender);
+	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
 		var cpi = countpwid();
 		switch (request.cmd) {
 			case "fillfields":
@@ -20,7 +19,7 @@ window.onload = function () {
 				if (userid) {
 					fillfield(cpi.pwfield, request.p);
 				}
-				if (request.hasMasterpw && userid) {
+				if (request.readyForClick && userid) {
 					cpi.pwfield.placeholder = clickHere;
 				} else {
 					cpi.pwfield.placeholder = clickSitePassword;
@@ -97,6 +96,6 @@ function countpwid() {
 			}
 		}
 	}
-	console.log("findpw: countpwid", c, passwordfield, useridfield);
+//	console.log("findpw: countpwid", c, passwordfield, useridfield);
 	return { count: c, pwfield: passwordfield, idfield: useridfield, };
 }

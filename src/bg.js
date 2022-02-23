@@ -23,6 +23,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         getMetadata(request, sender, sendResponse);
     } else if (request.cmd === "siteData") {
         masterpw = request.masterpw;
+        bg.settings = request.settings;
         hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = request.settings;
         persistMetadata(bkmkid);
         console.log("bg setting masterpw", bg);
@@ -35,7 +36,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         let domainname = getdomainname(sender.url);
         bg.settings = bgsettings(bg.lastpersona, domainname);
         let pr = generate(bg, hpSPG);
-        console.log("bg calculated sitepw", pr);
+        console.log("bg calculated sitepw", bg, hpSPG, pr);
         sendResponse(pr.p);
     } else if (request.clicked) {
         domainname = request.domainname;
@@ -64,26 +65,29 @@ async function getMetadata(request, _sender, sendResponse) {
     console.log("bg sending metadata", bg, hpSPG);
     sendResponse({ "bg": bg, "hpSPG": hpSPG });
 }
-async function OnContentPageload(request, sender, sendResponse) {
-    await retrieveMetadata();
-    activetab = sender.tab;
-    bg.pwcount = request.count;
-    domainname = request.domainname || domainname;
-    console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw);
-    let persona = hpSPG.personas[bg.lastpersona];
-    let sitename = persona.sites[domainname];
-    if (sitename) {
-        bg.settings = persona.sitenames[sitename];
-    } else {
-        bg.settings = persona.sitenames.default;
-    }
-    bg.settings = domainname;
-    let hasMasterpw = false;
-    if (masterpw) {
-        hasMasterpw = true;
-    }
-    console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": "", "hasMasterpw": hasMasterpw });
-    sendResponse({ cmd: "fillfields", "u": bg.settings.username || "", "p": "", "hasMasterpw": hasMasterpw });
+function OnContentPageload(request, sender, sendResponse) {
+    retrieveMetadata().then(() => {
+        activetab = sender.tab;
+        bg.pwcount = request.count;
+        protocol = request.protocol;
+        pwcount = bg.pwcount;
+        domainname = request.domainname || domainname;
+        console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw);
+        let persona = hpSPG.personas[bg.lastpersona];
+        let sitename = persona.sites[domainname];
+        if (sitename) {
+            bg.settings = persona.sitenames[sitename];
+        } else {
+            bg.settings = persona.sitenames.default;
+        }
+        bg.settings.domainname = domainname;
+        let readyForClick = false;
+        if (masterpw && bg.settings.sitename && bg.settings.username) {
+            readyForClick = true;
+        }
+        console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": "", "readyForClick": readyForClick });
+        sendResponse({ cmd: "fillfields", "u": bg.settings.username || "", "p": "", "readyForClick": readyForClick });
+    });
 }
 function gotMetadata(hpSPGlocal) {
     if (!hpSPGlocal) {
@@ -124,6 +128,7 @@ function gotMetadata(hpSPGlocal) {
         hpSPG = hpSPGlocal;
         hpSPGlocal.personas.default.sitenames.default.specials = hpSPGlocal.specials;
         let defaultsettings = hpSPGlocal.personas.default.sitenames.default;
+        bg.settings = defaultsettings;
         defaultsettings.characters = characters(defaultsettings, hpSPG);
         hpSPGlocal.personas.everyone = clone(hpSPGlocal.personas.default);
         persona = hpSPGlocal.personas.everyone;
@@ -135,15 +140,13 @@ function gotMetadata(hpSPGlocal) {
 }
 async function persistMetadata(bkmkid) {
     // localStorage[name] = JSON.stringify(value);
+    persona = hpSPG.personas[bg.lastpersona];
+    if (bg.settings.sitename) {
+        persona.sites[domainname] = bg.settings.sitename;
+        persona.sitenames[bg.settings.sitename] = bg.settings;
+    }
     let update = "ssp://" + JSON.stringify(hpSPG);
     await chrome.bookmarks.update(bkmkid, { "url": update });
-    persona = hpSPG.personas[bg.lastpersona];
-    if (persona.sites[domainname]) {
-        bg.settings = clone(persona.sitenames[persona.sites[domainname]]);
-    } else {
-        bg.settings = clone(persona.sitenames.default);
-    }
-    bg.settings.domainname = domainname;
 }
 async function retrieveMetadata() {
     // return JSON.parse(localStorage[name]);
@@ -157,7 +160,7 @@ async function retrieveMetadata() {
         bkmk = await chrome.bookmarks.get(bkmkid);
         console.log("Got bookmark: ", bkmk);
         hpSPG = parseBkmk(bkmk[0]);
-    } catch(e) {
+    } catch (e) {
         // Find ssp bookmark
         let tree = await chrome.bookmarks.getTree();
         console.log("Find SSP bookmark");
@@ -209,9 +212,7 @@ function parseBkmk(bkmk) {
     }
     return hpSPG;
 }
-// Copy of code in ssp.js because when I try to import it,
-// ssp.js says "Object window is not defined"
-export function bgsettings(personaname, domainname) {
+function bgsettings(personaname, domainname) {
     let persona = hpSPG.personas[personaname];
     if (!persona) {
         hpSPG.personas[personaname] = clone(hpSPG.personas.default);

@@ -11,7 +11,7 @@ console.log("popup starting");
 // outside the popup window.
 window.onblur = function () {
     if (bg) {
-        console.log("popup sending bg", bg);
+        console.log(Date.now(), "popup sending", { "cmd": "persistMetadata", "bg": bg });
         chrome.runtime.sendMessage({ "cmd": "persistMetadata", "bg": bg });
     }
 }
@@ -115,6 +115,9 @@ window.onload = function () {
         handlekeyup("username", "username");
     }
     get("username").onblur = function () {
+        if (get("masterpw") && get("sitename") && get("username")) {
+
+        }
         handleblur("username", "username");
     }
     get("settingsshowbutton").onclick = showsettings;
@@ -230,12 +233,12 @@ function ask2generate() {
     }
     get("sitepass").value = p;
     if ((r.r == 1) && u && n && m && "https:" == bg.protocol) {
-        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "hasMasterpw": true });
+        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
         msgoff("multiple");
         msgoff("zero");
     } else {
         if (m) {
-            chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "hasMasterpw": false });
+            chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": false });
         }
         message("multiple", r.r > 1);
         message("zero", r.r == 0);
@@ -347,9 +350,10 @@ function sitedataHTML() {
 }
 function isphishing(sitename) {
     if (!sitename) return false;
-    var persona = get("persona").value;
-    var domainname = get("domainname").value.toLowerCase().trim();
-    var domains = Object.keys(hpSPG.personas[persona].sites);
+    var personaname = getlowertrim("persona");
+    var persona = hpSPG.personas[personaname];
+    var domainname = getlowertrim("domainname");
+    var domains = Object.keys(persona.sites);
     var phishing = false;
     domains.forEach(function (d) {
         if ((persona.sites[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
