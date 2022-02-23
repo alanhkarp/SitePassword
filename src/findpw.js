@@ -13,7 +13,6 @@ window.onload = function () {
 		var cpi = countpwid();
 		switch (request.cmd) {
 			case "fillfields":
-				console.log("findpw filling fields");
 				userid = request.u;
 				fillfield(cpi.idfield, request.u);
 				if (userid) {
@@ -60,9 +59,7 @@ function sendpageinfo(cpi, clicked, onload) {
 		if (chrome.runtime.lastError) console.log(Date.now(), "findpw error", chrome.runtime.lastError);
 		console.log(Date.now(), "findpw response", response);
 		if (response) {
-			console.log("findpw set msg", clickHere);
 			cpi.pwfield.placeholder = clickHere;
-			console.log("findpw filling fields");
 			let userid = response.u;
 			fillfield(cpi.idfield, response.u);
 			if (userid) {

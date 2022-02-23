@@ -115,10 +115,11 @@ window.onload = function () {
         handlekeyup("username", "username");
     }
     get("username").onblur = function () {
-        if (get("masterpw") && get("sitename") && get("username")) {
-
-        }
         handleblur("username", "username");
+        let u = get("username").value
+        if ( get("masterpw").value && get("sitename").value && u ) {
+            chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
+        }
     }
     get("settingsshowbutton").onclick = showsettings;
     get("settingshidebutton").onclick = hidesettings;
@@ -233,7 +234,7 @@ function ask2generate() {
     }
     get("sitepass").value = p;
     if ((r.r == 1) && u && n && m && "https:" == bg.protocol) {
-        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
+        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": false });
         msgoff("multiple");
         msgoff("zero");
     } else {
