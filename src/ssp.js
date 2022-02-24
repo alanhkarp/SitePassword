@@ -2,6 +2,7 @@
 import { characters, generate } from "./generate.js";
 console.log("Version 0.99");
 var activetab;
+var domainname;
 var persona;
 var bg;
 var hpSPG;
@@ -36,9 +37,10 @@ function getMetadata() {
 }
 function getsettings(gotMetadata) {
     // var sitename = getlowertrim("sitename");
+    console.log("popup getting metadata", domainname);
     chrome.runtime.sendMessage({
         "cmd": "getMetadata",
-        "domainname": getlowertrim("domainname"),
+        "domainname": domainname,
         "persona": getlowertrim("persona"),
         "sitename": getlowertrim("sitename")
     }, (response) => {
@@ -51,10 +53,12 @@ window.onload = function () {
     console.log("popup getting active tab");
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         activetab = tabs[0];
-        console.log("popup got tab", activetab.id);
+        domainname = activetab.url.split("/")[2];
+        get("domainname").value = domainname;
+        console.log("popup got tab", domainname, activetab);
+        console.log(Date.now(), "popup getting metadata");
+        getMetadata();
     });
-    console.log(Date.now(), "popup getting metadata");
-    getMetadata();
     // UI Event handlers
     get("ssp").onblur = function () {
         bg.settings.sitename = get("sitename").value;
@@ -117,7 +121,7 @@ window.onload = function () {
     get("username").onblur = function () {
         handleblur("username", "username");
         let u = get("username").value
-        if ( get("masterpw").value && get("sitename").value && u ) {
+        if (get("masterpw").value && get("sitename").value && u) {
             chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
         }
     }

@@ -12,7 +12,6 @@ var domainname = "";
 var protocol = "";
 var persona;
 var pwcount = 0;
-var settings = {};
 console.log("bg clear masterpw");
 
 console.log("bg starting");
@@ -56,8 +55,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 async function getMetadata(request, _sender, sendResponse) {
     await retrieveMetadata();
     bg.lastpersona = lastpersona;
-    if (hpSPG.personas[bg.lastpersona].sites[request.domainname]) {
-        bg.settings = hpSPG.personas[bg.lastpersona].sitenames[request.domainname];
+    let sitename = hpSPG.personas[bg.lastpersona].sites[request.domainname]
+    if (sitename) {
+        bg.settings = hpSPG.personas[bg.lastpersona].sitenames[sitename];
     } else {
         bg.settings = hpSPG.personas[bg.lastpersona].sitenames.default;
     }
@@ -189,6 +189,9 @@ async function retrieveMetadata() {
     // Doing it this way because bg.js used to be a background page, 
     // and I don't want to change a lot of code after I moved it to
     // the popup.
+    let persona = hpSPG.personas[lastpersona];
+    let sitename = persona.sites[domainname];
+    let settings = persona.sitenames[sitename];
     bg = {
         "activetab": activetab,
         "lastpersona": lastpersona,
