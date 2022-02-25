@@ -98,6 +98,10 @@ window.onload = function () {
         bg.masterpw = get("masterpw").value;
         ask2generate();
     }
+    get("masterpw").onblur = function () {
+        handleblur("masterpw", "masterpw");
+        changePlaceholder();
+    }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
     }
@@ -113,6 +117,7 @@ window.onload = function () {
             get("masterpw").disabled = false;
             get("username").disabled = false
             handleblur("sitename", "sitename");
+            changePlaceholder();
         }
     }
     get("username").onkeyup = function () {
@@ -120,10 +125,7 @@ window.onload = function () {
     }
     get("username").onblur = function () {
         handleblur("username", "username");
-        let u = get("username").value
-        if (get("masterpw").value && get("sitename").value && u) {
-            chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
-        }
+        changePlaceholder();
     }
     get("settingsshowbutton").onclick = showsettings;
     get("settingshidebutton").onclick = hidesettings;
@@ -200,6 +202,12 @@ function handleclick(which) {
     }
     bg.settings.characters = characters(bg.settings, hpSPG)
     ask2generate();
+}
+function changePlaceholder() {
+    let u = get("username").value
+    if (get("masterpw").value && get("sitename").value && u) {
+        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
+    }
 }
 function setfocus(element) {
     element.focus();
