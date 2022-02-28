@@ -151,6 +151,9 @@ async function persistMetadata(bkmkid) {
 async function retrieveMetadata() {
     // return JSON.parse(localStorage[name]);
     console.log("Retrieving metadata")
+    // chrome.storage allows storing objects, but the content is not protected
+    // allowing a bad guy to change it.  The best way to avoid problems is 
+    // to parse the data from a string.
     let bkmkstr = await chrome.storage.local.get(["bkmkstr"]);
     try {
         let bkmk = JSON.parse(bkmkstr.bkmkstr);

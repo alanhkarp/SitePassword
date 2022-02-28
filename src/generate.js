@@ -11,6 +11,9 @@ export function generate(bg, hpSPG) {
         var n = settings.sitename.toLowerCase().trim();
         var u = settings.username.toLowerCase().trim();
     }
+    if (!bg.masterpw) {
+        console.log("bg get master pw from ssptab");
+    }
     let m = bg.masterpw;
     if (!m) {
         return { p: "", r: pwcount };

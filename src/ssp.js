@@ -2,6 +2,7 @@
 import { characters, generate } from "./generate.js";
 console.log("Version 0.99");
 var activetab;
+var ssptab;
 var domainname;
 var persona;
 var bg;
@@ -27,6 +28,7 @@ function init() {
     get("username").value = bg.settings.username;
     domainname = bg.settings.domainname;
     persona = hpSPG.personas[bg.lastpersona];
+    console.log("popup init");
     ask2generate();
 }
 function getMetadata() {
@@ -106,6 +108,7 @@ window.onload = function () {
     get("masterpw").onblur = function () {
         handleblur("masterpw", "masterpw");
         changePlaceholder();
+        console.log("popup TODO send masterpw to ssptab", ssptab);
     }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
@@ -234,6 +237,20 @@ function ask2generate() {
     var n = get("sitename").value;
     var m = get("masterpw").value;
     var p = "";
+    console.log("popup ask2generate masterpw", m);
+    if (!m) {
+            chrome.tabs.query({"url": "chrome-extension://" +  chrome.runtime.id + "/ssp.html"}, (ssptab) => {
+                console.log("popup query result", ssptab);
+                if (!ssptab[0] || !ssptab[0].id) {
+                    chrome.tabs.create({ "url": "ssp.html", "active": false }, (tab) => {
+                        ssptab = tab;
+                        console.log("popup created ssptab", ssptab);
+                    });
+                } else {
+                    console.log("popup get masterpw from sstab", ssptab);
+                }
+            });
+    }
     if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
         msgon("nopw");
     } else {
