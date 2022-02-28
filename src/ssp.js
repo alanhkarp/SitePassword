@@ -25,6 +25,9 @@ function init() {
     get("domainname").value = bg.settings.domainname;
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;
+    domainname = bg.settings.domainname;
+    persona = hpSPG.personas[bg.lastpersona];
+    ask2generate();
 }
 function getMetadata() {
     getsettings(() => {
@@ -46,6 +49,8 @@ function getsettings(gotMetadata) {
     }, (response) => {
         bg = response.bg;
         hpSPG = response.hpSPG;
+        let masterpw = response.masterpw;
+        get("masterpw").value = masterpw;
         gotMetadata();
     });
 }

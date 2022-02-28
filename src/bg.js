@@ -35,7 +35,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         let domainname = getdomainname(sender.url);
         bg.settings = bgsettings(bg.lastpersona, domainname);
         let pr = generate(bg, hpSPG);
-        console.log("bg calculated sitepw", bg, hpSPG, pr);
+        console.log("bg calculated sitepw", bg, hpSPG, pr, masterpw);
         sendResponse(pr.p);
     } else if (request.clicked) {
         domainname = request.domainname;
@@ -63,7 +63,7 @@ async function getMetadata(request, _sender, sendResponse) {
     }
     bg.settings.domainname = request.domainname || domainname;
     console.log("bg sending metadata", bg, hpSPG);
-    sendResponse({ "bg": bg, "hpSPG": hpSPG });
+    sendResponse({ "masterpw": masterpw || "", "bg": bg, "hpSPG": hpSPG });
 }
 function OnContentPageload(request, sender, sendResponse) {
     retrieveMetadata().then(() => {
