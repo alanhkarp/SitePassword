@@ -29,16 +29,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         masterpw = request.masterpw;
         bg.settings = request.settings;
         hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = request.settings;
-        if (request.settings.masterpw) {
-            console.log("bg MASTERPW 1 in settings");
-        }
         persistMetadata(bkmkid);
         console.log("bg setting masterpw", bg);
     } else if (request.cmd === "persistMetadata") {
         console.log("bg request persistMetadata", request.bg);
-        if (request.settings.masterpw) {
-            console.log("bg MASTERPW 2 in settings");
-        }
        bg = request.bg;
         masterpw = bg.masterpw;
         persistMetadata(bkmkid);
@@ -150,9 +144,6 @@ async function persistMetadata(bkmkid) {
     if (bg.settings.sitename) {
         persona.sites[domainname] = bg.settings.sitename;
         persona.sitenames[bg.settings.sitename] = bg.settings;
-        if (request.settings.masterpw) {
-            console.log("bg MASTERPW 3 in settings");
-        }
     }
     let update = "ssp://" + JSON.stringify(hpSPG);
     await chrome.bookmarks.update(bkmkid, { "url": update });

@@ -80,10 +80,7 @@ window.onload = function () {
         if (bg.settings.sitename) {
             persona.sitenames[bg.settings.sitename] = clone(bg.settings);
             persona.sites[bg.settings.domainname] = bg.settings.sitename;
-            if (request.settings.masterpw) {
-                console.log("bg MASTERPW 3 in settings");
-            }
-            } else {
+        } else {
             delete persona.sites[bg.settings.domainname];
         }
         bg.lastpersona = getlowertrim("persona").value;
