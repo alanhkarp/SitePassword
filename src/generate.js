@@ -1,6 +1,17 @@
+// Generates the site password given the metadata for a site
+
+// This module is used by both bg.js and ssp.js.
+
+// Hashes the master password, site name, and user name at 
+// least a specified number of times, to increase an attacker's
+// work factor, and no more than a specified number of times,
+// so that it can meet the site's password rules, e.g., minimum
+// number of upper case letters.
+
 'use strict';
 import { core_sha256, swap32, chrsz } from "./sha256.js";
 import { Utf8Encode, str2binb, binl2b64 } from "./sha256.js";
+
 export function generate(bg, hpSPG) {
     let settings = bg.settings;
     let pwcount = bg.pwcount;
@@ -10,9 +21,6 @@ export function generate(bg, hpSPG) {
     } else {
         var n = settings.sitename.toLowerCase().trim();
         var u = settings.username.toLowerCase().trim();
-    }
-    if (!bg.masterpw) {
-        console.log("bg get master pw from ssptab");
     }
     let m = bg.masterpw;
     if (!m) {

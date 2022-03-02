@@ -1,6 +1,10 @@
+// Code that used to run in the Manifest 2 background page but now
+// has to run in a tab.  This script is included by sspaux.html.
 'use strict';
 import { characters, generate } from "./generate.js";
-// State I want to keep around that doesn't appear in the file system
+// There might be a better way to make this state available to a bunch
+// of closure, but globals are convenient.  Besides, that's what all
+// I knew to do when I wrote the first version in 2012.
 var bg = {};
 var masterpw = "";
 var activetab;
@@ -12,6 +16,7 @@ var domainname = "";
 var protocol = "";
 var persona;
 var pwcount = 0;
+var origin = "chrome-extension://" + chrome.runtime.id;
 console.log("bg clear masterpw");
 
 console.log("bg starting");
@@ -24,11 +29,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         masterpw = request.masterpw;
         bg.settings = request.settings;
         hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = request.settings;
+        if (request.settings.masterpw) {
+            console.log("bg MASTERPW 1 in settings");
+        }
         persistMetadata(bkmkid);
         console.log("bg setting masterpw", bg);
     } else if (request.cmd === "persistMetadata") {
         console.log("bg request persistMetadata", request.bg);
-        bg = request.bg;
+        if (request.settings.masterpw) {
+            console.log("bg MASTERPW 2 in settings");
+        }
+       bg = request.bg;
         masterpw = bg.masterpw;
         persistMetadata(bkmkid);
     } else if (request.cmd === "getPassword") {
@@ -37,33 +48,28 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         let pr = generate(bg, hpSPG);
         console.log("bg calculated sitepw", bg, hpSPG, pr, masterpw);
         sendResponse(pr.p);
-    } else if (request.clicked) {
-        domainname = request.domainname;
-        bg.domainname = domainname;
-        console.log("bg clicked: sending response", bg);
-        sendResponse(bg);
-        if (persona.clearmasterpw) {
-            masterpw = "";
-            console.log("bg clear masterpw")
-        }
     } else if (request.onload) {
         OnContentPageload(request, sender, sendResponse);
     }
     console.log(Date.now(), "bg addListener returning: masterpw", masterpw || "nomasterpw");
     return true;
 });
-async function getMetadata(request, _sender, sendResponse) {
+async function getMetadata(request, sender, sendResponse) {
     await retrieveMetadata();
     bg.lastpersona = lastpersona;
-    let sitename = hpSPG.personas[bg.lastpersona].sites[request.domainname]
+    let sitename = hpSPG.personas[bg.lastpersona].sites[getdomainname(sender.url)]
     if (sitename) {
         bg.settings = hpSPG.personas[bg.lastpersona].sitenames[sitename];
     } else {
         bg.settings = hpSPG.personas[bg.lastpersona].sitenames.default;
     }
-    bg.settings.domainname = request.domainname || domainname;
-    console.log("bg sending metadata", bg, hpSPG);
-    sendResponse({ "masterpw": masterpw || "", "bg": bg, "hpSPG": hpSPG });
+    if (sender.origin === origin) {
+        bg.settings.domainname = request.domainname;
+    } else {
+        bg.settings.domainname = getdomainname(sender.url) || domainname;
+    }
+    console.log("bg sending metadata to sender", bg, hpSPG, sender);
+    if (sender.origin === origin) sendResponse({ "masterpw": masterpw || "", "bg": bg, "hpSPG": hpSPG });
 }
 function OnContentPageload(request, sender, sendResponse) {
     retrieveMetadata().then(() => {
@@ -71,7 +77,7 @@ function OnContentPageload(request, sender, sendResponse) {
         bg.pwcount = request.count;
         protocol = request.protocol;
         pwcount = bg.pwcount;
-        domainname = request.domainname || domainname;
+        domainname = getdomainname(sender.url);
         console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw);
         let persona = hpSPG.personas[bg.lastpersona];
         let sitename = persona.sites[domainname];
@@ -85,7 +91,7 @@ function OnContentPageload(request, sender, sendResponse) {
         if (masterpw && bg.settings.sitename && bg.settings.username) {
             readyForClick = true;
         }
-        console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": "", "readyForClick": readyForClick });
+        console.log(Date.now(), "bg send response to", { cmd: "fillfields", "u": bg.settings.username || "", "p": "", "readyForClick": readyForClick }, sender);
         sendResponse({ cmd: "fillfields", "u": bg.settings.username || "", "p": "", "readyForClick": readyForClick });
     });
 }
@@ -144,6 +150,9 @@ async function persistMetadata(bkmkid) {
     if (bg.settings.sitename) {
         persona.sites[domainname] = bg.settings.sitename;
         persona.sitenames[bg.settings.sitename] = bg.settings;
+        if (request.settings.masterpw) {
+            console.log("bg MASTERPW 3 in settings");
+        }
     }
     let update = "ssp://" + JSON.stringify(hpSPG);
     await chrome.bookmarks.update(bkmkid, { "url": update });

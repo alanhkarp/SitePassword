@@ -1,8 +1,16 @@
+// The script used by the SitePassword popup window
+
+// This script collects user input from the popup window
+// and sends it to bg.js to be persisted.  This approach
+// was needed in the Manifest 2 version that persisted to
+// localStorage so that bg.js could calculate passwords
+// when the popup was closed.  It's not needed now, because
+// this version persists its metadata in a bookmark.
+
 'use strict';
 import { characters, generate } from "./generate.js";
 console.log("Version 0.99");
 var activetab;
-var ssptab;
 var domainname;
 var persona;
 var bg;
@@ -21,14 +29,15 @@ window.onunload = function () {
     alert("popup unloading");
 }
 function init() {
-    console.log("islegacy " + bg.legacy);
+    console.log("islegacy", bg);
     get("persona").value = bg.lastpersona;
     get("domainname").value = bg.settings.domainname;
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;
+    bg.settings.masterpw = "foo";
     domainname = bg.settings.domainname;
     persona = hpSPG.personas[bg.lastpersona];
-    console.log("popup init");
+    console.log("popup init", bg);
     ask2generate();
 }
 function getMetadata() {
@@ -51,8 +60,7 @@ function getsettings(gotMetadata) {
     }, (response) => {
         bg = response.bg;
         hpSPG = response.hpSPG;
-        let masterpw = response.masterpw;
-        get("masterpw").value = masterpw;
+        get("masterpw").value = response.masterpw;
         gotMetadata();
     });
 }
@@ -72,7 +80,10 @@ window.onload = function () {
         if (bg.settings.sitename) {
             persona.sitenames[bg.settings.sitename] = clone(bg.settings);
             persona.sites[bg.settings.domainname] = bg.settings.sitename;
-        } else {
+            if (request.settings.masterpw) {
+                console.log("bg MASTERPW 3 in settings");
+            }
+            } else {
             delete persona.sites[bg.settings.domainname];
         }
         bg.lastpersona = getlowertrim("persona").value;
@@ -81,7 +92,7 @@ window.onload = function () {
             !isphishing(get("sitename").value)) {
             copyToClipboard();
         }
-        let masterpw = get("masterpw").value;
+        let masterpw = get("masterpw").value + "foo";
         chrome.runtime.sendMessage({ "cmd": "siteData", "masterpw": masterpw, "sitename": sitename, "settings": bg.settings });
     }
     get("persona").onkeyup = function () {
@@ -102,13 +113,14 @@ window.onload = function () {
         });
     }
     get("masterpw").onkeyup = function () {
-        bg.masterpw = get("masterpw").value;
+        console.log("popup keyup masterpw", bg);
+        bg.masterpw = get("masterpw").value + "bar";
+        console.log("popup keyup masterpw", bg);
         ask2generate();
     }
     get("masterpw").onblur = function () {
         handleblur("masterpw", "masterpw");
         changePlaceholder();
-        console.log("popup TODO send masterpw to ssptab", ssptab);
     }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
@@ -237,20 +249,6 @@ function ask2generate() {
     var n = get("sitename").value;
     var m = get("masterpw").value;
     var p = "";
-    console.log("popup ask2generate masterpw", m);
-    if (!m) {
-            chrome.tabs.query({"url": "chrome-extension://" +  chrome.runtime.id + "/ssp.html"}, (ssptab) => {
-                console.log("popup query result", ssptab);
-                if (!ssptab[0] || !ssptab[0].id) {
-                    chrome.tabs.create({ "url": "ssp.html", "active": false }, (tab) => {
-                        ssptab = tab;
-                        console.log("popup created ssptab", ssptab);
-                    });
-                } else {
-                    console.log("popup get masterpw from sstab", ssptab);
-                }
-            });
-    }
     if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
         msgon("nopw");
     } else {

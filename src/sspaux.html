@@ -1,0 +1,42 @@
+<!--
+    SitePassword runs this page in a tab because Manifest 3 does
+    not support a persistent background page.  A tab running this
+    page is created by background.js if one is not already open.
+    The primary use for this page is to hold the user's master
+    password in this page's memory so that it's available to both
+    bg.js and ssp.js when they need to calculate a site password.
+-->
+
+<!--
+Copyright 2011 Hewlett-Packard Company. This library is free software;
+you can redistribute it and/or modify it under the terms of the GNU
+Lesser General Public License (LGPL) as published by the Free Software
+Foundation; either version 2.1 of the License, or (at your option) any
+later version. This library is distributed in the hope that it will
+be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details. You should have
+received a copy of the GNU Lesser General Public License (LGPL) along
+with this library; if not, write to the Free Software Foundation,
+Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+Please contact the Hewlett-Packard Company <www.hp.com> for
+
+information regarding how to obtain the source code for this library.
+-->
+<html>
+
+<head>
+  <script type="module" src="bg.js"></script>
+  <title>Site Password</title>
+</head>
+
+<body>
+  <div id="ssp">
+        <h1>
+          Site Passwords Auxiliary Page
+        </h1>
+        <p>A secure place for SitePassword to hold onto your master password.</p>
+    </div>
+</body>
+
+</html>

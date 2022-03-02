@@ -1,3 +1,9 @@
+// Content script for SitePassword: Finds visible password fields
+
+// Doesn't always find a password field even if you can see it, e.g.,
+// if the password field is in an iframe.  There are also times when
+// it finds password fields that are not visible, e.g., if they are
+// hidden behind something.
 /*
   The MIT License
 

@@ -1,14 +1,17 @@
-// Content script for ssp
+// Content script for SitePassword
+
+// Manages the DOM for login web pages
 'use strict';
 var clickSitePassword = "Click SitePassword";
 var clickHere = "Click here for password";
-console.log("findpw.js loaded");
+var bgtabid;
+console.log("findpw loaded");
 window.onload = function () {
-	console.log("findpw.js running");
+	console.log("findpw running");
 	var userid = "";
 	var cpi = countpwid();
 	if (cpi.pwfield) cpi.pwfield.placeholder = clickSitePassword;
-	sendpageinfo(cpi, false, true);
+	sendpageinfo(cpi, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
 		var cpi = countpwid();
 		switch (request.cmd) {
@@ -26,7 +29,7 @@ window.onload = function () {
 				break;
 			case "gettabinfo":
 				console.log("findpw 2: sending cpi", cpi);
-				sendpageinfo(cpi, false, false);
+				sendpageinfo(cpi, false);
 				break;
 			default:
 		}
@@ -34,7 +37,7 @@ window.onload = function () {
 	if (cpi.pwfield) {
 		cpi.pwfield.onclick = function () {
 			console.log("findpw 3: get sitepass");
-			chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
+			chrome.runtime.sendMessage(bgtabid, { "cmd": "getPassword" }, (response) => {
 				console.log("findpw 4: got password", cpi.pwfield, response);
 				cpi.pwfield.value = response;
 			});
@@ -47,13 +50,11 @@ function fillfield(field, text) {
 		field.value = text.trim();
 	}
 }
-function sendpageinfo(cpi, clicked, onload) {
+function sendpageinfo(cpi, onload) {
 	console.log(Date.now(), "findpw sending page info: pwcount = ", cpi.count);
-	chrome.runtime.sendMessage({
-		"domainname": location.hostname,
+	chrome.runtime.sendMessage(bgtabid, {
 		"protocol": location.protocol,
 		"count": cpi.count,
-		"clicked": clicked,
 		"onload": onload
 	}, (response) => {
 		if (chrome.runtime.lastError) console.log(Date.now(), "findpw error", chrome.runtime.lastError);
