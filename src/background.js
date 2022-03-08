@@ -4,7 +4,7 @@
 // just transient service workers.
 makeAuxTab();
 function makeAuxTab() {
-    console.log("Service worker making auxiliary tab");
+    console.log("Service worker checking for auxiliary tab");
     chrome.tabs.query({ "url": "chrome-extension://" + chrome.runtime.id + "/sspaux.html" }, (tab) => {
         console.log("background query result", tab);
         if (!tab[0] || !tab[0].id) {

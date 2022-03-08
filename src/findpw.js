@@ -4,12 +4,12 @@
 'use strict';
 var clickSitePassword = "Click SitePassword";
 var clickHere = "Click here for password";
-var bgtabid;
+var cpi;
 console.log("findpw loaded");
 window.onload = function () {
 	console.log("findpw running");
 	var userid = "";
-	var cpi = countpwid();
+	cpi = countpwid();
 	if (cpi.pwfield) cpi.pwfield.placeholder = clickSitePassword;
 	sendpageinfo(cpi, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
@@ -21,11 +21,7 @@ window.onload = function () {
 				if (userid) {
 					fillfield(cpi.pwfield, request.p);
 				}
-				if (request.readyForClick && userid) {
-					cpi.pwfield.placeholder = clickHere;
-				} else {
-					cpi.pwfield.placeholder = clickSitePassword;
-				}
+				setplaceholder(userid, request.readyForClick);
 				break;
 			case "gettabinfo":
 				console.log("findpw 2: sending cpi", cpi);
@@ -36,12 +32,19 @@ window.onload = function () {
 	});
 	if (cpi.pwfield) {
 		cpi.pwfield.onclick = function () {
-			console.log("findpw 3: get sitepass");
-			chrome.runtime.sendMessage(bgtabid, { "cmd": "getPassword" }, (response) => {
+			console.log("findpw 3: get sitepass");  
+			chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
 				console.log("findpw 4: got password", cpi.pwfield, response);
 				cpi.pwfield.value = response;
 			});
 		}
+	}
+}
+function setplaceholder(userid, readyForClick) {
+	if (readyForClick && userid) {
+		cpi.pwfield.placeholder = clickHere;
+	} else {
+		cpi.pwfield.placeholder = clickSitePassword;
 	}
 }
 function fillfield(field, text) {
@@ -52,7 +55,7 @@ function fillfield(field, text) {
 }
 function sendpageinfo(cpi, onload) {
 	console.log(Date.now(), "findpw sending page info: pwcount = ", cpi.count);
-	chrome.runtime.sendMessage(bgtabid, {
+	chrome.runtime.sendMessage({
 		"protocol": location.protocol,
 		"count": cpi.count,
 		"onload": onload
@@ -62,6 +65,7 @@ function sendpageinfo(cpi, onload) {
 		if (response) {
 			cpi.pwfield.placeholder = clickHere;
 			let userid = response.u;
+			setplaceholder(userid, response.readyForClick);
 			fillfield(cpi.idfield, response.u);
 			if (userid) {
 				fillfield(cpi.pwfield, response.p);
@@ -94,6 +98,6 @@ function countpwid() {
 			}
 		}
 	}
-//	console.log("findpw: countpwid", c, passwordfield, useridfield);
+	//	console.log("findpw: countpwid", c, passwordfield, useridfield);
 	return { count: c, pwfield: passwordfield, idfield: useridfield, };
 }

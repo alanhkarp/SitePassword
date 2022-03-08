@@ -29,12 +29,11 @@ window.onunload = function () {
     alert("popup unloading");
 }
 function init() {
-    console.log("islegacy", bg);
+    console.log("bg.legacy", bg.legacy);
     get("persona").value = bg.lastpersona;
     get("domainname").value = bg.settings.domainname;
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;
-    bg.settings.masterpw = "foo";
     domainname = bg.settings.domainname;
     persona = hpSPG.personas[bg.lastpersona];
     console.log("popup init", bg);
@@ -58,7 +57,8 @@ function getsettings(gotMetadata) {
         "persona": getlowertrim("persona"),
         "sitename": getlowertrim("sitename")
     }, (response) => {
-        bg = response.bg;
+        console.log("popup got response to getMetadata", response);
+        bg = response.bg; 
         hpSPG = response.hpSPG;
         get("masterpw").value = response.masterpw;
         gotMetadata();
@@ -110,9 +110,7 @@ window.onload = function () {
         });
     }
     get("masterpw").onkeyup = function () {
-        console.log("popup keyup masterpw", bg);
         bg.masterpw = get("masterpw").value + "bar";
-        console.log("popup keyup masterpw", bg);
         ask2generate();
     }
     get("masterpw").onblur = function () {
@@ -206,7 +204,11 @@ function handlekeyup(element, field) {
     handleblur(element, field);
 }
 function handleblur(element, field) {
-    bg.settings[field] = get(element).value;
+    if (element === "masterpw") {
+        bg.masterpw = get(element).value;
+    } else {
+        bg.settings[field] = get(element).value;
+    }
     bg.settings.characters = characters(bg.settings, hpSPG);
     ask2generate();
 }
@@ -217,7 +219,7 @@ function handleclick(which) {
         bg.settings.startwithletter = false;
         get("startwithletter").checked = false;
     }
-    bg.settings.characters = characters(bg.settings, hpSPG)
+    bg.settings.characters = characters(bg.settings, hpSPG);
     ask2generate();
 }
 function changePlaceholder() {

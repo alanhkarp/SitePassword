@@ -2,10 +2,11 @@
 // has to run in a tab.  This script is included by sspaux.html.
 'use strict';
 import { characters, generate } from "./generate.js";
+import { binb2hex } from "./sha256.js";
 // There might be a better way to make this state available to a bunch
 // of closure, but globals are convenient.  Besides, that's what all
 // I knew to do when I wrote the first version in 2012.
-var bg = {};
+var bg = {"lastpersona": "everyone"};
 var masterpw = "";
 var activetab;
 var hpSPG = {};
@@ -27,13 +28,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         getMetadata(request, sender, sendResponse);
     } else if (request.cmd === "siteData") {
         masterpw = request.masterpw;
+        bg.masterpw = masterpw;
         bg.settings = request.settings;
         hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = request.settings;
         persistMetadata(bkmkid);
         console.log("bg setting masterpw", bg);
     } else if (request.cmd === "persistMetadata") {
         console.log("bg request persistMetadata", request.bg);
-       bg = request.bg;
+        bg = request.bg;
         masterpw = bg.masterpw;
         persistMetadata(bkmkid);
     } else if (request.cmd === "getPassword") {
@@ -51,36 +53,24 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 async function getMetadata(request, sender, sendResponse) {
     await retrieveMetadata();
     bg.lastpersona = lastpersona;
-    let sitename = hpSPG.personas[bg.lastpersona].sites[getdomainname(sender.url)]
-    if (sitename) {
-        bg.settings = hpSPG.personas[bg.lastpersona].sitenames[sitename];
-    } else {
-        bg.settings = hpSPG.personas[bg.lastpersona].sitenames.default;
-    }
+    domainname = request.domainname;
+    bg.settings = bgsettings(lastpersona, domainname);
+    console.log(Date.now(), "bg sending metadata to sender", bg, hpSPG, sender);
     if (sender.origin === origin) {
-        bg.settings.domainname = request.domainname;
+        sendResponse({ "masterpw": masterpw || "", "bg": bg, "hpSPG": hpSPG });
     } else {
-        bg.settings.domainname = getdomainname(sender.url) || domainname;
+        console.log("bg got message from wrong origin", sender.origin);
     }
-    console.log("bg sending metadata to sender", bg, hpSPG, sender);
-    if (sender.origin === origin) sendResponse({ "masterpw": masterpw || "", "bg": bg, "hpSPG": hpSPG });
 }
 function OnContentPageload(request, sender, sendResponse) {
+    activetab = sender.tab;
+    bg.pwcount = request.count;
+    protocol = request.protocol;
+    pwcount = bg.pwcount;
+    domainname = getdomainname(sender.url);
+    console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw);
     retrieveMetadata().then(() => {
-        activetab = sender.tab;
-        bg.pwcount = request.count;
-        protocol = request.protocol;
-        pwcount = bg.pwcount;
-        domainname = getdomainname(sender.url);
-        console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw);
-        let persona = hpSPG.personas[bg.lastpersona];
-        let sitename = persona.sites[domainname];
-        if (sitename) {
-            bg.settings = persona.sitenames[sitename];
-        } else {
-            bg.settings = persona.sitenames.default;
-        }
-        bg.settings.domainname = domainname;
+        bg.settings = bgsettings(bg.lastpersona, domainname);
         let readyForClick = false;
         if (masterpw && bg.settings.sitename && bg.settings.username) {
             readyForClick = true;
@@ -141,6 +131,7 @@ function gotMetadata(hpSPGlocal) {
 async function persistMetadata(bkmkid) {
     // localStorage[name] = JSON.stringify(value);
     persona = hpSPG.personas[bg.lastpersona];
+    masterpw = bg.masterpw;
     if (bg.settings.sitename) {
         persona.sites[domainname] = bg.settings.sitename;
         persona.sitenames[bg.settings.sitename] = bg.settings;
@@ -192,9 +183,7 @@ async function retrieveMetadata() {
     // Doing it this way because bg.js used to be a background page, 
     // and I don't want to change a lot of code after I moved it to
     // the popup.
-    let persona = hpSPG.personas[lastpersona];
-    let sitename = persona.sites[domainname];
-    let settings = persona.sitenames[sitename];
+    let settings = bgsettings(bg.lastpersona, domainname);
     bg = {
         "activetab": activetab,
         "lastpersona": lastpersona,
@@ -204,8 +193,7 @@ async function retrieveMetadata() {
         "pwcount": pwcount,
         "settings": settings,
     };
-    console.log(Date.now(), "bg leaving retrieiveMetadata", bg, hpSPG);
-    //return await Promise.resolve(bg);
+    console.log(Date.now(), "bg leaving retrieiveMetadata", settings, bg);
 }
 function parseBkmk(bkmk) {
     console.log("Parsing bookmark");
@@ -220,21 +208,22 @@ function parseBkmk(bkmk) {
 }
 function bgsettings(personaname, domainname) {
     let persona = hpSPG.personas[personaname];
+    let settings = {};
     if (!persona) {
         hpSPG.personas[personaname] = clone(hpSPG.personas.default);
-        persona = hpSPG.personas[personaname];
-        bg.settings = clone(persona.sitenames.default);
+        persona = hpSPG.personas.default;
+        settings = clone(persona.sitenames.default);
         persona.personaname = personaname;
-        bg.settings.domainname = domainname;
-        bg.settings.characters = characters(bg.settings, hpSPG);
+        settings.domainname = domainname;
+        settings.characters = characters(bg.settings, hpSPG);
     }
     if (persona.sites[domainname]) {
-        bg.settings = persona.sitenames[persona.sites[domainname]];
+        settings = persona.sitenames[persona.sites[domainname]];
     } else {
-        bg.settings = persona.sitenames.default;
-        bg.settings.domainname = domainname;
+        settings = persona.sitenames.default;
+        settings.domainname = domainname;
     }
-    return bg.settings;
+    return clone(settings);
 }
 function clone(object) {
     return JSON.parse(JSON.stringify(object))
