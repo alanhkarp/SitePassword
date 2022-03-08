@@ -60,7 +60,7 @@ function getsettings(gotMetadata) {
         console.log("popup got response to getMetadata", response);
         bg = response.bg; 
         hpSPG = response.hpSPG;
-        get("masterpw").value = response.masterpw;
+        get("masterpw").value = bg.masterpw;
         gotMetadata();
     });
 }
@@ -110,7 +110,7 @@ window.onload = function () {
         });
     }
     get("masterpw").onkeyup = function () {
-        bg.masterpw = get("masterpw").value + "bar";
+        bg.masterpw = get("masterpw").value;
         ask2generate();
     }
     get("masterpw").onblur = function () {

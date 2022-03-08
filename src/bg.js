@@ -57,7 +57,7 @@ async function getMetadata(request, sender, sendResponse) {
     bg.settings = bgsettings(lastpersona, domainname);
     console.log(Date.now(), "bg sending metadata to sender", bg, hpSPG, sender);
     if (sender.origin === origin) {
-        sendResponse({ "masterpw": masterpw || "", "bg": bg, "hpSPG": hpSPG });
+        sendResponse({ "bg": bg, "hpSPG": hpSPG });
     } else {
         console.log("bg got message from wrong origin", sender.origin);
     }
