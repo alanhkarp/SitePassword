@@ -21,6 +21,15 @@ var origin = "chrome-extension://" + chrome.runtime.id;
 console.log("bg clear masterpw");
 
 console.log("bg starting");
+chrome.storage.session.get(["secret"], (secret) => {
+    if (secret.secret) {
+        console.log("bg got secret", secret);
+    } else {
+        chrome.storage.session.set({"secret": Date.now()}, () => {
+            console.log(Date.now(), "bg set secret", {"secret": Date.now()});
+        });
+    }
+});
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.log(Date.now(), "bg got message request, sender", request, sender);

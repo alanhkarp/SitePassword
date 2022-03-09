@@ -16,6 +16,15 @@ var persona;
 var bg;
 var hpSPG;
 console.log("popup starting");
+chrome.storage.session.get(["secret"], (secret) => {
+    if (secret.secret) {
+        console.log("popup got secret", secret);
+    } else {
+        chrome.storage.session.set({"secret": Date.now()}, () => {
+            console.log(Date.now(), "popup set secret", {"secret": Date.now()});
+        });
+    }
+})
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
 // outside the popup window.
