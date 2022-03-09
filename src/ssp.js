@@ -194,7 +194,11 @@ function handlekeyup(element, field) {
     handleblur(element, field);
 }
 function handleblur(element, field) {
-    bg.settings[field] = get(element).value;
+    if (element = "masterpw") {
+        bg.masterpw = get(element).value;
+    } else {
+        bg.settings[field] = get(element).value;
+    }
     bg.settings.characters = characters(bg.settings, hpSPG);
     ask2generate();
 }
