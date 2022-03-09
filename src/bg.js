@@ -16,6 +16,11 @@ console.log("bg clear masterpw");
 
 console.log("bg starting");
 
+chrome.storage.session.get(["masterpw"], (masterpw) => {
+    masterpw = masterpw || "";
+    console.log("bg got masterpw", masterpw || "masterpw not set");
+});
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.log(Date.now(), "bg got message request, sender", request, sender);
     if (request.cmd === "getMetadata") {
@@ -30,6 +35,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         console.log("bg request persistMetadata", request.bg);
         bg = request.bg;
         masterpw = bg.masterpw;
+        chrome.storage.session.set({"masterpw": masterpw});
         persistMetadata(bkmkid);
     } else if (request.cmd === "getPassword") {
         let domainname = getdomainname(sender.url);
