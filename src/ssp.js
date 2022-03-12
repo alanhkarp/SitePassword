@@ -9,35 +9,20 @@ var hpSPG;
 console.log("popup starting");
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
-// outside the popup window.
-window.onfocus = function () { console.log(Date.now(), "popup window focus"); }
-window.onblur = function () {
-    console.log(Date.now(), "popup window.onblur", bg);
-    // window.onblur fires before I even have a chance to see the window, much less focus it
-    if (bg.settings) {
-        bg.lastpersona = get("persona").value;
-        bg.masterpw = get("masterpw").value;
-        bg.settings.sitename = get("sitename").value;
-        if (bg.settings.sitename) {
-            persona.sitenames[bg.settings.sitename] = clone(bg.settings);
-            persona.sites[bg.settings.domainname] = bg.settings.sitename;
-        } else {
-            delete persona.sites[bg.settings.domainname];
-        }
-        let onClipboard = false;
-        if (bg.pwcount != 1 && get("sitepass").value && !isphishing(get("sitename").value)) {
-            onClipboard = true;
-            copyToClipboard();
-        }
-        console.log("popup sending site data", bg);
-        alert("Popup sending site data");
-        chrome.runtime.sendMessage({ "cmd": "siteData", "bg": bg, "onClipboard": onClipboard, "time": Date.now() }, (response) => {
-            console.log("popup got response to siteData:", response);
-        });
-    }
-}
-window.onunload = function () {
-    alert("popup unloading");
+// outside the popup window.  I can't use window.onblur because the 
+// popup window closes before the message it sends gets delivered.
+
+window.onload = function () {
+    console.log("popup getting active tab");
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
+        activetab = tabs[0];
+        domainname = activetab.url.split("/")[2];
+        get("domainname").value = domainname;
+        console.log("popup got tab", domainname, activetab);
+        console.log(Date.now(), "popup getting metadata");
+        getMetadata();
+    });
+    eventSetup();
 }
 function init() {
     console.log("islegacy " + bg.legacy);
@@ -73,16 +58,38 @@ function getsettings(gotMetadata) {
         gotMetadata();
     });
 }
-window.onload = function () {
-    console.log("popup getting active tab");
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
-        activetab = tabs[0];
-        domainname = activetab.url.split("/")[2];
-        get("domainname").value = domainname;
-        console.log("popup got tab", domainname, activetab);
-        console.log(Date.now(), "popup getting metadata");
-        getMetadata();
-    });
+function eventSetup() {
+    // This function sends a message to the service worker when the mouse leaves the 
+    // outermost div on the window.  When the user clicks outside the popup, the window
+    // loses focus and closes.  Any messages in flight will be lost.  That means there
+    // is a race between messge delivery and the next user click.  Fortunately, messages
+    // are delivered in just a couple of ms, so there's no problem.  Just be aware that
+    // this race is the source of any problems related to loss of the message sent here.
+    get("ssp").onmouseleave = function () {
+        console.log("popup mouse leave");
+        console.log(Date.now(), "popup window.mouseleave", bg);
+        // window.onblur fires before I even have a chance to see the window, much less focus it
+        if (bg.settings) {
+            bg.lastpersona = get("persona").value;
+            bg.masterpw = get("masterpw").value;
+            bg.settings.sitename = get("sitename").value;
+            if (bg.settings.sitename) {
+                persona.sitenames[bg.settings.sitename] = clone(bg.settings);
+                persona.sites[bg.settings.domainname] = bg.settings.sitename;
+            } else {
+                delete persona.sites[bg.settings.domainname];
+            }
+            let onClipboard = false;
+            if (bg.pwcount != 1 && get("sitepass").value && !isphishing(get("sitename").value)) {
+                onClipboard = true;
+                copyToClipboard();
+            }
+            console.log("popup sending site data", bg);
+            chrome.runtime.sendMessage({ "cmd": "siteData", "bg": bg, "onClipboard": onClipboard, "time": Date.now() }, (response) => {
+                console.log("popup got response to siteData:", response);
+            });
+        }
+        }
     // UI Event handlers
      get("persona").onkeyup = function () {
         get("masterpw").value = "";
