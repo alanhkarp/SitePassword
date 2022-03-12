@@ -2,6 +2,7 @@
 'use strict';
 var clickSitePassword = "Click SitePassword";
 var clickHere = "Click here for password";
+var pasteHere = "Paste your password here"; // Not implemented yet
 console.log("findpw.js loaded");
 window.onload = function () {
 	console.log("findpw.js running");
@@ -58,18 +59,17 @@ function sendpageinfo(cpi, clicked, onload) {
 	}, (response) => {
 		if (chrome.runtime.lastError) console.log(Date.now(), "findpw error", chrome.runtime.lastError);
 		console.log(Date.now(), "findpw response", response);
-		if (response) {
+		if (response.readyForClick) {
 			cpi.pwfield.placeholder = clickHere;
-			let userid = response.u;
-			fillfield(cpi.idfield, response.u);
-			if (userid) {
-				fillfield(cpi.pwfield, response.p);
-			}
 		} else {
-			console.log("findpw set msg", clickSitePassword);
 			cpi.pwfield.placeholder = clickSitePassword;
 		}
-	});
+		let userid = response.u;
+		fillfield(cpi.idfield, response.u);
+		if (userid) {
+			fillfield(cpi.pwfield, response.p);
+		}
+});
 }
 function countpwid() {
 	var passwordfield = null;

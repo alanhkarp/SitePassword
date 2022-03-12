@@ -4,16 +4,36 @@ console.log("Version 0.99");
 var activetab;
 var domainname;
 var persona;
-var bg;
+var bg = {};
 var hpSPG;
 console.log("popup starting");
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
 // outside the popup window.
+window.onfocus = function () { console.log(Date.now(), "popup window focus"); }
 window.onblur = function () {
-    if (bg) {
-        console.log(Date.now(), "popup sending", { "cmd": "persistMetadata", "bg": bg });
-        chrome.runtime.sendMessage({ "cmd": "persistMetadata", "bg": bg });
+    console.log(Date.now(), "popup window.onblur", bg);
+    // window.onblur fires before I even have a chance to see the window, much less focus it
+    if (bg.settings) {
+        bg.lastpersona = get("persona").value;
+        bg.masterpw = get("masterpw").value;
+        bg.settings.sitename = get("sitename").value;
+        if (bg.settings.sitename) {
+            persona.sitenames[bg.settings.sitename] = clone(bg.settings);
+            persona.sites[bg.settings.domainname] = bg.settings.sitename;
+        } else {
+            delete persona.sites[bg.settings.domainname];
+        }
+        let onClipboard = false;
+        if (bg.pwcount != 1 && get("sitepass").value && !isphishing(get("sitename").value)) {
+            onClipboard = true;
+            copyToClipboard();
+        }
+        console.log("popup sending site data", bg);
+        alert("Popup sending site data");
+        chrome.runtime.sendMessage({ "cmd": "siteData", "bg": bg, "onClipboard": onClipboard, "time": Date.now() }, (response) => {
+            console.log("popup got response to siteData:", response);
+        });
     }
 }
 window.onunload = function () {
@@ -29,7 +49,7 @@ function init() {
     persona = hpSPG.personas[bg.lastpersona];
     ask2generate();
 }
-function getMetadata() {
+async function getMetadata() {
     getsettings(() => {
         message("zero", bg.pwcount === 0);
         message("multiple", bg.pwcount > 1);
@@ -44,13 +64,12 @@ function getsettings(gotMetadata) {
     chrome.runtime.sendMessage({
         "cmd": "getMetadata",
         "domainname": domainname,
-        "persona": getlowertrim("persona"),
+        "personaname": getlowertrim("persona"),
         "sitename": getlowertrim("sitename")
     }, (response) => {
         bg = response.bg;
         hpSPG = response.hpSPG;
-        let masterpw = response.masterpw;
-        get("masterpw").value = masterpw;
+        get("masterpw").value = response.masterpw;
         gotMetadata();
     });
 }
@@ -65,24 +84,7 @@ window.onload = function () {
         getMetadata();
     });
     // UI Event handlers
-    get("ssp").onblur = function () {
-        bg.settings.sitename = get("sitename").value;
-        if (bg.settings.sitename) {
-            persona.sitenames[bg.settings.sitename] = clone(bg.settings);
-            persona.sites[bg.settings.domainname] = bg.settings.sitename;
-        } else {
-            delete persona.sites[bg.settings.domainname];
-        }
-        bg.lastpersona = getlowertrim("persona").value;
-        if (bg.pwcount != 1 &&
-            get("sitepass").value &&
-            !isphishing(get("sitename").value)) {
-            copyToClipboard();
-        }
-        let masterpw = get("masterpw").value;
-        chrome.runtime.sendMessage({ "cmd": "siteData", "masterpw": masterpw, "sitename": sitename, "settings": bg.settings });
-    }
-    get("persona").onkeyup = function () {
+     get("persona").onkeyup = function () {
         get("masterpw").value = "";
         get("sitename").value = "";
         get("username").value = "";
@@ -104,6 +106,7 @@ window.onload = function () {
         ask2generate();
     }
     get("masterpw").onblur = function () {
+        console.log("popup masterpw onblur");
         handleblur("masterpw", "masterpw");
         changePlaceholder();
     }
@@ -255,12 +258,10 @@ function ask2generate() {
     }
     get("sitepass").value = p;
     if ((r.r == 1) && u && n && m && "https:" == bg.protocol) {
-        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": false });
         msgoff("multiple");
         msgoff("zero");
     } else {
         if (m) {
-            chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": false });
         }
         message("multiple", r.r > 1);
         message("zero", r.r == 0);

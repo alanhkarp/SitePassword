@@ -1,7 +1,8 @@
 'use strict';
 import { characters, generate } from "./generate.js";
 // State I want to keep around that doesn't appear in the file system
-var bg = {};
+var bg = {}; 
+var onClipboard = false;
 var masterpw = "";
 var activetab;
 var hpSPG = {};
@@ -10,57 +11,63 @@ var legacy = false;  // true to emulate HP Antiphishing Toolbar
 var lastpersona = "everyone";
 var domainname = "";
 var protocol = "";
-var persona;
+var personaname;
 var pwcount = 0;
 console.log("bg clear masterpw");
 
 console.log("bg starting");
 
-chrome.storage.session.get(["masterpw"], (masterpw) => {
-    masterpw = masterpw || "";
-    console.log("bg got masterpw", masterpw || "masterpw not set");
-});
-
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.log(Date.now(), "bg got message request, sender", request, sender);
-    if (request.cmd === "getMetadata") {
-        getMetadata(request, sender, sendResponse);
-    } else if (request.cmd === "siteData") {
-        masterpw = request.masterpw;
-        bg.settings = request.settings;
-        hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = request.settings;
-        persistMetadata(bkmkid);
-        console.log("bg setting masterpw", bg);
-    } else if (request.cmd === "persistMetadata") {
-        console.log("bg request persistMetadata", request.bg);
-        bg = request.bg;
-        masterpw = bg.masterpw;
-        chrome.storage.session.set({"masterpw": masterpw});
-        persistMetadata(bkmkid);
-    } else if (request.cmd === "getPassword") {
-        let domainname = getdomainname(sender.url);
-        bg.settings = bgsettings(bg.lastpersona, domainname);
-        let pr = generate(bg, hpSPG);
-        console.log("bg calculated sitepw", bg, hpSPG, pr, masterpw);
-        sendResponse(pr.p);
-    } else if (request.clicked) {
-        domainname = request.domainname;
-        bg.domainname = domainname;
-        console.log("bg clicked: sending response", bg);
-        sendResponse(bg);
-        if (persona.clearmasterpw) {
-            masterpw = "";
-            console.log("bg clear masterpw")
-        }
-    } else if (request.onload) {
-        OnContentPageload(request, sender, sendResponse);
-    }
-    console.log(Date.now(), "bg addListener returning: masterpw", masterpw || "nomasterpw");
+    retrieveMetadata().then(() => {
+        chrome.storage.session.get(["ssp"], (ssp) => {
+            if (ssp.ssp) {
+                personaname = ssp.ssp.personaname || "default";
+                bg.lastpersona = personaname;
+                masterpw = ssp.ssp.masterpw || "";
+                bg.masterpw = masterpw;
+                console.log("bg got ssp", personaname || "foo", masterpw || "bar");
+            }
+            if (request.cmd === "getMetadata") {
+                getMetadata(request, sender, sendResponse);
+            } else if (request.cmd === "siteData") {
+                console.log("bg got site data", bg);
+                onClipboard = request.onClipboard;
+                bg = request.bg;
+                masterpw = bg.masterpw;
+                hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = bg.settings;
+                persistMetadata(bkmkid);
+                sendResponse(Date.now());
+            } else if (request.cmd === "persistMetadata") {
+                console.log("bg request persistMetadata", request.bg);
+                bg = request.bg;
+                masterpw = bg.masterpw;
+                persistMetadata(bkmkid);
+            } else if (request.cmd === "getPassword") {
+                let domainname = getdomainname(sender.url);
+                bg.settings = bgsettings(bg.lastpersona, domainname);
+                let pr = generate(bg, hpSPG);
+                console.log("bg calculated sitepw", bg, hpSPG, pr, masterpw);
+                sendResponse(pr.p);
+            } else if (request.clicked) {
+                domainname = request.domainname;
+                bg.domainname = domainname;
+                console.log("bg clicked: sending response", bg);
+                sendResponse(bg);
+                if (personaname.clearmasterpw) {
+                    masterpw = "";
+                    console.log("bg clear masterpw")
+                }
+            } else if (request.onload) {
+                OnContentPageload(request, sender, sendResponse);
+            }
+            console.log(Date.now(), "bg addListener returning: masterpw", masterpw || "masterpw not defined");
+        });
+    });
     return true;
 });
 async function getMetadata(request, _sender, sendResponse) {
-    await retrieveMetadata();
-    bg.lastpersona = lastpersona;
+    bg.lastpersona = request.personaname;
     let sitename = hpSPG.personas[bg.lastpersona].sites[request.domainname]
     if (sitename) {
         bg.settings = hpSPG.personas[bg.lastpersona].sitenames[sitename];
@@ -72,28 +79,26 @@ async function getMetadata(request, _sender, sendResponse) {
     sendResponse({ "masterpw": masterpw || "", "bg": bg, "hpSPG": hpSPG });
 }
 function OnContentPageload(request, sender, sendResponse) {
-    retrieveMetadata().then(() => {
-        activetab = sender.tab;
-        bg.pwcount = request.count;
-        protocol = request.protocol;
-        pwcount = bg.pwcount;
-        domainname = request.domainname || domainname;
-        console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw);
-        let persona = hpSPG.personas[bg.lastpersona];
-        let sitename = persona.sites[domainname];
-        if (sitename) {
-            bg.settings = persona.sitenames[sitename];
-        } else {
-            bg.settings = persona.sitenames.default;
-        }
-        bg.settings.domainname = domainname;
-        let readyForClick = false;
-        if (masterpw && bg.settings.sitename && bg.settings.username) {
-            readyForClick = true;
-        }
-        console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": "", "readyForClick": readyForClick });
-        sendResponse({ cmd: "fillfields", "u": bg.settings.username || "", "p": "", "readyForClick": readyForClick });
-    });
+    activetab = sender.tab;
+    bg.pwcount = request.count;
+    protocol = request.protocol;
+    pwcount = bg.pwcount;
+    domainname = request.domainname || domainname;
+    console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw);
+    let persona = hpSPG.personas[bg.lastpersona];
+    let sitename = persona.sites[domainname];
+    if (sitename) {
+        bg.settings = persona.sitenames[sitename];
+    } else {
+        bg.settings = persona.sitenames.default;
+    }
+    bg.settings.domainname = domainname;
+    let readyForClick = false;
+    if (masterpw && bg.settings.sitename && bg.settings.username) {
+        readyForClick = true;
+    }
+    console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": "", "readyForClick": readyForClick });
+    sendResponse({ cmd: "fillfields", "u": bg.settings.username || "", "p": "", "readyForClick": readyForClick });
 }
 function gotMetadata(hpSPGlocal) {
     if (!hpSPGlocal) {
@@ -137,8 +142,8 @@ function gotMetadata(hpSPGlocal) {
         bg.settings = defaultsettings;
         defaultsettings.characters = characters(defaultsettings, hpSPG);
         hpSPGlocal.personas.everyone = clone(hpSPGlocal.personas.default);
-        persona = hpSPGlocal.personas.everyone;
-        persona.personaname = "Everyone";
+        personaname = hpSPGlocal.personas.everyone;
+        personaname.personaname = "Everyone";
         hpSPG = hpSPGlocal;
         persistMetadata(bkmkid);
     }
@@ -146,17 +151,18 @@ function gotMetadata(hpSPGlocal) {
 }
 async function persistMetadata(bkmkid) {
     // localStorage[name] = JSON.stringify(value);
-    persona = hpSPG.personas[bg.lastpersona];
+    personaname = hpSPG.personas[bg.lastpersona];
     if (bg.settings.sitename) {
-        persona.sites[domainname] = bg.settings.sitename;
-        persona.sitenames[bg.settings.sitename] = bg.settings;
+        personaname.sites[domainname] = bg.settings.sitename;
+        personaname.sitenames[bg.settings.sitename] = bg.settings;
     }
     let update = "ssp://" + JSON.stringify(hpSPG);
-    await chrome.bookmarks.update(bkmkid, { "url": update });
+    chrome.bookmarks.update(bkmkid, { "url": update });
+    chrome.storage.session.set({ "ssp": { "masterpw": masterpw, "personaname": bg.lastpersona } });
 }
 async function retrieveMetadata() {
     // return JSON.parse(localStorage[name]);
-    console.log("Retrieving metadata")
+    console.log("Retrieving metadata");
     let bkmkstr = await chrome.storage.local.get(["bkmkstr"]);
     try {
         let bkmk = JSON.parse(bkmkstr.bkmkstr);
@@ -208,7 +214,6 @@ async function retrieveMetadata() {
         "settings": settings,
     };
     console.log(Date.now(), "bg leaving retrieiveMetadata", bg, hpSPG);
-    //return await Promise.resolve(bg);
 }
 function parseBkmk(bkmk) {
     console.log("Parsing bookmark");
