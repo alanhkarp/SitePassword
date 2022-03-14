@@ -80,7 +80,8 @@ function eventSetup() {
             let onClipboard = false;
             if (bg.pwcount != 1 && get("sitepass").value && !isphishing(get("sitename").value)) {
                 onClipboard = true;
-                copyToClipboard();
+                let sitepass = get("sitepass").value;
+                copyToClipboard(sitepass);
             }
             console.log("popup sending site data", bg);
             chrome.runtime.sendMessage({ "cmd": "siteData", "bg": bg, "onClipboard": onClipboard, "time": Date.now() }, (response) => {
@@ -415,8 +416,7 @@ function getlowertrim(element) {
 function clone(object) {
     return JSON.parse(JSON.stringify(object))
 }
-function copyToClipboard() {
-    let sitepass = get("sitepass").value;
+function copyToClipboard(sitepass) {
     navigator.clipboard.writeText(sitepass);
 }
 // Messages in priority order high to low

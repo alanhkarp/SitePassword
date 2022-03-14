@@ -18,6 +18,9 @@ window.onload = function () {
 				userid = request.u;
 				fillfield(cpi.idfield, userid);
 				if (userid) {
+					if (request.p && cpi.count !== 1) {
+						navigator.clipboard.writeText(request.p);
+					}
 					fillfield(cpi.pwfield, request.p);
 				}
 				setPlaceholder(request.readyForClick, userid);
