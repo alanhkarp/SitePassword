@@ -417,7 +417,7 @@ function clone(object) {
     return JSON.parse(JSON.stringify(object))
 }
 function copyToClipboard() {
-    let sitepass = get("sitepass").innerHTML;
+    let sitepass = get("sitepass").value;
     navigator.clipboard.writeText(sitepass);
 }
 // Messages in priority order high to low
