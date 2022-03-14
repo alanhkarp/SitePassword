@@ -196,7 +196,7 @@ function eventSetup() {
     get("cancelwarning").onclick = function () {
         msgoff("phishing");
         get("domainname").value = "";
-        chrome.tabs.update(activtab.id, { url: "chrome://newtab" });
+        chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
         window.close();
     }
 }
@@ -204,7 +204,7 @@ function handlekeyup(element, field) {
     handleblur(element, field);
 }
 function handleblur(element, field) {
-    if (element = "masterpw") {
+    if (element === "masterpw") {
         bg.masterpw = get(element).value;
     } else {
         bg.settings[field] = get(element).value;
