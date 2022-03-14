@@ -26,12 +26,10 @@ window.onload = function () {
 }
 function init() {
     console.log("islegacy " + bg.legacy);
-    get("persona").value = bg.lastpersona;
-    get("domainname").value = bg.settings.domainname;
+    get("masterpw").value = bg.masterpw;
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;
-    domainname = bg.settings.domainname;
-    persona = hpSPG.personas[bg.lastpersona];
+    persona = hpSPG.personas[getlowertrim("persona")];
     ask2generate();
 }
 async function getMetadata() {
@@ -70,7 +68,7 @@ function eventSetup() {
         console.log(Date.now(), "popup window.mouseleave", bg);
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
-            bg.lastpersona = get("persona").value;
+            bg.lastpersona = getlowertrim("persona");
             bg.masterpw = get("masterpw").value;
             bg.settings.sitename = get("sitename").value;
             if (bg.settings.sitename) {
@@ -225,6 +223,7 @@ function handleclick(which) {
 function changePlaceholder() {
     let u = get("username").value
     if (get("masterpw").value && get("sitename").value && u) {
+        console.log("popup sending fill fields", u);
         chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
     }
 }

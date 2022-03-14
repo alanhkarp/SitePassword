@@ -2,7 +2,8 @@
 'use strict';
 var clickSitePassword = "Click SitePassword";
 var clickHere = "Click here for password";
-var pasteHere = "Paste your password here"; // Not implemented yet
+var pasteHere = "Paste your password here";
+var pwfields = [];
 console.log("findpw.js loaded");
 window.onload = function () {
 	console.log("findpw.js running");
@@ -15,15 +16,11 @@ window.onload = function () {
 		switch (request.cmd) {
 			case "fillfields":
 				userid = request.u;
-				fillfield(cpi.idfield, request.u);
+				fillfield(cpi.idfield, userid);
 				if (userid) {
 					fillfield(cpi.pwfield, request.p);
 				}
-				if (request.readyForClick && userid) {
-					cpi.pwfield.placeholder = clickHere;
-				} else {
-					cpi.pwfield.placeholder = clickSitePassword;
-				}
+				setPlaceholder(request.readyForClick, userid);
 				break;
 			case "gettabinfo":
 				console.log("findpw 2: sending cpi", cpi);
@@ -31,6 +28,7 @@ window.onload = function () {
 				break;
 			default:
 		}
+		return true;
 	});
 	if (cpi.pwfield) {
 		cpi.pwfield.onclick = function () {
@@ -59,17 +57,21 @@ function sendpageinfo(cpi, clicked, onload) {
 	}, (response) => {
 		if (chrome.runtime.lastError) console.log(Date.now(), "findpw error", chrome.runtime.lastError);
 		console.log(Date.now(), "findpw response", response);
-		if (response.readyForClick) {
-			cpi.pwfield.placeholder = clickHere;
-		} else {
-			cpi.pwfield.placeholder = clickSitePassword;
-		}
 		let userid = response.u;
+		setPlaceholder(response.readyForClick, userid);
 		fillfield(cpi.idfield, response.u);
 		if (userid) {
 			fillfield(cpi.pwfield, response.p);
 		}
-});
+	});
+}
+function setPlaceholder(readyForClick, userid) {
+	if (readyForClick && userid) {
+		pwfields[0].placeholder = clickHere;
+		for (let i = 1; i < pwfields.length; i++) {
+			pwfields[i].placeholder = pasteHere;
+		}
+	}
 }
 function countpwid() {
 	var passwordfield = null;
@@ -79,6 +81,8 @@ function countpwid() {
 	var inputs = document.getElementsByTagName("input");
 	for (var i = 0; i < inputs.length; i++) {
 		if ((inputs[i].type == "password") && inputs[i].isVisible()) {
+			pwfields.push(inputs[i]);
+			inputs[i].placeholder = clickSitePassword;
 			if (c == 0) found = i;
 			c++;
 		}
@@ -93,6 +97,6 @@ function countpwid() {
 			}
 		}
 	}
-//	console.log("findpw: countpwid", c, passwordfield, useridfield);
+	//	console.log("findpw: countpwid", c, passwordfield, useridfield);
 	return { count: c, pwfield: passwordfield, idfield: useridfield, };
 }
