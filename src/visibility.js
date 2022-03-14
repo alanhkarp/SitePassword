@@ -47,6 +47,10 @@ Element.prototype.isVisible = function () {
      * @param (h)       Element height number
      */
     function _isVisible(el, t, r, b, l, w, h) {
+        // Added by Alan Karp, 3/14/22
+        if (el.className === "visuallyhidden") {
+            return false;
+        }
         var p = el.parentNode,
             VISIBLE_PADDING = 2;
 
