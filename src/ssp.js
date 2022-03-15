@@ -5,6 +5,8 @@ var activetab;
 var domainname;
 var persona;
 var bg = {};
+// I need all the metadata stored in hpSPG for both the phishing check
+// and for downloading the site data.
 var hpSPG;
 console.log("popup starting");
 // window.onunload appears to only work for background pages, which

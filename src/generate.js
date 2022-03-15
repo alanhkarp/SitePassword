@@ -75,6 +75,7 @@ function verify(p, settings, hpSPG) {
     }
     return valOK;
 }
+// The computation assumes there are 64 characters to choose from
 export function characters(settings, hpSPG) {
     let chars = hpSPG.lower + hpSPG.upper + hpSPG.digits + hpSPG.lower.substr(0, 2);
     if (settings.allowspecial) {
@@ -92,7 +93,7 @@ export function characters(settings, hpSPG) {
         chars = hpSPG.digits + hpSPG.digits + hpSPG.digits +
             hpSPG.digits + hpSPG.digits + hpSPG.digits;
         if (settings.allowspecials) {
-            chars = chars + persona.specials.substr(0, 4);
+            chars = chars + settings.specials.substr(0, 4);
         } else {
             chars = chars + hpSPG.digits.substr(0, 4);
         }
