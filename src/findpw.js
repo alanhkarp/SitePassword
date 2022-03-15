@@ -82,6 +82,7 @@ function countpwid() {
 	var found = -1;
 	var c = 0;
 	var inputs = document.getElementsByTagName("input");
+	pwfields = [];
 	for (var i = 0; i < inputs.length; i++) {
 		if ((inputs[i].type == "password") && inputs[i].isVisible()) {
 			pwfields.push(inputs[i]);
