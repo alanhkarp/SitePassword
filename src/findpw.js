@@ -34,10 +34,20 @@ window.onload = function () {
 		return true;
 	});
 	if (cpi.pwfield) {
+		// Usability hint:  I could add onclick to each found password field.
+		// The problem is that the web page doesn't know it's there until there
+		// is some other UI event.  If you're on page that asks you to confirm your
+		// password, it won't detect the result of the click on the second field
+		// until you do something else.  That's confusing if you expect to see
+		// a notification that the two passwords match.  That doesn't happen
+		// when pasting the second password.
 		cpi.pwfield.onclick = function () {
 			console.log("findpw 3: get sitepass");
 			chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
 				console.log("findpw 4: got password", cpi.pwfield, response);
+				if (cpi.count !== 1) {
+					navigator.clipboard.writeText(response);
+				}
 				cpi.pwfield.value = response;
 			});
 		}
