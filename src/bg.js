@@ -31,13 +31,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             if (request.cmd === "getMetadata") {
                 getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "siteData") {
-                console.log("bg got site data", bg);
+                console.log("bg got site data", request);
                 onClipboard = request.onClipboard;
                 bg = request.bg;
+                bg.lastpersona = request.personaname;
                 masterpw = bg.masterpw;
                 hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = bg.settings;
                 persistMetadata(bkmkid);
-                sendResponse(Date.now());
             } else if (request.cmd === "persistMetadata") {
                 console.log("bg request persistMetadata", request.bg);
                 bg = request.bg;

@@ -89,8 +89,14 @@ function eventSetup() {
                 copyToClipboard(p);
             }
             changePlaceholder();
-            console.log("popup sending site data", bg);
-            chrome.runtime.sendMessage({ "cmd": "siteData", "bg": bg, "onClipboard": onClipboard, "time": Date.now() });
+            let personaname = getlowertrim("persona");
+            let domainname = get("domainname").value;
+            console.log("popup sending site data", personaname, domainname, bg);
+            chrome.runtime.sendMessage({ "cmd": "siteData",
+                "personaname": personaname, 
+                "sitename": domainname, 
+                "bg": bg, 
+                "onClipboard": onClipboard });
         }
     }
     // UI Event handlers
