@@ -32,6 +32,7 @@ function init() {
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;
     persona = hpSPG.personas[getlowertrim("persona")];
+    defaultfocus();
     ask2generate();
 }
 async function getMetadata() {
@@ -62,11 +63,10 @@ function eventSetup() {
     // This function sends a message to the service worker when the mouse leaves the 
     // outermost div on the window.  When the user clicks outside the popup, the window
     // loses focus and closes.  Any messages in flight will be lost.  That means there
-    // is a race between messge delivery and the next user click.  Fortunately, messages
+    // is a race between message delivery and the next user click.  Fortunately, messages
     // are delivered in just a couple of ms, so there's no problem.  Just be aware that
     // this race is the source of any problems related to loss of the message sent here.
     get("ssp").onmouseleave = function () {
-        console.log("popup mouse leave");
         console.log(Date.now(), "popup window.mouseleave", bg);
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
@@ -80,19 +80,21 @@ function eventSetup() {
                 delete persona.sites[bg.settings.domainname];
             }
             let onClipboard = false;
-            if (bg.pwcount != 1 && get("sitepass").value && !isphishing(get("sitename").value)) {
+            let m = get("masterpw").value;
+            let s = get("sitename").value;
+            let u = get("username").value;
+            let p = get("sitepass").value;
+            if (bg.pwcount != 1 && m && s && u && p && !isphishing(get("sitename").value)) {
                 onClipboard = true;
-                let sitepass = get("sitepass").value;
-                copyToClipboard(sitepass);
+                copyToClipboard(p);
             }
+            changePlaceholder();
             console.log("popup sending site data", bg);
-            chrome.runtime.sendMessage({ "cmd": "siteData", "bg": bg, "onClipboard": onClipboard, "time": Date.now() }, (response) => {
-                console.log("popup got response to siteData:", response);
-            });
+            chrome.runtime.sendMessage({ "cmd": "siteData", "bg": bg, "onClipboard": onClipboard, "time": Date.now() });
         }
-        }
+    }
     // UI Event handlers
-     get("persona").onkeyup = function () {
+    get("persona").onkeyup = function () {
         get("masterpw").value = "";
         get("sitename").value = "";
         get("username").value = "";

@@ -59,7 +59,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                     console.log("bg clear masterpw")
                 }
             } else if (request.onload) {
-                OnContentPageload(request, sender, sendResponse);
+                onContentPageload(request, sender, sendResponse);
             }
             console.log(Date.now(), "bg addListener returning: masterpw", masterpw || "masterpw not defined");
         });
@@ -78,7 +78,7 @@ async function getMetadata(request, _sender, sendResponse) {
     console.log("bg sending metadata", bg, hpSPG);
     sendResponse({ "masterpw": masterpw || "", "bg": bg, "hpSPG": hpSPG });
 }
-function OnContentPageload(request, sender, sendResponse) {
+function onContentPageload(request, sender, sendResponse) {
     activetab = sender.tab;
     bg.pwcount = request.count;
     protocol = request.protocol;
@@ -151,6 +151,7 @@ function gotMetadata(hpSPGlocal) {
 }
 async function persistMetadata(bkmkid) {
     // localStorage[name] = JSON.stringify(value);
+    console.log("bg persistMetadata", bg, hpSPG);
     personaname = hpSPG.personas[bg.lastpersona];
     if (bg.settings.sitename) {
         personaname.sites[domainname] = bg.settings.sitename;
