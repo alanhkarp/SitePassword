@@ -44,11 +44,11 @@ window.onload = function () {
 		cpi.pwfield.onclick = function () {
 			console.log("findpw 3: get sitepass");
 			chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
-				console.log("findpw 4: got password", cpi.pwfield, response);
 				if (cpi.count !== 1) {
 					navigator.clipboard.writeText(response);
 				}
-				cpi.pwfield.value = response;
+				fillfield(cpi.pwfield, response);
+				console.log("findpw 4: got password", cpi.pwfield.value, response);
 			});
 		}
 	}
@@ -57,7 +57,26 @@ function fillfield(field, text) {
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
 		field.value = text.trim();
+		fixfield(field, text.trim());
 	}
+}
+function fixfield(field, text) {
+	// Sometimes setting the value of a field isn't enough; the value disappears
+	// when focus changes to another field.  This function does the test to see
+	// if that's happening and puts the text on the clipboard so it can be pasted
+	// in by the user.
+		console.log("findpw set inner text", field, document.getElementById("password").value, text.trim());
+		let temp = document.createElement("input");
+		document.body.appendChild(temp);
+		temp.focus();
+		document.body.removeChild(temp);
+		field.focus();
+		let value = document.getElementById(field.id).value;
+		console.log("findpw focus test", field, field.value, value);
+		if (value !== text.trim()) {
+			navigator.clipboard.writeText(text.trim());
+			field.placeholder = pasteHere;
+		}
 }
 function sendpageinfo(cpi, clicked, onload) {
 	console.log(Date.now(), "findpw sending page info: pwcount = ", cpi.count);
