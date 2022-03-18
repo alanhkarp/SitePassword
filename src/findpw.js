@@ -57,6 +57,8 @@ function fillfield(field, text) {
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
 		field.value = text.trim();
+		let event = new Event("change");
+		field.dispatchEvent(event);
 		fixfield(field, text.trim());
 	}
 }
@@ -65,7 +67,6 @@ function fixfield(field, text) {
 	// when focus changes to another field.  This function does the test to see
 	// if that's happening and puts the text on the clipboard so it can be pasted
 	// in by the user.
-		console.log("findpw set inner text", field, document.getElementById("password").value, text.trim());
 		let temp = document.createElement("input");
 		document.body.appendChild(temp);
 		temp.focus();
