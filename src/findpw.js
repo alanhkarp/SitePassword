@@ -4,11 +4,12 @@ var clickSitePassword = "Click SitePassword";
 var clickHere = "Click here for password";
 var pasteHere = "Paste your password here";
 var pwfields = [];
+var cpi;
 console.log("findpw.js loaded");
 window.onload = function () {
 	console.log("findpw.js running");
 	var userid = "";
-	var cpi = countpwid();
+	cpi = countpwid();
 	if (cpi.pwfield) cpi.pwfield.placeholder = clickSitePassword;
 	sendpageinfo(cpi, false, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
@@ -43,16 +44,25 @@ window.onload = function () {
 		// when pasting the second password.
 		cpi.pwfield.onclick = function () {
 			console.log("findpw 3: get sitepass");
-			chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
-				if (cpi.count !== 1) {
-					navigator.clipboard.writeText(response);
-				}
-				fillfield(cpi.pwfield, response);
-				console.log("findpw 4: got password", cpi.pwfield.value, response);
-			});
+			if (cpi.pwfield.placeholder === clickHere) {
+				chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
+					if (cpi.count !== 1) {
+						navigator.clipboard.writeText(response);
+					}
+					fillfield(cpi.pwfield, response);
+					console.log("findpw 4: got password", cpi.pwfield.value, response);
+				});
+			} else {
+				// Because people don't always pay attention
+				alert(cpi.pwfield.placeholder);
+			}
 		}
 	}
 }
+// Some sites change the page contents based on the fragment
+window.addEventListener("hashchange", (_href) => {
+	cpi = countpwid();
+});
 function fillfield(field, text) {
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
@@ -67,17 +77,17 @@ function fixfield(field, text) {
 	// when focus changes to another field.  This function does the test to see
 	// if that's happening and puts the text on the clipboard so it can be pasted
 	// in by the user.
-		let temp = document.createElement("input");
-		document.body.appendChild(temp);
-		temp.focus();
-		document.body.removeChild(temp);
-		field.focus();
-		let value = document.getElementById(field.id).value;
-		console.log("findpw focus test", field, field.value, value);
-		if (value !== text.trim()) {
-			navigator.clipboard.writeText(text.trim());
-			field.placeholder = pasteHere;
-		}
+	let temp = document.createElement("input");
+	document.body.appendChild(temp);
+	temp.focus();
+	document.body.removeChild(temp);
+	field.focus();
+	let value = document.getElementById(field.id).value;
+	console.log("findpw focus test", field, field.value, value);
+	if (value !== text.trim()) {
+		navigator.clipboard.writeText(text.trim());
+		field.placeholder = pasteHere;
+	}
 }
 function sendpageinfo(cpi, clicked, onload) {
 	console.log(Date.now(), "findpw sending page info: pwcount = ", cpi.count);
@@ -114,10 +124,24 @@ function countpwid() {
 	var inputs = document.getElementsByTagName("input");
 	pwfields = [];
 	for (var i = 0; i < inputs.length; i++) {
+		if (inputs[i].type == "password") console.log("findpw find password field", inputs[i], inputs[i].isVisible());
 		if ((inputs[i].type == "password") && inputs[i].isVisible()) {
 			pwfields.push(inputs[i]);
-			inputs[i].placeholder = clickSitePassword;
-			if (c == 0) found = i;
+			if (c == 0) {
+				inputs[i].placeholder = clickSitePassword;
+				found = i;
+			} else {
+				inputs[i].placeholder = pasteHere;
+				inputs[i].onclick = function() {
+					if (inputs[i].placeholder !== clickHere) {
+						let msg = inputs[i].placeholder;
+						if (!msg) {
+							msg = pasteHere;
+						}
+						alert(msg);
+					}
+				}
+			}
 			c++;
 		}
 	}
@@ -131,6 +155,6 @@ function countpwid() {
 			}
 		}
 	}
-	//	console.log("findpw: countpwid", c, passwordfield, useridfield);
+	console.log("findpw: countpwid", c, passwordfield, useridfield);
 	return { count: c, pwfield: passwordfield, idfield: useridfield, };
 }

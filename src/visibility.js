@@ -48,7 +48,7 @@ Element.prototype.isVisible = function () {
      */
     function _isVisible(el, t, r, b, l, w, h) {
         // Added by Alan Karp, 3/14/22
-        if (el.className === "visuallyhidden") {
+        if (el.className.includes("visuallyhidden")) {
             return false;
         }
         var p = el.parentNode,
