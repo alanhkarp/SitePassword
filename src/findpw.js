@@ -13,7 +13,7 @@ window.onload = function () {
 	if (cpi.pwfield) cpi.pwfield.placeholder = clickSitePassword;
 	sendpageinfo(cpi, false, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
-		var cpi = countpwid();
+		cpi = countpwid();
 		switch (request.cmd) {
 			case "fillfields":
 				userid = request.u;
@@ -42,21 +42,6 @@ window.onload = function () {
 		// until you do something else.  That's confusing if you expect to see
 		// a notification that the two passwords match.  That doesn't happen
 		// when pasting the second password.
-		cpi.pwfield.onclick = function () {
-			console.log("findpw 3: get sitepass");
-			if (cpi.pwfield.placeholder === clickHere) {
-				chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
-					if (cpi.count !== 1) {
-						navigator.clipboard.writeText(response);
-					}
-					fillfield(cpi.pwfield, response);
-					console.log("findpw 4: got password", cpi.pwfield.value, response);
-				});
-			} else {
-				// Because people don't always pay attention
-				alert(cpi.pwfield.placeholder);
-			}
-		}
 	}
 }
 // Some sites change the page contents based on the fragment
@@ -109,7 +94,7 @@ function sendpageinfo(cpi, clicked, onload) {
 	});
 }
 function setPlaceholder(readyForClick, userid) {
-	if (readyForClick && userid) {
+	if (pwfields[0] && readyForClick && userid) {
 		pwfields[0].placeholder = clickHere;
 		for (let i = 1; i < pwfields.length; i++) {
 			pwfields[i].placeholder = pasteHere;
@@ -147,6 +132,21 @@ function countpwid() {
 	}
 	if (c > 0) {
 		passwordfield = inputs[found];
+		passwordfield.onclick = function () {
+			console.log("findpw 3: get sitepass");
+			if (cpi.pwfield.placeholder === clickHere) {
+				chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
+					if (cpi.count !== 1) {
+						navigator.clipboard.writeText(response);
+					}
+					fillfield(cpi.pwfield, response);
+					console.log("findpw 4: got password", cpi.pwfield.value, response);
+				});
+			} else {
+				// Because people don't always pay attention
+				alert(cpi.pwfield.placeholder);
+			}
+		}
 		for (var i = found - 1; i >= 0; i--) {
 			if ((inputs[i].type == "text" || inputs[i].type == "email") &&
 				inputs[i].isVisible()) {
