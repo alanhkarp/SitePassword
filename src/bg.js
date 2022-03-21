@@ -210,11 +210,11 @@ async function retrieveMetadata() {
     let persona = hpSPG.personas[lastpersona];
     let sitename = persona.sites[domainname];
     let settings = persona.sitenames[sitename];
+    settings.legacy = legacy;
     bg = {
         "activetab": activetab,
         "lastpersona": lastpersona,
         "masterpw": masterpw,
-        "legacy": legacy,
         "protocol": protocol,
         "pwcount": pwcount,
         "settings": settings,

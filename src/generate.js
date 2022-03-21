@@ -34,7 +34,8 @@ function compute(s, settings, hpSPG) {
         for (let i = 0; i < h.length; i++) {
             hswap[i] = swap32(h[i]);
         }
-        sitePassword = binl2b64(hswap, settings.characters).substring(0, settings.length);
+        let chars = characters(settings, hpSPG);
+        sitePassword = binl2b64(hswap, chars).substring(0, settings.length);
         if (verify(sitePassword, settings, hpSPG)) break;
         iter++;
         if (iter >= hpSPG.maxiter) {
@@ -79,7 +80,7 @@ function verify(p, settings, hpSPG) {
 export function characters(settings, hpSPG) {
     let chars = hpSPG.lower + hpSPG.upper + hpSPG.digits + hpSPG.lower.substr(0, 2);
     if (settings.allowspecial) {
-        if (bg.legacy) {
+        if (settings.legacy) {
             // Use for AntiPhishing Toolbar passwords
             chars = chars.substr(0, 32) + settings.specials.substr(1) + chars.substr(31 + settings.specials.length);
         } else {
