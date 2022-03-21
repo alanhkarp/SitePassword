@@ -84,7 +84,7 @@ function eventSetup() {
             let s = get("sitename").value;
             let u = get("username").value;
             let p = get("sitepass").value;
-            if (bg.pwcount != 1 && m && s && u && p && !isphishing(get("sitename").value)) {
+            if (bg.pwcount == 0 && m && s && u && p && !isphishing(get("sitename").value)) {
                 onClipboard = true;
                 copyToClipboard(p);
             }

@@ -34,15 +34,6 @@ window.onload = function () {
 		}
 		return true;
 	});
-	if (cpi.pwfield) {
-		// Usability hint:  I could add onclick to each found password field.
-		// The problem is that the web page doesn't know it's there until there
-		// is some other UI event.  If you're on page that asks you to confirm your
-		// password, it won't detect the result of the click on the second field
-		// until you do something else.  That's confusing if you expect to see
-		// a notification that the two passwords match.  That doesn't happen
-		// when pasting the second password.
-	}
 }
 // Some sites change the page contents based on the fragment
 window.addEventListener("hashchange", (_href) => {
@@ -97,7 +88,7 @@ function setPlaceholder(readyForClick, userid) {
 	if (pwfields[0] && readyForClick && userid) {
 		pwfields[0].placeholder = clickHere;
 		for (let i = 1; i < pwfields.length; i++) {
-			pwfields[i].placeholder = pasteHere;
+			pwfields[i].placeholder = clickHere;
 		}
 	}
 }
@@ -116,37 +107,29 @@ function countpwid() {
 				inputs[i].placeholder = clickSitePassword;
 				found = i;
 			} else {
-				inputs[i].placeholder = pasteHere;
-				inputs[i].onclick = function() {
-					if (inputs[i].placeholder !== clickHere) {
-						let msg = inputs[i].placeholder;
-						if (!msg) {
-							msg = pasteHere;
-						}
-						alert(msg);
+				inputs[i].placeholder = clickSitePassword;
+			}
+			let pwfield = inputs[i];
+			pwfield.onclick = function () {
+					console.log("findpw 3: get sitepass");
+					if (pwfield.placeholder === clickHere) {
+						chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
+							if (c === 0) {
+								navigator.clipboard.writeText(response);
+							}
+							fillfield(pwfield, response);
+							console.log("findpw 4: got password", pwfield, response);
+						});
+					} else {
+						// Because people don't always pay attention
+						alert(pwfield.placeholder);
 					}
 				}
-			}
 			c++;
 		}
 	}
 	if (c > 0) {
 		passwordfield = inputs[found];
-		passwordfield.onclick = function () {
-			console.log("findpw 3: get sitepass");
-			if (cpi.pwfield.placeholder === clickHere) {
-				chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
-					if (cpi.count !== 1) {
-						navigator.clipboard.writeText(response);
-					}
-					fillfield(cpi.pwfield, response);
-					console.log("findpw 4: got password", cpi.pwfield.value, response);
-				});
-			} else {
-				// Because people don't always pay attention
-				alert(cpi.pwfield.placeholder);
-			}
-		}
 		for (var i = found - 1; i >= 0; i--) {
 			if ((inputs[i].type == "text" || inputs[i].type == "email") &&
 				inputs[i].isVisible()) {
