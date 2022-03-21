@@ -94,7 +94,7 @@ function eventSetup() {
             console.log("popup sending site data", personaname, domainname, bg);
             chrome.runtime.sendMessage({ "cmd": "siteData",
                 "personaname": personaname, 
-                "sitename": domainname, 
+                "sitename": s, 
                 "bg": bg, 
                 "onClipboard": onClipboard });
         }

@@ -11,7 +11,7 @@ var legacy = false;  // true to emulate HP Antiphishing Toolbar
 var lastpersona = "everyone";
 var domainname = "";
 var protocol = "";
-var personaname;
+var persona;
 var pwcount = 0;
 console.log("bg clear masterpw");
 
@@ -22,25 +22,25 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     retrieveMetadata().then(() => {
         chrome.storage.session.get(["ssp"], (ssp) => {
             if (ssp.ssp) {
-                personaname = ssp.ssp.personaname || "default";
-                bg.lastpersona = personaname;
+                persona = ssp.ssp.personaname || "default";
+                bg.lastpersona = persona;
                 masterpw = ssp.ssp.masterpw || "";
                 bg.masterpw = masterpw;
-                console.log("bg got ssp", personaname || "foo", masterpw || "bar");
+                console.log("bg got ssp", persona || "foo", masterpw || "bar");
             }
             if (request.cmd === "getMetadata") {
                 getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "siteData") {
                 console.log("bg got site data", request);
                 onClipboard = request.onClipboard;
-                bg = request.bg;
+                bg = clone(request.bg);
                 bg.lastpersona = request.personaname;
                 masterpw = bg.masterpw;
                 hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = bg.settings;
                 persistMetadata(bkmkid);
             } else if (request.cmd === "persistMetadata") {
                 console.log("bg request persistMetadata", request.bg);
-                bg = request.bg;
+                bg = clone(request.bg);
                 masterpw = bg.masterpw;
                 persistMetadata(bkmkid);
             } else if (request.cmd === "getPassword") {
@@ -54,7 +54,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 bg.domainname = domainname;
                 console.log("bg clicked: sending response", bg);
                 sendResponse(bg);
-                if (personaname.clearmasterpw) {
+                if (persona.clearmasterpw) {
                     masterpw = "";
                     console.log("bg clear masterpw")
                 }
@@ -130,9 +130,9 @@ function gotMetadata(hpSPGlocal) {
                             allowupper: true,
                             allownumber: true,
                             allowspecial: false,
-                            minlower: 0,
-                            minupper: 0,
-                            minnumber: 0,
+                            minlower: 1,
+                            minupper: 1,
+                            minnumber: 1,
                             minspecial: 0,
                             specials: "",
                             characters: ""
@@ -147,8 +147,8 @@ function gotMetadata(hpSPGlocal) {
         bg.settings = defaultsettings;
         defaultsettings.characters = characters(defaultsettings, hpSPG);
         hpSPGlocal.personas.everyone = clone(hpSPGlocal.personas.default);
-        personaname = hpSPGlocal.personas.everyone;
-        personaname.personaname = "Everyone";
+        persona = hpSPGlocal.personas.everyone;
+        persona.personaname = "Everyone";
         hpSPG = hpSPGlocal;
         persistMetadata(bkmkid);
     }
@@ -157,10 +157,10 @@ function gotMetadata(hpSPGlocal) {
 async function persistMetadata(bkmkid) {
     // localStorage[name] = JSON.stringify(value);
     console.log("bg persistMetadata", bg, hpSPG);
-    personaname = hpSPG.personas[bg.lastpersona];
+    persona = hpSPG.personas[bg.lastpersona];
     if (bg.settings.sitename) {
-        personaname.sites[domainname] = bg.settings.sitename;
-        personaname.sitenames[bg.settings.sitename] = bg.settings;
+        persona.sites[domainname] = bg.settings.sitename;
+        persona.sitenames[bg.settings.sitename] = bg.settings;
     }
     let update = "ssp://" + JSON.stringify(hpSPG);
     chrome.bookmarks.update(bkmkid, { "url": update });
