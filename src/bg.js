@@ -97,8 +97,13 @@ function onContentPageload(request, sender, sendResponse) {
     if (masterpw && bg.settings.sitename && bg.settings.username) {
         readyForClick = true;
     }
-    console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": "", "readyForClick": readyForClick });
-    sendResponse({ cmd: "fillfields", "u": bg.settings.username || "", "p": "", "readyForClick": readyForClick });
+    let sitepass = "";
+    if (bg.pwcount === 0) {
+        let pr = generate(bg, hpSPG); 
+        sitepass = pr.p;
+    }
+    console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
+    sendResponse({ cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
 }
 function gotMetadata(hpSPGlocal) {
     if (!hpSPGlocal) {

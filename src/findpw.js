@@ -77,10 +77,15 @@ function sendpageinfo(cpi, clicked, onload) {
 		if (chrome.runtime.lastError) console.log(Date.now(), "findpw error", chrome.runtime.lastError);
 		console.log(Date.now(), "findpw response", response);
 		let userid = response.u;
-		setPlaceholder(response.readyForClick, userid);
-		fillfield(cpi.idfield, response.u);
-		if (userid) {
-			fillfield(cpi.pwfield, response.p);
+		if (cpi.count === 0) {
+			// Doesn't work when running dev tools
+			navigator.clipboard.writeText(response.p);
+		} else {
+			setPlaceholder(response.readyForClick, userid);
+			fillfield(cpi.idfield, response.u);
+			if (userid) {
+				fillfield(cpi.pwfield, "");
+			}
 		}
 	});
 }
@@ -111,20 +116,20 @@ function countpwid() {
 			}
 			let pwfield = inputs[i];
 			pwfield.onclick = function () {
-					console.log("findpw 3: get sitepass");
-					if (pwfield.placeholder === clickHere) {
-						chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
-							if (c === 0) {
-								navigator.clipboard.writeText(response);
-							}
-							fillfield(pwfield, response);
-							console.log("findpw 4: got password", pwfield, response);
-						});
-					} else {
-						// Because people don't always pay attention
-						alert(pwfield.placeholder);
-					}
+				console.log("findpw 3: get sitepass");
+				if (pwfield.placeholder === clickHere) {
+					chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
+						if (c === 0) {
+							navigator.clipboard.writeText(response);
+						}
+						fillfield(pwfield, response);
+						console.log("findpw 4: got password", pwfield, response);
+					});
+				} else {
+					// Because people don't always pay attention
+					alert(pwfield.placeholder);
 				}
+			}
 			c++;
 		}
 	}
