@@ -209,7 +209,12 @@ async function retrieveMetadata() {
     // the popup.
     let persona = hpSPG.personas[lastpersona];
     let sitename = persona.sites[domainname];
-    let settings = persona.sitenames[sitename];
+    let settings;
+    if (sitename) {
+        settings = persona.sitenames[sitename];
+    } else {
+         settings = persona.sitenames.default;
+    }
     settings.legacy = legacy;
     bg = {
         "activetab": activetab,

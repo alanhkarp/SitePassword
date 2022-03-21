@@ -9,9 +9,9 @@ foxnews login page doesn't load, get blank page
 
 twitch.tv has same problem as semrush.com, value disappears when losing focus, but also happens to user id, also like myhealth.standfordhealthcare.org retry password page doesn't fill in fields until popup mouseleave
 
-target.com doesn't fill in fields until popup closes, doesn't fill in userid field
+target.com doesn't fill in fields until popup mousleave, doesn't fill in userid field
 
 netflix signup page has same problem as semrush.com, also doesn't fill fields until popup mouseleave
 
-weather.com same problem as semrush.com, also clears userid field when clicking on password field, doesn't fill fields until popup mouseleave
+weather.com same problem as semrush.com, also clears userid field when clicking on password field, doesn't fill fields until popup mouseleave, does not allow paste in password confirm field, requires special character
 
