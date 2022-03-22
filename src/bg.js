@@ -98,7 +98,7 @@ function onContentPageload(request, sender, sendResponse) {
         readyForClick = true;
     }
     let sitepass = "";
-    if (bg.pwcount === 0) {
+    if (bg.pwcount === 0 && bg.settings.username) {
         let pr = generate(bg, hpSPG); 
         sitepass = pr.p;
     }
