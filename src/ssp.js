@@ -228,14 +228,14 @@ function handleclick(which) {
         bg.settings.startwithletter = false;
         get("startwithletter").checked = false;
     }
-    bg.settings.characters = characters(bg.settings, hpSPG)
+    bg.settings.characters = characters(bg.settings, hpSPG);
     ask2generate();
 }
 function changePlaceholder() {
     let u = get("username").value
     if (get("masterpw").value && get("sitename").value && u) {
         console.log("popup sending fill fields", u);
-        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
+        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": get("sitepass").value, "readyForClick": true });
     }
 }
 function setfocus(element) {
