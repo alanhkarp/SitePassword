@@ -91,6 +91,7 @@ function eventSetup() {
             changePlaceholder();
             let personaname = getlowertrim("persona");
             let domainname = get("domainname").value;
+            bg.settings.domainname = domainname;
             console.log("popup sending site data", personaname, domainname, bg);
             chrome.runtime.sendMessage({ "cmd": "siteData",
                 "personaname": personaname, 

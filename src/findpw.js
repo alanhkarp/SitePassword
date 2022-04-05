@@ -68,7 +68,6 @@ function fixfield(field, text) {
 function sendpageinfo(cpi, clicked, onload) {
 	console.log(Date.now(), "findpw sending page info: pwcount = ", cpi.count);
 	chrome.runtime.sendMessage({
-		"domainname": location.hostname,
 		"protocol": location.protocol,
 		"count": cpi.count,
 		"clicked": clicked,
@@ -102,8 +101,13 @@ function countpwid() {
 	var useridfield = null;
 	var found = -1;
 	var c = 0;
-	var inputs = document.getElementsByTagName("input");
-	pwfields = [];
+// Cribbed from line 573 of https://github.com/bitwarden/browser/blob/master/src/content/autofill.js
+var elsList = document.querySelectorAll(
+    'input:not([type="hidden"]):not([type="submit"]):not([type="reset"])' +
+    ':not([type="button"]):not([type="image"]):not([type="file"]):not([data-bwignore]), select, ' +
+    "span[data-bwautofill]"
+);
+let inputs = Array.prototype.slice.call(elsList);	pwfields = [];
 	for (var i = 0; i < inputs.length; i++) {
 		if (inputs[i].type == "password") console.log("findpw find password field", inputs[i], inputs[i].isVisible());
 		if ((inputs[i].type == "password") && inputs[i].isVisible()) {

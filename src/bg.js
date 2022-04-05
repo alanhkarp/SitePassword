@@ -38,19 +38,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 masterpw = bg.masterpw;
                 hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = bg.settings;
                 persistMetadata(bkmkid);
-            } else if (request.cmd === "persistMetadata") {
-                console.log("bg request persistMetadata", request.bg);
-                bg = clone(request.bg);
-                masterpw = bg.masterpw;
-                persistMetadata(bkmkid);
             } else if (request.cmd === "getPassword") {
-                let domainname = getdomainname(sender.url);
+                let domainname = getdomainname(sender.tab.url);
                 bg.settings = bgsettings(bg.lastpersona, domainname);
                 let pr = generate(bg, hpSPG);
                 console.log("bg calculated sitepw", bg, hpSPG, pr, masterpw);
                 sendResponse(pr.p);
             } else if (request.clicked) {
-                domainname = request.domainname;
+                domainname = getdomainname(sender.tab.url);
                 bg.domainname = domainname;
                 console.log("bg clicked: sending response", bg);
                 sendResponse(bg);
@@ -74,6 +69,7 @@ async function getMetadata(request, _sender, sendResponse) {
     } else {
         bg.settings = hpSPG.personas[bg.lastpersona].sitenames.default;
     }
+    // Domain name comes from popup, which is trusted not to spoof it
     bg.settings.domainname = request.domainname || domainname;
     console.log("bg sending metadata", bg, hpSPG);
     sendResponse({ "masterpw": masterpw || "", "bg": bg, "hpSPG": hpSPG });
@@ -83,7 +79,8 @@ function onContentPageload(request, sender, sendResponse) {
     bg.pwcount = request.count;
     protocol = request.protocol;
     pwcount = bg.pwcount;
-    domainname = request.domainname || domainname;
+    // Domain name comes from content script, which might have been corrupted to spoof it
+    let domainname = getdomainname(sender.tab.url);
     console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw);
     let persona = hpSPG.personas[bg.lastpersona];
     let sitename = persona.sites[domainname];
@@ -159,10 +156,13 @@ async function persistMetadata(bkmkid) {
     console.log("bg persistMetadata", bg, hpSPG);
     persona = hpSPG.personas[bg.lastpersona];
     if (bg.settings.sitename) {
-        persona.sites[domainname] = bg.settings.sitename;
+        persona.sites[bg.settings.domainname] = bg.settings.sitename;
         persona.sitenames[bg.settings.sitename] = bg.settings;
     }
     let update = "ssp://" + JSON.stringify(hpSPG);
+    if (hpSPG.personas[bg.lastpersona].sites[""]) {
+        alert("bg bad sitename", hpSPG);
+    }
     chrome.bookmarks.update(bkmkid, { "url": update });
     chrome.storage.session.set({ "ssp": { "masterpw": masterpw, "personaname": bg.lastpersona } });
 }

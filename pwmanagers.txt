@@ -1,0 +1,33 @@
+Open Source
+
+kee: In Keepass family
+
+padloc: uses clipboard
+
+passbolt: requires a server
+
+bitwarden: chrome extension must be open, works on fewer pages
+than SitePassword, works on myhealth
+
+lesspass: calculates passwords, doesn't remember userids,
+uses clipboard
+
+psono: uses clipboard, no autofill from extension, doesn't
+auto-recognize site
+
+ratticDB: relies on encrypted filesystem, user must setup DB
+
+passwordsafe: Windows only, uses clipboard
+
+encryptr: from SpiderOak, cloud-based e-wallet, build from source
+
+keeper: autofills without user action, works with lots of
+sites I have trouble with, not open source
+
+1password: autofill doesn't get username on semrush, doesn't get
+userid on myhealth
+
+dashlane: autofill without user action, doesn't work on semrush,
+usps, ebay, works on schwab, instagram, twitch
+
+element.querySelectorAll

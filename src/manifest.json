@@ -19,7 +19,8 @@
             "js": [
                 "findpw.js", 
                 "visibility.js"
-            ]
+            ],
+            "all_frames": true
         }
     ],
     "permissions": [
