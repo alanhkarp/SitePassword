@@ -42,6 +42,9 @@ window.addEventListener("hashchange", (_href) => {
 function fillfield(field, text) {
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
+		field.addEventListener("change", (event) => {
+			console.log("findpw event", event);
+		});
 		field.value = text.trim();
 		let event = new Event("change");
 		field.dispatchEvent(event);

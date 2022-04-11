@@ -1,0 +1,38 @@
+{
+    "extension": "../SitePassword/src",
+    "benchmarks": {
+        "crashes": [],
+        "cs: got AST": 0.763516219,
+        "cs: AST": 0.010957396000000008,
+        "cs: CFG": 0.0026317110000000365,
+        "cs: PDG": 0.06466355700000004,
+        "bp: got AST": 0.192651291,
+        "bp: AST": 0.023241083999999912,
+        "bp: CFG": 0.02158656399999992,
+        "bp: PDG": 0.11184343600000002,
+        "collected messages": 0.009724685999999982,
+        "linked messages": 1.030807289,
+        "cs: dangers & from WA": 0.006673721000000299,
+        "bp: dangers & from WA": 0.014761232000000124,
+        "cs: got vulnerabilities": 7.986000000403948e-06,
+        "bp: got vulnerabilities": 2.850100000006961e-05
+    },
+    "cs": {
+        "direct_dangers": {},
+        "indirect_dangers": {},
+        "exfiltration_dangers": {}
+    },
+    "bp": {
+        "direct_dangers": {},
+        "indirect_dangers": {},
+        "exfiltration_dangers": {
+            "danger1": {
+                "danger": "bookmarks.getTree",
+                "value": "chrome.bookmarks.getTree()",
+                "line": "183 - 183",
+                "filename": "../SitePassword/src/bg.js",
+                "dataflow": false
+            }
+        }
+    }
+}

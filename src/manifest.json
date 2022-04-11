@@ -25,7 +25,6 @@
     ],
     "permissions": [
         "activeTab",
-        "tabs",
         "background",
         "bookmarks",
         "storage"
