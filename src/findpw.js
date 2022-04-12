@@ -113,7 +113,7 @@ var elsList = document.querySelectorAll(
 let inputs = Array.prototype.slice.call(elsList);	pwfields = [];
 	for (var i = 0; i < inputs.length; i++) {
 		if (inputs[i].type == "password") console.log("findpw find password field", inputs[i], inputs[i].isVisible());
-		if ((inputs[i].type == "password") && inputs[i].isVisible()) {
+		if ((inputs[i].type == "password")) {
 			pwfields.push(inputs[i]);
 			if (c == 0) {
 				inputs[i].placeholder = clickSitePassword;
@@ -143,8 +143,7 @@ let inputs = Array.prototype.slice.call(elsList);	pwfields = [];
 	if (c > 0) {
 		passwordfield = inputs[found];
 		for (var i = found - 1; i >= 0; i--) {
-			if ((inputs[i].type == "text" || inputs[i].type == "email") &&
-				inputs[i].isVisible()) {
+			if (inputs[i].type == "text" || inputs[i].type == "email") {
 				useridfield = inputs[i];
 				break;
 			}
