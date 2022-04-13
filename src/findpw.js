@@ -5,9 +5,10 @@ var clickHere = "Click here for password";
 var pasteHere = "Paste your password here";
 var pwfields = [];
 var cpi;
+var start = Date.now();
 console.log("findpw.js loaded");
 window.onload = function () {
-	console.log("findpw.js running");
+	console.log("findpw.js running", Date.now() - start);
 	var userid = "";
 	cpi = countpwid();
 	if (cpi.pwfield) cpi.pwfield.placeholder = clickSitePassword;
@@ -124,9 +125,9 @@ let inputs = Array.prototype.slice.call(elsList);	pwfields = [];
 			let pwfield = inputs[i];
 			pwfield.onclick = function () {
 				console.log("findpw 3: get sitepass");
-				if (pwfield.placeholder === clickHere) {
+				if (pwfield.placeholder !== pasteHere || pwfield.placeholder !== clickSitePassword) {
 					chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
-						if (c === 0) {
+						if (cpi.count === 0) {
 							navigator.clipboard.writeText(response);
 						}
 						fillfield(pwfield, response);
