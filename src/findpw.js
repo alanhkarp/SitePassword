@@ -5,10 +5,15 @@ var clickHere = "Click here for password";
 var pasteHere = "Paste your password here";
 var pwfields = [];
 var cpi;
+var readyForClick = false;
 var start = Date.now();
 console.log("findpw.js loaded");
 window.onload = function () {
 	console.log("findpw.js running", Date.now() - start);
+	document.onchange = function() {
+		console.log("findpw.js document changed");
+		cpi = countpwid();
+	};
 	var userid = "";
 	cpi = countpwid();
 	if (cpi.pwfield) cpi.pwfield.placeholder = clickSitePassword;
@@ -79,6 +84,7 @@ function sendpageinfo(cpi, clicked, onload) {
 	}, (response) => {
 		if (chrome.runtime.lastError) console.log(Date.now(), "findpw error", chrome.runtime.lastError);
 		console.log(Date.now(), "findpw response", response);
+		readyForClick = response.readyForClick;
 		let userid = response.u;
 		if (cpi.count === 0) {
 			// Doesn't work when running dev tools
@@ -113,14 +119,16 @@ var elsList = document.querySelectorAll(
 );
 let inputs = Array.prototype.slice.call(elsList);	pwfields = [];
 	for (var i = 0; i < inputs.length; i++) {
-		if (inputs[i].type == "password") console.log("findpw find password field", inputs[i], inputs[i].isVisible());
 		if ((inputs[i].type == "password")) {
+			console.log("findpw find password field", inputs[i], inputs[i].isVisible());
 			pwfields.push(inputs[i]);
-			if (c == 0) {
-				inputs[i].placeholder = clickSitePassword;
-				found = i;
+			if (readyForClick) {
+				inputs[i].placeholder = clickHere;
 			} else {
 				inputs[i].placeholder = clickSitePassword;
+			}
+			if (c == 0) {
+				found = i;
 			}
 			let pwfield = inputs[i];
 			pwfield.onclick = function () {
