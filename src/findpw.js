@@ -61,7 +61,7 @@ function fixfield(field, text) {
 	temp.focus();
 	document.body.removeChild(temp);
 	field.focus();
-	let value = document.getElementById(field.id).value;
+	let value = field.value;
 	console.log("findpw focus test", field, field.value, value);
 	if (value !== text.trim()) {
 		navigator.clipboard.writeText(text.trim());

@@ -1,7 +1,7 @@
 'use strict';
 import { characters, generate } from "./generate.js";
 // State I want to keep around that doesn't appear in the file system
-var bg = {}; 
+var bg = {};
 var onClipboard = false;
 var masterpw = "";
 var activetab;
@@ -96,7 +96,7 @@ function onContentPageload(request, sender, sendResponse) {
     }
     let sitepass = "";
     if (bg.pwcount === 0 && bg.settings.username) {
-        let pr = generate(bg, hpSPG); 
+        let pr = generate(bg, hpSPG);
         sitepass = pr.p;
     }
     console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
@@ -213,7 +213,7 @@ async function retrieveMetadata() {
     if (sitename) {
         settings = persona.sitenames[sitename];
     } else {
-         settings = persona.sitenames.default;
+        settings = persona.sitenames.default;
     }
     settings.legacy = legacy;
     bg = {
