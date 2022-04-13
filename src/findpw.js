@@ -64,7 +64,7 @@ function fixfield(field, text) {
 	field.focus();
 	let value = field.value;
 	console.log("findpw focus test", field, field.value, value);
-	if (value !== text.trim()) {
+	if (field.type === "password" && value !== text.trim()) {
 		navigator.clipboard.writeText(text.trim());
 		field.placeholder = pasteHere;
 	}
