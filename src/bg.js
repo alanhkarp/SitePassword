@@ -39,13 +39,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = bg.settings;
                 persistMetadata(bkmkid);
             } else if (request.cmd === "getPassword") {
-                let domainname = getdomainname(sender.tab.url);
+                let domainname = getdomainname(sender.origin);
                 bg.settings = bgsettings(bg.lastpersona, domainname);
                 let pr = generate(bg, hpSPG);
                 console.log("bg calculated sitepw", bg, hpSPG, pr, masterpw);
                 sendResponse(pr.p);
             } else if (request.clicked) {
-                domainname = getdomainname(sender.tab.url);
+                domainname = getdomainname(sender.origin);
                 bg.domainname = domainname;
                 console.log("bg clicked: sending response", bg);
                 sendResponse(bg);
@@ -80,7 +80,7 @@ function onContentPageload(request, sender, sendResponse) {
     protocol = request.protocol;
     pwcount = bg.pwcount;
     // Domain name comes from content script, which might have been corrupted to spoof it
-    let domainname = getdomainname(sender.tab.url);
+    let domainname = getdomainname(sender.origin);
     console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw);
     let persona = hpSPG.personas[bg.lastpersona];
     let sitename = persona.sites[domainname];
