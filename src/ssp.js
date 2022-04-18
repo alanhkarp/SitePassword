@@ -55,6 +55,7 @@ function getsettings(gotMetadata) {
     }, (response) => {
         bg = response.bg;
         hpSPG = response.hpSPG;
+        get("domainname").value = bg.settings.domainname;
         get("masterpw").value = response.masterpw;
         gotMetadata();
     });

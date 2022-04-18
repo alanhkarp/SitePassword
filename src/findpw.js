@@ -77,7 +77,6 @@ function fixfield(field, text) {
 function sendpageinfo(cpi, clicked, onload) {
 	console.log(document.URL, Date.now(), "findpw sending page info: pwcount = ", cpi.count);
 	chrome.runtime.sendMessage({
-		"protocol": location.protocol,
 		"count": cpi.count,
 		"clicked": clicked,
 		"onload": onload

@@ -13,6 +13,7 @@ var domainname = "";
 var protocol = "";
 var persona;
 var pwcount = 0;
+var pwfielddomain = {};
 console.log("bg clear masterpw");
 
 console.log("bg starting");
@@ -39,7 +40,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = bg.settings;
                 persistMetadata(bkmkid);
             } else if (request.cmd === "getPassword") {
-                let domainname = getdomainname(sender.origin);
+                let origin = getdomainname(sender.origin);
+                let domainname = pwfielddomain[origin] || origin;
                 bg.settings = bgsettings(bg.lastpersona, domainname);
                 let pr = generate(bg, hpSPG);
                 console.log("bg calculated sitepw", bg, hpSPG, pr, masterpw);
@@ -70,18 +72,20 @@ async function getMetadata(request, _sender, sendResponse) {
         bg.settings = hpSPG.personas[bg.lastpersona].sitenames.default;
     }
     // Domain name comes from popup, which is trusted not to spoof it
-    bg.settings.domainname = request.domainname || domainname;
+    bg.settings.domainname = pwfielddomain[request.domainname] || request.domainname;
     console.log("bg sending metadata", bg, hpSPG);
     sendResponse({ "masterpw": masterpw || "", "bg": bg, "hpSPG": hpSPG });
 }
 function onContentPageload(request, sender, sendResponse) {
     activetab = sender.tab;
     bg.pwcount = request.count;
-    protocol = request.protocol;
     pwcount = bg.pwcount;
-    // Domain name comes from content script, which might have been corrupted to spoof it
-    let domainname = getdomainname(sender.origin);
-    console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw);
+    if (pwcount > 0) {
+        pwfielddomain[getdomainname(sender.tab.url)] = getdomainname(sender.origin);
+    }
+    let origin = getdomainname(sender.origin);
+    let domainname = pwfielddomain[origin] || origin;
+    console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw || "nomasterpw");
     let persona = hpSPG.personas[bg.lastpersona];
     let sitename = persona.sites[domainname];
     if (sitename) {
@@ -95,7 +99,7 @@ function onContentPageload(request, sender, sendResponse) {
         readyForClick = true;
     }
     let sitepass = "";
-    if (bg.pwcount === 0 && bg.settings.username) {
+    if (bg.pwcount !== 0 && bg.settings.username) {
         let pr = generate(bg, hpSPG);
         sitepass = pr.p;
     }
