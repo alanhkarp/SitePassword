@@ -7,11 +7,11 @@ var pwfields = [];
 var cpi;
 var readyForClick = false;
 var start = Date.now();
-console.log("findpw.js loaded");
+console.log(document.URL, "findpw.js loaded");
 window.onload = function () {
-	console.log("findpw.js running", Date.now() - start);
+	console.log(document.URL, "findpw.js running", Date.now() - start);
 	document.onchange = function() {
-		console.log("findpw.js document changed");
+		console.log(document.URL, "findpw.js document changed");
 		cpi = countpwid();
 	};
 	var userid = "";
@@ -33,7 +33,7 @@ window.onload = function () {
 				setPlaceholder(request.readyForClick, userid);
 				break;
 			case "gettabinfo":
-				console.log("findpw 2: sending cpi", cpi);
+				console.log(document.URL, "findpw 2: sending cpi", cpi);
 				sendpageinfo(cpi, false, false);
 				break;
 			default:
@@ -49,7 +49,7 @@ function fillfield(field, text) {
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
 		field.addEventListener("change", (event) => {
-			console.log("findpw event", event);
+			console.log(document.URL, "findpw event", event);
 		});
 		field.value = text.trim();
 		let event = new Event("change");
@@ -68,22 +68,22 @@ function fixfield(field, text) {
 	document.body.removeChild(temp);
 	field.focus();
 	let value = field.value;
-	console.log("findpw focus test", field, field.value, value);
+	console.log(document.URL, "findpw focus test", field, field.value, value);
 	if (field.type === "password" && value !== text.trim()) {
 		navigator.clipboard.writeText(text.trim());
 		field.placeholder = pasteHere;
 	}
 }
 function sendpageinfo(cpi, clicked, onload) {
-	console.log(Date.now(), "findpw sending page info: pwcount = ", cpi.count);
+	console.log(document.URL, Date.now(), "findpw sending page info: pwcount = ", cpi.count);
 	chrome.runtime.sendMessage({
 		"protocol": location.protocol,
 		"count": cpi.count,
 		"clicked": clicked,
 		"onload": onload
 	}, (response) => {
-		if (chrome.runtime.lastError) console.log(Date.now(), "findpw error", chrome.runtime.lastError);
-		console.log(Date.now(), "findpw response", response);
+		if (chrome.runtime.lastError) console.log(document.URL, Date.now(), "findpw error", chrome.runtime.lastError);
+		console.log(document.URL, Date.now(), "findpw response", response);
 		readyForClick = response.readyForClick;
 		let userid = response.u;
 		if (cpi.count === 0) {
@@ -120,7 +120,7 @@ var elsList = document.querySelectorAll(
 let inputs = Array.prototype.slice.call(elsList);	pwfields = [];
 	for (var i = 0; i < inputs.length; i++) {
 		if ((inputs[i].type == "password")) {
-			console.log("findpw find password field", inputs[i], inputs[i].isVisible());
+			console.log(document.URL, "findpw find password field", inputs[i], inputs[i].isVisible());
 			pwfields.push(inputs[i]);
 			if (readyForClick) {
 				inputs[i].placeholder = clickHere;
@@ -132,14 +132,14 @@ let inputs = Array.prototype.slice.call(elsList);	pwfields = [];
 			}
 			let pwfield = inputs[i];
 			pwfield.onclick = function () {
-				console.log("findpw 3: get sitepass");
+				console.log(document.URL, "findpw 3: get sitepass");
 				if (pwfield.placeholder !== pasteHere || pwfield.placeholder !== clickSitePassword) {
 					chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
 						if (cpi.count === 0) {
 							navigator.clipboard.writeText(response);
 						}
 						fillfield(pwfield, response);
-						console.log("findpw 4: got password", pwfield, response);
+						console.log(document.URL, "findpw 4: got password", pwfield, response);
 					});
 				} else {
 					// Because people don't always pay attention
@@ -158,6 +158,6 @@ let inputs = Array.prototype.slice.call(elsList);	pwfields = [];
 			}
 		}
 	}
-	console.log("findpw: countpwid", c, passwordfield, useridfield);
+	console.log(document.URL, "findpw: countpwid", c, passwordfield, useridfield);
 	return { count: c, pwfield: passwordfield, idfield: useridfield, };
 }
