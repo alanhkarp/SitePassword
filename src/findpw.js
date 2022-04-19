@@ -86,6 +86,9 @@ function fixfield(field, text) {
 	}
 }
 function sendpageinfo(cpi, clicked, onload) {
+	// No need to send page info if no password fields found.  User will have to open
+	// the popup, which will supply the needed data
+	if (cpi.count === 0) return;
 	console.log(document.URL, Date.now(), "findpw sending page info: pwcount = ", cpi.count);
 	chrome.runtime.sendMessage({
 		"count": cpi.count,
@@ -105,6 +108,9 @@ function sendpageinfo(cpi, clicked, onload) {
 			fillfield(cpi.idfield, response.u);
 			if (userid) {
 				fillfield(cpi.pwfield, "");
+				cpi.pwfield.focus();
+			} else {
+				cpi.idfield.focus();
 			}
 		}
 	});
@@ -112,6 +118,7 @@ function sendpageinfo(cpi, clicked, onload) {
 function setPlaceholder(readyForClick, userid) {
 	if (pwfields[0] && readyForClick && userid) {
 		pwfields[0].placeholder = clickHere;
+		pwfields[0].focus();
 		for (let i = 1; i < pwfields.length; i++) {
 			pwfields[i].placeholder = clickHere;
 		}
