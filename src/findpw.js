@@ -6,14 +6,28 @@ var pasteHere = "Paste your password here";
 var pwfields = [];
 var cpi;
 var readyForClick = false;
+var changeRecorded = false;
 var start = Date.now();
-console.log(document.URL, "findpw.js loaded");
-window.onload = function () {
-	console.log(document.URL, "findpw.js running", Date.now() - start);
-	document.onchange = function() {
-		console.log(document.URL, "findpw.js document changed");
+console.log(document.URL, "findpw loaded");
+var mutationObserver = new MutationObserver(function (mutations) {
+	console.log(document.URL, "findpw DOM changed", mutations);
+	if (!changeRecorded && pwfields.length === 0) {
 		cpi = countpwid();
-	};
+		sendpageinfo(cpi, false, true);
+	} else {
+		changeRecorded = false;
+	}
+});
+window.onload = function () {
+	console.log(document.URL, "findpw running", Date.now() - start);
+	mutationObserver.observe(document.body, {
+		attributes: false,
+		characterData: false,
+		childList: true,
+		subtree: true,
+		attributeOldValue: false,
+		characterDataOldValue: false
+	});
 	var userid = "";
 	cpi = countpwid();
 	if (cpi.pwfield) cpi.pwfield.placeholder = clickSitePassword;
@@ -32,11 +46,8 @@ window.onload = function () {
 				}
 				setPlaceholder(request.readyForClick, userid);
 				break;
-			case "gettabinfo":
-				console.log(document.URL, "findpw 2: sending cpi", cpi);
-				sendpageinfo(cpi, false, false);
-				break;
 			default:
+				console.log(document.URL, "findpw unexpected message", request);
 		}
 		return true;
 	});
@@ -83,6 +94,7 @@ function sendpageinfo(cpi, clicked, onload) {
 	}, (response) => {
 		if (chrome.runtime.lastError) console.log(document.URL, Date.now(), "findpw error", chrome.runtime.lastError);
 		console.log(document.URL, Date.now(), "findpw response", response);
+		changeRecorded = true;
 		readyForClick = response.readyForClick;
 		let userid = response.u;
 		if (cpi.count === 0) {
@@ -110,13 +122,8 @@ function countpwid() {
 	var useridfield = null;
 	var found = -1;
 	var c = 0;
-// Cribbed from line 573 of https://github.com/bitwarden/browser/blob/master/src/content/autofill.js
-var elsList = document.querySelectorAll(
-    'input:not([type="hidden"]):not([type="submit"]):not([type="reset"])' +
-    ':not([type="button"]):not([type="image"]):not([type="file"]):not([data-bwignore]), select, ' +
-    "span[data-bwautofill]"
-);
-let inputs = Array.prototype.slice.call(elsList);	pwfields = [];
+	let inputs = document.getElementsByTagName("input");
+	pwfields = [];
 	for (var i = 0; i < inputs.length; i++) {
 		if ((inputs[i].type == "password")) {
 			console.log(document.URL, "findpw find password field", inputs[i], inputs[i].isVisible());
