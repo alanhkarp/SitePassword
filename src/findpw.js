@@ -59,31 +59,42 @@ window.addEventListener("hashchange", (_href) => {
 function fillfield(field, text) {
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
-		field.addEventListener("change", (event) => {
-			console.log(document.URL, "findpw event", event);
-		});
 		field.value = text.trim();
-		let event = new Event("change");
-		field.dispatchEvent(event);
 		fixfield(field, text.trim());
 	}
 }
 function fixfield(field, text) {
 	// Sometimes setting the value of a field isn't enough; the value disappears
-	// when focus changes to another field.  This function does the test to see
-	// if that's happening and puts the text on the clipboard so it can be pasted
-	// in by the user.
+	// when focus changes to another field.  
+	swapFocus(field);
+	// Maybe I just need to tell the page that the field changed
+	makeEvent(field, "change");
+	makeEvent(field, "onchange");
+	makeEvent(field, "input");
+	makeEvent(field, "HTMLEvents");
+	// Is there a better test for telling if the page knows the value has been set?
+	let value = field.value;
+	console.log(document.URL, "findpw focus test", field, value, text);
+	// If none of the above worked, put the password on the clipboard so the user can paste it.
+	if (field.type === "password" && value !== text.trim()) {
+		navigator.clipboard.writeText(text.trim());
+		field.placeholder = pasteHere;
+	}
+}
+function swapFocus(field) {
 	let temp = document.createElement("input");
 	document.body.appendChild(temp);
 	temp.focus();
 	document.body.removeChild(temp);
 	field.focus();
-	let value = field.value;
-	console.log(document.URL, "findpw focus test", field, field.value, value);
-	if (field.type === "password" && value !== text.trim()) {
-		navigator.clipboard.writeText(text.trim());
-		field.placeholder = pasteHere;
-	}
+}
+// Sometimes the page doesn't know that the value is set until an event is triggered
+function makeEvent(field, type) {
+	field.addEventListener(type, (event) => {
+		console.log(document.URL, "findpw generated event", event);
+	});
+	let event = new Event(type, { bubbles: true });
+	field.dispatchEvent(event);
 }
 function sendpageinfo(cpi, clicked, onload) {
 	// No need to send page info if no password fields found.  User will have to open
