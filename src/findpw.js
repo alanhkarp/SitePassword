@@ -64,9 +64,6 @@ function fillfield(field, text) {
 	}
 }
 function fixfield(field, text) {
-	// Sometimes setting the value of a field isn't enough; the value disappears
-	// when focus changes to another field.  
-	swapFocus(field);
 	// Maybe I just need to tell the page that the field changed
 	makeEvent(field, "change");
 	makeEvent(field, "onchange");
@@ -81,19 +78,9 @@ function fixfield(field, text) {
 		field.placeholder = pasteHere;
 	}
 }
-function swapFocus(field) {
-	let temp = document.createElement("input");
-	document.body.appendChild(temp);
-	temp.focus();
-	document.body.removeChild(temp);
-	field.focus();
-}
 // Sometimes the page doesn't know that the value is set until an event is triggered
 function makeEvent(field, type) {
-	field.addEventListener(type, (event) => {
-		console.log(document.URL, "findpw generated event", event);
-	});
-	let event = new Event(type, { bubbles: true });
+	let event = new Event(type, { bubbles: true, view: window, cancelable: true });
 	field.dispatchEvent(event);
 }
 function sendpageinfo(cpi, clicked, onload) {
@@ -135,6 +122,22 @@ function setPlaceholder(readyForClick, userid) {
 		}
 	}
 }
+var pwfieldOnclick = function () {
+	let pwfield = cpi.pwfield;
+	console.log(document.URL, "findpw 3: get sitepass");
+	if (pwfield.placeholder !== pasteHere || pwfield.placeholder !== clickSitePassword) {
+		chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
+			if (cpi.count === 0) {
+				navigator.clipboard.writeText(response);
+			}
+			fillfield(pwfield, response);
+			console.log(document.URL, "findpw 4: got password", pwfield, response);
+		});
+	} else {
+		// Because people don't always pay attention
+		alert(pwfield.placeholder);
+	}
+}
 function countpwid() {
 	var passwordfield = null;
 	var useridfield = null;
@@ -155,21 +158,7 @@ function countpwid() {
 				found = i;
 			}
 			let pwfield = inputs[i];
-			pwfield.onclick = function () {
-				console.log(document.URL, "findpw 3: get sitepass");
-				if (pwfield.placeholder !== pasteHere || pwfield.placeholder !== clickSitePassword) {
-					chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
-						if (cpi.count === 0) {
-							navigator.clipboard.writeText(response);
-						}
-						fillfield(pwfield, response);
-						console.log(document.URL, "findpw 4: got password", pwfield, response);
-					});
-				} else {
-					// Because people don't always pay attention
-					alert(pwfield.placeholder);
-				}
-			}
+			pwfield.onclick = pwfieldOnclick
 			c++;
 		}
 	}
