@@ -62,7 +62,10 @@ Element.prototype.isVisible = function () {
         if (9 === p.nodeType) {
             return true;
         }
-
+        // Added by Alan Karp 22 April 2022
+        if (el.getAttribute('aria-hidden')) {
+            return false;
+        }
         //-- Return false if our element is invisible
         if (
             '0' === _getStyle(el, 'opacity') ||

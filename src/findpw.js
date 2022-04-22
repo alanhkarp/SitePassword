@@ -165,7 +165,8 @@ function countpwid() {
 	if (c > 0) {
 		passwordfield = inputs[found];
 		for (var i = found - 1; i >= 0; i--) {
-			if (inputs[i].type == "text" || inputs[i].type == "email") {
+			// Skip over invisible input fields above the password field
+			if (inputs[i].isVisible() && (inputs[i].type == "text" || inputs[i].type == "email")) {
 				useridfield = inputs[i];
 				break;
 			}
