@@ -118,7 +118,7 @@ function setPlaceholder(readyForClick, userid) {
 		pwfields[0].placeholder = clickHere;
 		pwfields[0].focus();
 		for (let i = 1; i < pwfields.length; i++) {
-			pwfields[i].placeholder = clickHere;
+			pwfields[i].placeholder = pasteHere;
 		}
 	}
 }
@@ -150,15 +150,18 @@ function countpwid() {
 			console.log(document.URL, "findpw find password field", inputs[i], inputs[i].isVisible());
 			pwfields.push(inputs[i]);
 			if (readyForClick) {
-				inputs[i].placeholder = clickHere;
+				if ( c === 0) {
+					inputs[i].placeholder = clickHere;
+				} else {
+					inputs[i].placeholder = pasteHere;
+				}
 			} else {
 				inputs[i].placeholder = clickSitePassword;
 			}
-			if (c == 0) {
+			if (c === 0) {
 				found = i;
+				inputs[i].onclick = pwfieldOnclick
 			}
-			let pwfield = inputs[i];
-			pwfield.onclick = pwfieldOnclick
 			c++;
 		}
 	}

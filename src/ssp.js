@@ -280,8 +280,7 @@ function ask2generate() {
         msgoff("multiple");
         msgoff("zero");
     } else {
-        if (m) {
-        }
+        copyToClipboard(p);
         message("multiple", r.r > 1);
         message("zero", r.r == 0);
     }
