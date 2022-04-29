@@ -4,7 +4,7 @@ var clickSitePassword = "Click SitePassword";
 var clickHere = "Click here for password";
 var pasteHere = "Paste your password here";
 var pwfields = [];
-var cpi;
+var cpi = { count: 0, pwfield: null, idfield: null };
 var readyForClick = false;
 var changeRecorded = false;
 var start = Date.now();
@@ -30,7 +30,6 @@ window.onload = function () {
 	});
 	var userid = "";
 	cpi = countpwid();
-	if (cpi.pwfield) cpi.pwfield.placeholder = clickSitePassword;
 	sendpageinfo(cpi, false, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
 		cpi = countpwid();
@@ -76,6 +75,7 @@ function fixfield(field, text) {
 	if (field.type === "password" && value !== text.trim()) {
 		navigator.clipboard.writeText(text.trim());
 		field.placeholder = pasteHere;
+		console.log("findpw fixfield placeholder", cpi.pwfield.placeholder);
 	}
 }
 // Sometimes the page doesn't know that the value is set until an event is triggered
@@ -98,28 +98,32 @@ function sendpageinfo(cpi, clicked, onload) {
 		changeRecorded = true;
 		readyForClick = response.readyForClick;
 		let userid = response.u;
-		if (cpi.count === 0) {
-			// Doesn't work when running dev tools
+		fillfield(cpi.idfield, userid);
+		setPlaceholder(response.readyForClick, userid);
+		if (cpi.count !== 1) {
+			for (var i = 1; i < pwfields.length; i++) {
+				pwfields[i].placeholder = pasteHere;
+			} 
 			navigator.clipboard.writeText(response.p);
 		} else {
-			setPlaceholder(response.readyForClick, userid);
-			fillfield(cpi.idfield, response.u);
 			if (userid) {
 				fillfield(cpi.pwfield, "");
-				cpi.pwfield.focus();
-			} else {
-				cpi.idfield.focus();
 			}
+			cpi.idfield.focus();
 		}
 	});
 }
 function setPlaceholder(readyForClick, userid) {
-	if (pwfields[0] && readyForClick && userid) {
-		pwfields[0].placeholder = clickHere;
-		pwfields[0].focus();
+	if (cpi.pwfield && readyForClick && userid) {
+		cpi.pwfield.placeholder = clickHere;
+		console.log("findpw setPlaceholder 1 placeholder", cpi.pwfield.placeholder);
+		cpi.pwfield.focus();
 		for (let i = 1; i < pwfields.length; i++) {
 			pwfields[i].placeholder = pasteHere;
+			console.log("findpw setPlaceholder 2 placeholder", pwfields[i]);
 		}
+	} else {
+		cpi.pwfield.placeholder = clickSitePassword;
 	}
 }
 var pwfieldOnclick = function () {
@@ -127,7 +131,7 @@ var pwfieldOnclick = function () {
 	console.log(document.URL, "findpw 3: get sitepass");
 	if (pwfield.placeholder !== pasteHere || pwfield.placeholder !== clickSitePassword) {
 		chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
-			if (cpi.count === 0) {
+			if (cpi.count !== 1) {
 				navigator.clipboard.writeText(response);
 			}
 			fillfield(pwfield, response);
@@ -148,21 +152,12 @@ function countpwid() {
 	for (var i = 0; i < inputs.length; i++) {
 		if ((inputs[i].type == "password")) {
 			console.log(document.URL, "findpw find password field", inputs[i], inputs[i].isVisible());
+			c++;
 			pwfields.push(inputs[i]);
-			if (readyForClick) {
-				if ( c === 0) {
-					inputs[i].placeholder = clickHere;
-				} else {
-					inputs[i].placeholder = pasteHere;
-				}
-			} else {
-				inputs[i].placeholder = clickSitePassword;
-			}
-			if (c === 0) {
+			if (c === 1) {
 				found = i;
 				inputs[i].onclick = pwfieldOnclick
 			}
-			c++;
 		}
 	}
 	if (c > 0) {
