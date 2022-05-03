@@ -152,7 +152,7 @@ function putOnClipboard(pwfield, password) {
 		setTimeout(function () {
 			navigator.clipboard.writeText("");
 			pwfield.placeholder = clickSitePassword;
-		}, 10000);
+		}, 30000);
 	}
 }
 function countpwid() {
