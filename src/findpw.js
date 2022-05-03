@@ -33,17 +33,18 @@ window.onload = function () {
 	sendpageinfo(cpi, false, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
 		cpi = countpwid();
+		readyForClick = request.readyForClick;
 		switch (request.cmd) {
 			case "fillfields":
 				userid = request.u;
 				fillfield(cpi.idfield, userid);
 				if (userid) {
 					if (request.p && cpi.count !== 1) {
-						navigator.clipboard.writeText(request.p);
+						putOnClipboard(pwfields[1], request.p);
 					}
 					fillfield(cpi.pwfield, request.p);
 				}
-				setPlaceholder(request.readyForClick, userid);
+				setPlaceholder(userid);
 				break;
 			default:
 				console.log(document.URL, "findpw unexpected message", request);
@@ -62,6 +63,7 @@ function fillfield(field, text) {
 		fixfield(field, text.trim());
 	}
 }
+// Some pages don't know the field has been updated
 function fixfield(field, text) {
 	// Maybe I just need to tell the page that the field changed
 	makeEvent(field, "change");
@@ -73,9 +75,7 @@ function fixfield(field, text) {
 	console.log(document.URL, "findpw focus test", field, value, text);
 	// If none of the above worked, put the password on the clipboard so the user can paste it.
 	if (field.type === "password" && value !== text.trim()) {
-		navigator.clipboard.writeText(text.trim());
-		field.placeholder = pasteHere;
-		console.log("findpw fixfield placeholder", cpi.pwfield.placeholder);
+		putOnClipboard(text.trim());
 	}
 }
 // Sometimes the page doesn't know that the value is set until an event is triggered
@@ -99,12 +99,9 @@ function sendpageinfo(cpi, clicked, onload) {
 		readyForClick = response.readyForClick;
 		let userid = response.u;
 		fillfield(cpi.idfield, userid);
-		setPlaceholder(response.readyForClick, userid);
+		setPlaceholder(userid, response.p);
 		if (cpi.count !== 1) {
-			for (var i = 1; i < pwfields.length; i++) {
-				pwfields[i].placeholder = pasteHere;
-			} 
-			navigator.clipboard.writeText(response.p);
+			putOnClipboard(pwfields[1], response.p);
 		} else {
 			if (userid) {
 				fillfield(cpi.pwfield, "");
@@ -113,14 +110,19 @@ function sendpageinfo(cpi, clicked, onload) {
 		}
 	});
 }
-function setPlaceholder(readyForClick, userid) {
+function setPlaceholder(userid, pw) {
 	if (cpi.pwfield && readyForClick && userid) {
-		cpi.pwfield.placeholder = clickHere;
+		if (cpi.pwfield.isVisible()) {
+			cpi.pwfield.placeholder = clickHere;
+		} else {
+			// In case isVisible() gets it wrong
+			putOnClipboard(cpi.pwfield, pw);
+		}
 		console.log("findpw setPlaceholder 1 placeholder", cpi.pwfield.placeholder);
 		cpi.pwfield.focus();
-		for (let i = 1; i < pwfields.length; i++) {
-			pwfields[i].placeholder = pasteHere;
-			console.log("findpw setPlaceholder 2 placeholder", pwfields[i]);
+		if (cpi.count !== 1) {
+			putOnClipboard(pwfields[1], pw);
+			console.log("findpw setPlaceholder 2 placeholder", pwfields[1]);
 		}
 	} else {
 		cpi.pwfield.placeholder = clickSitePassword;
@@ -131,15 +133,26 @@ var pwfieldOnclick = function () {
 	console.log(document.URL, "findpw 3: get sitepass");
 	if (pwfield.placeholder !== pasteHere || pwfield.placeholder !== clickSitePassword) {
 		chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
-			if (cpi.count !== 1) {
-				navigator.clipboard.writeText(response);
-			}
 			fillfield(pwfield, response);
 			console.log(document.URL, "findpw 4: got password", pwfield, response);
 		});
 	} else {
 		// Because people don't always pay attention
 		alert(pwfield.placeholder);
+	}
+}
+function putOnClipboard(pwfield, password) {
+	navigator.clipboard.writeText(password);
+	if (pwfield) {
+		if (readyForClick) {
+			pwfield.placeholder = pasteHere;
+		} else {
+			pwfield.placeholder = clickSitePassword;
+		}
+		setTimeout(function () {
+			navigator.clipboard.writeText("");
+			pwfield.placeholder = clickSitePassword;
+		}, 10000);
 	}
 }
 function countpwid() {
@@ -151,12 +164,12 @@ function countpwid() {
 	pwfields = [];
 	for (var i = 0; i < inputs.length; i++) {
 		if ((inputs[i].type == "password")) {
-			console.log(document.URL, "findpw find password field", inputs[i], inputs[i].isVisible());
+			console.log(document.URL, "findpw found password field", inputs[i], inputs[i].isVisible());
 			c++;
 			pwfields.push(inputs[i]);
 			if (c === 1) {
 				found = i;
-				inputs[i].onclick = pwfieldOnclick
+				if (inputs[i].isVisible()) inputs[i].onclick = pwfieldOnclick
 			}
 		}
 	}
