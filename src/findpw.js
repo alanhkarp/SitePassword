@@ -112,12 +112,7 @@ function sendpageinfo(cpi, clicked, onload) {
 }
 function setPlaceholder(userid, pw) {
 	if (cpi.pwfield && readyForClick && userid) {
-		if (cpi.pwfield.isVisible()) {
-			cpi.pwfield.placeholder = clickHere;
-		} else {
-			// In case isVisible() gets it wrong
-			putOnClipboard(cpi.pwfield, pw);
-		}
+		cpi.pwfield.placeholder = clickHere;
 		console.log("findpw setPlaceholder 1 placeholder", cpi.pwfield.placeholder);
 		cpi.pwfield.focus();
 		if (cpi.count !== 1) {
@@ -158,18 +153,22 @@ function putOnClipboard(pwfield, password) {
 function countpwid() {
 	var passwordfield = null;
 	var useridfield = null;
+	var visible = true;
 	var found = -1;
 	var c = 0;
 	let inputs = document.getElementsByTagName("input");
 	pwfields = [];
 	for (var i = 0; i < inputs.length; i++) {
 		if ((inputs[i].type == "password")) {
-			console.log(document.URL, "findpw found password field", inputs[i], inputs[i].isVisible());
-			c++;
-			pwfields.push(inputs[i]);
-			if (c === 1) {
-				found = i;
-				if (inputs[i].isVisible()) inputs[i].onclick = pwfieldOnclick
+			visible = !isHidden(inputs[i]);
+			console.log(document.URL, "findpw found password field", i, inputs[i], visible);
+			if (visible) {
+				c++;
+				if (c === 1) {
+					pwfields.push(inputs[i]);
+					found = i;
+					inputs[i].onclick = pwfieldOnclick;
+				}
 			}
 		}
 	}
@@ -177,7 +176,7 @@ function countpwid() {
 		passwordfield = inputs[found];
 		for (var i = found - 1; i >= 0; i--) {
 			// Skip over invisible input fields above the password field
-			if (inputs[i].isVisible() && (inputs[i].type == "text" || inputs[i].type == "email")) {
+			if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
 				useridfield = inputs[i];
 				break;
 			}
@@ -185,4 +184,10 @@ function countpwid() {
 	}
 	console.log(document.URL, "findpw: countpwid", c, passwordfield, useridfield);
 	return { count: c, pwfield: passwordfield, idfield: useridfield, };
+}
+function isHidden(field) {
+	let hidden =
+		(window.getComputedStyle(field).display === 'none') ||
+		(field.offsetParent === null);
+	return hidden;
 }
