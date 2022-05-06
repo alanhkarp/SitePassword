@@ -75,7 +75,7 @@ function fixfield(field, text) {
 	makeEvent(field, "keyup");
 	// Is there a better test for telling if the page knows the value has been set?
 	let value = field.value;
-	console.log(document.URL, "findpw focus test", field, value, text);
+	console.log(document.URL, "findpw focus test", field.value, text);
 	// If none of the above worked, put the password on the clipboard so the user can paste it.
 	if (field.type === "password" && value !== text.trim()) {
 		putOnClipboard(text.trim());
@@ -109,21 +109,21 @@ function sendpageinfo(cpi, clicked, onload) {
 			if (userid) {
 				fillfield(cpi.pwfield, "");
 			}
-			cpi.idfield.focus();
 		}
 	});
 }
 function setPlaceholder(userid, pw) {
 	if (cpi.pwfield && readyForClick && userid) {
 		cpi.pwfield.placeholder = clickHere;
-		console.log("findpw setPlaceholder 1 placeholder", cpi.pwfield.placeholder);
-		cpi.pwfield.focus();
+		cpi.pwfield.ariaPlaceholder = clickHere;
+		console.log("findpw setPlaceholder 1:", cpi.pwfield);
 		if (cpi.count !== 1) {
 			putOnClipboard(pwfields[1], pw);
-			console.log("findpw setPlaceholder 2 placeholder", pwfields[1]);
+			console.log("findpw setPlaceholder 2:", pwfields[1]);
 		}
 	} else {
 		cpi.pwfield.placeholder = clickSitePassword;
+		cpi.pwfield.ariaPlaceholder = clickSitePassword;
 	}
 }
 var pwfieldOnclick = function () {
@@ -144,12 +144,15 @@ function putOnClipboard(pwfield, password) {
 	if (pwfield) {
 		if (readyForClick) {
 			pwfield.placeholder = pasteHere;
+			pwfield.ariaPlaceholder = pasteHere;
 		} else {
 			pwfield.placeholder = clickSitePassword;
+			pwfield.ariaPlaceholder = clickSitePassword
 		}
 		setTimeout(function () {
 			navigator.clipboard.writeText("");
 			pwfield.placeholder = clickSitePassword;
+			pwfield.ariaPlaceholder = clickSitePassword
 		}, 30000);
 	}
 }
@@ -191,6 +194,7 @@ function countpwid() {
 function isHidden(field) {
 	let hidden =
 		(window.getComputedStyle(field).display === 'none') ||
-		(field.offsetParent === null);
+		(field.offsetParent === null) ||
+		field.ariaHidden;
 	return hidden;
 }
