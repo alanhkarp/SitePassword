@@ -121,7 +121,7 @@ function setPlaceholder(userid, pw) {
 			putOnClipboard(pwfields[1], pw);
 			console.log("findpw setPlaceholder 2:", pwfields[1]);
 		}
-	} else {
+	} else if (cpi.placeholder) {
 		cpi.pwfield.placeholder = clickSitePassword;
 		cpi.pwfield.ariaPlaceholder = clickSitePassword;
 	}
@@ -182,6 +182,7 @@ function countpwid() {
 		passwordfield = inputs[found];
 		for (var i = found - 1; i >= 0; i--) {
 			// Skip over invisible input fields above the password field
+			visible = !isHidden(inputs[i]);
 			if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
 				useridfield = inputs[i];
 				break;
