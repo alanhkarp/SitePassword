@@ -70,6 +70,9 @@ function fixfield(field, text) {
 	makeEvent(field, "onchange");
 	makeEvent(field, "input");
 	makeEvent(field, "HTMLEvents");
+	makeEvent(field, "keydown");
+	makeEvent(field, "keypress");
+	makeEvent(field, "keyup");
 	// Is there a better test for telling if the page knows the value has been set?
 	let value = field.value;
 	console.log(document.URL, "findpw focus test", field, value, text);
@@ -159,7 +162,7 @@ function countpwid() {
 	let inputs = document.getElementsByTagName("input");
 	pwfields = [];
 	for (var i = 0; i < inputs.length; i++) {
-		if ((inputs[i].type == "password")) {
+		if (inputs[i].type && (inputs[i].type.toLowerCase() == "password")) {
 			visible = !isHidden(inputs[i]);
 			console.log(document.URL, "findpw found password field", i, inputs[i], visible);
 			if (visible) {
