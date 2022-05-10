@@ -117,8 +117,9 @@ function setPlaceholder(userid, pw) {
 		cpi.pwfield.placeholder = clickHere;
 		cpi.pwfield.ariaPlaceholder = clickHere;
 		console.log("findpw setPlaceholder 1:", cpi.pwfield);
-		if (cpi.count !== 1) {
+		if (cpi.count !== 1 && pw) {
 			putOnClipboard(pwfields[1], pw);
+			if(pwfields[1]) pwfields[1].placeholder = pasteHere;
 			console.log("findpw setPlaceholder 2:", pwfields[1]);
 		}
 	} else if (cpi.pwfield) {
@@ -171,11 +172,12 @@ function countpwid() {
 			if (visible) {
 				c++;
 				if (c === 1) {
-					pwfields.push(inputs[i]);
 					found = i;
 					inputs[i].onclick = pwfieldOnclick;
 				}
 			}
+			if (c > 2) break; // Use only the first two password fields
+			pwfields.push(inputs[i]);
 		}
 	}
 	if (c > 0) {
@@ -196,6 +198,6 @@ function isHidden(field) {
 	let hidden =
 		(window.getComputedStyle(field).display === 'none') ||
 		(field.offsetParent === null) ||
-		field.ariaHidden;
+		(field.ariaHidden === true);
 	return hidden;
 }
