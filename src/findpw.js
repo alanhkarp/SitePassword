@@ -170,6 +170,7 @@ function countpwid() {
 			visible = !isHidden(inputs[i]);
 			console.log(document.URL, "findpw found password field", i, inputs[i], visible);
 			if (visible) {
+				pwfields.push(inputs[i]);
 				c++;
 				if (c === 1) {
 					found = i;
@@ -177,7 +178,6 @@ function countpwid() {
 				}
 			}
 			if (c > 2) break; // Use only the first two password fields
-			pwfields.push(inputs[i]);
 		}
 	}
 	if (c > 0) {
