@@ -198,6 +198,6 @@ function isHidden(field) {
 	let hidden =
 		(window.getComputedStyle(field).display === 'none') ||
 		(field.offsetParent === null) ||
-		(field.ariaHidden === true);
+		(field.ariaHidden === "true");
 	return hidden;
 }
