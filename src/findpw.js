@@ -121,7 +121,7 @@ function setPlaceholder(userid, pw) {
 			putOnClipboard(pwfields[1], pw);
 			console.log("findpw setPlaceholder 2:", pwfields[1]);
 		}
-	} else if (cpi.placeholder) {
+	} else if (cpi.pwfield) {
 		cpi.pwfield.placeholder = clickSitePassword;
 		cpi.pwfield.ariaPlaceholder = clickSitePassword;
 	}
