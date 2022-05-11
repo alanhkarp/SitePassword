@@ -119,7 +119,7 @@ function setPlaceholder(userid, pw) {
 		console.log("findpw setPlaceholder 1:", cpi.pwfield);
 		if (cpi.count !== 1 && pw) {
 			putOnClipboard(pwfields[1], pw);
-			if(pwfields[1]) pwfields[1].placeholder = pasteHere;
+			if (pwfields[1]) pwfields[1].placeholder = pasteHere;
 			console.log("findpw setPlaceholder 2:", pwfields[1]);
 		}
 	} else if (cpi.pwfield) {
@@ -171,10 +171,11 @@ function countpwid() {
 			console.log(document.URL, "findpw found password field", i, inputs[i], visible);
 			if (visible) {
 				pwfields.push(inputs[i]);
+				clearLabel(inputs[i]);
 				c++;
 				if (c === 1) {
 					found = i;
-					inputs[i].onclick = pwfieldOnclick;
+					pwfields[0].onclick = pwfieldOnclick;
 				}
 			}
 			if (c > 2) break; // Use only the first two password fields
@@ -187,12 +188,24 @@ function countpwid() {
 			visible = !isHidden(inputs[i]);
 			if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
 				useridfield = inputs[i];
+				clearLabel(inputs[i]);
 				break;
 			}
 		}
 	}
 	console.log(document.URL, "findpw: countpwid", c, passwordfield, useridfield);
-	return { count: c, pwfield: passwordfield, idfield: useridfield, };
+	return { count: c, pwfield: pwfields[0], idfield: useridfield, };
+}
+function clearLabel(field) {
+	return;
+	let labels = field.labels;
+	if (labels && labels[0]) {
+		if (labels[0].innerHTML) {
+			labels[0].innerHTML = "";
+		} else if (labels[0].value) {
+			labels[0].value = "";
+		}
+	}
 }
 function isHidden(field) {
 	let hidden =
