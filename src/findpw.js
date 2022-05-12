@@ -197,7 +197,7 @@ function countpwid() {
 	return { count: c, pwfield: pwfields[0], idfield: useridfield, };
 }
 function clearLabel(field) {
-	return;
+	return; // Until I can find something that works.
 	let labels = field.labels;
 	if (labels && labels[0]) {
 		if (labels[0].innerHTML) {
