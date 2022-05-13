@@ -9,18 +9,18 @@ var readyForClick = false;
 var changeRecorded = false;
 var start = Date.now();
 console.log(document.URL, Date.now() - start, "findpw loaded");
-var mutationObserver = new MutationObserver(function (mutations) {
-	console.log(document.URL, Date.now() - start, "findpw DOM changed", changeRecorded, cpi, mutations);
-	if (!changeRecorded && !cpi.pwfield) {
-		cpi = countpwid();
-		sendpageinfo(cpi, false, true);
-	} else {
-		changeRecorded = false;
-	}
-});
 window.onload = function () {
 	console.log(document.URL, Date.now() - start, "findpw running");
-	mutationObserver.observe(document.body, {
+	var mutationObserver = new MutationObserver(function (mutations) {
+		console.log(document.URL, Date.now() - start, "findpw DOM changed", changeRecorded, cpi, mutations);
+		if (!changeRecorded && !cpi.pwfield) {
+			cpi = countpwid();
+			sendpageinfo(cpi, false, true);
+		} else {
+			changeRecorded = false;
+		}
+	});
+		mutationObserver.observe(document.body, {
 		attrbutes: true,
 		characterData: false,
 		childList: true,
@@ -30,9 +30,7 @@ window.onload = function () {
 	});
 	var userid = "";
 	cpi = countpwid();
-		sendpageinfo(cpi, false, true);	
 	sendpageinfo(cpi, false, true);
-		sendpageinfo(cpi, false, true);	
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
 		cpi = countpwid();
 		readyForClick = request.readyForClick;
@@ -131,7 +129,7 @@ function setPlaceholder(userid, pw) {
 var pwfieldOnclick = function () {
 	let pwfield = cpi.pwfield;
 	console.log(document.URL, "findpw 3: get sitepass");
-	if (pwfield.placeholder !== pasteHere || pwfield.placeholder !== clickSitePassword) {
+	if (pwfield.placeholder === clickHere) {
 		chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
 			fillfield(pwfield, response);
 			console.log(document.URL, "findpw 4: got password", pwfield, response);
