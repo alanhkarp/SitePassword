@@ -8,10 +8,10 @@ var cpi = { count: 0, pwfield: null, idfield: null };
 var readyForClick = false;
 var changeRecorded = false;
 var start = Date.now();
-console.log(document.URL, "findpw loaded");
+console.log(document.URL, Date.now() - start, "findpw loaded");
 var mutationObserver = new MutationObserver(function (mutations) {
-	console.log(document.URL, "findpw DOM changed", mutations);
-	if (!changeRecorded && pwfields.length === 0) {
+	console.log(document.URL, Date.now() - start, "findpw DOM changed", changeRecorded, cpi, mutations);
+	if (!changeRecorded && !cpi.pwfield) {
 		cpi = countpwid();
 		sendpageinfo(cpi, false, true);
 	} else {
@@ -19,18 +19,20 @@ var mutationObserver = new MutationObserver(function (mutations) {
 	}
 });
 window.onload = function () {
-	console.log(document.URL, "findpw running", Date.now() - start);
+	console.log(document.URL, Date.now() - start, "findpw running");
 	mutationObserver.observe(document.body, {
-		attributes: false,
+		attrbutes: true,
 		characterData: false,
 		childList: true,
 		subtree: true,
-		attributeOldValue: false,
+		attributeOldValue: true,
 		characterDataOldValue: false
 	});
 	var userid = "";
 	cpi = countpwid();
+		sendpageinfo(cpi, false, true);	
 	sendpageinfo(cpi, false, true);
+		sendpageinfo(cpi, false, true);	
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
 		cpi = countpwid();
 		readyForClick = request.readyForClick;
@@ -90,14 +92,14 @@ function sendpageinfo(cpi, clicked, onload) {
 	// No need to send page info if no password fields found.  User will have to open
 	// the popup, which will supply the needed data
 	if (cpi.count === 0) return;
-	console.log(document.URL, Date.now(), "findpw sending page info: pwcount = ", cpi.count);
+	console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.count);
 	chrome.runtime.sendMessage({
 		"count": cpi.count,
 		"clicked": clicked,
 		"onload": onload
 	}, (response) => {
-		if (chrome.runtime.lastError) console.log(document.URL, Date.now(), "findpw error", chrome.runtime.lastError);
-		console.log(document.URL, Date.now(), "findpw response", response);
+		if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
+		console.log(document.URL, Date.now() - start, "findpw response", response);
 		changeRecorded = true;
 		readyForClick = response.readyForClick;
 		let userid = response.u;
@@ -113,14 +115,13 @@ function sendpageinfo(cpi, clicked, onload) {
 	});
 }
 function setPlaceholder(userid, pw) {
+	console.log("findpw setPlaceholder 1:", Date.now() - start, userid, readyForClick, cpi.pwfield);
 	if (cpi.pwfield && readyForClick && userid) {
 		cpi.pwfield.placeholder = clickHere;
 		cpi.pwfield.ariaPlaceholder = clickHere;
-		console.log("findpw setPlaceholder 1:", cpi.pwfield);
 		if (cpi.count !== 1 && pw) {
 			putOnClipboard(pwfields[1], pw);
 			if (pwfields[1]) pwfields[1].placeholder = pasteHere;
-			console.log("findpw setPlaceholder 2:", pwfields[1]);
 		}
 	} else if (cpi.pwfield) {
 		cpi.pwfield.placeholder = clickSitePassword;
@@ -168,7 +169,7 @@ function countpwid() {
 	for (var i = 0; i < inputs.length; i++) {
 		if (inputs[i].type && (inputs[i].type.toLowerCase() == "password")) {
 			visible = !isHidden(inputs[i]);
-			console.log(document.URL, "findpw found password field", i, inputs[i], visible);
+			console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
 			if (visible) {
 				pwfields.push(inputs[i]);
 				clearLabel(inputs[i]);
@@ -193,7 +194,7 @@ function countpwid() {
 			}
 		}
 	}
-	console.log(document.URL, "findpw: countpwid", c, passwordfield, useridfield);
+	console.log(document.URL, Date.now() - start, "findpw: countpwid", c, passwordfield, useridfield);
 	return { count: c, pwfield: pwfields[0], idfield: useridfield, };
 }
 function clearLabel(field) {
