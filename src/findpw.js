@@ -12,15 +12,16 @@ console.log(document.URL, Date.now() - start, "findpw loaded");
 window.onload = function () {
 	console.log(document.URL, Date.now() - start, "findpw running");
 	var mutationObserver = new MutationObserver(function (mutations) {
+		// Find password field if added late or fill in again if userid and/or password fields were cleared
 		console.log(document.URL, Date.now() - start, "findpw DOM changed", changeRecorded, cpi, mutations);
-		if (!changeRecorded && !cpi.pwfield) {
+		if (!changeRecorded ) {
 			cpi = countpwid();
 			sendpageinfo(cpi, false, true);
 		} else {
 			changeRecorded = false;
 		}
 	});
-		mutationObserver.observe(document.body, {
+	mutationObserver.observe(document.body, {
 		attrbutes: true,
 		characterData: false,
 		childList: true,
