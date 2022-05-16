@@ -17,10 +17,13 @@ window.onload = function () {
 		// Find password field if added late or fill in again if userid and/or password fields were cleared
 		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
 		mutationObserver.disconnect(); // Don't trigger observer for these updated
-		cpi = countpwid(); // Mutations might have replace the userid and password fields
-		fillfield(cpi.idfield, userid);
-		fillfield(cpi.pwfield, sitepw);
-		setPlaceholder(userid, sitepw);
+		cpi = countpwid();
+		if (!userid) sendpageinfo(cpi, false, true);
+		if (userid) {
+			fillfield(cpi.idfield, userid);
+			fillfield(cpi.pwfield, sitepw);
+			setPlaceholder(userid, sitepw);
+		}
 		mutationObserver.observe(document.body, { // Start looking for updates again
 			attrbutes: true,
 			characterData: false,
@@ -61,17 +64,17 @@ window.onload = function () {
 		return true;
 	});
 }
-let observeMutation = 
-// Some sites change the page contents based on the fragment
-window.addEventListener("hashchange", (_href) => {
-	cpi = countpwid();
-});
+let observeMutation =
+	// Some sites change the page contents based on the fragment
+	window.addEventListener("hashchange", (_href) => {
+		cpi = countpwid();
+	});
 function fillfield(field, text) {
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
 		field.value = text.trim();
 		fixfield(field, text.trim());
-		}
+	}
 }
 // Some pages don't know the field has been updated
 function fixfield(field, text) {
