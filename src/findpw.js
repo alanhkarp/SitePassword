@@ -4,22 +4,31 @@ var clickSitePassword = "Click SitePassword";
 var clickHere = "Click here for password";
 var pasteHere = "Paste your password here";
 var pwfields = [];
+var sitepw = "";
+var userid = "";
 var cpi = { count: 0, pwfield: null, idfield: null };
 var readyForClick = false;
-var changeRecorded = false;
+var mutationObserver;
 var start = Date.now();
 console.log(document.URL, Date.now() - start, "findpw loaded");
 window.onload = function () {
 	console.log(document.URL, Date.now() - start, "findpw running");
-	var mutationObserver = new MutationObserver(function (mutations) {
+	mutationObserver = new MutationObserver(function (mutations) {
 		// Find password field if added late or fill in again if userid and/or password fields were cleared
-		console.log(document.URL, Date.now() - start, "findpw DOM changed", changeRecorded, cpi, mutations);
-		if (!changeRecorded ) {
-			cpi = countpwid();
-			sendpageinfo(cpi, false, true);
-		} else {
-			changeRecorded = false;
-		}
+		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
+		mutationObserver.disconnect(); // Don't trigger observer for these updated
+		cpi = countpwid(); // Mutations might have replace the userid and password fields
+		fillfield(cpi.idfield, userid);
+		fillfield(cpi.pwfield, sitepw);
+		setPlaceholder(userid, sitepw);
+		mutationObserver.observe(document.body, { // Start looking for updates again
+			attrbutes: true,
+			characterData: false,
+			childList: true,
+			subtree: true,
+			attributeOldValue: true,
+			characterDataOldValue: false
+		});
 	});
 	mutationObserver.observe(document.body, {
 		attrbutes: true,
@@ -29,7 +38,6 @@ window.onload = function () {
 		attributeOldValue: true,
 		characterDataOldValue: false
 	});
-	var userid = "";
 	cpi = countpwid();
 	sendpageinfo(cpi, false, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
@@ -53,6 +61,7 @@ window.onload = function () {
 		return true;
 	});
 }
+let observeMutation = 
 // Some sites change the page contents based on the fragment
 window.addEventListener("hashchange", (_href) => {
 	cpi = countpwid();
@@ -62,7 +71,7 @@ function fillfield(field, text) {
 	if (field && text) {
 		field.value = text.trim();
 		fixfield(field, text.trim());
-	}
+		}
 }
 // Some pages don't know the field has been updated
 function fixfield(field, text) {
@@ -99,9 +108,8 @@ function sendpageinfo(cpi, clicked, onload) {
 	}, (response) => {
 		if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
 		console.log(document.URL, Date.now() - start, "findpw response", response);
-		changeRecorded = true;
 		readyForClick = response.readyForClick;
-		let userid = response.u;
+		userid = response.u;
 		fillfield(cpi.idfield, userid);
 		setPlaceholder(userid, response.p);
 		if (cpi.count !== 1) {
@@ -132,6 +140,7 @@ var pwfieldOnclick = function () {
 	console.log(document.URL, "findpw 3: get sitepass");
 	if (pwfield.placeholder === clickHere) {
 		chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
+			sitepw = response;
 			fillfield(pwfield, response);
 			console.log(document.URL, "findpw 4: got password", pwfield, response);
 		});

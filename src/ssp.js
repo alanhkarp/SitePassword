@@ -100,6 +100,8 @@ function eventSetup() {
                 "bg": bg, 
                 "onClipboard": onClipboard });
         }
+        // It would be nice to close the window here, but the contents script doesn't work if I do
+        // window.close()
     }
     // UI Event handlers
     get("persona").onkeyup = function () {
