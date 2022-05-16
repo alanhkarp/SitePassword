@@ -9,6 +9,14 @@ var userid = "";
 var cpi = { count: 0, pwfield: null, idfield: null };
 var readyForClick = false;
 var mutationObserver;
+var observerOptions = { // Start looking for updates again
+	attrbutes: true,
+	characterData: false,
+	childList: true,
+	subtree: true,
+	attributeOldValue: true,
+	characterDataOldValue: false
+};
 var start = Date.now();
 console.log(document.URL, Date.now() - start, "findpw loaded");
 window.onload = function () {
@@ -16,7 +24,6 @@ window.onload = function () {
 	mutationObserver = new MutationObserver(function (mutations) {
 		// Find password field if added late or fill in again if userid and/or password fields were cleared
 		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
-		mutationObserver.disconnect(); // Don't trigger observer for these updated
 		cpi = countpwid();
 		if (!userid) sendpageinfo(cpi, false, true);
 		if (userid) {
@@ -24,23 +31,8 @@ window.onload = function () {
 			fillfield(cpi.pwfield, sitepw);
 			setPlaceholder(userid, sitepw);
 		}
-		mutationObserver.observe(document.body, { // Start looking for updates again
-			attrbutes: true,
-			characterData: false,
-			childList: true,
-			subtree: true,
-			attributeOldValue: true,
-			characterDataOldValue: false
-		});
 	});
-	mutationObserver.observe(document.body, {
-		attrbutes: true,
-		characterData: false,
-		childList: true,
-		subtree: true,
-		attributeOldValue: true,
-		characterDataOldValue: false
-	});
+	mutationObserver.observe(document.body, observerOptions);
 	cpi = countpwid();
 	sendpageinfo(cpi, false, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
@@ -72,8 +64,10 @@ let observeMutation =
 function fillfield(field, text) {
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
+		mutationObserver.disconnect(); // Don't trigger observer for these updated
 		field.value = text.trim();
 		fixfield(field, text.trim());
+		mutationObserver.observe(document.body, observerOptions);
 	}
 }
 // Some pages don't know the field has been updated
@@ -126,6 +120,7 @@ function sendpageinfo(cpi, clicked, onload) {
 }
 function setPlaceholder(userid, pw) {
 	console.log("findpw setPlaceholder 1:", Date.now() - start, userid, readyForClick, cpi.pwfield);
+	mutationObserver.disconnect(); // Don't trigger observer for these updated
 	if (cpi.pwfield && readyForClick && userid) {
 		cpi.pwfield.placeholder = clickHere;
 		cpi.pwfield.ariaPlaceholder = clickHere;
@@ -137,6 +132,7 @@ function setPlaceholder(userid, pw) {
 		cpi.pwfield.placeholder = clickSitePassword;
 		cpi.pwfield.ariaPlaceholder = clickSitePassword;
 	}
+	mutationObserver.observe(document.body, observerOptions);
 }
 var pwfieldOnclick = function () {
 	let pwfield = cpi.pwfield;
