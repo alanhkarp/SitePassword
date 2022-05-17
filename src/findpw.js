@@ -45,12 +45,7 @@ window.onload = function () {
 			case "fillfields":
 				userid = request.u;
 				fillfield(cpi.idfield, userid);
-				if (userid) {
-					if (request.p && cpi.count !== 1) {
-						putOnClipboard(pwfields[1], request.p);
-					}
-					fillfield(cpi.pwfield, request.p);
-				}
+				if (userid) fillfield(cpi.pwfield, request.p);
 				setPlaceholder(userid);
 				break;
 			default:
@@ -112,24 +107,18 @@ function sendpageinfo(cpi, clicked, onload) {
 		userid = response.u;
 		fillfield(cpi.idfield, userid);
 		setPlaceholder(userid, response.p);
-		if (cpi.count !== 1) {
-			putOnClipboard(pwfields[1], response.p);
-		} else {
-			if (userid) {
-				fillfield(cpi.pwfield, "");
-			}
-		}
+		if (userid) fillfield(cpi.pwfield, "");
 	});
 }
-function setPlaceholder(userid, pw) {
+function setPlaceholder(userid) {
 	console.log("findpw setPlaceholder 1:", Date.now() - start, userid, readyForClick, cpi.pwfield);
 	mutationObserver.disconnect(); // Don't trigger observer for these updated
 	if (cpi.pwfield && readyForClick && userid) {
 		cpi.pwfield.placeholder = clickHere;
 		cpi.pwfield.ariaPlaceholder = clickHere;
-		if (cpi.count !== 1 && pw) {
-			putOnClipboard(pwfields[1], pw);
-			if (pwfields[1]) pwfields[1].placeholder = pasteHere;
+		if (pwfields[1]) {
+			pwfields[1].placeholder = clickHere;
+			pwfields[1].ariaPlaceholder = clickHere;
 		}
 	} else if (cpi.pwfield) {
 		cpi.pwfield.placeholder = clickSitePassword;
@@ -138,17 +127,16 @@ function setPlaceholder(userid, pw) {
 	mutationObserver.observe(document.body, observerOptions);
 }
 var pwfieldOnclick = function () {
-	let pwfield = cpi.pwfield;
 	console.log(document.URL, "findpw 3: get sitepass");
-	if (pwfield.placeholder === clickHere) {
+	if (this.placeholder === clickHere) {
 		chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
 			sitepw = response;
-			fillfield(pwfield, response);
-			console.log(document.URL, "findpw 4: got password", pwfield, response);
+			fillfield(this, response);
+			console.log(document.URL, "findpw 4: got password", this, response);
 		});
 	} else {
 		// Because people don't always pay attention
-		alert(pwfield.placeholder);
+		alert(this.placeholder);
 	}
 }
 function putOnClipboard(pwfield, password) {
@@ -187,6 +175,8 @@ function countpwid() {
 				if (c === 1) {
 					found = i;
 					pwfields[0].onclick = pwfieldOnclick;
+				} else if (c === 2) {
+					pwfields[1].onclick = pwfieldOnclick;
 				}
 			}
 			if (c > 2) break; // Use only the first two password fields
