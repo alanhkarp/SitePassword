@@ -38,7 +38,6 @@ function init() {
 async function getMetadata() {
     getsettings(() => {
         message("zero", bg.pwcount === 0);
-        message("multiple", bg.pwcount > 1);
         init();
         console.log("popup got metadata", bg, hpSPG);
         if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
@@ -281,9 +280,8 @@ function ask2generate() {
     if ((r.r == 1) && u && n && m && "https:" == bg.protocol) {
         msgoff("multiple");
         msgoff("zero");
-    } else {
+    } else if (r.r === 0) {
         copyToClipboard(p);
-        message("multiple", r.r > 1);
         message("zero", r.r == 0);
     }
     return true;
@@ -431,6 +429,9 @@ function clone(object) {
 }
 function copyToClipboard(sitepass) {
     navigator.clipboard.writeText(sitepass);
+    setTimeout(function () {
+        navigator.clipboard.writeText("");
+     }, 60000);
 }
 // Messages in priority order high to low
 var messages = [
