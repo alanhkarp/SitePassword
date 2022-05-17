@@ -116,13 +116,16 @@ function setPlaceholder(userid) {
 	if (cpi.pwfield && readyForClick && userid) {
 		cpi.pwfield.placeholder = clickHere;
 		cpi.pwfield.ariaPlaceholder = clickHere;
+		cpi.pwfield.title = clickHere;
 		if (pwfields[1]) {
 			pwfields[1].placeholder = clickHere;
 			pwfields[1].ariaPlaceholder = clickHere;
+			pwfields[1].title = clickHere;
 		}
 	} else if (cpi.pwfield) {
 		cpi.pwfield.placeholder = clickSitePassword;
 		cpi.pwfield.ariaPlaceholder = clickSitePassword;
+		cpi.pwfield.title = clickSitePassword;
 	}
 	mutationObserver.observe(document.body, observerOptions);
 }
