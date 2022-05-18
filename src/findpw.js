@@ -62,7 +62,7 @@ let observeMutation =
 function fillfield(field, text) {
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
-		mutationObserver.disconnect(); // Don't trigger observer for these updated
+		mutationObserver.disconnect(); // Don't trigger observer for these updates
 		field.value = text.trim();
 		fixfield(field, text.trim());
 		mutationObserver.observe(document.body, observerOptions);
@@ -112,7 +112,7 @@ function sendpageinfo(cpi, clicked, onload) {
 }
 function setPlaceholder(userid) {
 	console.log("findpw setPlaceholder 1:", Date.now() - start, userid, readyForClick, cpi.pwfield);
-	mutationObserver.disconnect(); // Don't trigger observer for these updated
+	mutationObserver.disconnect(); // Don't trigger observer for these updates
 	if (cpi.pwfield && readyForClick && userid) {
 		cpi.pwfield.placeholder = clickHere;
 		cpi.pwfield.ariaPlaceholder = clickHere;
@@ -175,12 +175,14 @@ function countpwid() {
 				pwfields.push(inputs[i]);
 				clearLabel(inputs[i]);
 				c++;
+				mutationObserver.disconnect(); // Don't trigger observer for these updates
 				if (c === 1) {
 					found = i;
 					pwfields[0].onclick = pwfieldOnclick;
 				} else if (c === 2) {
 					pwfields[1].onclick = pwfieldOnclick;
 				}
+				mutationObserver.observe(document.body, observerOptions);
 			}
 			if (c > 2) break; // Use only the first two password fields
 		}
@@ -202,6 +204,7 @@ function countpwid() {
 }
 function clearLabel(field) {
 	return; // Until I can find something that works.
+	mutationObserver.disconnect(); // Don't trigger observer for these updates
 	let labels = field.labels;
 	if (labels && labels[0]) {
 		if (labels[0].innerHTML) {
@@ -209,6 +212,7 @@ function clearLabel(field) {
 		} else if (labels[0].value) {
 			labels[0].value = "";
 		}
+		mutationObserver.observe(document.body, observerOptions);
 	}
 }
 function isHidden(field) {
