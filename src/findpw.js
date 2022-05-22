@@ -9,7 +9,7 @@ var userid = "";
 var cpi = { count: 0, pwfield: null, idfield: null };
 var readyForClick = false;
 var mutationObserver;
-var mutationMax = 1000;
+var mutationMax = 30;
 var observerOptions = { // Start looking for updates again
 	attrbutes: true,
 	characterData: false,
@@ -24,9 +24,9 @@ window.onload = function () {
 	console.log(document.URL, Date.now() - start, "findpw running");
 	mutationObserver = new MutationObserver(function (mutations) {
 		// Find password field if added late or fill in again if userid and/or password fields were cleared
+		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutationMax, mutations);
 		if (mutationMax === 0) return; // Give up after a while
 		mutationMax = mutationMax - 1;
-		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutationMax, mutations);
 		cpi = countpwid();
 		if (!userid) sendpageinfo(cpi, false, true);
 		if (userid) {
@@ -139,10 +139,11 @@ var pwfieldOnclick = function () {
 		});
 	} else {
 		// Because people don't always pay attention
-		alert(this.placeholder);
+		if (!this.placeholder || this.placeholder === clickSitePassword) alert(clickSitePassword);
 	}
 }
 function putOnClipboard(pwfield, password) {
+	mutationObserver.disconnect(); // Don't trigger observer for these updates
 	navigator.clipboard.writeText(password);
 	if (pwfield) {
 		if (readyForClick) {
@@ -158,6 +159,7 @@ function putOnClipboard(pwfield, password) {
 			pwfield.ariaPlaceholder = clickSitePassword
 		}, 30000);
 	}
+	mutationObserver.observe(document.body, observerOptions);
 }
 function countpwid() {
 	var passwordfield = null;
@@ -212,8 +214,8 @@ function clearLabel(field) {
 		} else if (labels[0].value) {
 			labels[0].value = "";
 		}
-		mutationObserver.observe(document.body, observerOptions);
 	}
+	mutationObserver.observe(document.body, observerOptions);
 }
 function isHidden(field) {
 	let hidden =
