@@ -28,7 +28,7 @@ window.onload = function () {
 		if (mutationMax === 0) return; // Give up after a while
 		mutationMax = mutationMax - 1;
 		cpi = countpwid();
-		if (!userid) sendpageinfo(cpi, false, true);
+		sendpageinfo(cpi, false, true);
 		if (userid) {
 			fillfield(cpi.idfield, userid);
 			fillfield(cpi.pwfield, sitepw);
@@ -60,6 +60,8 @@ let observeMutation =
 		cpi = countpwid();
 	});
 function fillfield(field, text) {
+	// Clear label if there's a userid for this page
+	if (userid) clearLabel(field);
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
 		mutationObserver.disconnect(); // Don't trigger observer for these updates
@@ -131,7 +133,8 @@ function setPlaceholder(userid) {
 }
 var pwfieldOnclick = function () {
 	console.log(document.URL, "findpw 3: get sitepass");
-	if (this.placeholder === clickHere) {
+	mutationObserver.disconnect();
+	if ((!this.placeholder) || this.placeholder === clickHere) {
 		chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
 			sitepw = response;
 			fillfield(this, response);
@@ -141,6 +144,7 @@ var pwfieldOnclick = function () {
 		// Because people don't always pay attention
 		if (!this.placeholder || this.placeholder === clickSitePassword) alert(clickSitePassword);
 	}
+	mutationObserver.observe(document.body, observerOptions);
 }
 function putOnClipboard(pwfield, password) {
 	mutationObserver.disconnect(); // Don't trigger observer for these updates
@@ -175,7 +179,6 @@ function countpwid() {
 			console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
 			if (visible) {
 				pwfields.push(inputs[i]);
-				clearLabel(inputs[i]);
 				c++;
 				mutationObserver.disconnect(); // Don't trigger observer for these updates
 				if (c === 1) {
@@ -196,23 +199,24 @@ function countpwid() {
 			visible = !isHidden(inputs[i]);
 			if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
 				useridfield = inputs[i];
-				clearLabel(inputs[i]);
 				break;
 			}
 		}
+		passwordfield.style.visibility = "visible";
+		if (useridfield) useridfield.style.visibility = "visible";
 	}
 	console.log(document.URL, Date.now() - start, "findpw: countpwid", c, passwordfield, useridfield);
 	return { count: c, pwfield: pwfields[0], idfield: useridfield, };
 }
 function clearLabel(field) {
-	return; // Until I can find something that works.
 	mutationObserver.disconnect(); // Don't trigger observer for these updates
-	let labels = field.labels;
-	if (labels && labels[0]) {
-		if (labels[0].innerHTML) {
-			labels[0].innerHTML = "";
-		} else if (labels[0].value) {
-			labels[0].value = "";
+	let labels = document.getElementsByTagName("label");
+	for (let i = 0; i < labels.length; i++) {
+		// Some labels have the id/pw field as a descendent, so don't hide them
+//		if (labels[i].getElementsByTagName("input").length !== 0) { continue; }
+		let target = labels[i].getAttribute("for");
+		if (target && field && (target === field.id || target === field.name)) {
+			labels[i].style.visibility = "hidden";
 		}
 	}
 	mutationObserver.observe(document.body, observerOptions);
