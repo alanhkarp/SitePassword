@@ -1,5 +1,6 @@
 // Content script for ssp
 'use strict';
+var hideLabels = true; // Make it easy to turn off label hiding
 var clickSitePassword = "Click SitePassword";
 var clickHere = "Click here for password";
 var pasteHere = "Paste your password here";
@@ -209,11 +210,10 @@ function countpwid() {
 	return { count: c, pwfield: pwfields[0], idfield: useridfield, };
 }
 function clearLabel(field) {
+	if (!hideLabels) return;
 	mutationObserver.disconnect(); // Don't trigger observer for these updates
 	let labels = document.getElementsByTagName("label");
 	for (let i = 0; i < labels.length; i++) {
-		// Some labels have the id/pw field as a descendent, so don't hide them
-//		if (labels[i].getElementsByTagName("input").length !== 0) { continue; }
 		let target = labels[i].getAttribute("for");
 		if (target && field && (target === field.id || target === field.name)) {
 			labels[i].style.visibility = "hidden";
