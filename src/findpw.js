@@ -46,7 +46,6 @@ window.onload = function () {
 			case "fillfields":
 				userid = request.u;
 				fillfield(cpi.idfield, userid);
-				if (userid) fillfield(cpi.pwfield, request.p);
 				setPlaceholder(userid);
 				break;
 			default:
@@ -61,8 +60,6 @@ let observeMutation =
 		cpi = countpwid();
 	});
 function fillfield(field, text) {
-	// Clear label if there's a userid for this page
-	if (userid) clearLabel(field);
 	// In case I figure out how to clear userid and password fields
 	if (field && text) {
 		mutationObserver.disconnect(); // Don't trigger observer for these updates
@@ -116,6 +113,9 @@ function sendpageinfo(cpi, clicked, onload) {
 function setPlaceholder(userid) {
 	console.log("findpw setPlaceholder 1:", Date.now() - start, userid, readyForClick, cpi.pwfield);
 	mutationObserver.disconnect(); // Don't trigger observer for these updates
+	if (userid) clearLabel(cpi.idfield);
+	clearLabel(cpi.pwfield);
+	clearLabel(pwfields[1])
 	if (cpi.pwfield && readyForClick && userid) {
 		cpi.pwfield.placeholder = clickHere;
 		cpi.pwfield.ariaPlaceholder = clickHere;
@@ -210,13 +210,13 @@ function countpwid() {
 	return { count: c, pwfield: pwfields[0], idfield: useridfield, };
 }
 function clearLabel(field) {
-	if (!hideLabels) return;
+	if (!field || !hideLabels) return;
 	mutationObserver.disconnect(); // Don't trigger observer for these updates
 	let labels = document.getElementsByTagName("label");
 	for (let i = 0; i < labels.length; i++) {
 		let target = labels[i].getAttribute("for");
-		if (target && field && (target === field.id || target === field.name)) {
-			labels[i].style.visibility = "hidden";
+		if (target && field && (target === field.id || target === field.name || target === field.ariaLabel)) {
+			if (overlaps(field, labels[i])) labels[i].style.visibility = "hidden";
 		}
 	}
 	mutationObserver.observe(document.body, observerOptions);
@@ -227,4 +227,12 @@ function isHidden(field) {
 		(field.offsetParent === null) ||
 		(field.ariaHidden === "true");
 	return hidden;
+}
+function overlaps(field, label) {
+	// Only worry about labels above or to the left of the field
+	let floc = field.getBoundingClientRect();
+	let lloc = label.getBoundingClientRect();
+	if (floc.top >= lloc.bottom) return false;
+	if (floc.left >= lloc.right) return false;
+	return true;
 }
