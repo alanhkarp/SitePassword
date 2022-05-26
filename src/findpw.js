@@ -212,11 +212,17 @@ function countpwid() {
 function clearLabel(field) {
 	if (!field || !hideLabels) return;
 	mutationObserver.disconnect(); // Don't trigger observer for these updates
-	let labels = document.getElementsByTagName("label");
+	let fors = Array.from(document.querySelectorAll("[for]"));
+	let lbls = Array.from(document.getElementsByTagName("label"));
+	let labels = [...new Set(lbls.concat(fors))];
 	for (let i = 0; i < labels.length; i++) {
 		let target = labels[i].getAttribute("for");
 		if (target && field && (target === field.id || target === field.name || target === field.ariaLabel)) {
-			if (overlaps(field, labels[i])) labels[i].style.visibility = "hidden";
+			if (overlaps(field, labels[i])) {
+				labels[i].style.visibility = "hidden";
+				if (isHidden(field)) labels[i].style.visibility = "visible";
+				// Could break here if performance becomes a problem
+			}
 		}
 	}
 	mutationObserver.observe(document.body, observerOptions);
