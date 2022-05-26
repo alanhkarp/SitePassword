@@ -2,7 +2,6 @@
 import { characters, generate } from "./generate.js";
 // State I want to keep around that doesn't appear in the file system
 var bg = {};
-var onClipboard = false;
 var masterpw = "";
 var activetab;
 var hpSPG = {};
@@ -33,7 +32,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "siteData") {
                 console.log("bg got site data", request);
-                onClipboard = request.onClipboard;
                 bg = clone(request.bg);
                 bg.lastpersona = request.personaname;
                 masterpw = bg.masterpw;

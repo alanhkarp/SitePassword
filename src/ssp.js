@@ -80,15 +80,7 @@ function eventSetup() {
             } else {
                 delete persona.sites[bg.settings.domainname];
             }
-            let onClipboard = false;
-            let m = get("masterpw").value;
             let s = get("sitename").value;
-            let u = get("username").value;
-            let p = get("sitepass").value;
-            if (bg.pwcount == 0 && m && s && u && p && !isphishing(get("sitename").value)) {
-                onClipboard = true;
-                copyToClipboard(p);
-            }
             changePlaceholder();
             let personaname = getlowertrim("persona");
             let domainname = get("domainname").value;
@@ -97,8 +89,7 @@ function eventSetup() {
             chrome.runtime.sendMessage({ "cmd": "siteData",
                 "personaname": personaname, 
                 "sitename": s, 
-                "bg": bg, 
-                "onClipboard": onClipboard });
+                "bg": bg });
         }
         // It would be nice to close the window here, but the contents script doesn't work if I do
         // window.close()
@@ -155,6 +146,7 @@ function eventSetup() {
         handleblur("username", "username");
         changePlaceholder();
     }
+    get("sitepass").onclick = copyToClipboard;
     get("settingsshowbutton").onclick = showsettings;
     get("settingshidebutton").onclick = hidesettings;
     get("clearmasterpw").onclick = function () {
@@ -281,8 +273,7 @@ function ask2generate() {
     if ((r.r == 1) && u && n && m && "https:" == bg.protocol) {
         msgoff("multiple");
         msgoff("zero");
-    } else if (r.r === 0) {
-        copyToClipboard(p);
+    } else if ((r.r === 0) && u && n && m && "https:" == bg.protocol) {
         message("zero", r.r == 0);
     }
     return true;
@@ -428,7 +419,9 @@ function getlowertrim(element) {
 function clone(object) {
     return JSON.parse(JSON.stringify(object))
 }
-function copyToClipboard(sitepass) {
+function copyToClipboard() {
+    let sitepass = get("sitepass").value;
+    console.log("popup copy sitepass to clipboard", sitepass);
     navigator.clipboard.writeText(sitepass);
     setTimeout(function () {
         navigator.clipboard.writeText("");
