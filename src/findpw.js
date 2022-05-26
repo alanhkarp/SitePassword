@@ -203,8 +203,6 @@ function countpwid() {
 				break;
 			}
 		}
-		passwordfield.style.visibility = "visible";
-		if (useridfield) useridfield.style.visibility = "visible";
 	}
 	console.log(document.URL, Date.now() - start, "findpw: countpwid", c, passwordfield, useridfield);
 	return { count: c, pwfield: pwfields[0], idfield: useridfield, };
@@ -219,6 +217,7 @@ function clearLabel(field) {
 		let target = labels[i].getAttribute("for");
 		if (target && field && (target === field.id || target === field.name || target === field.ariaLabel)) {
 			if (overlaps(field, labels[i])) {
+				field.style.visibility = "visible";
 				labels[i].style.visibility = "hidden";
 				if (isHidden(field)) labels[i].style.visibility = "visible";
 				// Could break here if performance becomes a problem
