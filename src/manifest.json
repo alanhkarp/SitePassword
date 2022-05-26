@@ -27,6 +27,7 @@
         "activeTab",
         "background",
         "bookmarks",
-        "storage"
+        "storage",
+        "tabs"
     ]
 }

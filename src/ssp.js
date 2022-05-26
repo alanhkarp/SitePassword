@@ -18,6 +18,7 @@ window.onload = function () {
     console.log("popup getting active tab");
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         activetab = tabs[0];
+        console.log("popup tab", activetab);
         domainname = activetab.url.split("/")[2];
         get("domainname").value = domainname;
         console.log("popup got tab", domainname, activetab);
