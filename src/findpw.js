@@ -10,6 +10,7 @@ var userid = "";
 var cpi = { count: 0, pwfield: null, idfield: null };
 var readyForClick = false;
 var mutationObserver;
+var mutationMax = 500;
 var observerOptions = { // Start looking for updates again
 	attrbutes: true,
 	characterData: false,
@@ -24,7 +25,9 @@ window.onload = function () {
 	console.log(document.URL, Date.now() - start, "findpw running");
 	mutationObserver = new MutationObserver(function (mutations) {
 		// Find password field if added late or fill in again if userid and/or password fields were cleared
-		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
+		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutationMax, mutations);
+		if (mutationMax === 0) return; // Give up after a while
+		mutationMax = mutationMax - 1;
 		// Let pending mutations settle
 //		setTimeout(() => {
 			cpi = countpwid();
@@ -221,7 +224,7 @@ function clearLabel(field) {
 	for (let i = 0; i < labels.length; i++) {
 		let target = labels[i].getAttribute("for");
 		if (target && field && (target === field.id || target === field.name || target === field.ariaLabel)) {
-			if (overlaps(field, labels[i])) {
+			if (overlaps(field, labels[i]) && field.style.visibility !== "visible") {
 				field.style.visibility = "visible";
 				labels[i].style.visibility = "hidden";
 				if (isHidden(field)) labels[i].style.visibility = "visible";
