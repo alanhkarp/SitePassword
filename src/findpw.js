@@ -28,13 +28,16 @@ window.onload = function () {
 		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutationMax, mutations);
 		if (mutationMax === 0) return; // Give up after a while
 		mutationMax = mutationMax - 1;
-		cpi = countpwid();
-		sendpageinfo(cpi, false, true);
-		if (userid) {
-			fillfield(cpi.idfield, userid);
-			fillfield(cpi.pwfield, sitepw);
-			setPlaceholder(userid, sitepw);
-		}
+		// Let pending mutations settle
+		setTimeout(() => {
+			cpi = countpwid();
+			sendpageinfo(cpi, false, true);
+			if (userid) { // In case the mutations took away my changes
+				if (cpi.idfield.value !== userid) fillfield(cpi.idfield, userid);
+				if (cpi.pwfield.value !== sitepw) fillfield(cpi.pwfield, sitepw);
+				setPlaceholder(userid, sitepw);
+			}
+		}, 0);
 	});
 	mutationObserver.observe(document.body, observerOptions);
 	cpi = countpwid();
@@ -60,9 +63,11 @@ let observeMutation =
 		cpi = countpwid();
 	});
 function fillfield(field, text) {
-	// In case I figure out how to clear userid and password fields
-	if (field && text) {
-		mutationObserver.disconnect(); // Don't trigger observer for these updates
+	// Don't change to the same value to avoid mutationObserver cycling
+	if (field && text && (field.value !== text)) {
+		// Don't trigger observer for these updates since observer.disconnect()
+		// doesn't work inside the observer callback
+		mutationObserver.disconnect();
 		field.value = text.trim();
 		fixfield(field, text.trim());
 		mutationObserver.observe(document.body, observerOptions);
@@ -113,10 +118,8 @@ function sendpageinfo(cpi, clicked, onload) {
 function setPlaceholder(userid) {
 	console.log("findpw setPlaceholder 1:", Date.now() - start, userid, readyForClick, cpi.pwfield);
 	mutationObserver.disconnect(); // Don't trigger observer for these updates
-	if (userid) clearLabel(cpi.idfield);
-	clearLabel(cpi.pwfield);
-	clearLabel(pwfields[1])
-	if (cpi.pwfield && readyForClick && userid) {
+	// Don't change to the same value to avoid mutationObserver cycling
+	if (cpi.pwfield && readyForClick && userid && cpi.pwfield.placeholder !== clickHere) {
 		cpi.pwfield.placeholder = clickHere;
 		cpi.pwfield.ariaPlaceholder = clickHere;
 		cpi.pwfield.title = clickHere;
@@ -125,11 +128,16 @@ function setPlaceholder(userid) {
 			pwfields[1].ariaPlaceholder = clickHere;
 			pwfields[1].title = clickHere;
 		}
-	} else if (cpi.pwfield) {
+	} else if (cpi.pwfield && 
+			(cpi.pwfield.placeholder !== clickSitePassword &&
+			 cpi.pwfield.placeholder !== clickHere)) {
 		cpi.pwfield.placeholder = clickSitePassword;
 		cpi.pwfield.ariaPlaceholder = clickSitePassword;
 		cpi.pwfield.title = clickSitePassword;
 	}
+	if (userid) clearLabel(cpi.idfield);
+	clearLabel(cpi.pwfield);
+	clearLabel(pwfields[1])
 	mutationObserver.observe(document.body, observerOptions);
 }
 var pwfieldOnclick = function () {
