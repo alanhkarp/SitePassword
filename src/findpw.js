@@ -10,7 +10,6 @@ var userid = "";
 var cpi = { count: 0, pwfield: null, idfield: null };
 var readyForClick = false;
 var mutationObserver;
-var mutationMax = 30;
 var observerOptions = { // Start looking for updates again
 	attrbutes: true,
 	characterData: false,
@@ -25,19 +24,17 @@ window.onload = function () {
 	console.log(document.URL, Date.now() - start, "findpw running");
 	mutationObserver = new MutationObserver(function (mutations) {
 		// Find password field if added late or fill in again if userid and/or password fields were cleared
-		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutationMax, mutations);
-		if (mutationMax === 0) return; // Give up after a while
-		mutationMax = mutationMax - 1;
+		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
 		// Let pending mutations settle
-		setTimeout(() => {
+//		setTimeout(() => {
 			cpi = countpwid();
 			sendpageinfo(cpi, false, true);
 			if (userid) { // In case the mutations took away my changes
-				if (cpi.idfield.value !== userid) fillfield(cpi.idfield, userid);
-				if (cpi.pwfield.value !== sitepw) fillfield(cpi.pwfield, sitepw);
+				fillfield(cpi.idfield, userid);
+				fillfield(cpi.pwfield, sitepw);
 				setPlaceholder(userid, sitepw);
 			}
-		}, 0);
+//		}, 0);
 	});
 	mutationObserver.observe(document.body, observerOptions);
 	cpi = countpwid();
