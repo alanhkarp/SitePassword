@@ -28,16 +28,13 @@ window.onload = function () {
 		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutationMax, mutations);
 		if (mutationMax === 0) return; // Give up after a while
 		mutationMax = mutationMax - 1;
-		// Let pending mutations settle
-//		setTimeout(() => {
-			cpi = countpwid();
-			sendpageinfo(cpi, false, true);
-			if (userid) { // In case the mutations took away my changes
-				fillfield(cpi.idfield, userid);
-				fillfield(cpi.pwfield, sitepw);
-				setPlaceholder(userid, sitepw);
-			}
-//		}, 0);
+		cpi = countpwid();
+		sendpageinfo(cpi, false, true);
+		if (userid) { // In case the mutations took away my changes
+			fillfield(cpi.idfield, userid);
+			fillfield(cpi.pwfield, sitepw);
+			setPlaceholder(userid, sitepw);
+		}
 	});
 	mutationObserver.observe(document.body, observerOptions);
 	cpi = countpwid();
@@ -128,9 +125,9 @@ function setPlaceholder(userid) {
 			pwfields[1].ariaPlaceholder = clickHere;
 			pwfields[1].title = clickHere;
 		}
-	} else if (cpi.pwfield && 
-			(cpi.pwfield.placeholder !== clickSitePassword &&
-			 cpi.pwfield.placeholder !== clickHere)) {
+	} else if (cpi.pwfield &&
+		(cpi.pwfield.placeholder !== clickSitePassword &&
+			cpi.pwfield.placeholder !== clickHere)) {
 		cpi.pwfield.placeholder = clickSitePassword;
 		cpi.pwfield.ariaPlaceholder = clickSitePassword;
 		cpi.pwfield.title = clickSitePassword;
@@ -218,9 +215,7 @@ function countpwid() {
 function clearLabel(field) {
 	if (!field || !hideLabels) return;
 	mutationObserver.disconnect(); // Don't trigger observer for these updates
-	let fors = Array.from(document.querySelectorAll("[for]"));
-	let lbls = Array.from(document.getElementsByTagName("label"));
-	let labels = [...new Set(lbls.concat(fors))];
+	let labels = Array.from(document.querySelectorAll("label, [for]"));
 	for (let i = 0; i < labels.length; i++) {
 		let target = labels[i].getAttribute("for");
 		if (target && field && (target === field.id || target === field.name || target === field.ariaLabel)) {
