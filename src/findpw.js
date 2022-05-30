@@ -126,8 +126,7 @@ function setPlaceholder(userid) {
 			pwfields[1].title = clickHere;
 		}
 	} else if (cpi.pwfield &&
-		(cpi.pwfield.placeholder !== clickSitePassword &&
-			cpi.pwfield.placeholder !== clickHere)) {
+		(cpi.pwfield.placeholder !== clickSitePassword)) {
 		cpi.pwfield.placeholder = clickSitePassword;
 		cpi.pwfield.ariaPlaceholder = clickSitePassword;
 		cpi.pwfield.title = clickSitePassword;
