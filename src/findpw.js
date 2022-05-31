@@ -154,7 +154,7 @@ function setPlaceholder(userid) {
 	}
 	mutationObserver.observe(document.body, observerOptions);
 }
-var pwfieldOnclick = function () {
+function pwfieldOnclick() {
 	console.log(document.URL, Date.now() - start, "findpw 3: get sitepass");
 	mutationObserver.disconnect();
 	if ((!this.placeholder) || this.placeholder === clickHere) {
