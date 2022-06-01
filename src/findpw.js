@@ -27,7 +27,7 @@ if (document.readyState !== "loading") {
 } else {
 	document.onload = startup();
 }
-function startup () {
+function startup() {
 	console.log(document.URL, Date.now() - start, "findpw running");
 	mutationObserver = new MutationObserver(function (mutations) {
 		// Find password field if added late or fill in again if userid and/or password fields were cleared
@@ -40,16 +40,16 @@ function startup () {
 					setTimer = true;
 				}, 500);
 			}
-			return;
-		}
-		mutationMax = mutationMax - 1;
-		console.log(document.URL, Date.now() - start, "findpw calling countpwid from mutation observer");
-		cpi = countpwid();
-		sendpageinfo(cpi, false, true);
-		if (userid) { // In case the mutations took away my changes
-			fillfield(cpi.idfield, userid);
-			fillfield(cpi.pwfield, sitepw);
-			setPlaceholder(userid, sitepw);
+		} else {
+			mutationMax = mutationMax - 1;
+			console.log(document.URL, Date.now() - start, "findpw calling countpwid from mutation observer");
+			cpi = countpwid();
+			sendpageinfo(cpi, false, true);
+			if (userid) { // In case the mutations took away my changes
+				fillfield(cpi.idfield, userid);
+				fillfield(cpi.pwfield, sitepw);
+				setPlaceholder(userid, sitepw);
+			}
 		}
 	});
 	mutationObserver.observe(document.body, observerOptions);
@@ -57,7 +57,7 @@ function startup () {
 	cpi = countpwid();
 	sendpageinfo(cpi, false, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
-		console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");		cpi = countpwid();
+		console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener"); 
 		readyForClick = request.readyForClick;
 		switch (request.cmd) {
 			case "fillfields":
@@ -74,7 +74,7 @@ function startup () {
 let observeMutation =
 	// Some sites change the page contents based on the fragment
 	window.addEventListener("hashchange", (_href) => {
-		console.log(document.URL, Date.now() - start, "findpw calling countpwid from hash change listener");		
+		console.log(document.URL, Date.now() - start, "findpw calling countpwid from hash change listener");
 		cpi = countpwid();
 	});
 function fillfield(field, text) {
@@ -142,7 +142,7 @@ function setPlaceholder(userid) {
 		}
 		if (userid) clearLabel(cpi.idfield);
 		clearLabel(cpi.pwfield);
-} else if (cpi.pwfield &&
+	} else if (cpi.pwfield &&
 		cpi.pwfield.placeholder !== clickHere &&
 		cpi.pwfield.placeholder !== clickSitePassword) {
 		cpi.pwfield.placeholder = clickSitePassword;
