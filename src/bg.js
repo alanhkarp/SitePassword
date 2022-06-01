@@ -28,7 +28,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 bg.masterpw = masterpw;
                 console.log("bg got ssp", persona || "foo", masterpw || "bar");
             }
-            if (request.cmd === "getMetadata") {
+            if (request.cmd === "forget") {
+                let domainname = request.domainname;
+                let persona = hpSPG.personas[request.persona.toLowerCase()];
+                delete persona.sites[domainname];
+                bg.settings.sitename = undefined;
+                persistMetadata(bkmkid);
+            } else if (request.cmd === "getMetadata") {
                 getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "siteData") {
                 console.log("bg got site data", request);
@@ -63,7 +69,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 async function getMetadata(request, _sender, sendResponse) {
     bg.lastpersona = request.personaname;
-    let sitename = hpSPG.personas[bg.lastpersona].sites[request.domainname]
+    let sitename = hpSPG.personas[bg.lastpersona].sites[request.domainname];
     if (sitename) {
         bg.settings = hpSPG.personas[bg.lastpersona].sitenames[sitename];
     } else {

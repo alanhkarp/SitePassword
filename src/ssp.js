@@ -32,6 +32,9 @@ function init() {
     get("masterpw").value = bg.masterpw;
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;
+    if (bg.settings.sitename) {
+        get("forgetbutton").style.visibility = "visible";
+    }
     persona = hpSPG.personas[getlowertrim("persona")];
     defaultfocus();
     ask2generate();
@@ -55,6 +58,7 @@ function getsettings(gotMetadata) {
     }, (response) => {
         bg = response.bg;
         hpSPG = response.hpSPG;
+        if (!bg.settings.sitename) bg.settings.sitename = "";
         get("domainname").value = bg.settings.domainname;
         get("masterpw").value = response.masterpw;
         gotMetadata();
@@ -149,6 +153,7 @@ function eventSetup() {
     get("sitepass").onclick = copyToClipboard;
     get("settingsshowbutton").onclick = showsettings;
     get("settingshidebutton").onclick = hidesettings;
+    get("forgetbutton").onclick = forgetDomain;
     get("clearmasterpw").onclick = function () {
         persona.clearmasterpw = get("clearmasterpw").checked;
     }
@@ -192,8 +197,9 @@ function eventSetup() {
         get("username").disabled = false;
         get("sitename").disabled = false;
         msgoff("phishing");
-        var n = get("sitename").value;
-        bg.settings = clone(persona.sitenames[n]);
+        var sitename = get("sitename").value;
+        bg.settings = clone(persona.sitenames[sitename]);
+        bg.settings.sitename = get("sitename").value;
         persona.sites[get("domainname").value] = bg.settings.sitename;
         get("username").value = bg.settings.username;
         ask2generate();
@@ -312,6 +318,25 @@ function hidesettings() {
     get("settingsshowbutton").style.display = "inline";
     get("settingshidebutton").style.display = "none";
     get("settings").style.display = "none";
+}
+function forgetDomain() {
+    if (get("username").value) {
+        get("sitename").value = "";
+        get("username").value = "";
+        get("forgetbutton").style.visibility = "hidden";
+        let personaname = get("persona").value.toLowerCase();
+        bg.settings = hpSPG.personas[personaname].sitenames.default;
+        bg.settings.sitename = "";
+        ask2generate();
+        chrome.runtime.sendMessage({
+            "cmd": "forget",
+            "persona": get("persona").value,
+            "domainname": get("domainname").value
+        }, (response) => {
+            hpSPG = response;
+        });
+        chrome.tabs.sendMessage(activetab.id, { "cmd": "forget" })
+    };
 }
 function pwoptions(options) {
     for (var x in options) {

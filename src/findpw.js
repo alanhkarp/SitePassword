@@ -48,7 +48,7 @@ function startup() {
 			if (userid) { // In case the mutations took away my changes
 				fillfield(cpi.idfield, userid);
 				fillfield(cpi.pwfield, sitepw);
-				setPlaceholder(userid, sitepw);
+				cpi.pwfield.placeholder = clickSitePassword;
 			}
 		}
 	});
@@ -64,6 +64,13 @@ function startup() {
 				userid = request.u;
 				fillfield(cpi.idfield, userid);
 				setPlaceholder(userid);
+				break;
+			case "forget":
+				mutationObserver.disconnect();
+				cpi.idfield.value = "";
+				cpi.pwfield.value = "";
+				cpi.pwfield.placeholder = clickSitePassword;
+				mutationObserver.observe(observerOptions);
 				break;
 			default:
 				console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
