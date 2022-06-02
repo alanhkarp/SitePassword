@@ -415,7 +415,9 @@ function isphishing(sitename) {
     var phishing = false;
     domains.forEach(function (d) {
         if ((persona.sites[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
-            (d.toLowerCase().trim() != domainname)) phishing = true;
+            (d.toLowerCase().trim() != domainname)) {
+                phishing = true;
+            }
     });
     return phishing;
 }

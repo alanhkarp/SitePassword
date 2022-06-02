@@ -70,7 +70,7 @@ function startup() {
 				cpi.idfield.value = "";
 				cpi.pwfield.value = "";
 				cpi.pwfield.placeholder = clickSitePassword;
-				mutationObserver.observe(observerOptions);
+				mutationObserver.observe(document.body, observerOptions);
 				break;
 			default:
 				console.log(document.URL, Date.now() - start, "findpw unexpected message", request);

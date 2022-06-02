@@ -30,9 +30,20 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             }
             if (request.cmd === "forget") {
                 let domainname = request.domainname;
-                let persona = hpSPG.personas[request.persona.toLowerCase()];
+                let personaname = request.persona.toLowerCase();
+                let persona = hpSPG.personas[personaname];
+                let sitename = persona.sites[domainname];
+                let domains = Object.keys(persona.sites);
+                let count = 0;
+                domains.forEach(function (d) {
+                    if ((persona.sites[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
+                        (d.toLowerCase().trim() != domainname)) count++;
+                });
+                if (count === 1) delete persona.sitenames[sitename]; // If this is the only use of sitename
                 delete persona.sites[domainname];
-                bg.settings.sitename = undefined;
+                bg.settings.sitename = "";
+                hpSPG.personas[personaname] = persona;
+                console.log("bg forgot", domainname, hpSPG);
                 persistMetadata(bkmkid);
             } else if (request.cmd === "getMetadata") {
                 getMetadata(request, sender, sendResponse);
