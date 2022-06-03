@@ -202,6 +202,7 @@ function countpwid() {
 	var found = -1;
 	var c = 0;
 	let inputs = document.getElementsByTagName("input");
+	if (cpi.count === 0 && inputs.length === 0) inputs = searchShadowRoots(document.body);
 	pwfields = [];
 	for (var i = 0; i < inputs.length; i++) {
 		if (inputs[i].type && (inputs[i].type.toLowerCase() == "password")) {
@@ -236,6 +237,13 @@ function countpwid() {
 	console.log(document.URL, Date.now() - start, "findpw: countpwid", c, passwordfield, useridfield);
 	return { count: c, pwfield: pwfields[0], idfield: useridfield, };
 }
+function searchShadowRoots(element) {
+	let shadows = Array.from(element.querySelectorAll('*'))
+		.map(el => el.shadowRoot).filter(Boolean);	
+	let childResults = shadows.map(child => searchShadowRoots(child));
+	let result = Array.from(element.querySelectorAll("input"));
+	return result.concat(childResults).flat();
+}
 function clearLabel(field) {
 	if (!field || !hideLabels) return;
 	mutationObserver.disconnect(); // Don't trigger observer for these updates
@@ -268,3 +276,18 @@ function overlaps(field, label) {
 	if (floc.left >= lloc.right) return false;
 	return true;
 }
+/* 
+Copyright 2011 Hewlett-Packard Company. This library is free software;
+you can redistribute it and/or modify it under the terms of the GNU
+Lesser General Public License (LGPL) as published by the Free Software
+Foundation; either version 2.1 of the License, or (at your option) any
+later version. This library is distributed in the hope that it will
+be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details. You should have
+received a copy of the GNU Lesser General Public License (LGPL) along
+with this library; if not, write to the Free Software Foundation,
+Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+Please contact the Hewlett-Packard Company <www.hp.com> for
+information regarding how to obtain the source code for this library.
+*/
