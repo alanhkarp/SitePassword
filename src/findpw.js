@@ -4,10 +4,9 @@ var hideLabels = true; // Make it easy to turn off label hiding
 var clickSitePassword = "Click SitePassword";
 var clickHere = "Click here for password";
 var pasteHere = "Paste your password here";
-var pwfields = [];
 var sitepw = "";
 var userid = "";
-var cpi = { count: 0, pwfield: null, idfield: null };
+var cpi = { count: 0, pwfields: [], idfield: null };
 var readyForClick = false;
 var mutationObserver;
 var mutationMax = 10;
@@ -47,8 +46,9 @@ function startup() {
 			sendpageinfo(cpi, false, true);
 			if (userid) { // In case the mutations took away my changes
 				fillfield(cpi.idfield, userid);
-				fillfield(cpi.pwfield, sitepw);
-				cpi.pwfield.placeholder = clickSitePassword;
+				fillfield(cpi.pwfields[0], sitepw);
+				setPlaceholder(userid);
+				// What about second password field?
 			}
 		}
 	});
@@ -68,8 +68,12 @@ function startup() {
 			case "forget":
 				mutationObserver.disconnect();
 				cpi.idfield.value = "";
-				cpi.pwfield.value = "";
-				cpi.pwfield.placeholder = clickSitePassword;
+				cpi.pwfields[0].value = "";
+				cpi.pwfields[0].placeholder = clickSitePassword;
+				if (cpi.pwfields[1]) {
+					cpi.pwfields[1].value = "";
+					cpi.pwfields[1].placeholder = "";
+				}
 				mutationObserver.observe(document.body, observerOptions);
 				break;
 			default:
@@ -117,10 +121,10 @@ function makeEvent(field, type) {
 function sendpageinfo(cpi, clicked, onload) {
 	// No need to send page info if no password fields found.  User will have to open
 	// the popup, which will supply the needed data
-	if (cpi.count === 0) return;
-	console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.count);
+	if (cpi.pwfields.length === 0) return;
+	console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length);
 	chrome.runtime.sendMessage({
-		"count": cpi.count,
+		"count": cpi.pwfields.length,
 		"clicked": clicked,
 		"onload": onload
 	}, (response) => {
@@ -134,30 +138,31 @@ function sendpageinfo(cpi, clicked, onload) {
 	});
 }
 function setPlaceholder(userid) {
-	console.log(document.URL, Date.now() - start, "findpw setPlaceholder 1:", userid, readyForClick, cpi.pwfield);
+	console.log(document.URL, Date.now() - start, "findpw setPlaceholder 1:", userid, readyForClick, cpi.pwfields);
 	mutationObserver.disconnect(); // Don't trigger observer for these updates
 	// Don't change to the same value to avoid mutationObserver cycling
-	if (cpi.pwfield && readyForClick && userid && cpi.pwfield.placeholder !== clickHere) {
-		cpi.pwfield.placeholder = clickHere;
-		cpi.pwfield.ariaPlaceholder = clickHere;
-		cpi.pwfield.title = clickHere;
-		if (pwfields[1]) {
-			pwfields[1].placeholder = clickHere;
-			pwfields[1].ariaPlaceholder = clickHere;
-			pwfields[1].title = clickHere;
-			clearLabel(pwfields[1])
+	if (cpi.pwfields[0] && readyForClick && userid && cpi.pwfields[0].placeholder !== clickHere) {
+		cpi.pwfields[0].placeholder = clickHere;
+		cpi.pwfields[0].ariaPlaceholder = clickHere;
+		cpi.pwfields[0].title = clickHere;
+		if (cpi.pwfields[1]) {
+			cpi.pwfields[1].placeholder = clickHere;
+			cpi.pwfields[1].ariaPlaceholder = clickHere;
+			cpi.pwfields[1].title = clickHere;
+			clearLabel(cpi.pwfields[1])
 		}
 		if (userid) clearLabel(cpi.idfield);
-		clearLabel(cpi.pwfield);
-	} else if (cpi.pwfield &&
-		cpi.pwfield.placeholder !== clickHere &&
-		cpi.pwfield.placeholder !== clickSitePassword) {
-		cpi.pwfield.placeholder = clickSitePassword;
-		cpi.pwfield.ariaPlaceholder = clickSitePassword;
-		cpi.pwfield.title = clickSitePassword;
+		clearLabel(cpi.pwfields[0]);
+		clearLabel(cpi.pwfields[1]);
+	} else if (cpi.pwfields[0] &&
+		cpi.pwfields[0].placeholder !== clickHere &&
+		cpi.pwfields[0].placeholder !== clickSitePassword) {
+		cpi.pwfields[0].placeholder = clickSitePassword;
+		cpi.pwfields[0].ariaPlaceholder = clickSitePassword;
+		cpi.pwfields[0].title = clickSitePassword;
 		if (userid) clearLabel(cpi.idfield);
-		clearLabel(cpi.pwfield);
-		clearLabel(pwfields[1])
+		clearLabel(cpi.pwfields[0]);
+		clearLabel(cpi.pwfields[1])
 	}
 	mutationObserver.observe(document.body, observerOptions);
 }
@@ -196,14 +201,13 @@ function putOnClipboard(pwfield, password) {
 	mutationObserver.observe(document.body, observerOptions);
 }
 function countpwid() {
-	var passwordfield = null;
 	var useridfield = null;
 	var visible = true;
+	var pwfields = [];
 	var found = -1;
 	var c = 0;
 	let inputs = document.getElementsByTagName("input");
-	if (cpi.count === 0 && inputs.length === 0) inputs = searchShadowRoots(document.body);
-	pwfields = [];
+	if (cpi.pwfields.length === 0 && inputs.length === 0) inputs = searchShadowRoots(document.body);
 	for (var i = 0; i < inputs.length; i++) {
 		if (inputs[i].type && (inputs[i].type.toLowerCase() == "password")) {
 			visible = !isHidden(inputs[i]);
@@ -211,20 +215,15 @@ function countpwid() {
 			if (visible) {
 				pwfields.push(inputs[i]);
 				c++;
-				mutationObserver.disconnect(); // Don't trigger observer for these updates
-				if (c === 1) {
-					found = i;
-					pwfields[0].onclick = pwfieldOnclick;
-				} else if (c === 2) {
-					pwfields[1].onclick = pwfieldOnclick;
-				}
+				if (c === 1) found = i;
+				mutationObserver.disconnect(); // Don't trigger observer for this update
+				inputs[i].onclick = pwfieldOnclick;
 				mutationObserver.observe(document.body, observerOptions);
 			}
 			if (c > 2) break; // Use only the first two password fields
 		}
 	}
 	if (c > 0) {
-		passwordfield = inputs[found];
 		for (var i = found - 1; i >= 0; i--) {
 			// Skip over invisible input fields above the password field
 			visible = !isHidden(inputs[i]);
@@ -234,8 +233,8 @@ function countpwid() {
 			}
 		}
 	}
-	console.log(document.URL, Date.now() - start, "findpw: countpwid", c, passwordfield, useridfield);
-	return { count: c, pwfield: pwfields[0], idfield: useridfield, };
+	console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, useridfield);
+	return { pwfields: pwfields, idfield: useridfield, };
 }
 // From Domi at https://stackoverflow.com/questions/38701803/how-to-get-element-in-user-agent-shadow-root-with-javascript
 function searchShadowRoots(element) {
