@@ -237,6 +237,7 @@ function countpwid() {
 	console.log(document.URL, Date.now() - start, "findpw: countpwid", c, passwordfield, useridfield);
 	return { count: c, pwfield: pwfields[0], idfield: useridfield, };
 }
+// From Domi at https://stackoverflow.com/questions/38701803/how-to-get-element-in-user-agent-shadow-root-with-javascript
 function searchShadowRoots(element) {
 	let shadows = Array.from(element.querySelectorAll('*'))
 		.map(el => el.shadowRoot).filter(Boolean);	
