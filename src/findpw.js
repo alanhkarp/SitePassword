@@ -238,6 +238,7 @@ function countpwid() {
 }
 // From Domi at https://stackoverflow.com/questions/38701803/how-to-get-element-in-user-agent-shadow-root-with-javascript
 function searchShadowRoots(element) {
+	return;
 	let shadows = Array.from(element.querySelectorAll('*'))
 		.map(el => el.shadowRoot).filter(Boolean);	
 	let childResults = shadows.map(child => searchShadowRoots(child));
