@@ -212,7 +212,8 @@ function countpwid() {
 		if (inputs[i].type && (inputs[i].type.toLowerCase() == "password")) {
 			visible = !isHidden(inputs[i]);
 			console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
-			if (visible) {
+			let pattern = inputs[i].getAttribute("pattern"); // Pattern [0-9]* is a PIN or SSN
+			if (visible && pattern !== "[0-9]*") {
 				pwfields.push(inputs[i]);
 				c++;
 				if (c === 1) found = i;
