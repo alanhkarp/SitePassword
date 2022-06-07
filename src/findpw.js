@@ -24,7 +24,7 @@ console.log(document.URL, Date.now() - start, "findpw ready state", document.rea
 if (document.readyState !== "loading") {
 	startup();
 } else {
-	document.onload = startup();
+	document.onload = startup;
 }
 function startup() {
 	console.log(document.URL, Date.now() - start, "findpw running");
@@ -57,7 +57,7 @@ function startup() {
 	cpi = countpwid();
 	sendpageinfo(cpi, false, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
-		console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener"); 
+		console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
 		readyForClick = request.readyForClick;
 		switch (request.cmd) {
 			case "fillfields":
@@ -235,13 +235,13 @@ function countpwid() {
 		}
 	}
 	console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, useridfield);
-	return { pwfields: pwfields, idfield: useridfield, };
+	return { pwfields: pwfields, idfield: useridfield };
 }
 // From Domi at https://stackoverflow.com/questions/38701803/how-to-get-element-in-user-agent-shadow-root-with-javascript
 function searchShadowRoots(element) {
 	return;
 	let shadows = Array.from(element.querySelectorAll('*'))
-		.map(el => el.shadowRoot).filter(Boolean);	
+		.map(el => el.shadowRoot).filter(Boolean);
 	let childResults = shadows.map(child => searchShadowRoots(child));
 	let result = Array.from(element.querySelectorAll("input"));
 	return result.concat(childResults).flat();
