@@ -276,11 +276,12 @@ function ask2generate() {
         }
     }
     get("sitepass").value = p;
-    if ((r.r == 1) && u && n && m && "https:" == bg.protocol) {
+    if ((r.r == 1) && u && n && m) {
         msgoff("multiple");
         msgoff("zero");
-    } else if ((r.r === 0) && u && n && m && "https:" == bg.protocol) {
+    } else if (u && n && m ) {
         message("zero", r.r == 0);
+        message("multiple", r.r > 1)
     }
     return true;
 }

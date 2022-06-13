@@ -6,10 +6,11 @@ var clickHere = "Click here for password";
 var pasteHere = "Paste your password here";
 var sitepw = "";
 var userid = "";
+var cleared = false; // Has password been cleared from the clipboars
 var cpi = { count: 0, pwfields: [], idfield: null };
 var readyForClick = false;
 var mutationObserver;
-var mutationMax = 10;
+var mutationMax = 50;
 var setTimer = true;
 var observerOptions = { // Start looking for updates again
 	attrbutes: true,
@@ -46,7 +47,7 @@ function startup() {
 			sendpageinfo(cpi, false, true);
 			if (userid) { // In case the mutations took away my changes
 				fillfield(cpi.idfield, userid);
-				fillfield(cpi.pwfields[0], sitepw);
+				if (cpi.pwfields.length === 1) fillfield(cpi.pwfields[0], sitepw);
 				setPlaceholder(userid);
 				// What about second password field?
 			}
@@ -64,6 +65,9 @@ function startup() {
 				userid = request.u;
 				fillfield(cpi.idfield, userid);
 				setPlaceholder(userid);
+				if (cpi.pwfields.length !== 1 && sitepw) {
+					putOnClipboard(sitepw);
+				}
 				break;
 			case "forget":
 				mutationObserver.disconnect();
@@ -89,8 +93,8 @@ let observeMutation =
 		cpi = countpwid();
 	});
 function fillfield(field, text) {
-	// Don't change to the same value to avoid mutationObserver cycling
-	if (field && text && (field.value !== text)) {
+	// Don't change if there is a value to avoid mutationObserver cycling
+	if (field && text && !field.value) {
 		// Don't trigger observer for these updates since observer.disconnect()
 		// doesn't work inside the observer callback
 		console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
@@ -134,36 +138,39 @@ function sendpageinfo(cpi, clicked, onload) {
 		userid = response.u;
 		fillfield(cpi.idfield, userid);
 		setPlaceholder(userid, response.p);
+		if (response.p && cpi.pwfields.length > 1) putOnClipboard(response.p);
 		if (userid) fillfield(cpi.pwfield, "");
 	});
 }
 function setPlaceholder(userid) {
 	console.log(document.URL, Date.now() - start, "findpw setPlaceholder 1:", userid, readyForClick, cpi.pwfields);
+	console.log(document.URL, Date.now() - start, "findpw setPlaceholder observer disconnect");
 	mutationObserver.disconnect(); // Don't trigger observer for these updates
-	// Don't change to the same value to avoid mutationObserver cycling
-	if (cpi.pwfields[0] && readyForClick && userid && cpi.pwfields[0].placeholder !== clickHere) {
-		cpi.pwfields[0].placeholder = clickHere;
-		cpi.pwfields[0].ariaPlaceholder = clickHere;
-		cpi.pwfields[0].title = clickHere;
-		if (cpi.pwfields[1]) {
-			cpi.pwfields[1].placeholder = clickHere;
-			cpi.pwfields[1].ariaPlaceholder = clickHere;
-			cpi.pwfields[1].title = clickHere;
-			clearLabel(cpi.pwfields[1])
+	if (userid) clearLabel(cpi.idfield);
+	if (cpi.pwfields[0] && readyForClick && userid) {
+		let placeholder = (cpi.pwfields.length === 1) ? clickHere : pasteHere;
+		console.log(document.URL, Date.now() - start, "findpw setPlaceholder", placeholder);
+		cpi.pwfields[0].placeholder = placeholder;
+		cpi.pwfields[0].ariaPlaceholder = placeholder;
+		cpi.pwfields[0].title = placeholder;
+		if (placeholder === pasteHere) {
+			cpi.pwfields[0].onclick = null;
 		}
-		if (userid) clearLabel(cpi.idfield);
 		clearLabel(cpi.pwfields[0]);
-		clearLabel(cpi.pwfields[1]);
-	} else if (cpi.pwfields[0] &&
-		cpi.pwfields[0].placeholder !== clickHere &&
-		cpi.pwfields[0].placeholder !== clickSitePassword) {
+		for (let i = 1; i < cpi.pwfields.length; i++) {
+			cpi.pwfields[i].placeholder = pasteHere;
+			cpi.pwfields[i].ariaPlaceholder = pasteHere;
+			cpi.pwfields[i].title = pasteHere;
+			cpi.pwfields[i].onclick = null;
+			clearLabel(cpi.pwfields[i]);
+		}
+	} else if (cpi.pwfields[0]) {
+		console.log(document.URL, Date.now() - start, "findpw setPlaceholder", clickSitePassword);
 		cpi.pwfields[0].placeholder = clickSitePassword;
 		cpi.pwfields[0].ariaPlaceholder = clickSitePassword;
 		cpi.pwfields[0].title = clickSitePassword;
-		if (userid) clearLabel(cpi.idfield);
-		clearLabel(cpi.pwfields[0]);
-		clearLabel(cpi.pwfields[1])
 	}
+	console.log(document.URL, Date.now() - start, "findpw setPlaceholder observer reconnect");
 	mutationObserver.observe(document.body, observerOptions);
 }
 function pwfieldOnclick() {
@@ -181,24 +188,29 @@ function pwfieldOnclick() {
 	}
 	mutationObserver.observe(document.body, observerOptions);
 }
-function putOnClipboard(pwfield, password) {
-	mutationObserver.disconnect(); // Don't trigger observer for these updates
-	navigator.clipboard.writeText(password);
-	if (pwfield) {
-		if (readyForClick) {
-			pwfield.placeholder = pasteHere;
-			pwfield.ariaPlaceholder = pasteHere;
-		} else {
-			pwfield.placeholder = clickSitePassword;
-			pwfield.ariaPlaceholder = clickSitePassword
+function putOnClipboard(password) {
+	navigator.clipboard.writeText(password).then(() => {
+		cleared = "false";
+		console.log("findpw clipboard ready")
+	});
+	if (!cleared) setTimeout(function () {
+		console.log(document.URL, Date.now() - start, "findpw clear clipboard");
+		mutationObserver.disconnect(); // Don't trigger observer for these updates
+		navigator.clipboard.writeText("").then(() => {
+			console.log(Document.URL, Date.now() - start, "findpw cleared clipboard");
+			cleared = true;
+		});
+		if (cpi.pwfields.length > 0) {
+			cpi.pwfields[0].placeholder = clickSitePassword;
+			cpi.pwfields[0].ariaPlaceholder = clickSitePassword
+			for (let i = 1; i < cpi.pwfields.length; i++) {
+				cpi.pwfields[i].placeholder = "";
+				cpi.pwfields[i].ariaPlaceholder = "";
+			}
 		}
-		setTimeout(function () {
-			navigator.clipboard.writeText("");
-			pwfield.placeholder = clickSitePassword;
-			pwfield.ariaPlaceholder = clickSitePassword
-		}, 30000);
-	}
-	mutationObserver.observe(document.body, observerOptions);
+		console.log(document.URL, Date.now() - start, "findpw clipboard cleared");
+		mutationObserver.observe(document.body, observerOptions);
+	}, 30000);
 }
 function countpwid() {
 	var useridfield = null;
@@ -221,7 +233,6 @@ function countpwid() {
 				inputs[i].onclick = pwfieldOnclick;
 				mutationObserver.observe(document.body, observerOptions);
 			}
-			if (c > 2) break; // Use only the first two password fields
 		}
 	}
 	if (c > 0) {
@@ -239,7 +250,7 @@ function countpwid() {
 }
 // From Domi at https://stackoverflow.com/questions/38701803/how-to-get-element-in-user-agent-shadow-root-with-javascript
 function searchShadowRoots(element) {
-	return;
+	return [];
 	let shadows = Array.from(element.querySelectorAll('*'))
 		.map(el => el.shadowRoot).filter(Boolean);
 	let childResults = shadows.map(child => searchShadowRoots(child));
@@ -253,7 +264,7 @@ function clearLabel(field) {
 	for (let i = 0; i < labels.length; i++) {
 		let target = labels[i].getAttribute("for");
 		if (target && field && (target === field.id || target === field.name || target === field.ariaLabel)) {
-			if (overlaps(field, labels[i]) && field.style.visibility !== "visible") {
+			if (overlaps(field, labels[i]) && field.style.visibility !== "visible" && !labels[i].contains(field)) {
 				field.style.visibility = "visible";
 				labels[i].style.visibility = "hidden";
 				if (isHidden(field)) labels[i].style.visibility = "visible";
