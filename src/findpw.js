@@ -6,6 +6,7 @@ var clickHere = "Click here for password";
 var pasteHere = "Paste your password here";
 var sitepw = "";
 var userid = "";
+var keyPressed = false;
 var cleared = false; // Has password been cleared from the clipboars
 var cpi = { count: 0, pwfields: [], idfield: null };
 var readyForClick = false;
@@ -45,11 +46,12 @@ function startup() {
 			console.log(document.URL, Date.now() - start, "findpw calling countpwid from mutation observer");
 			cpi = countpwid();
 			sendpageinfo(cpi, false, true);
-			if (userid) { // In case the mutations took away my changes
+			if (userid && !keyPressed) { // In case the mutations took away my changes
 				fillfield(cpi.idfield, userid);
 				if (cpi.pwfields.length === 1) fillfield(cpi.pwfields[0], sitepw);
 				setPlaceholder(userid);
 				// What about second password field?
+				keyPressed = false;
 			}
 		}
 	});
@@ -228,7 +230,14 @@ function countpwid() {
 			if (visible && pattern !== "[0-9]*") {
 				pwfields.push(inputs[i]);
 				c++;
-				if (c === 1) found = i;
+				if (c === 1) {
+					found = i;
+					inputs[i].onkeydown = function(event) {
+						if (event.key) {
+							keyPressed = true;
+						}
+					}
+				}
 				mutationObserver.disconnect(); // Don't trigger observer for this update
 				inputs[i].onclick = pwfieldOnclick;
 				mutationObserver.observe(document.body, observerOptions);
@@ -240,6 +249,11 @@ function countpwid() {
 			// Skip over invisible input fields above the password field
 			visible = !isHidden(inputs[i]);
 			if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
+				inputs[i].onkeydown = function(event) {
+					if (event.key) {
+						keyPressed = true;
+					}
+				}
 				useridfield = inputs[i];
 				break;
 			}
