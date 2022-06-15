@@ -28,7 +28,6 @@ window.onload = function () {
     eventSetup();
 }
 function init() {
-    console.log("islegacy " + bg.legacy);
     get("masterpw").value = bg.masterpw;
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;

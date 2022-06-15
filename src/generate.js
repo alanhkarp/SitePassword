@@ -4,13 +4,8 @@ import { Utf8Encode, str2binb, binl2b64 } from "./sha256.js";
 export function generate(bg, hpSPG) {
     let settings = bg.settings;
     let pwcount = bg.pwcount;
-    if (bg.legacy) {
-        var n = settings.sitename;
-        var u = settings.username;
-    } else {
-        var n = settings.sitename.toLowerCase().trim();
-        var u = settings.username.toLowerCase().trim();
-    }
+    var n = settings.sitename.toLowerCase().trim();
+    var u = settings.username.toLowerCase().trim();
     let m = bg.masterpw;
     if (!m) {
         return { p: "", r: pwcount };
@@ -80,13 +75,7 @@ function verify(p, settings, hpSPG) {
 export function characters(settings, hpSPG) {
     let chars = hpSPG.lower + hpSPG.upper + hpSPG.digits + hpSPG.lower.substr(0, 2);
     if (settings.allowspecial) {
-        if (settings.legacy) {
-            // Use for AntiPhishing Toolbar passwords
-            chars = chars.substr(0, 32) + settings.specials.substr(1) + chars.substr(31 + settings.specials.length);
-        } else {
-            // Use for SitePassword passwords
-            chars = settings.specials + hpSPG.lower.substr(settings.specials.length - 2) + hpSPG.upper + hpSPG.digits;
-        }
+        chars = settings.specials + hpSPG.lower.substr(settings.specials.length - 2) + hpSPG.upper + hpSPG.digits;
     }
     if (!settings.allowlower) chars = chars.toUpperCase();
     if (!settings.allowupper) chars = chars.toLowerCase();

@@ -6,7 +6,6 @@ var masterpw = "";
 var activetab;
 var hpSPG = {};
 var bkmkid;
-var legacy = false;  // true to emulate HP Antiphishing Toolbar
 var lastpersona = "everyone";
 var domainname = "";
 var protocol = "";
@@ -234,7 +233,6 @@ async function retrieveMetadata() {
     } else {
         settings = persona.sitenames.default;
     }
-    settings.legacy = legacy;
     bg = {
         "activetab": activetab,
         "lastpersona": lastpersona,
