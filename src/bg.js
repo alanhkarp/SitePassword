@@ -5,7 +5,6 @@ var bg = {};
 var masterpw = "";
 var activetab;
 var hpSPG = {};
-var bkmkid;
 var lastpersona = "everyone";
 var domainname = "";
 var protocol = "";
@@ -18,7 +17,8 @@ console.log("bg starting");
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     console.log(Date.now(), "bg got message request, sender", request, sender);
-    retrieveMetadata().then(() => {
+    retrieveMetadata(() => {
+        console.log("bg listener back from retrieveMetadata", hpSPG);
         chrome.storage.session.get(["ssp"], (ssp) => {
             if (ssp.ssp) {
                 persona = ssp.ssp.personaname || "default";
@@ -43,7 +43,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 bg.settings.sitename = "";
                 hpSPG.personas[personaname] = persona;
                 console.log("bg forgot", domainname, hpSPG);
-                persistMetadata(bkmkid);
+                persistMetadata();
             } else if (request.cmd === "getMetadata") {
                 getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "siteData") {
@@ -52,7 +52,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 bg.lastpersona = request.personaname;
                 masterpw = bg.masterpw;
                 hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = bg.settings;
-                persistMetadata(bkmkid);
+                persistMetadata();
             } else if (request.cmd === "getPassword") {
                 let origin = getdomainname(sender.origin);
                 let domainname = pwfielddomain[origin] || origin;
@@ -71,6 +71,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 }
             } else if (request.onload) {
                 onContentPageload(request, sender, sendResponse);
+                persistMetadata();
             }
             console.log(Date.now(), "bg addListener returning: masterpw", masterpw || "masterpw not defined");
         });
@@ -91,6 +92,7 @@ async function getMetadata(request, _sender, sendResponse) {
     sendResponse({ "masterpw": masterpw || "", "bg": bg, "hpSPG": hpSPG });
 }
 function onContentPageload(request, sender, sendResponse) {
+    console.log("bg onContentPageLoad");
     activetab = sender.tab;
     bg.pwcount = request.count;
     pwcount = bg.pwcount;
@@ -99,7 +101,7 @@ function onContentPageload(request, sender, sendResponse) {
     }
     let origin = getdomainname(sender.origin);
     let domainname = pwfielddomain[origin] || origin;
-    console.log("bg pwcount, domainname, masterpw", bg.pwcount, domainname, masterpw || "nomasterpw");
+    console.log("bg pwcount, domainname, masterpw", hpSPG, bg.pwcount, domainname, masterpw || "nomasterpw");
     let persona = hpSPG.personas[bg.lastpersona];
     let sitename = persona.sites[domainname];
     if (sitename) {
@@ -121,6 +123,7 @@ function onContentPageload(request, sender, sendResponse) {
     sendResponse({ cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
 }
 function gotMetadata(hpSPGlocal) {
+    console.log("bg gotMetadata", hpSPGlocal);
     if (!hpSPGlocal) {
         hpSPGlocal = {
             digits: "0123456789",
@@ -165,11 +168,12 @@ function gotMetadata(hpSPGlocal) {
         persona = hpSPGlocal.personas.everyone;
         persona.personaname = "Everyone";
         hpSPG = hpSPGlocal;
-        persistMetadata(bkmkid);
+        console.log("bg gotMetadata default", hpSPG);
+        persistMetadata();
     }
     hpSPG = hpSPGlocal;
 }
-async function persistMetadata(bkmkid) {
+async function persistMetadata() {
     // localStorage[name] = JSON.stringify(value);
     console.log("bg persistMetadata", bg, hpSPG);
     persona = hpSPG.personas[bg.lastpersona];
@@ -177,50 +181,76 @@ async function persistMetadata(bkmkid) {
         persona.sites[bg.settings.domainname] = bg.settings.sitename;
         persona.sitenames[bg.settings.sitename] = bg.settings;
     }
-    let update = "ssp://" + JSON.stringify(hpSPG);
-    if (hpSPG.personas[bg.lastpersona].sites[""]) {
+    if (persona.sites[""]) {
         alert("bg bad sitename", hpSPG);
     }
-    chrome.bookmarks.update(bkmkid, { "url": update });
     chrome.storage.session.set({ "ssp": { "masterpw": masterpw, "personaname": bg.lastpersona } });
-}
-async function retrieveMetadata() {
-    // return JSON.parse(localStorage[name]);
-    console.log("Retrieving metadata");
-    let bkmkstr = await chrome.storage.local.get(["bkmkstr"]);
-    try {
-        let bkmk = JSON.parse(bkmkstr.bkmkstr);
-        console.log("bg got bookmark", bkmk);
-        if (bkmk) bkmkid = bkmk.bkmkid;
-        console.log("Got SSP bookmark ID " + bkmkid);
-        bkmk = await chrome.bookmarks.get(bkmkid);
-        console.log("Got bookmark: ", bkmk);
-        hpSPG = parseBkmk(bkmk[0]);
-    } catch (e) {
-        // Find ssp bookmark
-        let tree = await chrome.bookmarks.getTree();
-        console.log("Find SSP bookmark");
-        let found = false;
-        tree[0].children[0].children.forEach((bkmk, _index) => {
-            if (!found && bkmk.url.substring(0, 6) == "ssp://") {
-                found = true;
-                console.log("Found bookmark: ", bkmk);
-                bkmkid = bkmk.id;
-                let value = { "bkmkid": bkmkid };
-                chrome.storage.local.set({ "bkmk": JSON.stringify(value) });
-                hpSPG = parseBkmk(bkmk);
+    chrome.bookmarks.search("SitePasswordData", async function (folders) {
+        let children = await chrome.bookmarks.getChildren(folders[0].id);
+        let pieces = JSON.stringify(hpSPG).match(/.{1,4090}/g);
+        for (let i = 0; i < Math.max(pieces.length, children.length); i++) {
+            if (pieces[i]) {
+                let url = "ssp://" + pieces[i];
+                if (children[i]) {
+                    chrome.bookmarks.update(children[i].id, { "url": url }, (e) => {
+                        console.log("bg updated bookmark", e, children[i].id);
+                    });
+                } else {
+                    chrome.bookmarks.create({ "parentId": folders[0].id, "title": i.toString(), "url": url }, (e) => {
+                        console.log("bg created bookmark", e.id);
+                    });
+                }
+            } else {
+                let id = children[i].id;
+                chrome.bookmarks.remove(children[i].id, (e) => {
+                    console.log("bg removed bookmark", e, id);
+                });
             }
-        });
-        if (!found) {
-            let bkmk = await chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData", "url": "ssp://" });
-            console.log("Creating SSP bookmark");
-            bkmkid = bkmk.id;
-            let value = { "bkmkid": bkmkid };
-            chrome.storage.local.set({ "bkmkstr": JSON.stringify(value) });
-            console.log("Bookmark id: " + bkmkid);
+        }
+    });
+}
+// Assumes bookmarks fetched in the order created
+async function parseBkmk(bkmkid, callback) {
+    console.log("bg parsing bookmark");
+    chrome.bookmarks.getChildren(bkmkid, (children) => {
+        let hpSPGstr = "";
+        for (let i = 0; i < children.length; i++) {
+            let data = children[i].url.substring(6);
+            hpSPGstr += data;
+        }
+        try {
+            // JSON.stringify turns some of my " into %22
+            console.log("bg parseBkmk", hpSPGstr.replace(/%22/g, "\""));
+            hpSPG = JSON.parse(hpSPGstr.replace(/%22/g, "\""));
+        } catch (e) {
+            console.error("Error parsing metadata " + e);
             hpSPG = undefined;
         }
-    }
+        retrieved(callback);
+     });
+}
+async function retrieveMetadata(callback) {
+    // return JSON.parse(localStorage[name]);
+    console.log("bg find SSP bookmark folder");
+    chrome.bookmarks.search("SitePasswordData", (folders) => {
+        if (folders.length === 1) {
+            console.log("Found bookmarks folder: ", folders[0]);
+            parseBkmk(folders[0].id, callback);
+        } else if (folders.length === 0) {
+            console.log("Creating SSP bookmark folder");
+            hpSPG = undefined;
+            chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData" }, 
+                (bkmk)=> {
+                    parseBkmk(bkmk.id, callback);
+                });
+        } else {
+            alert("Found multple SitePasswordData folders");
+            console.log("bg found multiple SitePasswordData folders", folders);
+        }
+    });
+}
+function retrieved(callback) {
+    console.log("bg retrieved");
     gotMetadata(hpSPG);
     // Doing it this way because bg.js used to be a background page, 
     // and I don't want to change a lot of code after I moved it to
@@ -241,18 +271,8 @@ async function retrieveMetadata() {
         "pwcount": pwcount,
         "settings": settings,
     };
-    console.log(Date.now(), "bg leaving retrieiveMetadata", bg, hpSPG);
-}
-function parseBkmk(bkmk) {
-    console.log("Parsing bookmark");
-    try {
-        // JSON.stringify turns some of my " into %22
-        hpSPG = JSON.parse(bkmk.url.substr(6).replace(/%22/g, "\""));
-    } catch (e) {
-        console.error("Error parsing metadata " + e);
-        hpSPG = undefined;
-    }
-    return hpSPG;
+    console.log(Date.now(), "bg leaving retrieived", bg, hpSPG);
+    callback();
 }
 function bgsettings(personaname, domainname) {
     let persona = hpSPG.personas[personaname];
