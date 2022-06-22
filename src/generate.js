@@ -14,6 +14,10 @@ export function generate(bg, hpSPG) {
     let p = compute(s, settings, hpSPG);
     return { p: p, r: pwcount };
 }
+export function isMasterPw(masterpw) {
+    if (masterpw) return "MasterPW";
+    else return "No MasterPW";
+}
 function compute(s, settings, hpSPG) {
     s = Utf8Encode(s);
     let h = core_sha256(str2binb(s), s.length * chrsz);

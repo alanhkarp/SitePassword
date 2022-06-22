@@ -145,7 +145,7 @@ function sendpageinfo(cpi, clicked, onload) {
 	});
 }
 function setPlaceholder(userid) {
-	console.log(document.URL, Date.now() - start, "findpw setPlaceholder 1:", userid, readyForClick, cpi.pwfields);
+	console.log(document.URL, Date.now() - start, "findpw setPlaceholder", userid, readyForClick, cpi.pwfields);
 	console.log(document.URL, Date.now() - start, "findpw setPlaceholder observer disconnect");
 	mutationObserver.disconnect(); // Don't trigger observer for these updates
 	if (userid) clearLabel(cpi.idfield);
@@ -176,13 +176,13 @@ function setPlaceholder(userid) {
 	mutationObserver.observe(document.body, observerOptions);
 }
 function pwfieldOnclick() {
-	console.log(document.URL, Date.now() - start, "findpw 3: get sitepass");
+	console.log(document.URL, Date.now() - start, "findpw get sitepass");
 	mutationObserver.disconnect();
 	if ((!this.placeholder) || this.placeholder === clickHere) {
 		chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
 			sitepw = response;
 			fillfield(this, response);
-			console.log(document.URL, Date.now() - start, "findpw 4: got password", this, response);
+			console.log(document.URL, Date.now() - start, "findpw got password", this, response);
 		});
 	} else {
 		// Because people don't always pay attention

@@ -1,5 +1,5 @@
 'use strict';
-import { characters, generate } from "./generate.js";
+import { characters, generate, isMasterPw } from "./generate.js";
 console.log("Version 0.99");
 var activetab;
 var domainname;
@@ -294,7 +294,7 @@ function fill() {
         bg.settings.username = getlowertrim("username");
     }
     get("masterpw").value = bg.masterpw;
-    console.log("popup fill with", bg.settings.domainname, bg.masterpw, bg.settings.sitename, bg.settings.username);
+    console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
     get("clearmasterpw").checked = bg.lastpersona.clearmasterpw;
     get("pwlength").value = bg.settings.length;
     get("startwithletter").checked = bg.settings.startwithletter;

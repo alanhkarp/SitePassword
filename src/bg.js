@@ -1,5 +1,5 @@
 'use strict';
-import { characters, generate } from "./generate.js";
+import { characters, generate, isMasterPw } from "./generate.js";
 // State I want to keep around that doesn't appear in the file system
 var bg = {};
 var masterpw = "";
@@ -25,7 +25,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 bg.lastpersona = persona;
                 masterpw = ssp.ssp.masterpw || "";
                 bg.masterpw = masterpw;
-                console.log("bg got ssp", persona || "foo", masterpw || "bar");
+                console.log("bg got ssp: persona", persona || "not defined");
             }
             if (request.cmd === "forget") {
                 let domainname = request.domainname;
@@ -58,7 +58,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 let domainname = pwfielddomain[origin] || origin;
                 bg.settings = bgsettings(bg.lastpersona, domainname);
                 let pr = generate(bg, hpSPG);
-                console.log("bg calculated sitepw", bg, hpSPG, pr, masterpw);
+                console.log("bg calculated sitepw", bg, hpSPG, pr, isMasterPw(masterpw));
                 sendResponse(pr.p);
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin);
@@ -73,7 +73,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 onContentPageload(request, sender, sendResponse);
                 persistMetadata();
             }
-            console.log(Date.now(), "bg addListener returning: masterpw", masterpw || "masterpw not defined");
+            console.log(Date.now(), "bg addListener returning", isMasterPw(masterpw));
         });
     });
     return true;
@@ -101,7 +101,7 @@ function onContentPageload(request, sender, sendResponse) {
     }
     let origin = getdomainname(sender.origin);
     let domainname = pwfielddomain[origin] || origin;
-    console.log("bg pwcount, domainname, masterpw", hpSPG, bg.pwcount, domainname, masterpw || "nomasterpw");
+    console.log("bg pwcount, domainname, masterpw", hpSPG, bg.pwcount, domainname, isMasterPw(masterpw));
     let persona = hpSPG.personas[bg.lastpersona];
     let sitename = persona.sites[domainname];
     if (sitename) {
@@ -220,7 +220,6 @@ async function parseBkmk(bkmkid, callback) {
         }
         try {
             // JSON.stringify turns some of my " into %22
-            console.log("bg parseBkmk", hpSPGstr.replace(/%22/g, "\""));
             hpSPG = JSON.parse(hpSPGstr.replace(/%22/g, "\""));
         } catch (e) {
             console.error("Error parsing metadata " + e);
