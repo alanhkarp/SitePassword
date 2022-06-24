@@ -11,40 +11,47 @@ var cleared = false; // Has password been cleared from the clipboars
 var cpi = { count: 0, pwfields: [], idfield: null };
 var readyForClick = false;
 var mutationObserver;
-var mutationMax = 50;
+var oldpwfield = null;
 var setTimer = true;
-var observerOptions = { // Start looking for updates again
-	attrbutes: true,
+var observerOptions = {
+	attributes: true,
 	characterData: false,
 	childList: true,
 	subtree: true,
-	attributeOldValue: true,
+	attributeOldValue: false,
 	characterDataOldValue: false
 };
 var start = Date.now();
-console.log(document.URL, Date.now() - start, "findpw ready state", document.readyState);
+console.log(document.URL, Date.now() - start, "findpw starting");
+// Most pages work if I start looking for password fields as soon as the basic HTML is loaded
 if (document.readyState !== "loading") {
+	console.log(document.URL, Date.now() - start, "findpw running", document.readyState);
 	startup();
 } else {
+	console.log(document.URL, Date.now() - start, "findpw running document.onload");
 	document.onload = startup;
 }
+// A few other pages don't find the password fields until all downloads have completed
+window.onload = function() {
+	console.log(document.URL, Date.now() - start, "findpw running window.onload");
+	startup();
+}
+// Some pages change CSS to make the password field visible after clicking the Sign In button
+document.body.onclick = function() {
+	console.log("findpw click on body");
+	setTimeout(() => {
+		console.log("findpw body.onclick");
+		startup();
+	}, 1500);
+};
 function startup() {
-	console.log(document.URL, Date.now() - start, "findpw running");
 	mutationObserver = new MutationObserver(function (mutations) {
 		// Find password field if added late or fill in again if userid and/or password fields were cleared
-		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutationMax, mutations);
-		if (mutationMax === 0) { // Give up after a while
-			if (setTimer) {
-				setTimer = false;
-				setTimeout(() => { // but try again after a while
-					mutationMax = 10;
-					setTimer = true;
-				}, 500);
-			}
-		} else {
-			mutationMax = mutationMax - 1;
+		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
+		cpi = countpwid();
+		if (oldpwfield !== cpi.pwfields[0]) { // Stop looking once I've found at least one password field.
+			oldpwfield = cpi.pwfields[0];
 			console.log(document.URL, Date.now() - start, "findpw calling countpwid from mutation observer");
-			cpi = countpwid();
 			sendpageinfo(cpi, false, true);
 			if (userid && !keyPressed) { // In case the mutations took away my changes
 				fillfield(cpi.idfield, userid);
@@ -151,26 +158,31 @@ function setPlaceholder(userid) {
 	if (userid) clearLabel(cpi.idfield);
 	if (cpi.pwfields[0] && readyForClick && userid) {
 		let placeholder = (cpi.pwfields.length === 1) ? clickHere : pasteHere;
-		console.log(document.URL, Date.now() - start, "findpw setPlaceholder", placeholder);
-		cpi.pwfields[0].placeholder = placeholder;
-		cpi.pwfields[0].ariaPlaceholder = placeholder;
-		cpi.pwfields[0].title = placeholder;
-		if (placeholder === pasteHere) {
-			cpi.pwfields[0].onclick = null;
-		}
-		clearLabel(cpi.pwfields[0]);
-		for (let i = 1; i < cpi.pwfields.length; i++) {
-			cpi.pwfields[i].placeholder = pasteHere;
-			cpi.pwfields[i].ariaPlaceholder = pasteHere;
-			cpi.pwfields[i].title = pasteHere;
-			cpi.pwfields[i].onclick = null;
-			clearLabel(cpi.pwfields[i]);
+		if (cpi.pwfields[0].placeholder !== placeholder) {
+			console.log(document.URL, Date.now() - start, "findpw setPlaceholder", placeholder);
+			cpi.pwfields[0].placeholder = placeholder;
+			cpi.pwfields[0].ariaPlaceholder = placeholder;
+			cpi.pwfields[0].title = placeholder;
+			if (placeholder === pasteHere) {
+				cpi.pwfields[0].onclick = null;
+			}
+			clearLabel(cpi.pwfields[0]);
+			for (let i = 1; i < cpi.pwfields.length; i++) {
+				cpi.pwfields[i].placeholder = pasteHere;
+				cpi.pwfields[i].ariaPlaceholder = pasteHere;
+				cpi.pwfields[i].title = pasteHere;
+				cpi.pwfields[i].onclick = null;
+				clearLabel(cpi.pwfields[i]);
+			}
 		}
 	} else if (cpi.pwfields[0]) {
-		console.log(document.URL, Date.now() - start, "findpw setPlaceholder", clickSitePassword);
-		cpi.pwfields[0].placeholder = clickSitePassword;
-		cpi.pwfields[0].ariaPlaceholder = clickSitePassword;
-		cpi.pwfields[0].title = clickSitePassword;
+		if (cpi.pwfields[0].placeholder !== clickSitePassword) {
+			console.log(document.URL, Date.now() - start, "findpw setPlaceholder", clickSitePassword);
+			cpi.pwfields[0].placeholder = clickSitePassword;
+			cpi.pwfields[0].ariaPlaceholder = clickSitePassword;
+			cpi.pwfields[0].title = clickSitePassword;
+			clearLabel(cpi.pwfields[0]);
+		}
 	}
 	console.log(document.URL, Date.now() - start, "findpw setPlaceholder observer reconnect");
 	mutationObserver.observe(document.body, observerOptions);
@@ -232,7 +244,7 @@ function countpwid() {
 				c++;
 				if (c === 1) {
 					found = i;
-					inputs[i].onkeydown = function(event) {
+					inputs[i].onkeydown = function (event) {
 						if (event.key) {
 							keyPressed = true;
 						}
@@ -249,7 +261,7 @@ function countpwid() {
 			// Skip over invisible input fields above the password field
 			visible = !isHidden(inputs[i]);
 			if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
-				inputs[i].onkeydown = function(event) {
+				inputs[i].onkeydown = function (event) {
 					if (event.key) {
 						keyPressed = true;
 					}
