@@ -181,12 +181,23 @@ async function persistMetadata() {
         persona.sites[bg.settings.domainname] = bg.settings.sitename;
         persona.sitenames[bg.settings.sitename] = bg.settings;
     }
-    if (persona.sites[""]) {
+    if (persona && persona.sites && persona.sites[""]) {
         alert("bg bad sitename", hpSPG);
     }
     chrome.storage.session.set({ "ssp": { "masterpw": masterpw, "personaname": bg.lastpersona } });
     chrome.bookmarks.search("SitePasswordData", async function (folders) {
-        let children = await chrome.bookmarks.getChildren(folders[0].id);
+        // Persist changes to hpSPG
+        let rootFolder = folders[0];
+        let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
+        let children = [];
+        let domains = [];
+        for (let i = 0; i < allchildren.length; i++) {
+            if (!isNaN(allchildren[i].title)) {
+                children.push(allchildren[i]);
+            } else {
+                domains.push(allchildren[i]);
+            }
+        }
         let pieces = JSON.stringify(hpSPG).match(/.{1,4090}/g);
         for (let i = 0; i < Math.max(pieces.length, children.length); i++) {
             if (pieces[i]) {
@@ -196,7 +207,7 @@ async function persistMetadata() {
                         console.log("bg updated bookmark", e, children[i].id);
                     });
                 } else {
-                    chrome.bookmarks.create({ "parentId": folders[0].id, "title": i.toString(), "url": url }, (e) => {
+                    chrome.bookmarks.create({ "parentId": rootFolder.id, "title": i.toString(), "url": url }, (e) => {
                         console.log("bg created bookmark", e.id);
                     });
                 }
@@ -207,6 +218,23 @@ async function persistMetadata() {
                 });
             }
         }
+        // Persist changes to domain settings
+        let domainNames = Object.keys(persona.sites);
+        for (let i = 0; i < domainNames.length; i++) {
+            let sitename = persona.sites[domainNames[i]];
+            let settings = "ssp://" + JSON.stringify(persona.sitenames[sitename]);
+            let found = domains.find((item) => item.title === domainNames[i]);
+            if (found) {
+                chrome.bookmarks.update(found.id, { "url": settings }, (e) => {
+                    console.log("bg updated settings bookmark", e, found);
+                });
+            } else {
+                chrome.bookmarks.create({ "parentId": rootFolder.id, "title": domainNames[i], "url": settings }, (e) => {
+                    console.log("bg created settings bookmark", e, domainNames[i]);
+                });
+            }
+
+        }
     });
 }
 // Assumes bookmarks fetched in the order created
@@ -215,8 +243,11 @@ async function parseBkmk(bkmkid, callback) {
     chrome.bookmarks.getChildren(bkmkid, (children) => {
         let hpSPGstr = "";
         for (let i = 0; i < children.length; i++) {
-            let data = children[i].url.substring(6);
-            hpSPGstr += data;
+            // Only use bookmarks containing pieces of hpSPG
+            if (!isNaN(children[i].title)) {
+                let data = children[i].url.substring(6);
+                hpSPGstr += data;
+            }
         }
         try {
             // JSON.stringify turns some of my " into %22
@@ -226,7 +257,7 @@ async function parseBkmk(bkmkid, callback) {
             hpSPG = undefined;
         }
         retrieved(callback);
-     });
+    });
 }
 async function retrieveMetadata(callback) {
     // return JSON.parse(localStorage[name]);
@@ -238,8 +269,8 @@ async function retrieveMetadata(callback) {
         } else if (folders.length === 0) {
             console.log("Creating SSP bookmark folder");
             hpSPG = undefined;
-            chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData" }, 
-                (bkmk)=> {
+            chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData" },
+                (bkmk) => {
                     parseBkmk(bkmk.id, callback);
                 });
         } else {
