@@ -36,6 +36,15 @@ window.onload = function() {
 	console.log(document.URL, Date.now() - start, "findpw running window.onload");
 	startup();
 }
+// Other pages add additional CSS at runtime that makes a password field visible
+// Cribbed from https://www.phpied.com/when-is-a-stylesheet-really-loaded/
+var cssnum = document.styleSheets.length;
+setInterval(() => {
+	if (document.styleSheets.length > cssnum) {
+		console.log(document.URL, Date.now() - start, "findpw css added");
+		startup();
+	}
+}, 2000);
 // Some pages change CSS to make the password field visible after clicking the Sign In button
 document.body.onclick = function() {
 	console.log("findpw click on body");
