@@ -32,7 +32,7 @@ if (document.readyState !== "loading") {
 	document.onload = startup;
 }
 // A few other pages don't find the password fields until all downloads have completed
-window.onload = function() {
+window.onload = function () {
 	console.log(document.URL, Date.now() - start, "findpw running window.onload");
 	startup();
 }
@@ -41,12 +41,13 @@ window.onload = function() {
 var cssnum = document.styleSheets.length;
 setInterval(() => {
 	if (document.styleSheets.length > cssnum) {
-		console.log(document.URL, Date.now() - start, "findpw css added");
+		cssnum = document.styleSheets.length;
+		console.log(document.URL, Date.now() - start, "findpw css added", cssnum);
 		startup();
 	}
 }, 2000);
 // Some pages change CSS to make the password field visible after clicking the Sign In button
-document.body.onclick = function() {
+document.body.onclick = function () {
 	console.log("findpw click on body");
 	setTimeout(() => {
 		console.log("findpw body.onclick");
