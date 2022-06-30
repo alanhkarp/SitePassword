@@ -37,7 +37,7 @@ window.onload = function () {
 	startup();
 }
 // Other pages add additional CSS at runtime that makes a password field visible
-// Cribbed from https://www.phpied.com/when-is-a-stylesheet-really-loaded/
+// Modified from https://www.phpied.com/when-is-a-stylesheet-really-loaded/
 var cssnum = document.styleSheets.length;
 setInterval(() => {
 	if (document.styleSheets.length > cssnum) {
@@ -54,6 +54,23 @@ document.body.onclick = function () {
 		startup();
 	}, 1500);
 };
+// Some sites change the page contents based on the fragment
+window.addEventListener("hashchange", (_href) => {
+	console.log(document.URL, Date.now() - start, "findpw calling countpwid from hash change listener");
+	cpi = countpwid();
+});
+// A few sites put their password fields in a shadow root to isolate it from the rest of the page.
+// The only way to find one is to walk the DOM.  That's expensive, so I only do it once.  That
+// means I'll miss a shadow root if it's added late.
+// From Domi at https://stackoverflow.com/questions/38701803/how-to-get-element-in-user-agent-shadow-root-with-javascript
+function searchShadowRoots(element) {
+	//return []; // Turned off because too much overhead for sites that have frequent changes, e.g.,
+	let shadows = Array.from(element.querySelectorAll('*'))
+		.map(el => el.shadowRoot).filter(Boolean);
+	let childResults = shadows.map(child => searchShadowRoots(child));
+	let result = Array.from(element.querySelectorAll("input"));
+	return result.concat(childResults).flat();
+}
 function startup() {
 	mutationObserver = new MutationObserver(function (mutations) {
 		// Find password field if added late or fill in again if userid and/or password fields were cleared
@@ -105,12 +122,6 @@ function startup() {
 		return true;
 	});
 }
-let observeMutation =
-	// Some sites change the page contents based on the fragment
-	window.addEventListener("hashchange", (_href) => {
-		console.log(document.URL, Date.now() - start, "findpw calling countpwid from hash change listener");
-		cpi = countpwid();
-	});
 function fillfield(field, text) {
 	// Don't change if there is a value to avoid mutationObserver cycling
 	if (field && text && !field.value) {
@@ -283,15 +294,6 @@ function countpwid() {
 	}
 	console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, useridfield);
 	return { pwfields: pwfields, idfield: useridfield };
-}
-// From Domi at https://stackoverflow.com/questions/38701803/how-to-get-element-in-user-agent-shadow-root-with-javascript
-function searchShadowRoots(element) {
-	return [];
-	let shadows = Array.from(element.querySelectorAll('*'))
-		.map(el => el.shadowRoot).filter(Boolean);
-	let childResults = shadows.map(child => searchShadowRoots(child));
-	let result = Array.from(element.querySelectorAll("input"));
-	return result.concat(childResults).flat();
 }
 function clearLabel(field) {
 	if (!field || !hideLabels) return;
