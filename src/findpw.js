@@ -1,5 +1,6 @@
 // Content script for ssp
 'use strict';
+var logging = true;
 var hideLabels = true; // Make it easy to turn off label hiding
 var clickSitePassword = "Click SitePassword";
 var clickHere = "Click here for password";
@@ -22,18 +23,18 @@ var observerOptions = {
 	characterDataOldValue: false
 };
 var start = Date.now();
-console.log(document.URL, Date.now() - start, "findpw starting");
+if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw starting");
 // Most pages work if I start looking for password fields as soon as the basic HTML is loaded
 if (document.readyState !== "loading") {
-	console.log(document.URL, Date.now() - start, "findpw running", document.readyState);
+	if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw running", document.readyState);
 	startup();
 } else {
-	console.log(document.URL, Date.now() - start, "findpw running document.onload");
+	if (logging) console.log(document.URL, Date.now() - start, "findpw running document.onload");
 	document.onload = startup;
 }
 // A few other pages don't find the password fields until all downloads have completed
 window.onload = function () {
-	console.log(document.URL, Date.now() - start, "findpw running window.onload");
+	if (logging) console.log(document.URL, Date.now() - start, "findpw running window.onload");
 	startup();
 }
 // Other pages add additional CSS at runtime that makes a password field visible
@@ -42,21 +43,21 @@ var cssnum = document.styleSheets.length;
 setInterval(() => {
 	if (document.styleSheets.length > cssnum) {
 		cssnum = document.styleSheets.length;
-		console.log(document.URL, Date.now() - start, "findpw css added", cssnum);
+		if (logging) console.log(document.URL, Date.now() - start, "findpw css added", cssnum);
 		startup();
 	}
 }, 2000);
 // Some pages change CSS to make the password field visible after clicking the Sign In button
 document.body.onclick = function () {
-	console.log("findpw click on body");
+	if (logging) console.log("findpw click on body");
 	setTimeout(() => {
-		console.log("findpw body.onclick");
+		if (logging) console.log("findpw body.onclick");
 		startup();
 	}, 1500);
 };
 // Some sites change the page contents based on the fragment
 window.addEventListener("hashchange", (_href) => {
-	console.log(document.URL, Date.now() - start, "findpw calling countpwid from hash change listener");
+	if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from hash change listener");
 	cpi = countpwid();
 });
 // A few sites put their password fields in a shadow root to isolate it from the rest of the page.
@@ -74,11 +75,11 @@ function searchShadowRoots(element) {
 function startup() {
 	mutationObserver = new MutationObserver(function (mutations) {
 		// Find password field if added late or fill in again if userid and/or password fields were cleared
-		console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
+		if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
 		cpi = countpwid();
 		if (oldpwfield !== cpi.pwfields[0]) { // Stop looking once I've found at least one password field.
 			oldpwfield = cpi.pwfields[0];
-			console.log(document.URL, Date.now() - start, "findpw calling countpwid from mutation observer");
+			if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from mutation observer");
 			sendpageinfo(cpi, false, true);
 			if (userid && !keyPressed) { // In case the mutations took away my changes
 				fillfield(cpi.idfield, userid);
@@ -90,11 +91,11 @@ function startup() {
 		}
 	});
 	mutationObserver.observe(document.body, observerOptions);
-	console.log(document.URL, Date.now() - start, "findpw calling countpwid from onload");
+	if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from onload");
 	cpi = countpwid();
 	sendpageinfo(cpi, false, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
-		console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
+		if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
 		readyForClick = request.readyForClick;
 		switch (request.cmd) {
 			case "fillfields":
@@ -117,12 +118,12 @@ function startup() {
 				mutationObserver.observe(document.body, observerOptions);
 				break;
 			case "count":
-				console.log(document.URL, Date.now() - start, "findpw got count request", cpi.pwfields.length);
+				if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", cpi.pwfields.length);
 				countpwid();
 				sendResponse({"pwcount": cpi.pwfields.length});
 				break;
 			default:
-				console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
+				if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
 		}
 		return true;
 	});
@@ -132,7 +133,7 @@ function fillfield(field, text) {
 	if (field && text && !field.value) {
 		// Don't trigger observer for these updates since observer.disconnect()
 		// doesn't work inside the observer callback
-		console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
+		if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
 		mutationObserver.disconnect();
 		field.value = text.trim();
 		fixfield(field, text.trim());
@@ -150,7 +151,7 @@ function fixfield(field, text) {
 	makeEvent(field, "keypress");
 	makeEvent(field, "keyup");
 	// Is there a better test for telling if the page knows the value has been set?
-	console.log(document.URL, Date.now() - start, "findpw focus test", field.value, text);
+	if (logging) console.log(document.URL, Date.now() - start, "findpw focus test", field.value, text);
 }
 // Sometimes the page doesn't know that the value is set until an event is triggered
 function makeEvent(field, type) {
@@ -161,14 +162,14 @@ function sendpageinfo(cpi, clicked, onload) {
 	// No need to send page info if no password fields found.  User will have to open
 	// the popup, which will supply the needed data
 	if (cpi.pwfields.length === 0) return;
-	console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length);
+	if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length);
 	chrome.runtime.sendMessage({
 		"count": cpi.pwfields.length,
 		"clicked": clicked,
 		"onload": onload
 	}, (response) => {
-		if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
-		console.log(document.URL, Date.now() - start, "findpw response", response);
+		if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
+		if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
 		readyForClick = response.readyForClick;
 		userid = response.u;
 		fillfield(cpi.idfield, userid);
@@ -178,14 +179,14 @@ function sendpageinfo(cpi, clicked, onload) {
 	});
 }
 function setPlaceholder(userid) {
-	console.log(document.URL, Date.now() - start, "findpw setPlaceholder", userid, readyForClick, cpi.pwfields);
-	console.log(document.URL, Date.now() - start, "findpw setPlaceholder observer disconnect");
+	if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", userid, readyForClick, cpi.pwfields);
+	if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder observer disconnect");
 	mutationObserver.disconnect(); // Don't trigger observer for these updates
 	if (userid) clearLabel(cpi.idfield);
 	if (cpi.pwfields[0] && readyForClick && userid) {
 		let placeholder = (cpi.pwfields.length === 1) ? clickHere : pasteHere;
 		if (cpi.pwfields[0].placeholder !== placeholder) {
-			console.log(document.URL, Date.now() - start, "findpw setPlaceholder", placeholder);
+			if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", placeholder);
 			cpi.pwfields[0].placeholder = placeholder;
 			cpi.pwfields[0].ariaPlaceholder = placeholder;
 			cpi.pwfields[0].title = placeholder;
@@ -203,24 +204,24 @@ function setPlaceholder(userid) {
 		}
 	} else if (cpi.pwfields[0]) {
 		if (cpi.pwfields[0].placeholder !== clickSitePassword) {
-			console.log(document.URL, Date.now() - start, "findpw setPlaceholder", clickSitePassword);
+			if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", clickSitePassword);
 			cpi.pwfields[0].placeholder = clickSitePassword;
 			cpi.pwfields[0].ariaPlaceholder = clickSitePassword;
 			cpi.pwfields[0].title = clickSitePassword;
 			clearLabel(cpi.pwfields[0]);
 		}
 	}
-	console.log(document.URL, Date.now() - start, "findpw setPlaceholder observer reconnect");
+	if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder observer reconnect");
 	mutationObserver.observe(document.body, observerOptions);
 }
 function pwfieldOnclick() {
-	console.log(document.URL, Date.now() - start, "findpw get sitepass");
+	if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass");
 	mutationObserver.disconnect();
 	if ((!this.placeholder) || this.placeholder === clickHere) {
 		chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
 			sitepw = response;
 			fillfield(this, response);
-			console.log(document.URL, Date.now() - start, "findpw got password", this, response);
+			if (logging) console.log(document.URL, Date.now() - start, "findpw got password", this, response);
 		});
 	} else {
 		// Because people don't always pay attention
@@ -231,13 +232,13 @@ function pwfieldOnclick() {
 function putOnClipboard(password) {
 	navigator.clipboard.writeText(password).then(() => {
 		cleared = "false";
-		console.log("findpw clipboard ready")
+		if (logging) console.log("findpw clipboard ready")
 	});
 	if (!cleared) setTimeout(function () {
-		console.log(document.URL, Date.now() - start, "findpw clear clipboard");
+		if (logging) console.log(document.URL, Date.now() - start, "findpw clear clipboard");
 		mutationObserver.disconnect(); // Don't trigger observer for these updates
 		navigator.clipboard.writeText("").then(() => {
-			console.log(Document.URL, Date.now() - start, "findpw cleared clipboard");
+			if (logging) console.log(Document.URL, Date.now() - start, "findpw cleared clipboard");
 			cleared = true;
 		});
 		if (cpi.pwfields.length > 0) {
@@ -248,7 +249,7 @@ function putOnClipboard(password) {
 				cpi.pwfields[i].ariaPlaceholder = "";
 			}
 		}
-		console.log(document.URL, Date.now() - start, "findpw clipboard cleared");
+		if (logging) console.log(document.URL, Date.now() - start, "findpw clipboard cleared");
 		mutationObserver.observe(document.body, observerOptions);
 	}, 30000);
 }
@@ -263,7 +264,7 @@ function countpwid() {
 	for (var i = 0; i < inputs.length; i++) {
 		if (inputs[i].type && (inputs[i].type.toLowerCase() == "password")) {
 			visible = !isHidden(inputs[i]);
-			console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
+			if (logging) console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
 			let pattern = inputs[i].getAttribute("pattern"); // Pattern [0-9]* is a PIN or SSN
 			if (visible && pattern !== "[0-9]*") {
 				pwfields.push(inputs[i]);
@@ -297,7 +298,7 @@ function countpwid() {
 			}
 		}
 	}
-	console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, useridfield);
+	if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, useridfield);
 	return { pwfields: pwfields, idfield: useridfield };
 }
 function clearLabel(field) {

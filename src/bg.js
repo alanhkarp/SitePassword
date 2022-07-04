@@ -1,6 +1,7 @@
 'use strict';
 import { characters, generate, isMasterPw } from "./generate.js";
 // State I want to keep around that doesn't appear in the file system
+var logging = true;
 var bg = {};
 var masterpw = "";
 var activetab;
@@ -11,21 +12,21 @@ var protocol = "";
 var persona;
 var pwcount = 0;
 var pwfielddomain = {};
-console.log("bg clear masterpw");
+if (logging) console.log("bg clear masterpw");
 
-console.log("bg starting");
+if (logging) console.log("bg starting");
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    console.log(Date.now(), "bg got message request, sender", request, sender);
+    if (logging) console.log(Date.now(), "bg got message request, sender", request, sender);
     retrieveMetadata(() => {
-        console.log("bg listener back from retrieveMetadata", hpSPG);
+        if (logging) console.log("bg listener back from retrieveMetadata", hpSPG);
         chrome.storage.session.get(["ssp"], (ssp) => {
             if (ssp.ssp) {
                 persona = ssp.ssp.personaname || "default";
                 bg.lastpersona = persona;
                 masterpw = ssp.ssp.masterpw || "";
                 bg.masterpw = masterpw;
-                console.log("bg got ssp: persona", persona || "not defined");
+                if (logging) console.log("bg got ssp: persona", persona || "not defined");
             }
             if (request.cmd === "forget") {
                 let domainname = request.domainname;
@@ -42,12 +43,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 delete persona.sites[domainname];
                 bg.settings.sitename = "";
                 hpSPG.personas[personaname] = persona;
-                console.log("bg forgot", domainname, hpSPG);
+                if (logging) console.log("bg forgot", domainname, hpSPG);
                 persistMetadata();
             } else if (request.cmd === "getMetadata") {
                 getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "siteData") {
-                console.log("bg got site data", request);
+                if (logging) console.log("bg got site data", request);
                 bg = clone(request.bg);
                 bg.lastpersona = request.personaname;
                 masterpw = bg.masterpw;
@@ -58,22 +59,22 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 let domainname = pwfielddomain[origin] || origin;
                 bg.settings = bgsettings(bg.lastpersona, domainname);
                 let pr = generate(bg, hpSPG);
-                console.log("bg calculated sitepw", bg, hpSPG, pr, isMasterPw(masterpw));
+                if (logging) console.log("bg calculated sitepw", bg, hpSPG, pr, isMasterPw(masterpw));
                 sendResponse(pr.p);
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin);
                 bg.domainname = domainname;
-                console.log("bg clicked: sending response", bg);
+                if (logging) console.log("bg clicked: sending response", bg);
                 sendResponse(bg);
                 if (persona.clearmasterpw) {
                     masterpw = "";
-                    console.log("bg clear masterpw")
+                    if (logging) console.log("bg clear masterpw")
                 }
             } else if (request.onload) {
                 onContentPageload(request, sender, sendResponse);
                 persistMetadata();
             }
-            console.log(Date.now(), "bg addListener returning", isMasterPw(masterpw));
+            if (logging) console.log(Date.now(), "bg addListener returning", isMasterPw(masterpw));
         });
     });
     return true;
@@ -88,11 +89,11 @@ async function getMetadata(request, _sender, sendResponse) {
     }
     // Domain name comes from popup, which is trusted not to spoof it
     bg.settings.domainname = pwfielddomain[request.domainname] || request.domainname;
-    console.log("bg sending metadata", bg, hpSPG);
+    if (logging) console.log("bg sending metadata", bg, hpSPG);
     sendResponse({ "masterpw": masterpw || "", "bg": bg, "hpSPG": hpSPG });
 }
 function onContentPageload(request, sender, sendResponse) {
-    console.log("bg onContentPageLoad");
+    if (logging) console.log("bg onContentPageLoad");
     activetab = sender.tab;
     bg.pwcount = request.count;
     pwcount = bg.pwcount;
@@ -101,7 +102,7 @@ function onContentPageload(request, sender, sendResponse) {
     }
     let origin = getdomainname(sender.origin);
     let domainname = pwfielddomain[origin] || origin;
-    console.log("bg pwcount, domainname, masterpw", hpSPG, bg.pwcount, domainname, isMasterPw(masterpw));
+    if (logging) console.log("bg pwcount, domainname, masterpw", hpSPG, bg.pwcount, domainname, isMasterPw(masterpw));
     let persona = hpSPG.personas[bg.lastpersona];
     let sitename = persona.sites[domainname];
     if (sitename) {
@@ -119,11 +120,11 @@ function onContentPageload(request, sender, sendResponse) {
         let pr = generate(bg, hpSPG);
         sitepass = pr.p;
     }
-    console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
+    if (logging) console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
     sendResponse({ cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
 }
 function gotMetadata(hpSPGlocal) {
-    console.log("bg gotMetadata", hpSPGlocal);
+    if (logging) console.log("bg gotMetadata", hpSPGlocal);
     if (!hpSPGlocal) {
         hpSPGlocal = {
             digits: "0123456789",
@@ -168,14 +169,14 @@ function gotMetadata(hpSPGlocal) {
         persona = hpSPGlocal.personas.everyone;
         persona.personaname = "Everyone";
         hpSPG = hpSPGlocal;
-        console.log("bg gotMetadata default", hpSPG);
+        if (logging) console.log("bg gotMetadata default", hpSPG);
         persistMetadata();
     }
     hpSPG = hpSPGlocal;
 }
 async function persistMetadata() {
     // localStorage[name] = JSON.stringify(value);
-    console.log("bg persistMetadata", bg, hpSPG);
+    if (logging) console.log("bg persistMetadata", bg, hpSPG);
     persona = hpSPG.personas[bg.lastpersona];
     if (bg.settings.sitename) {
         persona.sites[bg.settings.domainname] = bg.settings.sitename;
@@ -204,17 +205,17 @@ async function persistMetadata() {
                 let url = "ssp://" + pieces[i];
                 if (children[i]) {
                     chrome.bookmarks.update(children[i].id, { "url": url }, (e) => {
-                        console.log("bg updated bookmark", e, children[i].id);
+                        if (logging) console.log("bg updated bookmark", e, children[i].id);
                     });
                 } else {
                     chrome.bookmarks.create({ "parentId": rootFolder.id, "title": i.toString(), "url": url }, (e) => {
-                        console.log("bg created bookmark", e.id);
+                        if (logging) console.log("bg created bookmark", e.id);
                     });
                 }
             } else {
                 let id = children[i].id;
                 chrome.bookmarks.remove(children[i].id, (e) => {
-                    console.log("bg removed bookmark", e, id);
+                    if (logging) console.log("bg removed bookmark", e, id);
                 });
             }
         }
@@ -226,11 +227,11 @@ async function persistMetadata() {
             let found = domains.find((item) => item.title === domainNames[i]);
             if (found) {
                 chrome.bookmarks.update(found.id, { "url": settings }, (e) => {
-                    console.log("bg updated settings bookmark", e, found);
+                    if (logging) console.log("bg updated settings bookmark", e, found);
                 });
             } else {
                 chrome.bookmarks.create({ "parentId": rootFolder.id, "title": domainNames[i], "url": settings }, (e) => {
-                    console.log("bg created settings bookmark", e, domainNames[i]);
+                    if (logging) console.log("bg created settings bookmark", e, domainNames[i]);
                 });
             }
 
@@ -239,7 +240,7 @@ async function persistMetadata() {
 }
 // Assumes bookmarks fetched in the order created
 async function parseBkmk(bkmkid, callback) {
-    console.log("bg parsing bookmark");
+    if (logging) console.log("bg parsing bookmark");
     chrome.bookmarks.getChildren(bkmkid, (children) => {
         let hpSPGstr = "";
         for (let i = 0; i < children.length; i++) {
@@ -261,13 +262,13 @@ async function parseBkmk(bkmkid, callback) {
 }
 async function retrieveMetadata(callback) {
     // return JSON.parse(localStorage[name]);
-    console.log("bg find SSP bookmark folder");
+    if (logging) console.log("bg find SSP bookmark folder");
     chrome.bookmarks.search("SitePasswordData", (folders) => {
         if (folders.length === 1) {
-            console.log("Found bookmarks folder: ", folders[0]);
+            if (logging) console.log("Found bookmarks folder: ", folders[0]);
             parseBkmk(folders[0].id, callback);
         } else if (folders.length === 0) {
-            console.log("Creating SSP bookmark folder");
+            if (logging) console.log("Creating SSP bookmark folder");
             alert("Creating SitePasswordData");
             hpSPG = undefined;
             chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData" },
@@ -276,12 +277,12 @@ async function retrieveMetadata(callback) {
                 });
         } else {
             alert("Found multple SitePasswordData folders");
-            console.log("bg found multiple SitePasswordData folders", folders);
+            if (logging) console.log("bg found multiple SitePasswordData folders", folders);
         }
     });
 }
 function retrieved(callback) {
-    console.log("bg retrieved");
+    if (logging) console.log("bg retrieved");
     gotMetadata(hpSPG);
     // Doing it this way because bg.js used to be a background page, 
     // and I don't want to change a lot of code after I moved it to
@@ -302,7 +303,7 @@ function retrieved(callback) {
         "pwcount": pwcount,
         "settings": settings,
     };
-    console.log(Date.now(), "bg leaving retrieived", bg, hpSPG);
+    if (logging) console.log(Date.now(), "bg leaving retrieived", bg, hpSPG);
     callback();
 }
 function bgsettings(personaname, domainname) {

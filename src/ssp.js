@@ -1,6 +1,7 @@
 'use strict';
 import { characters, generate, isMasterPw } from "./generate.js";
-console.log("Version 0.99");
+if (logging) console.log("Version 0.99");
+var logging = true;
 var activetab;
 var domainname;
 var persona;
@@ -8,21 +9,21 @@ var bg = {};
 // I need all the metadata stored in hpSPG for both the phishing check
 // and for downloading the site data.
 var hpSPG;
-console.log("popup starting");
+if (logging) console.log("popup starting");
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
 // outside the popup window.  I can't use window.onblur because the 
 // popup window closes before the message it sends gets delivered.
 
 window.onload = function () {
-    console.log("popup getting active tab");
+    if (logging) console.log("popup getting active tab");
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         activetab = tabs[0];
-        console.log("popup tab", activetab);
+        if (logging) console.log("popup tab", activetab);
         domainname = activetab.url.split("/")[2];
         get("domainname").value = domainname;
-        console.log("popup got tab", domainname, activetab);
-        console.log(Date.now(), "popup getting metadata");
+        if (logging) console.log("popup got tab", domainname, activetab);
+        if (logging) console.log(Date.now(), "popup getting metadata");
         getMetadata();
     });
     eventSetup();
@@ -40,19 +41,19 @@ function init() {
 }
 async function getMetadata() {
     getsettings(() => {
-        console.log("popup requesting pwcount");
+        if (logging) console.log("popup requesting pwcount");
         chrome.tabs.sendMessage(activetab.id, {"cmd": "count"}, (response) => {
-            console.log("popup got pwcount", response.pwcount);
+            if (logging) console.log("popup got pwcount", response.pwcount);
             message("zero", response.pwcount === 0);
         })
         init();
-        console.log("popup got metadata", bg, hpSPG);
-        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
+        if (logging) console.log("popup got metadata", bg, hpSPG);
+        if (chrome.runtime.lastError) if (logging) console.log("popup lastError", chrome.runtime.lastError);
     });
 }
 function getsettings(gotMetadata) {
     // var sitename = getlowertrim("sitename");
-    console.log("popup getting metadata", domainname);
+    if (logging) console.log("popup getting metadata", domainname);
     chrome.runtime.sendMessage({
         "cmd": "getMetadata",
         "domainname": domainname,
@@ -75,7 +76,7 @@ function eventSetup() {
     // are delivered in just a couple of ms, so there's no problem.  Just be aware that
     // this race is the source of any problems related to loss of the message sent here.
     get("ssp").onmouseleave = function () {
-        console.log(Date.now(), "popup window.mouseleave", bg);
+        if (logging) console.log(Date.now(), "popup window.mouseleave", bg);
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
             bg.lastpersona = getlowertrim("persona");
@@ -92,7 +93,7 @@ function eventSetup() {
             let personaname = getlowertrim("persona");
             let domainname = get("domainname").value;
             bg.settings.domainname = domainname;
-            console.log("popup sending site data", personaname, domainname, bg);
+            if (logging) console.log("popup sending site data", personaname, domainname, bg);
             chrome.runtime.sendMessage({ "cmd": "siteData",
                 "personaname": personaname, 
                 "sitename": s, 
@@ -124,7 +125,7 @@ function eventSetup() {
         ask2generate();
     }
     get("masterpw").onblur = function () {
-        console.log("popup masterpw onblur");
+        if (logging) console.log("popup masterpw onblur");
         handleblur("masterpw", "masterpw");
         changePlaceholder();
     }
@@ -239,7 +240,7 @@ function handleclick(which) {
 function changePlaceholder() {
     let u = get("username").value
     if (get("masterpw").value && get("sitename").value && u) {
-        console.log("popup sending fill fields", u);
+        if (logging) console.log("popup sending fill fields", u);
         chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
     }
 }
@@ -298,7 +299,7 @@ function fill() {
         bg.settings.username = getlowertrim("username");
     }
     get("masterpw").value = bg.masterpw;
-    console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
+    if (logging) console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
     get("clearmasterpw").checked = bg.lastpersona.clearmasterpw;
     get("pwlength").value = bg.settings.length;
     get("startwithletter").checked = bg.settings.startwithletter;
@@ -452,7 +453,7 @@ function clone(object) {
 }
 function copyToClipboard() {
     let sitepass = get("sitepass").value;
-    console.log("popup copy sitepass to clipboard", sitepass);
+    if (logging) console.log("popup copy sitepass to clipboard", sitepass);
     navigator.clipboard.writeText(sitepass);
     setTimeout(function () {
         navigator.clipboard.writeText("");
