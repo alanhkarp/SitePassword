@@ -268,6 +268,7 @@ async function retrieveMetadata(callback) {
             parseBkmk(folders[0].id, callback);
         } else if (folders.length === 0) {
             console.log("Creating SSP bookmark folder");
+            alert("Creating SitePasswordData");
             hpSPG = undefined;
             chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData" },
                 (bkmk) => {
