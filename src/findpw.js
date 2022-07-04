@@ -93,7 +93,7 @@ function startup() {
 	console.log(document.URL, Date.now() - start, "findpw calling countpwid from onload");
 	cpi = countpwid();
 	sendpageinfo(cpi, false, true);
-	chrome.runtime.onMessage.addListener(function (request, _sender, _sendResponse) {
+	chrome.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
 		console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
 		readyForClick = request.readyForClick;
 		switch (request.cmd) {
@@ -115,6 +115,11 @@ function startup() {
 					cpi.pwfields[1].placeholder = "";
 				}
 				mutationObserver.observe(document.body, observerOptions);
+				break;
+			case "count":
+				console.log(document.URL, Date.now() - start, "findpw got count request", cpi.pwfields.length);
+				countpwid();
+				sendResponse({"pwcount": cpi.pwfields.length});
 				break;
 			default:
 				console.log(document.URL, Date.now() - start, "findpw unexpected message", request);

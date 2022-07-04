@@ -40,7 +40,11 @@ function init() {
 }
 async function getMetadata() {
     getsettings(() => {
-        message("zero", bg.pwcount === 0);
+        console.log("popup requesting pwcount");
+        chrome.tabs.sendMessage(activetab.id, {"cmd": "count"}, (response) => {
+            console.log("popup got pwcount", response.pwcount);
+            message("zero", response.pwcount === 0);
+        })
         init();
         console.log("popup got metadata", bg, hpSPG);
         if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
