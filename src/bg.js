@@ -193,6 +193,8 @@ async function persistMetadata() {
         let children = [];
         let domains = [];
         for (let i = 0; i < allchildren.length; i++) {
+            // hpSPG is saved in 4K chunks of bookmarks each with the string of an integer as a title
+            // All other bookmarks are domain names, which can't be converted to integers
             if (!isNaN(allchildren[i].title)) {
                 children.push(allchildren[i]);
             } else {
