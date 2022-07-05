@@ -57,8 +57,9 @@ document.body.onclick = function () {
 };
 // Some sites change the page contents based on the fragment
 window.addEventListener("hashchange", (_href) => {
-	if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from hash change listener");
+	if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from hash change listener");
 	cpi = countpwid();
+	sendpageinfo(cpi, false, true);
 });
 // A few sites put their password fields in a shadow root to isolate it from the rest of the page.
 // The only way to find one is to walk the DOM.  That's expensive, so I only do it once.  That
@@ -74,13 +75,13 @@ function searchShadowRoots(element) {
 }
 function startup() {
 	mutationObserver = new MutationObserver(function (mutations) {
-		// Find password field if added late or fill in again if userid and/or password fields were cleared
+		// Find password field if added late
 		if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
-		cpi = countpwid();
-		if (oldpwfield !== cpi.pwfields[0]) { // Stop looking once I've found at least one password field.
-			oldpwfield = cpi.pwfields[0];
-			if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from mutation observer");
+		if (!oldpwfield || oldpwfield !== cpi.pwfields[0]) { // Stop looking once I've found at least one password field.
+			if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from mutation observer");
+			cpi = countpwid();
 			sendpageinfo(cpi, false, true);
+			oldpwfield = cpi.pwfields[0];
 			if (userid && !keyPressed) { // In case the mutations took away my changes
 				fillfield(cpi.idfield, userid);
 				if (cpi.pwfields.length === 1) fillfield(cpi.pwfields[0], sitepw);
@@ -90,8 +91,9 @@ function startup() {
 			}
 		}
 	});
+	if (logging) console.log(document.URL, Date.now() - start, "findpw startup observer observe")
 	mutationObserver.observe(document.body, observerOptions);
-	if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from onload");
+	if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
 	cpi = countpwid();
 	sendpageinfo(cpi, false, true);
 	chrome.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
@@ -107,6 +109,7 @@ function startup() {
 				}
 				break;
 			case "forget":
+				if (logging) console.log(document.URL, Date.now() - start, "findpw forget observer disconnect")
 				mutationObserver.disconnect();
 				cpi.idfield.value = "";
 				cpi.pwfields[0].value = "";
@@ -116,6 +119,7 @@ function startup() {
 					cpi.pwfields[1].placeholder = "";
 				}
 				mutationObserver.observe(document.body, observerOptions);
+				if (logging) console.log(document.URL, Date.now() - start, "findpw forget observer observe")
 				break;
 			case "count":
 				if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", cpi.pwfields.length);
@@ -134,10 +138,12 @@ function fillfield(field, text) {
 		// Don't trigger observer for these updates since observer.disconnect()
 		// doesn't work inside the observer callback
 		if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
+		if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield observer disconnect")
 		mutationObserver.disconnect();
 		field.value = text.trim();
 		fixfield(field, text.trim());
 		mutationObserver.observe(document.body, observerOptions);
+		if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield observer observe")
 	}
 }
 // Some pages don't know the field has been updated
@@ -211,11 +217,12 @@ function setPlaceholder(userid) {
 			clearLabel(cpi.pwfields[0]);
 		}
 	}
-	if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder observer reconnect");
+	if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder observer observe");
 	mutationObserver.observe(document.body, observerOptions);
 }
 function pwfieldOnclick() {
 	if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass");
+	if (logging) console.log(document.URL, Date.now() - start, "findpw pwfieldOnclick observer disconnect")
 	mutationObserver.disconnect();
 	if ((!this.placeholder) || this.placeholder === clickHere) {
 		chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
@@ -227,6 +234,7 @@ function pwfieldOnclick() {
 		// Because people don't always pay attention
 		if (!this.placeholder || this.placeholder === clickSitePassword) alert(clickSitePassword);
 	}
+	if (logging) console.log(document.URL, Date.now() - start, "findpw pwfieldOnclick observer observe")
 	mutationObserver.observe(document.body, observerOptions);
 }
 function putOnClipboard(password) {
@@ -236,6 +244,7 @@ function putOnClipboard(password) {
 	});
 	if (!cleared) setTimeout(function () {
 		if (logging) console.log(document.URL, Date.now() - start, "findpw clear clipboard");
+		if (logging) console.log(document.URL, Date.now() - start, "findpw clipboard observer disconnect")
 		mutationObserver.disconnect(); // Don't trigger observer for these updates
 		navigator.clipboard.writeText("").then(() => {
 			if (logging) console.log(Document.URL, Date.now() - start, "findpw cleared clipboard");
@@ -250,6 +259,7 @@ function putOnClipboard(password) {
 			}
 		}
 		if (logging) console.log(document.URL, Date.now() - start, "findpw clipboard cleared");
+		if (logging) console.log(document.URL, Date.now() - start, "findpw clipboard observer observe")
 		mutationObserver.observe(document.body, observerOptions);
 	}, 30000);
 }
@@ -277,8 +287,10 @@ function countpwid() {
 						}
 					}
 				}
+				if (logging) console.log(document.URL, Date.now() - start, "findpw countpwid observer disconnect")
 				mutationObserver.disconnect(); // Don't trigger observer for this update
 				inputs[i].onclick = pwfieldOnclick;
+				if (logging) console.log(document.URL, Date.now() - start, "findpw countpwid observer observe")
 				mutationObserver.observe(document.body, observerOptions);
 			}
 		}
@@ -303,7 +315,6 @@ function countpwid() {
 }
 function clearLabel(field) {
 	if (!field || !hideLabels) return;
-	mutationObserver.disconnect(); // Don't trigger observer for these updates
 	let labels = Array.from(document.querySelectorAll("label, [for]"));
 	for (let i = 0; i < labels.length; i++) {
 		let target = labels[i].getAttribute("for");
@@ -316,7 +327,6 @@ function clearLabel(field) {
 			}
 		}
 	}
-	mutationObserver.observe(document.body, observerOptions);
 }
 function isHidden(field) {
 	let hidden =
