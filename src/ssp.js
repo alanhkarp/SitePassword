@@ -99,8 +99,10 @@ function eventSetup() {
                 "sitename": s, 
                 "bg": bg });
         }
-        // It would be nice to close the window here, but the contents script doesn't work if I do
-        // window.close()
+        // If I close the window immediately, then messages in flight get lost
+        setTimeout(() => {
+            window.close();
+        }, 100);
     }
     // UI Event handlers
     get("persona").onkeyup = function () {
