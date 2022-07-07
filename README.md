@@ -35,7 +35,8 @@ the *Remember* button.  Next enter the domain name
 trick was actually used by criminals trying to steal people's
 credentials.  That's a good reason to paste the domain name 
 from the address bar of the page rather than typing it into the 
-form manuallly. 
+form manuallly. Now fill in the menu with the nickname you used
+before to see the scary message.
 
 Unfortunately, you will also see this warning when you are not
 being tricked.  Many websites have several different login pages 
