@@ -198,6 +198,9 @@ function eventSetup() {
         handleblur("specials", "specials");
     }
     get("sitedatagetbutton").onclick = sitedataHTML;
+    get("instructions").onclick = function() {
+        chrome.tabs.create({"url": "https://sitepassword.alanhkarp.com"});
+    }
     get("warningbutton").onclick = function () {
         get("masterpw").disabled = false;
         get("username").disabled = false;
