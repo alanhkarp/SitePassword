@@ -163,6 +163,9 @@ function eventSetup() {
     get("clearmasterpw").onclick = function () {
         persona.clearmasterpw = get("clearmasterpw").checked;
     }
+    get("pwlength").onmouseleave = function () {
+        handleblur("pwlength", "length");
+    }
     get("pwlength").onblur = function () {
         handleblur("pwlength", "length");
     }
