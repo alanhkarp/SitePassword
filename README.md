@@ -61,19 +61,18 @@ Some sites make you change your password periodically.  SitePassword
 makes that easy.  Navigate to the site's login page, and change your 
 nickname for the site.  For example, if your current nickname is
 *MyBank*, and they make you change your password once a year, 
-you could change the nickname to *MyBank2022*.
+you could change the nickname to *MyBank2022*.  Your new site
+password will be completely different than the old on
 
 
 SitePassword includes an antiphishing feature.  If you try to use 
 the same nickname for another domain name, you will get a big, 
 scary warning.  It's telling you that you may be at a site 
-spoofing the one you think you are at.  
-
-Unfortunately, you will also see this warning when you are not
-being tricked.  Many websites have several different login pages 
-with different domain names.  So, when you see the warning, check 
-the URL of the page to make sure it's a login page for the site 
-you think it is.
+spoofing the one you think you are at.  Unfortunately, you will 
+also see this warning when you are not being tricked.  Many 
+websites have several different login pages with different domain 
+names.  So, when you see the warning, check the URL of the page 
+to make sure it's a login page for the site you think it is.
 
 
 Since SitePassword doesn't store your passwords, there's no way
