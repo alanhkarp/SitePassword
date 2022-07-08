@@ -20,7 +20,7 @@ you if you might be at a phishing site.
 [Overview](#overview)
 ---------------------
 
-It's too hard for you to remember a strong password for every site you use. Password managers take care of this problem for you. Most of them store your passwords in encrypted form, either on your machine or in the cloud. You will have to enter your password manager's password to log into a site, something you may not want to do on a machine you don't trust with all your passwords.
+It's too hard for you to remember a strong password for every site you use. Password managers take care of this problem for you. Most of them store your passwords in encrypted form, either on your machine or in the cloud.
 
 SitePassword is different. It calculates your password for the site from a single master password and your nickname and username (userid) for the site. That means you can get your password if you remember those three things. Just come to [SitePassword](https://sitepassword.alanhkarp.com) and fill in the form. There is also an extension for the Chrome browser that you can install.
 
@@ -31,7 +31,7 @@ Using the [SitePassword](https://sitepassword.alanhkarp.com) web page to compute
 
 Some web sites have strict password rules, how long it must be, if it must contain upper case or lower case letters, numbers, or special characters, including restrictions on which special characters are allowed. If you run into a site that doesn't accept the calculated password, click the _More_ button and change the appropriate menu entries. SitePassword was tested on 100s of web sites to make sure it can always compute a valid password.
 
-Some sites make you change your password periodically. SitePassword makes that easy. Just change your nickname for the site. For example, if your current nickname is _MyBank_, and they make you change your password once a year, you could change the nickname to _MyBank2022_. Your new site password will be completely different from the old one.
+Some sites make you change your password periodically. SitePassword makes that easy. Just change your nickname for the site. For example, if your current nickname is _MyBank2021_, and they make you change your password once a year, you could change the nickname to _MyBank2022_. Your new site password will be completely different from the old one.
 
 SitePassword includes an antiphishing feature. If you try to use the same nickname for another domain name, you will get a big, scary warning. It's telling you that you may be at a site spoofing the one you think you are at. Unfortunately, you will also see this warning when you are not being tricked. Many websites have several different login pages with different domain names. So, when you see the warning, check the URL of the page to make sure it's a login page for the site you think it is.
 
@@ -59,7 +59,7 @@ There is a _Download Site Data_ button at the bottom of the page. Clicking it le
 [Using the SitePassword Web Page](#webpage)
 -------------------------------------------
 
-The SitePassword [web page](sitepassword.alanhkarp.com) can use bookmarks created by the extension to sutomate filling in the form. Simply find the appropriate bookmark in the SitePasswordData bookmark folder, and paste it into the top field on the form. You will see the domainname, site name, and user name fields get filled in. If you would like to skip this step in the future on this machine, click the _Remember_ button.
+The SitePassword [web page](sitepassword.alanhkarp.com) can use bookmarks created by the extension to automate filling in the form. Simply find the appropriate bookmark in the SitePasswordData bookmark folder, and paste it into the top field on the form. You will see the domainname, site name, and user name fields get filled in. If you would like to skip this step in the future on this machine, click the _Remember_ button.
 
 You can paste the site's domain name into the form. Your site name and user name will be filled in if you had clicked the _Remember_ button earlier for this domain name.
 
