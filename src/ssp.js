@@ -101,8 +101,8 @@ function eventSetup() {
         }
         // If I close the window immediately, then messages in flight get lost
         setTimeout(() => {
-            window.close();
-        }, 100);
+            //window.close();
+        }, 1000);
     }
     // UI Event handlers
     get("persona").onkeyup = function () {
@@ -185,16 +185,31 @@ function eventSetup() {
     get("minlower").onmouseleave = function () {
         handleblur("minlower", "minlower");
     }
+    get("minlower").onblur = function () {
+        handleblur("minlower", "minlower");
+    }
     get("minupper").onmouseleave = function () {
+        handleblur("minupper", "minupper");
+    }
+    get("minupper").onblur = function () {
         handleblur("minupper", "minupper");
     }
     get("minnumber").onmouseleave = function () {
         handleblur("minnumber", "minnumber");
     }
+    get("minnumber").onblur = function () {
+        handleblur("minnumber", "minnumber");
+    }
     get("minspecial").onmouseleave = function () {
         handleblur("minspecial", "minspecial");
     }
+    get("minspecial").onblur = function () {
+        handleblur("minspecial", "minspecial");
+    }
     get("specials").onmouseleave = function () {
+        handleblur("specials", "specials");
+    }
+    get("specials").onblur = function () {
         handleblur("specials", "specials");
     }
     get("sitedatagetbutton").onclick = sitedataHTML;
