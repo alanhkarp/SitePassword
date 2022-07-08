@@ -17,8 +17,7 @@
             "matches": ["https://*/*"],
             "run_at": "document_idle",
             "js": [
-                "findpw.js", 
-                "visibility.js"
+                "findpw.js" 
             ],
             "all_frames": true
         }
