@@ -29,20 +29,30 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 if (logging) console.log("bg got ssp: persona", persona || "not defined");
             }
             if (request.cmd === "forget") {
-                let domainname = request.domainname;
-                let personaname = request.persona.toLowerCase();
-                let persona = hpSPG.personas[personaname];
-                let sitename = persona.sites[domainname];
-                let domains = Object.keys(persona.sites);
-                let count = 0;
-                domains.forEach(function (d) {
-                    if ((persona.sites[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
-                        (d.toLowerCase().trim() != domainname)) count++;
-                });
-                if (count === 1) delete persona.sitenames[sitename]; // If this is the only use of sitename
-                delete persona.sites[domainname];
-                bg.settings.sitename = "";
-                hpSPG.personas[personaname] = persona;
+                console.log("bg forgot feature not implemented");
+                // let domainname = request.domainname;
+                // let personaname = request.persona.toLowerCase();
+                // let persona = hpSPG.personas[personaname];
+                // let sitename = persona.sites[domainname];
+                // let domains = Object.keys(persona.sites);
+                // let count = 0;
+                // domains.forEach(function (d) {
+                //     if ((persona.sites[d].toLowerCase().trim() === sitename.toLowerCase().trim()) &&
+                //         (d.toLowerCase().trim() !== domainname)) count++;
+                // });
+                // if (count === 0) delete persona.sitenames[sitename]; // If this is the only use of sitename
+                // delete persona.sites[domainname];
+                // chrome.bookmarks.search("SitePasswordData", async function (folders) {
+                //     // Persist changes to hpSPG
+                //     let rootFolder = folders[0];
+                //     let children = await chrome.bookmarks.getChildren(rootFolder.id);
+                //     let found = children.find(element => element.title = domainname);
+                //     if (found) chrome.bookmarks.remove(found.id, () =>{
+                //         if (logging) console.log("bg removed bookmark", found.id, "for", domainname);
+                //     });
+                // });
+                // bg.settings.sitename = "";
+                // hpSPG.personas[personaname] = persona;
                 if (logging) console.log("bg forgot", domainname, hpSPG);
                 persistMetadata();
             } else if (request.cmd === "getMetadata") {
@@ -177,13 +187,15 @@ function gotMetadata(hpSPGlocal) {
 async function persistMetadata() {
     // localStorage[name] = JSON.stringify(value);
     if (logging) console.log("bg persistMetadata", bg, hpSPG);
+    delete hpSPG.personas[bg.lastpersona].sitenames[""];
+    delete hpSPG.personas[bg.lastpersona].sitenames["undefined"];
     persona = hpSPG.personas[bg.lastpersona];
     if (bg.settings.sitename) {
         persona.sites[bg.settings.domainname] = bg.settings.sitename;
         persona.sitenames[bg.settings.sitename] = bg.settings;
     }
     if (persona && persona.sites && persona.sites[""]) {
-        alert("bg bad sitename", hpSPG);
+        console.log("bg bad sitename", hpSPG);
     }
     chrome.storage.session.set({ "ssp": { "masterpw": masterpw, "personaname": bg.lastpersona } });
     chrome.bookmarks.search("SitePasswordData", async function (folders) {
@@ -271,15 +283,13 @@ async function retrieveMetadata(callback) {
             parseBkmk(folders[0].id, callback);
         } else if (folders.length === 0) {
             if (logging) console.log("Creating SSP bookmark folder");
-            alert("Creating SitePasswordData");
             hpSPG = undefined;
             chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData" },
                 (bkmk) => {
                     parseBkmk(bkmk.id, callback);
                 });
         } else {
-            alert("Found multple SitePasswordData folders");
-            if (logging) console.log("bg found multiple SitePasswordData folders", folders);
+            console.log("bg found multiple SitePasswordData folders", folders);
         }
     });
 }

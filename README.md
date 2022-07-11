@@ -46,8 +46,6 @@ When you reload the page, you'll see your user name filled in and instructions t
 
 If you go to the same web page on a different machine which you synchronize bookmarks with, you'll see your nickname and user name for the site filled in for you. That's because the extension stores your settings in a bookmark folder called _SitePasswordData_. The extension uses the bookmarks with numeric titles, _e.g.,_ "0", "1"_, etc_. The bookmarks with domain names for titles are for use on [SitePassword](https://sitepassword.alanhkarp.com).
 
-The _Forget_ button allows you to delete the settings for a site you didn't mean to use. For example, you may have created settings for the wrong web site, which might lead to confusion a year in the future.
-
 Some pages have more than one password field, such as those for creating an account or changing your password. In those cases, you may see instructions to _Paste your password here_. SitePassword has already put your site password on the clipboard and will remove it in a minute.
 
 SitePassword is able to find the password field on all of the hundreds of sites it's been tested on. If the instructions don't show up in the site's password field, and holding the mouse over it for a few seconds doesn't show a popup with the instructions, try clicking a blank spot on the page. If that doesn't work you can always click the SitePassword icon and manually copy your site password to the clipboard.

@@ -33,7 +33,7 @@ function init() {
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;
     if (bg.settings.sitename) {
-        get("forgetbutton").style.visibility = "visible";
+        get("forgetbutton").style.visibility = "hidden";
     }
     persona = hpSPG.personas[getlowertrim("persona")];
     defaultfocus();
@@ -53,7 +53,7 @@ async function getMetadata() {
 }
 function getsettings(gotMetadata) {
     // var sitename = getlowertrim("sitename");
-    if (logging) console.log("popup getting metadata", domainname);
+    if (logging) console.log("popup getsettings", domainname);
     chrome.runtime.sendMessage({
         "cmd": "getMetadata",
         "domainname": domainname,
