@@ -29,7 +29,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 if (logging) console.log("bg got ssp: persona", persona || "not defined");
             }
             if (request.cmd === "forget") {
-                console.log("bg forgot feature not implemented");
+                console.log("bg forget feature not implemented");
                 // let domainname = request.domainname;
                 // let personaname = request.persona.toLowerCase();
                 // let persona = hpSPG.personas[personaname];
@@ -187,8 +187,6 @@ function gotMetadata(hpSPGlocal) {
 async function persistMetadata() {
     // localStorage[name] = JSON.stringify(value);
     if (logging) console.log("bg persistMetadata", bg, hpSPG);
-    delete hpSPG.personas[bg.lastpersona].sitenames[""];
-    delete hpSPG.personas[bg.lastpersona].sitenames["undefined"];
     persona = hpSPG.personas[bg.lastpersona];
     if (bg.settings.sitename) {
         persona.sites[bg.settings.domainname] = bg.settings.sitename;
@@ -268,7 +266,7 @@ async function parseBkmk(bkmkid, callback) {
             // JSON.stringify turns some of my " into %22
             hpSPG = JSON.parse(hpSPGstr.replace(/%22/g, "\""));
         } catch (e) {
-            console.error("Error parsing metadata " + e);
+            console.log("Error parsing metadata " + e);
             hpSPG = undefined;
         }
         retrieved(callback);
