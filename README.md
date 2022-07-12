@@ -52,6 +52,12 @@ SitePassword is able to find the password field on all of the hundreds of sites 
 
 If you click the _More_ button, you'll see and _Instructions_ button. Clicking it will take you to this page.
 
+You might feel uncomfortable having your master password available for 
+your entire browser session.  You might prefer to enter your master password every
+time you need a site password.  The <em>Clear master password on use</em>
+checkbox lets you specify this behavior. There is a risk to this choice; you 
+are more likely to have a keylogger running the longer your browser session.
+
 There is a _Download Site Data_ button at the bottom of the page. Clicking it lets you save your settings in a file you can reference if you're at a machine that doesn't have your SitePassword settings. This data doesn't contain anything that would seriously compromise your security if it got exposed, but you shouldn't publish it widely.
 
 [Using the SitePassword Web Page](#webpage)
