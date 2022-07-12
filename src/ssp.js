@@ -96,13 +96,14 @@ function eventSetup() {
             if (logging) console.log("popup sending site data", personaname, domainname, bg);
             chrome.runtime.sendMessage({ "cmd": "siteData",
                 "personaname": personaname, 
-                "sitename": s, 
+                "sitename": s,
+                "clearmasterpw": get("clearmasterpw").checked, 
                 "bg": bg });
         }
         // If I close the window immediately, then messages in flight get lost
         setTimeout(() => {
-            //window.close();
-        }, 1000);
+            window.close();
+        }, 100);
     }
     // UI Event handlers
     get("persona").onkeyup = function () {
@@ -323,7 +324,7 @@ function fill() {
     }
     get("masterpw").value = bg.masterpw;
     if (logging) console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
-    get("clearmasterpw").checked = bg.lastpersona.clearmasterpw;
+    get("clearmasterpw").checked = hpSPG.personas[bg.lastpersona].clearmasterpw;
     get("pwlength").value = bg.settings.length;
     get("startwithletter").checked = bg.settings.startwithletter;
     get("minnumber").value = bg.settings.minnumber;

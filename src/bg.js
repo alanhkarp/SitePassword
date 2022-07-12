@@ -62,6 +62,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 bg = clone(request.bg);
                 bg.lastpersona = request.personaname;
                 masterpw = bg.masterpw;
+                hpSPG.personas[bg.lastpersona].clearmasterpw = request.clearmasterpw;
                 hpSPG.personas[bg.lastpersona].sitenames[request.sitename] = bg.settings;
                 persistMetadata();
             } else if (request.cmd === "getPassword") {
@@ -69,6 +70,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 let domainname = pwfielddomain[origin] || origin;
                 bg.settings = bgsettings(bg.lastpersona, domainname);
                 let pr = generate(bg, hpSPG);
+                if (hpSPG.personas[bg.lastpersona].clearmasterpw) {
+                    masterpw = "";
+                    bg.masterpw = "";
+                    persistMetadata();
+                }
                 if (logging) console.log("bg calculated sitepw", bg, hpSPG, pr, isMasterPw(masterpw));
                 sendResponse(pr.p);
             } else if (request.clicked) {
