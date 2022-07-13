@@ -102,7 +102,7 @@ function eventSetup() {
         }
         // If I close the window immediately, then messages in flight get lost
         setTimeout(() => {
-            window.close();
+            //window.close();
         }, 100);
     }
     // UI Event handlers
@@ -392,7 +392,8 @@ function sitedataHTML() {
         if (sites[a].toLowerCase() == sites[b].toLowerCase()) return 0;
         return 1;
     });
-    var sd = "<html><body><table>";
+    let sd = "data:application/octet-stream," 
+    sd += "<html><body><table>";
     sd += "<th>Site Name</th>";
     sd += "<th>Domain Name</th>";
     sd += "<th>User Name</th>";
@@ -431,7 +432,8 @@ function sitedataHTML() {
     }
     sd += "</table></body></html>";
     var download = get("data");
-    download.href = download.href.replace("xxx", sd);
+    download.download="SiteData.html";
+    download.href = sd;
     download.click();
     return sd;
 }
