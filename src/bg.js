@@ -11,6 +11,7 @@ var domainname = "";
 var protocol = "";
 var persona;
 var pwcount = 0;
+var createBookmarksFolder = true;
 var pwfielddomain = {};
 if (logging) console.log("bg clear masterpw");
 
@@ -288,10 +289,17 @@ async function retrieveMetadata(callback) {
         } else if (folders.length === 0) {
             if (logging) console.log("Creating SSP bookmark folder");
             hpSPG = undefined;
-            chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData" },
+            // findpw.js sends the SiteData message twice, once for document.onload
+            // and once for window.onload.  The latter can arrive while the bookmark
+            // folder is being created, resulting in two of them.  My solution is to
+            // use a flag to make sure I only create it once.
+            if (createBookmarksFolder) {
+                createBookmarksFolder = false;
+                chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData" },
                 (bkmk) => {
                     parseBkmk(bkmk.id, callback);
                 });
+            }
         } else {
             console.log("bg found multiple SitePasswordData folders", folders);
         }
