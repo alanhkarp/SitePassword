@@ -102,8 +102,8 @@ function eventSetup() {
         }
         // If I close the window immediately, then messages in flight get lost
         setTimeout(() => {
-            //window.close();
-        }, 100);
+            window.close();
+        }, 250);
     }
     // UI Event handlers
     get("persona").onkeyup = function () {
