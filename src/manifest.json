@@ -26,6 +26,7 @@
         "activeTab",
         "background",
         "bookmarks",
+        "downloads",
         "storage",
         "tabs"
     ]

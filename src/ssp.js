@@ -5,7 +5,7 @@ var logging = true;
 var activetab;
 var domainname;
 var persona;
-var bg = {};
+var bg = {"settings": {}};
 // I need all the metadata stored in hpSPG for both the phishing check
 // and for downloading the site data.
 var hpSPG;
@@ -431,10 +431,12 @@ function sitedataHTML() {
         sd += "</tr>";
     }
     sd += "</table></body></html>";
-    var download = get("data");
-    download.download="SiteData.html";
-    download.href = sd;
-    download.click();
+    chrome.downloads.download({"url": sd, 
+                               "filename": "SiteData.html", 
+                               "saveAs": true,
+                               "FilenameConflictAction": "prompt"}, (e) => {
+        console.log("ssp download complete", e);
+    });
     return sd;
 }
 function isphishing(sitename) {
