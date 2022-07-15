@@ -5,6 +5,7 @@ var logging = true;
 var activetab;
 var domainname;
 var persona;
+var haspwfield = false;
 var bg = {"settings": {}};
 // I need all the metadata stored in hpSPG for both the phishing check
 // and for downloading the site data.
@@ -17,6 +18,7 @@ if (logging) console.log("popup starting");
 
 window.onload = function () {
     if (logging) console.log("popup getting active tab");
+    haspwfield = false;
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         activetab = tabs[0];
         if (logging) console.log("popup tab", activetab);
@@ -44,7 +46,8 @@ async function getMetadata() {
         if (logging) console.log("popup requesting pwcount");
         chrome.tabs.sendMessage(activetab.id, {"cmd": "count"}, (response) => {
             if (logging) console.log("popup got pwcount", response.pwcount);
-            message("zero", response.pwcount === 0);
+            if (count > 0) haspwfield = true;
+            message("zero", haspwfield);
         })
         init();
         if (logging) console.log("popup got metadata", bg, hpSPG);
