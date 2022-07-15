@@ -433,8 +433,8 @@ function sitedataHTML() {
     sd += "</table></body></html>";
     chrome.downloads.download({"url": sd, 
                                "filename": "SiteData.html", 
-                               "saveAs": true,
-                               "FilenameConflictAction": "prompt"}, (e) => {
+                               "conflictAction": "uniquify",
+                               "saveAs": true}, (e) => {
         console.log("ssp download complete", e);
     });
     return sd;
