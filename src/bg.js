@@ -121,11 +121,7 @@ function onContentPageload(request, sender, sendResponse) {
     let domainname = pwfielddomain[origin] || origin;
     if (logging) console.log("bg pwcount, domainname, masterpw", hpSPG, bg.pwcount, domainname, isMasterPw(masterpw));
     let persona = hpSPG.personas[bg.lastpersona];
-    let ancestors = request.ancestors;
     let sitename = persona.sites[domainname];
-    for (let i in ancestors) {
-        if (sitename) persona.sites[getdomainname(ancestors[i])] = sitename;
-    }
     if (sitename) {
         bg.settings = persona.sitenames[sitename];
     } else {
