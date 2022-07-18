@@ -25,8 +25,8 @@ window.onload = function () {
         if (logging) console.log("popup got tab", domainname, activetab);
         if (logging) console.log(Date.now(), "popup getting metadata");
         getMetadata();
+        eventSetup();
     });
-    eventSetup();
 }
 function init() {
     get("masterpw").value = bg.masterpw;
