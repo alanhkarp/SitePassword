@@ -27,6 +27,7 @@ if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw 
 // Most pages work if I start looking for password fields as soon as the basic HTML is loaded
 if (document.readyState !== "loading") {
 	if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw running", document.readyState);
+	localStorage.removeItem("SitePassword");
 	startup();
 } else {
 	if (logging) console.log(document.URL, Date.now() - start, "findpw running document.onload");
@@ -122,9 +123,16 @@ function startup() {
 				if (logging) console.log(document.URL, Date.now() - start, "findpw forget observer observe")
 				break;
 			case "count":
-				if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", cpi.pwfields.length);
-				countpwid();
-				sendResponse({"pwcount": cpi.pwfields.length});
+				chrome.storage.local.get("SitePassword", (localdata) => {
+					let count = 0;
+					let pwdomain = "";
+					if (localdata) {
+						pwdomain = localdata.SitePassword.pwdomain;
+						count = localdata.SitePassword.count;
+					}
+					if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", count, pwdomain);
+					sendResponse({"pwcount": count, "pwdomain": pwdomain});	
+				});
 				break;
 			default:
 				if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
@@ -297,6 +305,7 @@ function countpwid() {
 		}
 	}
 	if (c > 0) {
+		chrome.storage.local.set({"SitePassword": {"count": c, "pwdomain": document.location.hostname}});
 		for (var i = found - 1; i >= 0; i--) {
 			// Skip over invisible input fields above the password field
 			visible = !isHidden(inputs[i]);

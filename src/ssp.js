@@ -5,8 +5,7 @@ var logging = true;
 var activetab;
 var domainname;
 var persona;
-var haspwfield = false;
-var bg = {"settings": {}};
+var bg = { "settings": {} };
 // I need all the metadata stored in hpSPG for both the phishing check
 // and for downloading the site data.
 var hpSPG;
@@ -18,7 +17,6 @@ if (logging) console.log("popup starting");
 
 window.onload = function () {
     if (logging) console.log("popup getting active tab");
-    haspwfield = false;
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         activetab = tabs[0];
         if (logging) console.log("popup tab", activetab);
@@ -42,33 +40,33 @@ function init() {
     ask2generate();
 }
 async function getMetadata() {
-    getsettings(() => {
-        if (logging) console.log("popup requesting pwcount");
-        chrome.tabs.sendMessage(activetab.id, {"cmd": "count"}, (response) => {
-            if (logging) console.log("popup got pwcount", response.pwcount);
-            if (count > 0) haspwfield = true;
-            message("zero", haspwfield);
-        })
-        init();
-        if (logging) console.log("popup got metadata", bg, hpSPG);
-        if (chrome.runtime.lastError) if (logging) console.log("popup lastError", chrome.runtime.lastError);
+    if (logging) console.log("popup requesting pwcount");
+    chrome.tabs.sendMessage(activetab.id, { "cmd": "count" }, (response) => {
+        if (logging) console.log("popup got pwcount", response);
+        let pwdomain = undefined;
+        if (response.pwcount > 0) {
+           pwdomain = response.pwdomain;
+        }
+        message("zero", response.pwcount == 0);
+        getsettings(pwdomain);
     });
 }
-function getsettings(gotMetadata) {
+function getsettings(pwdomain) {
     // var sitename = getlowertrim("sitename");
-    if (logging) console.log("popup getsettings", domainname);
+    if (logging) console.log("popup getsettings", pwdomain);
     chrome.runtime.sendMessage({
         "cmd": "getMetadata",
-        "domainname": domainname,
+        "domainname": pwdomain,
         "personaname": getlowertrim("persona"),
-        "sitename": getlowertrim("sitename")
     }, (response) => {
         bg = response.bg;
         hpSPG = response.hpSPG;
         if (!bg.settings.sitename) bg.settings.sitename = "";
-        get("domainname").value = bg.settings.domainname;
+        //get("domainname").value = bg.settings.domainname;
         get("masterpw").value = response.masterpw;
-        gotMetadata();
+        init();
+        if (logging) console.log("popup got metadata", bg, hpSPG);
+        if (chrome.runtime.lastError) if (logging) console.log("popup lastError", chrome.runtime.lastError);
     });
 }
 function eventSetup() {
@@ -97,11 +95,13 @@ function eventSetup() {
             let domainname = get("domainname").value;
             bg.settings.domainname = domainname;
             if (logging) console.log("popup sending site data", personaname, domainname, bg);
-            chrome.runtime.sendMessage({ "cmd": "siteData",
-                "personaname": personaname, 
+            chrome.runtime.sendMessage({
+                "cmd": "siteData",
+                "personaname": personaname,
                 "sitename": s,
-                "clearmasterpw": get("clearmasterpw").checked, 
-                "bg": bg });
+                "clearmasterpw": get("clearmasterpw").checked,
+                "bg": bg
+            });
         }
         // If I close the window immediately, then messages in flight get lost
         setTimeout(() => {
@@ -141,7 +141,7 @@ function eventSetup() {
     get("sitename").onblur = function () {
         if (isphishing(bg.settings.sitename)) {
             msgon("phishing");
-            get("domainname").value = bg.settings.domainname;
+            // bg.settings.domainname;
             get("masterpw").disabled = true;
             get("username").disabled = true;
             get("sitepass").value = "";
@@ -220,8 +220,8 @@ function eventSetup() {
         handleblur("specials", "specials");
     }
     get("sitedatagetbutton").onclick = sitedataHTML;
-    get("instructions").onclick = function() {
-        chrome.tabs.create({"url": "https://sitepassword.alanhkarp.com"});
+    get("instructions").onclick = function () {
+        chrome.tabs.create({ "url": "https://sitepassword.alanhkarp.com" });
     }
     get("warningbutton").onclick = function () {
         get("masterpw").disabled = false;
@@ -310,7 +310,7 @@ function ask2generate() {
     if ((r.r == 1) && u && n && m) {
         msgoff("multiple");
         msgoff("zero");
-    } else if (u && n && m ) {
+    } else if (u && n && m) {
         message("zero", r.r == 0);
         message("multiple", r.r > 1)
     }
@@ -340,7 +340,7 @@ function fill() {
 function showsettings() {
     get("settingsshowbutton").style.display = "none";
     get("settingshidebutton").style.display = "inline";
-    get("domainname").value = bg.settings.domainname;
+    //get("domainname").value = bg.settings.domainname;
     get("masterpw").value = bg.masterpw;
     fill();
     get("settings").style.display = "block";
@@ -395,7 +395,7 @@ function sitedataHTML() {
         if (sites[a].toLowerCase() == sites[b].toLowerCase()) return 0;
         return 1;
     });
-    let sd = "data:application/octet-stream," 
+    let sd = "data:application/octet-stream,"
     sd += "<html><body><table>";
     sd += "<th>Site Name</th>";
     sd += "<th>Domain Name</th>";
@@ -434,10 +434,14 @@ function sitedataHTML() {
         sd += "</tr>";
     }
     sd += "</table></body></html>";
-    chrome.downloads.download({"url": sd, 
+    chrome.downloads.download({
+        "url": sd,
+        "filename": "SiteData.html",
                                "filename": "SiteData.html", 
-                               "conflictAction": "uniquify",
-                               "saveAs": true}, (e) => {
+        "filename": "SiteData.html",
+        "conflictAction": "uniquify",
+        "saveAs": true
+    }, (e) => {
         console.log("ssp download complete", e);
     });
     return sd;
@@ -452,8 +456,8 @@ function isphishing(sitename) {
     domains.forEach(function (d) {
         if ((persona.sites[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
             (d.toLowerCase().trim() != domainname)) {
-                phishing = true;
-            }
+            phishing = true;
+        }
     });
     return phishing;
 }
@@ -488,7 +492,7 @@ function copyToClipboard() {
     navigator.clipboard.writeText(sitepass);
     setTimeout(function () {
         navigator.clipboard.writeText("");
-     }, 60000);
+    }, 60000);
 }
 // Messages in priority order high to low
 var messages = [
