@@ -69,6 +69,13 @@ You can paste the site's domain name into the form. Your site name and user name
 
 There is a _Download Local Data_ button at the bottom of the page. Clicking it lets you save your settings in a file you can reference if you're at a machine that doesn't have your SitePassword settings. **Only settings for sites you've chosen to remember on this machine will be included.**
 
+[Source Code](#code)
+-----------------------------
+
+If you are worried that SitePassword might go away, you can download the source code for the extension from 
+[](github.com/alanhkarp/SitePassword) and that of this page from [](github.com/alanhkarp/SitePasswordWeb).  
+(For historical reasons, these are separate projects with a lot of duplicated code.)
+
 [Voluntary Payment](#payment)
 -----------------------------
 
