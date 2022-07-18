@@ -4,6 +4,7 @@ if (logging) console.log("Version 0.99");
 var logging = true;
 var activetab;
 var domainname;
+var pwdomain;
 var persona;
 var bg = { "settings": {} };
 // I need all the metadata stored in hpSPG for both the phishing check
@@ -43,7 +44,7 @@ async function getMetadata() {
     if (logging) console.log("popup requesting pwcount");
     chrome.tabs.sendMessage(activetab.id, { "cmd": "count" }, (response) => {
         if (logging) console.log("popup got pwcount", response);
-        let pwdomain = undefined;
+        pwdomain = undefined;
         if (response.pwcount > 0) {
            pwdomain = response.pwdomain;
         }
@@ -92,9 +93,9 @@ function eventSetup() {
             let s = get("sitename").value;
             changePlaceholder();
             let personaname = getlowertrim("persona");
-            let domainname = get("domainname").value;
-            bg.settings.domainname = domainname;
-            if (logging) console.log("popup sending site data", personaname, domainname, bg);
+            bg.settings.domainname = pwdomain;
+            bg.settings.displayname = domainname;
+            if (logging) console.log("popup sending site data", personaname, pwdomain, bg);
             chrome.runtime.sendMessage({
                 "cmd": "siteData",
                 "personaname": personaname,
