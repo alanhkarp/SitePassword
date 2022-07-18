@@ -111,7 +111,7 @@ function eventSetup() {
         }
         // If I close the window immediately, then messages in flight get lost
         setTimeout(() => {
-            //window.close();
+            window.close();
         }, 250);
     }
     // UI Event handlers
