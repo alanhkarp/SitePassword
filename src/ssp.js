@@ -6,6 +6,7 @@ var activetab;
 var domainname;
 var pwdomain;
 var persona;
+var phishing = false;
 var bg = { "settings": {} };
 // I need all the metadata stored in hpSPG for both the phishing check
 // and for downloading the site data.
@@ -78,7 +79,11 @@ function eventSetup() {
     // are delivered in just a couple of ms, so there's no problem.  Just be aware that
     // this race is the source of any problems related to loss of the message sent here.
     get("ssp").onmouseleave = function () {
-        if (logging) console.log(Date.now(), "popup window.mouseleave", bg);
+        if (logging) console.log(Date.now(), "popup window.mouseleave", phishing, bg);
+        if (phishing) {
+            phising = false;
+            return;
+        }
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
             bg.lastpersona = getlowertrim("persona");
@@ -106,7 +111,7 @@ function eventSetup() {
         }
         // If I close the window immediately, then messages in flight get lost
         setTimeout(() => {
-            window.close();
+            //window.close();
         }, 250);
     }
     // UI Event handlers
@@ -239,6 +244,8 @@ function eventSetup() {
     get("cancelwarning").onclick = function () {
         msgoff("phishing");
         get("domainname").value = "";
+        get("sitename").value = "";
+        get("username").value = "";
         chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
         window.close();
     }
