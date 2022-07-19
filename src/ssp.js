@@ -1,7 +1,7 @@
 'use strict';
 import { characters, generate, isMasterPw } from "./generate.js";
 if (logging) console.log("Version 0.99");
-var logging = true;
+var logging = false;
 var activetab;
 var domainname;
 var pwdomain;

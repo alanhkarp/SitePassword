@@ -1,7 +1,7 @@
 'use strict';
 import { characters, generate, isMasterPw } from "./generate.js";
 // State I want to keep around that doesn't appear in the file system
-var logging = true;
+var logging = false;
 var bg = {};
 var masterpw = "";
 var activetab;
