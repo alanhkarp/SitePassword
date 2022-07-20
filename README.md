@@ -24,6 +24,19 @@ It's too hard for you to remember a strong password for every site you use. Pass
 
 SitePassword is different. It calculates your password for the site from a single master password and your nickname and username (userid) for the site. That means you can get your password if you remember those three things. Just come to [SitePassword](https://sitepassword.info) and fill in the form. There is also an extension for the Chrome browser that you can install.
 
+[Your Master Password](#masterpassword)
+
+You should choose a strong master password, one with upper and 
+lower case letters, numbers, and special characters.  The stronger
+the better.  The reason is simple.  A bad guy who knows one site 
+password and can guess your nickname and user name for that site
+can start guessing master passwords.  You want to make that job 
+has hard as you can.
+
+SitePassword cannot retrieve your master password. 
+You should make sure it's something you won't easily forget.  You 
+might even want to write it down and keep the copy in a secure place.
+
 [Common Features](#common)
 --------------------------
 
