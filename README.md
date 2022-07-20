@@ -65,7 +65,7 @@ There is a _Download Site Data_ button at the bottom of the page. Clicking it le
 
 The SitePassword [web page](sitepassword.info) can use bookmarks created by the extension to automate filling in the form. Simply find the appropriate bookmark in the SitePasswordData bookmark folder, and paste it into the top field on the form. You will see the domainname, site name, and user name fields get filled in. If you would like to skip this step in the future on this machine, click the _Remember_ button.
 
-You can paste the site's domain name into the form. Your site name and user name will be filled in if you had clicked the _Remember_ button earlier for this domain name.
+You can paste the login page's URL into the form. Your site name and user name will be filled in if you had clicked the _Remember_ button earlier for this domain name.
 
 There is a _Download Local Data_ button at the bottom of the page. Clicking it lets you save your settings in a file you can reference if you're at a machine that doesn't have your SitePassword settings. **Only settings for sites you've chosen to remember on this machine will be included.**
 
