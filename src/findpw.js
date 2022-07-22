@@ -105,9 +105,6 @@ function startup() {
 				userid = request.u;
 				fillfield(cpi.idfield, userid);
 				setPlaceholder(userid);
-				if (cpi.pwfields.length !== 1 && sitepw) {
-					putOnClipboard(sitepw);
-				}
 				break;
 			case "forget":
 				if (logging) console.log(document.URL, Date.now() - start, "findpw forget observer disconnect")
@@ -131,8 +128,17 @@ function startup() {
 						count = localdata.SitePassword.count;
 					}
 					if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", count, pwdomain);
-					sendResponse({"pwcount": count, "pwdomain": pwdomain});	
+					sendResponse({ "pwcount": count, "pwdomain": pwdomain });
 				});
+				break;
+            case "clipboard":
+                setTimeout(() => {
+					navigator.clipboard.writeText("").then((contents) => {
+                        if (logging) console.log(document.URL, Date.now() - start, "findpw wrote to clipboard", contents);
+                    }).catch((e) => {
+                        if (logging) console.log(document.URL, Date.now() - start, "findpw write to clipboard failed", e);
+                    });
+                }, 10000);
 				break;
 			default:
 				if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
@@ -189,7 +195,6 @@ function sendpageinfo(cpi, clicked, onload) {
 		userid = response.u;
 		fillfield(cpi.idfield, userid);
 		setPlaceholder(userid, response.p);
-		if (response.p && cpi.pwfields.length > 1) putOnClipboard(response.p);
 		if (userid) fillfield(cpi.pwfield, "");
 	});
 }
@@ -246,32 +251,6 @@ function pwfieldOnclick() {
 	if (logging) console.log(document.URL, Date.now() - start, "findpw pwfieldOnclick observer observe")
 	mutationObserver.observe(document.body, observerOptions);
 }
-function putOnClipboard(password) {
-	navigator.clipboard.writeText(password).then(() => {
-		cleared = "false";
-		if (logging) console.log("findpw clipboard ready")
-	});
-	if (!cleared) setTimeout(function () {
-		if (logging) console.log(document.URL, Date.now() - start, "findpw clear clipboard");
-		if (logging) console.log(document.URL, Date.now() - start, "findpw clipboard observer disconnect")
-		mutationObserver.disconnect(); // Don't trigger observer for these updates
-		navigator.clipboard.writeText("").then(() => {
-			if (logging) console.log(Document.URL, Date.now() - start, "findpw cleared clipboard");
-			cleared = true;
-		});
-		if (cpi.pwfields.length > 0) {
-			cpi.pwfields[0].placeholder = clickSitePassword;
-			cpi.pwfields[0].ariaPlaceholder = clickSitePassword
-			for (let i = 1; i < cpi.pwfields.length; i++) {
-				cpi.pwfields[i].placeholder = "";
-				cpi.pwfields[i].ariaPlaceholder = "";
-			}
-		}
-		if (logging) console.log(document.URL, Date.now() - start, "findpw clipboard cleared");
-		if (logging) console.log(document.URL, Date.now() - start, "findpw clipboard observer observe")
-		mutationObserver.observe(document.body, observerOptions);
-	}, 30000);
-}
 function countpwid() {
 	var useridfield = null;
 	var visible = true;
@@ -305,7 +284,7 @@ function countpwid() {
 		}
 	}
 	if (c > 0) {
-		chrome.storage.local.set({"SitePassword": {"count": c, "pwdomain": document.location.hostname}});
+		chrome.storage.local.set({ "SitePassword": { "count": c, "pwdomain": document.location.hostname } });
 		for (var i = found - 1; i >= 0; i--) {
 			// Skip over invisible input fields above the password field
 			visible = !isHidden(inputs[i]);

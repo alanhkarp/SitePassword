@@ -296,9 +296,9 @@ async function retrieveMetadata(callback) {
             if (createBookmarksFolder) {
                 createBookmarksFolder = false;
                 chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData" },
-                (bkmk) => {
-                    parseBkmk(bkmk.id, callback);
-                });
+                    (bkmk) => {
+                        parseBkmk(bkmk.id, callback);
+                    });
             }
         } else {
             console.log("bg found multiple SitePasswordData folders", folders);

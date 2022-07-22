@@ -47,7 +47,7 @@ async function getMetadata() {
         if (logging) console.log("popup got pwcount", response);
         pwdomain = undefined;
         if (response.pwcount > 0) {
-           pwdomain = response.pwdomain;
+            pwdomain = response.pwdomain;
         }
         message("zero", response.pwcount == 0);
         getsettings(pwdomain);
@@ -166,7 +166,19 @@ function eventSetup() {
         handleblur("username", "username");
         changePlaceholder();
     }
-    get("sitepass").onclick = copyToClipboard;
+    get("sitepass").onclick = function () {
+        let sitepass = get("sitepass").value;
+        navigator.clipboard.writeText(sitepass).then(() => {
+            if (logging) console.log("findpw wrote to clipboard", sitepass);
+            if (sitepass) chrome.tabs.sendMessage(activetab.id, { "cmd": "clipboard", "sitepass": sitepass }).then(() => {
+                if (logging) console.log("popup sending clipboard message", sitepass);
+            }).catch((e) => {
+                if (logging) console.log("popup clipboard message failed", e);
+            });
+        }).catch((e) => {
+            if (logging) console.log("findpw clipboard write failed", e);
+        });
+    };
     get("settingsshowbutton").onclick = showsettings;
     get("settingshidebutton").onclick = hidesettings;
     get("forgetbutton").onclick = forgetDomain;
@@ -276,7 +288,6 @@ function changePlaceholder() {
     let u = get("username").value
     if (get("masterpw").value && get("sitename").value && u) {
         if (logging) console.log("popup sending fill fields", u);
-        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
     }
 }
 function setfocus(element) {
@@ -445,7 +456,7 @@ function sitedataHTML() {
     chrome.downloads.download({
         "url": sd,
         "filename": "SiteData.html",
-                               "filename": "SiteData.html", 
+        "filename": "SiteData.html",
         "filename": "SiteData.html",
         "conflictAction": "uniquify",
         "saveAs": true
@@ -493,14 +504,6 @@ function getlowertrim(element) {
 }
 function clone(object) {
     return JSON.parse(JSON.stringify(object))
-}
-function copyToClipboard() {
-    let sitepass = get("sitepass").value;
-    if (logging) console.log("popup copy sitepass to clipboard", sitepass);
-    navigator.clipboard.writeText(sitepass);
-    setTimeout(function () {
-        navigator.clipboard.writeText("");
-    }, 60000);
 }
 // Messages in priority order high to low
 var messages = [
