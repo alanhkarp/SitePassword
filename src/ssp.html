@@ -38,15 +38,15 @@ information regarding how to obtain the source code for this library.
           <input id="persona" type="text" size=28 value="Everyone" style="display:none" />
         </h1>
         <label>Domain name</label>
-        <input id="domainname" type="text" size=28 value="" READONLY>
+        <input id="domainname" type="text" size=29 value="" READONLY>
         <label>Your password:</label>
-        <input value="" id="masterpw" size=28 type="password" placeholder="Use a strong password" /><br>
+        <input value="" id="masterpw" size=29 type="password" placeholder="Use a strong password" /><br>
         <label>Site name:</label>
-        <input value="" id="sitename" size=28 placeholder="Your nickname for this site" /><br>
+        <input value="" id="sitename" size=29 placeholder="Your nickname for this site" /><br>
         <label>User name:</label>
-        <input value="" id="username" size=28 placeholder="Your userid for this site" /><br>
+        <input value="" id="username" size=29 placeholder="Your userid for this site" /><br>
         <label>Site password:</label>
-        <input value="" id="sitepass" class="password" READONLY size=24 placeholder="Your site passworde" /><br>
+        <input value="" id="sitepass" class="password" READONLY size=25 placeholder="Your site passworde" /><br>
         <div class="warning" id="nopw" style="display:none">
           <span id="nopwtext">
             Site Password can't compute a password with these settings.
@@ -57,9 +57,10 @@ information regarding how to obtain the source code for this library.
         </div>
         <div class="warning" id="multiple" style="display:none">
           <span id="multipletext">
-            Site Password found more than one password field
-            on this page. Click on SitePasswore then Click
-            on your site password to copy it to the clipboard.
+            There is more than one password field
+            on this page. Click on your site password to copy it 
+            to the clipboard.  <b> When you are done pasting your 
+            password, put something else on the clipboard.</b>
           </span>
         </div>
         <div class="warning" id="zero" style="display:none">
@@ -71,13 +72,16 @@ information regarding how to obtain the source code for this library.
         </div>
         <div class="warning" id="phishing" style="display:none">
           <span id="phishingtext">
-            Warning: The URL in the address bar is different from what you saved for this site name. You may be at a
-            fake site that is trying to steal your password.
+            <p>
+              Warning: The URL in the address bar is different from what you saved for this site name. You may be at a
+              fake site that is trying to steal your password.
+            </p>
           </span><br>
-          <button id="warningbutton" type="button" , style="background-color:#FF0000">
+          <button id="warningbutton" type="button", style="background-color:#FF0000">
             I'm willing to risk it.
           </button>
-          <button id="cancelwarning" type="button" , style="background-color:#00FF00">
+          <p></p>
+          <button id="cancelwarning" type="button", style="background-color:#00FF00">
             I don't want to risk it.
           </button>
           <br>

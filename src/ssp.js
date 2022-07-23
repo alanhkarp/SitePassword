@@ -170,11 +170,6 @@ function eventSetup() {
         let sitepass = get("sitepass").value;
         navigator.clipboard.writeText(sitepass).then(() => {
             if (logging) console.log("findpw wrote to clipboard", sitepass);
-            if (sitepass) chrome.tabs.sendMessage(activetab.id, { "cmd": "clipboard", "sitepass": sitepass }).then(() => {
-                if (logging) console.log("popup sending clipboard message", sitepass);
-            }).catch((e) => {
-                if (logging) console.log("popup clipboard message failed", e);
-            });
         }).catch((e) => {
             if (logging) console.log("findpw clipboard write failed", e);
         });
