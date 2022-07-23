@@ -80,10 +80,7 @@ function eventSetup() {
     // this race is the source of any problems related to loss of the message sent here.
     get("ssp").onmouseleave = function () {
         if (logging) console.log(Date.now(), "popup window.mouseleave", phishing, bg);
-        if (phishing) {
-            phising = false;
-            return;
-        }
+        if (phishing) return; // Don't persist phishing sites
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
             bg.lastpersona = getlowertrim("persona");
@@ -146,12 +143,14 @@ function eventSetup() {
     }
     get("sitename").onblur = function () {
         if (isphishing(bg.settings.sitename)) {
+            phishing = true;
             msgon("phishing");
             // bg.settings.domainname;
             get("masterpw").disabled = true;
             get("username").disabled = true;
             get("sitepass").value = "";
         } else {
+            phishing = false;
             msgoff("phishing");
             get("masterpw").disabled = false;
             get("username").disabled = false
@@ -237,6 +236,7 @@ function eventSetup() {
         chrome.tabs.create({ "url": "https://sitepassword.alanhkarp.com" });
     }
     get("warningbutton").onclick = function () {
+        phishing = false;
         get("masterpw").disabled = false;
         get("username").disabled = false;
         get("sitename").disabled = false;
@@ -249,6 +249,7 @@ function eventSetup() {
         ask2generate();
     }
     get("cancelwarning").onclick = function () {
+        phishing = true;
         msgoff("phishing");
         get("domainname").value = "";
         get("sitename").value = "";
