@@ -175,7 +175,6 @@ function sendpageinfo(cpi, clicked, onload) {
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length);
     chrome.runtime.sendMessage({
-        "ancestors": document.location.ancestorOrigins,
         "count": cpi.pwfields.length,
         "clicked": clicked,
         "onload": onload
