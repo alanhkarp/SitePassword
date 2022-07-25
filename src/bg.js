@@ -19,7 +19,7 @@ if (logging) console.log("bg starting");
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (logging) console.log(Date.now(), "bg got message request, sender", request, sender);
-    retrieveMetadata(() => {
+    retrieveMetadata(sendResponse, () => {
         if (logging) console.log("bg listener back from retrieveMetadata", hpSPG);
         chrome.storage.session.get(["ssp"], (ssp) => {
             if (ssp.ssp) {
@@ -279,7 +279,7 @@ async function parseBkmk(bkmkid, callback) {
         retrieved(callback);
     });
 }
-async function retrieveMetadata(callback) {
+async function retrieveMetadata(sendResponse, callback) {
     // return JSON.parse(localStorage[name]);
     if (logging) console.log("bg find SSP bookmark folder");
     chrome.bookmarks.search("SitePasswordData", (folders) => {
@@ -302,6 +302,7 @@ async function retrieveMetadata(callback) {
             }
         } else {
             console.log("bg found multiple SitePasswordData folders", folders);
+            sendResponse("multiple");
         }
     });
 }

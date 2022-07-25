@@ -179,6 +179,10 @@ function sendpageinfo(cpi, clicked, onload) {
         "clicked": clicked,
         "onload": onload
     }, (response) => {
+        if (response === "multiple") {
+            alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Remove or rename the ones you don't want SitePassword to use.  Then reload this page.");
+            return;
+        }
         if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
         if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
         readyForClick = response.readyForClick;
