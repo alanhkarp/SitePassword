@@ -246,6 +246,8 @@ function pwfieldOnclick() {
     mutationObserver.observe(document.body, observerOptions);
 }
 function countpwid() {
+    // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
+    if (document.location.host === "sitepassword.info") return {"pwfields": [], "useridfield": null };
     var useridfield = null;
     var visible = true;
     var pwfields = [];
