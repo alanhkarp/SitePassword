@@ -271,7 +271,8 @@ async function parseBkmk(bkmkid, callback) {
         }
         try {
             // JSON.stringify turns some of my " into %22
-            hpSPG = JSON.parse(hpSPGstr.replace(/%22/g, "\""));
+            // and some of my blanks into %20
+            hpSPG = JSON.parse(hpSPGstr.replace(/%22/g, "\"").replace(/%20/g, " "));
         } catch (e) {
             console.log("Error parsing metadata " + e);
             hpSPG = undefined;
