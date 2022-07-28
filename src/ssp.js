@@ -46,10 +46,15 @@ async function getMetadata() {
     chrome.tabs.sendMessage(activetab.id, { "cmd": "count" }, (response) => {
         if (logging) console.log("popup got pwcount", response);
         pwdomain = undefined;
-        if (response.pwcount > 0) {
+        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
+        if (response && response.pwcount > 0) {
             pwdomain = response.pwdomain;
         }
-        message("zero", response.pwcount == 0);
+        if (response) {
+            message("zero", response.pwcount == 0);
+        } else {
+            message("zero", true);            
+        }
         getsettings(pwdomain);
     });
 }
@@ -68,7 +73,7 @@ function getsettings(pwdomain) {
         get("masterpw").value = response.masterpw;
         init();
         if (logging) console.log("popup got metadata", bg, hpSPG);
-        if (chrome.runtime.lastError) if (logging) console.log("popup lastError", chrome.runtime.lastError);
+        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
     });
 }
 function eventSetup() {
