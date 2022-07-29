@@ -289,6 +289,7 @@ function changePlaceholder() {
     let u = get("username").value
     if (get("masterpw").value && get("sitename").value && u) {
         if (logging) console.log("popup sending fill fields", u);
+        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
     }
 }
 function setfocus(element) {
