@@ -75,67 +75,71 @@ function searchShadowRoots(element) {
     return result.concat(childResults).flat();
 }
 function startup() {
-    mutationObserver = new MutationObserver(function (mutations) {
-        // Find password field if added late
-        if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
-        if (!oldpwfield || oldpwfield !== cpi.pwfields[0]) { // Stop looking once I've found at least one password field.
-            if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from mutation observer");
-            cpi = countpwid();
-            sendpageinfo(cpi, false, true);
-            oldpwfield = cpi.pwfields[0];
-            if (userid && !keyPressed) { // In case the mutations took away my changes
-                fillfield(cpi.idfield, userid);
-                if (cpi.pwfields.length === 1) fillfield(cpi.pwfields[0], sitepw);
-                setPlaceholder(userid);
-                // What about second password field?
-                keyPressed = false;
+    // The code in this function used to be called once, but now it's called several times.
+    // There is no reason to declare new mutation observers and listeners.
+    if (!mutationObserver) {
+        mutationObserver = new MutationObserver(function (mutations) {
+            // Find password field if added late
+            if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
+            if (!oldpwfield || oldpwfield !== cpi.pwfields[0]) { // Stop looking once I've found at least one password field.
+                if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from mutation observer");
+                cpi = countpwid();
+                sendpageinfo(cpi, false, true);
+                oldpwfield = cpi.pwfields[0];
+                if (userid && !keyPressed) { // In case the mutations took away my changes
+                    fillfield(cpi.idfield, userid);
+                    if (cpi.pwfields.length === 1) fillfield(cpi.pwfields[0], sitepw);
+                    setPlaceholder(userid);
+                    // What about second password field?
+                    keyPressed = false;
+                }
             }
-        }
-    });
+        });
+        chrome.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
+            if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
+            readyForClick = request.readyForClick;
+            switch (request.cmd) {
+                case "fillfields":
+                    userid = request.u;
+                    fillfield(cpi.idfield, userid);
+                    setPlaceholder(userid);
+                    break;
+                case "forget":
+                    if (logging) console.log(document.URL, Date.now() - start, "findpw forget observer disconnect")
+                    mutationObserver.disconnect();
+                    cpi.idfield.value = "";
+                    cpi.pwfields[0].value = "";
+                    cpi.pwfields[0].placeholder = clickSitePassword;
+                    if (cpi.pwfields[1]) {
+                        cpi.pwfields[1].value = "";
+                        cpi.pwfields[1].placeholder = "";
+                    }
+                    mutationObserver.observe(document.body, observerOptions);
+                    if (logging) console.log(document.URL, Date.now() - start, "findpw forget observer observe")
+                    break;
+                case "count":
+                    chrome.storage.local.get("SitePassword", (localdata) => {
+                        let count = 0;
+                        let pwdomain = "";
+                        if (localdata) {
+                            pwdomain = localdata.SitePassword.pwdomain;
+                            count = localdata.SitePassword.count;
+                        }
+                        if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", count, pwdomain);
+                        sendResponse({ "pwcount": count, "pwdomain": pwdomain });
+                    });
+                    break;
+                default:
+                    if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
+            }
+            return true;
+        });
+    }
     if (logging) console.log(document.URL, Date.now() - start, "findpw startup observer observe")
     mutationObserver.observe(document.body, observerOptions);
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
     cpi = countpwid();
     sendpageinfo(cpi, false, true);
-    chrome.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
-        if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
-        readyForClick = request.readyForClick;
-        switch (request.cmd) {
-            case "fillfields":
-                userid = request.u;
-                fillfield(cpi.idfield, userid);
-                setPlaceholder(userid);
-                break;
-            case "forget":
-                if (logging) console.log(document.URL, Date.now() - start, "findpw forget observer disconnect")
-                mutationObserver.disconnect();
-                cpi.idfield.value = "";
-                cpi.pwfields[0].value = "";
-                cpi.pwfields[0].placeholder = clickSitePassword;
-                if (cpi.pwfields[1]) {
-                    cpi.pwfields[1].value = "";
-                    cpi.pwfields[1].placeholder = "";
-                }
-                mutationObserver.observe(document.body, observerOptions);
-                if (logging) console.log(document.URL, Date.now() - start, "findpw forget observer observe")
-                break;
-            case "count":
-                chrome.storage.local.get("SitePassword", (localdata) => {
-                    let count = 0;
-                    let pwdomain = "";
-                    if (localdata) {
-                        pwdomain = localdata.SitePassword.pwdomain;
-                        count = localdata.SitePassword.count;
-                    }
-                    if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", count, pwdomain);
-                    sendResponse({ "pwcount": count, "pwdomain": pwdomain });
-                });
-                break;
-            default:
-                if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
-        }
-        return true;
-    });
 }
 function fillfield(field, text) {
     // Don't change if there is a value to avoid mutationObserver cycling
@@ -247,7 +251,7 @@ function pwfieldOnclick() {
 }
 function countpwid() {
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
-    if (document.location.host === "sitepassword.info") return {"pwfields": [], "useridfield": null };
+    if (document.location.host === "sitepassword.info") return { "pwfields": [], "useridfield": null };
     var useridfield = null;
     var visible = true;
     var pwfields = [];
