@@ -1,7 +1,8 @@
 'use strict';
 import { core_sha256, swap32, chrsz } from "./sha256.js";
 import { Utf8Encode, str2binb, binl2b64 } from "./sha256.js";
-export function generate(bg, hpSPG) {
+import { config } from "./bg.js";
+export function generate(bg) {
     let settings = bg.settings;
     let pwcount = bg.pwcount;
     var n = settings.sitename.toLowerCase().trim();
@@ -11,51 +12,51 @@ export function generate(bg, hpSPG) {
         return { p: "", r: pwcount };
     }
     let s = n.toString() + u.toString() + m.toString();
-    let p = compute(s, settings, hpSPG);
+    let p = compute(s, settings);
     return { p: p, r: pwcount };
 }
 export function isMasterPw(masterpw) {
     if (masterpw) return "MasterPW";
     else return "No MasterPW";
 }
-function compute(s, settings, hpSPG) {
+function compute(s, settings) {
     s = Utf8Encode(s);
     let h = core_sha256(str2binb(s), s.length * chrsz);
     let iter;
-    for (iter = 1; iter < hpSPG.miniter; iter++) {
+    for (iter = 1; iter < config.miniter; iter++) {
         h = core_sha256(h, 16 * chrsz);
     }
     // let ok = false;
     let sitePassword;
-    while (iter < hpSPG.maxiter) {
+    while (iter < config.maxiter) {
         h = core_sha256(h, 16 * chrsz);
         let hswap = Array(h.length);
         for (let i = 0; i < h.length; i++) {
             hswap[i] = swap32(h[i]);
         }
-        let chars = characters(settings, hpSPG);
+        let chars = characters(settings);
         sitePassword = binl2b64(hswap, chars).substring(0, settings.length);
-        if (verify(sitePassword, settings, hpSPG)) break;
+        if (verify(sitePassword, settings)) break;
         iter++;
-        if (iter >= hpSPG.maxiter) {
+        if (iter >= config.maxiter) {
             sitePassword = "";
         }
     }
     return sitePassword;
 }
-function verify(p, settings, hpSPG) {
+function verify(p, settings) {
     let counts = { lower: 0, upper: 0, number: 0, special: 0 };
     for (let i = 0; i < p.length; i++) {
-        let c = p.substr(i, 1);
-        if (-1 < hpSPG.lower.indexOf(c)) counts.lower++;
-        if (-1 < hpSPG.upper.indexOf(c)) counts.upper++;
-        if (-1 < hpSPG.digits.indexOf(c)) counts.number++;
+        let c = p.substring(i, i+1);
+        if (-1 < config.lower.indexOf(c)) counts.lower++;
+        if (-1 < config.upper.indexOf(c)) counts.upper++;
+        if (-1 < config.digits.indexOf(c)) counts.number++;
         if (-1 < settings.specials.indexOf(c)) counts.special++;
     }
     let valOK = true;
     if (settings.startwithletter) {
-        let start = p.substr(0, 1).toLowerCase();
-        valOK = valOK && -1 < hpSPG.lower.indexOf(start);
+        let start = p.substring(0, 1).toLowerCase();
+        valOK = valOK && -1 < config.lower.indexOf(start);
     }
     if (settings.allowlower) valOK = valOK && (counts.lower >= settings.minlower)
     if (settings.allowupper) {
@@ -76,20 +77,20 @@ function verify(p, settings, hpSPG) {
     return valOK;
 }
 // The computation assumes there are 64 characters to choose from
-export function characters(settings, hpSPG) {
-    let chars = hpSPG.lower + hpSPG.upper + hpSPG.digits + hpSPG.lower.substr(0, 2);
+export function characters(settings) {
+    let chars = config.lower + config.upper + config.digits + config.lower.substring(0, 2);
     if (settings.allowspecial) {
-        chars = settings.specials + hpSPG.lower.substr(settings.specials.length - 2) + hpSPG.upper + hpSPG.digits;
+        chars = settings.specials + config.lower.substring(settings.specials.length - 2) + config.upper + config.digits;
     }
     if (!settings.allowlower) chars = chars.toUpperCase();
     if (!settings.allowupper) chars = chars.toLowerCase();
     if (!(settings.allowlower || settings.allowupper)) {
-        chars = hpSPG.digits + hpSPG.digits + hpSPG.digits +
-            hpSPG.digits + hpSPG.digits + hpSPG.digits;
+        chars = config.digits + config.digits + config.digits +
+            config.digits + config.digits + config.digits;
         if (settings.allowspecials) {
-            chars = chars + settings.specials.substr(0, 4);
+            chars = chars + settings.specials.substring(0, 4);
         } else {
-            chars = chars + hpSPG.digits.substr(0, 4);
+            chars = chars + config.digits.substring(0, 4);
         }
     }
     return chars;

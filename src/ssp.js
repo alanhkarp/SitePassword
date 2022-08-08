@@ -1,16 +1,15 @@
 'use strict';
 import { characters, generate, isMasterPw } from "./generate.js";
 if (logging) console.log("Version 1.0");
-var logging = false;
+var logging = true;
 var activetab;
 var domainname;
 var pwdomain;
-var persona;
 var phishing = false;
-var bg = { "lastpersona": "everyone", "settings": {} };
-// I need all the metadata stored in hpSPG for both the phishing check
+var bg = { "settings": {} };
+// I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
-var hpSPG;
+var database;
 if (logging) console.log("popup starting");
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
@@ -38,7 +37,6 @@ function init() {
     // if (bg.settings.sitename) {
     //     get("forgetbutton").style.visibility = "hidden";
     // }
-    persona = hpSPG.personas["everyone"];
     defaultfocus();
     ask2generate();
 }
@@ -67,12 +65,12 @@ function getsettings(pwdomain) {
         "domainname": pwdomain,
     }, (response) => {
         bg = response.bg;
-        hpSPG = response.hpSPG;
+        database = response.database;
         if (!bg.settings.sitename) bg.settings.sitename = "";
         //get("domainname").value = bg.settings.domainname;
         get("masterpw").value = response.masterpw;
         init();
-        if (logging) console.log("popup got metadata", bg, hpSPG);
+        if (logging) console.log("popup got metadata", bg, database);
         if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
     });
 }
@@ -88,23 +86,21 @@ function eventSetup() {
         if (phishing) return; // Don't persist phishing sites
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
-            bg.lastpersona = "everyone";
             bg.masterpw = get("masterpw").value;
             bg.settings.sitename = get("sitename").value;
             if (bg.settings.sitename) {
-                persona.sitenames[bg.settings.sitename] = clone(bg.settings);
-                persona.sites[bg.settings.domainname] = bg.settings.sitename;
+                database.domains[bg.settings.sitename] = clone(bg.settings);
+                database.sites[bg.settings.domainname] = bg.settings.sitename;
             } else {
-                delete persona.sites[bg.settings.domainname];
+                delete database.sites[bg.settings.domainname];
             }
             let s = get("sitename").value;
             changePlaceholder();
             bg.settings.domainname = pwdomain;
             bg.settings.displayname = domainname;
-            if (logging) console.log("popup sending site data", bg.lastpersona, pwdomain, bg);
+            if (logging) console.log("popup sending site data", pwdomain, bg);
             chrome.runtime.sendMessage({
                 "cmd": "siteData",
-                "personaname": bg.lastpersona,
                 "sitename": s,
                 "clearmasterpw": get("clearmasterpw").checked,
                 "bg": bg
@@ -193,7 +189,7 @@ function eventSetup() {
     get("settingsshow").onclick = showsettings;
     get("settingssave").onclick = hidesettings;
     get("clearmasterpw").onclick = function () {
-        persona.clearmasterpw = get("clearmasterpw").checked;
+        database.clearmasterpw = get("clearmasterpw").checked;
     }
     get("pwlength").onmouseleave = function () {
         handleblur("pwlength", "length");
@@ -258,9 +254,9 @@ function eventSetup() {
         get("sitename").disabled = false;
         msgoff("phishing");
         var sitename = get("sitename").value;
-        bg.settings = clone(persona.sitenames[sitename]);
+        bg.settings = clone(database.domains[sitename]);
         bg.settings.sitename = get("sitename").value;
-        persona.sites[get("domainname").value] = bg.settings.sitename;
+        database.sites[get("domainname").value] = bg.settings.sitename;
         get("username").value = bg.settings.username;
         ask2generate();
     }
@@ -283,7 +279,7 @@ function handleblur(element, field) {
     } else {
         bg.settings[field] = get(element).value;
     }
-    bg.settings.characters = characters(bg.settings, hpSPG);
+    bg.settings.characters = characters(bg.settings, database);
     ask2generate();
 }
 function handleclick(which) {
@@ -293,7 +289,7 @@ function handleclick(which) {
         bg.settings.startwithletter = false;
         get("startwithletter").checked = false;
     }
-    bg.settings.characters = characters(bg.settings, hpSPG)
+    bg.settings.characters = characters(bg.settings, database)
     ask2generate();
 }
 function changePlaceholder() {
@@ -327,7 +323,7 @@ function ask2generate() {
         msgon("nopw");
     } else {
         msgoff("nopw");
-        var r = generate(bg, hpSPG);
+        var r = generate(bg);
         p = r.p;
         if (p) {
             msgoff("nopw");
@@ -359,7 +355,7 @@ function fill() {
     }
     get("masterpw").value = bg.masterpw;
     if (logging) console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
-    get("clearmasterpw").checked = hpSPG.personas[bg.lastpersona].clearmasterpw;
+    get("clearmasterpw").checked = database.clearmasterpw;
     get("pwlength").value = bg.settings.length;
     get("startwithletter").checked = bg.settings.startwithletter;
     get("minnumber").value = bg.settings.minnumber;
@@ -388,16 +384,14 @@ function forgetDomain() {
         get("sitename").value = "";
         get("username").value = "";
         get("forgetbutton").style.visibility = "hidden";
-        let personaname = "everyone";
-        bg.settings = hpSPG.personas[personaname].sitenames.default;
+        bg.settings = database.domains.default;
         bg.settings.sitename = "";
         ask2generate();
         chrome.runtime.sendMessage({
             "cmd": "forget",
-            "persona": "everyone",
             "domainname": get("domainname").value
         }, (response) => {
-            hpSPG = response;
+            database = response;
         });
         chrome.tabs.sendMessage(activetab.id, { "cmd": "forget" })
     };
@@ -418,8 +412,8 @@ function pwoptions(options) {
     }
 }
 function sitedataHTML() {
-    var sites = persona.sites
-    var sitenames = persona.sitenames;
+    var sites = database.sites
+    var sitenames = database.domains;
     var sorted = Object.keys(sites).sort(function (x, y) {
         var a = x.toLowerCase();
         var b = y.toLowerCase();
@@ -480,13 +474,11 @@ function sitedataHTML() {
 }
 function isphishing(sitename) {
     if (!sitename) return false;
-    var personaname = "everyone";
-    var persona = hpSPG.personas[personaname];
     var domainname = getlowertrim("domainname");
-    var domains = Object.keys(persona.sites);
+    var domains = Object.keys(database.sites);
     var phishing = false;
     domains.forEach(function (d) {
-        if ((persona.sites[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
+        if ((database.sites[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
             (d.toLowerCase().trim() != domainname)) {
             phishing = true;
         }
