@@ -7,7 +7,7 @@ var domainname;
 var pwdomain;
 var persona;
 var phishing = false;
-var bg = { "settings": {} };
+var bg = { "lastpersona": "everyone", "settings": {} };
 // I need all the metadata stored in hpSPG for both the phishing check
 // and for downloading the site data.
 var hpSPG;
@@ -34,10 +34,11 @@ function init() {
     get("masterpw").value = bg.masterpw;
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;
-    if (bg.settings.sitename) {
-        get("forgetbutton").style.visibility = "hidden";
-    }
-    persona = hpSPG.personas[getlowertrim("persona")];
+    // Use if I get "Forget" working
+    // if (bg.settings.sitename) {
+    //     get("forgetbutton").style.visibility = "hidden";
+    // }
+    persona = hpSPG.personas["everyone"];
     defaultfocus();
     ask2generate();
 }
@@ -64,7 +65,6 @@ function getsettings(pwdomain) {
     chrome.runtime.sendMessage({
         "cmd": "getMetadata",
         "domainname": pwdomain,
-        "personaname": getlowertrim("persona"),
     }, (response) => {
         bg = response.bg;
         hpSPG = response.hpSPG;
@@ -83,12 +83,12 @@ function eventSetup() {
     // is a race between message delivery and the next user click.  Fortunately, messages
     // are delivered in just a couple of ms, so there's no problem.  Just be aware that
     // this race is the source of any problems related to loss of the message sent here.
-    get("ssp").onmouseleave = function () {
+    get("mainpanel").onmouseleave = function () {
         if (logging) console.log(Date.now(), "popup window.mouseleave", phishing, bg);
         if (phishing) return; // Don't persist phishing sites
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
-            bg.lastpersona = getlowertrim("persona");
+            bg.lastpersona = "everyone";
             bg.masterpw = get("masterpw").value;
             bg.settings.sitename = get("sitename").value;
             if (bg.settings.sitename) {
@@ -99,13 +99,12 @@ function eventSetup() {
             }
             let s = get("sitename").value;
             changePlaceholder();
-            let personaname = getlowertrim("persona");
             bg.settings.domainname = pwdomain;
             bg.settings.displayname = domainname;
-            if (logging) console.log("popup sending site data", personaname, pwdomain, bg);
+            if (logging) console.log("popup sending site data", bg.lastpersona, pwdomain, bg);
             chrome.runtime.sendMessage({
                 "cmd": "siteData",
-                "personaname": personaname,
+                "personaname": bg.lastpersona,
                 "sitename": s,
                 "clearmasterpw": get("clearmasterpw").checked,
                 "bg": bg
@@ -117,13 +116,6 @@ function eventSetup() {
         }, 250);
     }
     // UI Event handlers
-    get("persona").onkeyup = function () {
-        get("masterpw").value = "";
-        get("sitename").value = "";
-        get("username").value = "";
-        get("sitepass").value = "";
-        bg.masterpw = "";
-    }
     get("domainname").onkeyup = function () {
         get("sitename").value = "";
     }
@@ -143,6 +135,16 @@ function eventSetup() {
         handleblur("masterpw", "masterpw");
         changePlaceholder();
     }
+    get("masterpwshow").onclick = function() {
+        get("masterpw").type = "text";
+        get("masterpwhide").style.display = "block";
+        get("masterpwshow").style.display = "none";
+    }
+    get("masterpwhide").onclick = function() {
+        get("masterpw").type = "password";
+        get("masterpwhide").style.display = "none";
+        get("masterpwshow").style.display = "block";
+    }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
     }
@@ -153,7 +155,7 @@ function eventSetup() {
             // bg.settings.domainname;
             get("masterpw").disabled = true;
             get("username").disabled = true;
-            get("sitepass").value = "";
+            get("sitepw").value = "";
         } else {
             phishing = false;
             msgoff("phishing");
@@ -170,17 +172,26 @@ function eventSetup() {
         handleblur("username", "username");
         changePlaceholder();
     }
-    get("sitepass").onclick = function () {
-        let sitepass = get("sitepass").value;
+    get("sitepwcopy").onclick = function () {
+        let sitepass = get("sitepw").value;
         navigator.clipboard.writeText(sitepass).then(() => {
             if (logging) console.log("findpw wrote to clipboard", sitepass);
         }).catch((e) => {
             if (logging) console.log("findpw clipboard write failed", e);
         });
     };
-    get("settingsshowbutton").onclick = showsettings;
-    get("settingshidebutton").onclick = hidesettings;
-    get("forgetbutton").onclick = forgetDomain;
+    get("sitepwhide").onclick = function() {
+        get("sitepw").type = "password";
+        get("sitepwhide").style.display = "none";
+        get("sitepwshow").style.display = "block";
+    }
+    get("sitepwshow").onclick = function() {
+        get("sitepw").type = "text";
+        get("sitepwhide").style.display = "block";
+        get("sitepwshow").style.display = "none";
+    }
+    get("settingsshow").onclick = showsettings;
+    get("settingssave").onclick = hidesettings;
     get("clearmasterpw").onclick = function () {
         persona.clearmasterpw = get("clearmasterpw").checked;
     }
@@ -237,8 +248,8 @@ function eventSetup() {
         handleblur("specials", "specials");
     }
     get("sitedatagetbutton").onclick = sitedataHTML;
-    get("instructions").onclick = function () {
-        chrome.tabs.create({ "url": "https://sitepassword.alanhkarp.com" });
+    get("maininfo").onclick = function () {
+        chrome.tabs.create({ "url": "https://sitepassword.info/instructions" });
     }
     get("warningbutton").onclick = function () {
         phishing = false;
@@ -304,7 +315,7 @@ function clearmasterpw() {
     if (get("clearmasterpw").checked) {
         bg.masterpw = "";
         get("masterpw").value = bg.masterpw;
-        get("sitepass").value = "";
+        get("sitepw").value = "";
     }
 }
 function ask2generate() {
@@ -327,7 +338,7 @@ function ask2generate() {
             }
         }
     }
-    get("sitepass").value = p;
+    get("sitepw").value = p;
     if ((r.r == 1) && u && n && m) {
         msgoff("multiple");
         msgoff("zero");
@@ -359,8 +370,8 @@ function fill() {
     ask2generate();
 }
 function showsettings() {
-    get("settingsshowbutton").style.display = "none";
-    get("settingshidebutton").style.display = "inline";
+    get("settingsshow").style.display = "none";
+    get("settingssave").style.display = "inline";
     //get("domainname").value = bg.settings.domainname;
     get("masterpw").value = bg.masterpw;
     fill();
@@ -368,8 +379,8 @@ function showsettings() {
     pwoptions(["lower", "upper", "number", "special"]);
 }
 function hidesettings() {
-    get("settingsshowbutton").style.display = "inline";
-    get("settingshidebutton").style.display = "none";
+    get("settingsshow").style.display = "inline";
+    get("settingssave").style.display = "none";
     get("settings").style.display = "none";
 }
 function forgetDomain() {
@@ -377,13 +388,13 @@ function forgetDomain() {
         get("sitename").value = "";
         get("username").value = "";
         get("forgetbutton").style.visibility = "hidden";
-        let personaname = get("persona").value.toLowerCase();
+        let personaname = "everyone";
         bg.settings = hpSPG.personas[personaname].sitenames.default;
         bg.settings.sitename = "";
         ask2generate();
         chrome.runtime.sendMessage({
             "cmd": "forget",
-            "persona": get("persona").value,
+            "persona": "everyone",
             "domainname": get("domainname").value
         }, (response) => {
             hpSPG = response;
@@ -469,7 +480,7 @@ function sitedataHTML() {
 }
 function isphishing(sitename) {
     if (!sitename) return false;
-    var personaname = getlowertrim("persona");
+    var personaname = "everyone";
     var persona = hpSPG.personas[personaname];
     var domainname = getlowertrim("domainname");
     var domains = Object.keys(persona.sites);

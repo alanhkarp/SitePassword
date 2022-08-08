@@ -1,8 +1,9 @@
 'use strict';
 import { characters, generate, isMasterPw } from "./generate.js";
 // State I want to keep around that doesn't appear in the file system
+var sitedataBookmark = "SitePasswordData"
 var logging = false;
-var bg = {};
+var bg = {"lastpersona": "everyone"};
 var masterpw = "";
 var activetab;
 var hpSPG = {};
@@ -43,7 +44,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 // });
                 // if (count === 0) delete persona.sitenames[sitename]; // If this is the only use of sitename
                 // delete persona.sites[domainname];
-                // chrome.bookmarks.search("SitePasswordData", async function (folders) {
+                // chrome.bookmarks.search(sitedataBookmark, async function (folders) {
                 //     // Persist changes to hpSPG
                 //     let rootFolder = folders[0];
                 //     let children = await chrome.bookmarks.getChildren(rootFolder.id);
@@ -97,7 +98,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     return true;
 });
 async function getMetadata(request, _sender, sendResponse) {
-    bg.lastpersona = request.personaname;
+    if (logging) console.log("bg getMetadata", bg, request);
     let sitename = hpSPG.personas[bg.lastpersona].sites[request.domainname];
     if (sitename) {
         bg.settings = hpSPG.personas[bg.lastpersona].sitenames[sitename];
@@ -203,7 +204,7 @@ async function persistMetadata() {
         console.log("bg bad sitename", hpSPG);
     }
     chrome.storage.session.set({ "ssp": { "masterpw": masterpw, "personaname": bg.lastpersona } });
-    chrome.bookmarks.search("SitePasswordData", async function (folders) {
+    chrome.bookmarks.search(sitedataBookmark, async function (folders) {
         // Persist changes to hpSPG
         let rootFolder = folders[0];
         let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
@@ -283,7 +284,7 @@ async function parseBkmk(bkmkid, callback) {
 async function retrieveMetadata(sendResponse, callback) {
     // return JSON.parse(localStorage[name]);
     if (logging) console.log("bg find SSP bookmark folder");
-    chrome.bookmarks.search("SitePasswordData", (folders) => {
+    chrome.bookmarks.search(sitedataBookmark, (folders) => {
         if (folders.length === 1) {
             if (logging) console.log("Found bookmarks folder: ", folders[0]);
             parseBkmk(folders[0].id, callback);
@@ -296,13 +297,13 @@ async function retrieveMetadata(sendResponse, callback) {
             // use a flag to make sure I only create it once.
             if (createBookmarksFolder) {
                 createBookmarksFolder = false;
-                chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordData" },
+                chrome.bookmarks.create({ "parentId": "1", "title": sitedataBookmark },
                     (bkmk) => {
                         parseBkmk(bkmk.id, callback);
                     });
             }
         } else {
-            console.log("bg found multiple SitePasswordData folders", folders);
+            console.log("bg found multiple", sitedataBookmark, "folders", folders);
             sendResponse("multiple");
         }
     });
