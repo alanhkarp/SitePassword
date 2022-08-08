@@ -1,8 +1,8 @@
 'use strict';
 import { generate, isMasterPw } from "./generate.js";
 // State I want to keep around that doesn't appear in the file system
-var sitedataBookmark = "SitePasswordDataTest";
-var logging = true;
+var sitedataBookmark = "SitePasswordData";
+var logging = false;
 var bg = {};
 var masterpw = "";
 var activetab;
