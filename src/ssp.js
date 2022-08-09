@@ -1,7 +1,7 @@
 'use strict';
 import { characters, generate, isMasterPw } from "./generate.js";
+const logging = false;
 if (logging) console.log("Version 1.0");
-var logging = false;
 var activetab;
 var domainname;
 var pwdomain;
@@ -91,8 +91,6 @@ function eventSetup() {
             if (bg.settings.sitename) {
                 database.domains[bg.settings.sitename] = clone(bg.settings);
                 database.sites[bg.settings.domainname] = bg.settings.sitename;
-            } else {
-                delete database.sites[bg.settings.domainname];
             }
             let s = get("sitename").value;
             changePlaceholder();

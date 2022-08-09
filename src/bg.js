@@ -1,19 +1,19 @@
 'use strict';
 import { generate, isMasterPw } from "./generate.js";
 // State I want to keep around that doesn't appear in the file system
-var sitedataBookmark = "SitePasswordData";
-var logging = false;
+const sitedataBookmark = "SitePasswordData";
+const logging = false;
 var bg = {};
 var masterpw = "";
 var activetab;
-var databaseDefault = {"domains": {}, "sites": {}};
-var database = databaseDefault;
+const databaseDefault = {"domains": {}, "sites": {}};
+var database = clone(databaseDefault);
 var domainname = "";
 var protocol = "";
 var pwcount = 0;
 var createBookmarksFolder = true;
 var pwfielddomain = {};
-export var config = {
+export const config = {
     lower: "abcdefghijklmnopqrstuvwxyz",
     upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     digits: "0123456789",
@@ -21,7 +21,7 @@ export var config = {
     miniter: 10,
     maxiter: 1000
 };
-var defaultSettings = {
+const defaultSettings = {
     sitename: "",
     username: "",
     length: 12,
