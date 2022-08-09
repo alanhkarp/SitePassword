@@ -169,9 +169,10 @@ async function persistMetadata() {
         console.log("bg bad sitename", database);
     }
     chrome.storage.session.set({ "ssp": { "masterpw": masterpw } });
-    chrome.bookmarks.search(sitedataBookmark, async function (folders) {
+    chrome.bookmarks.search(sitedataBookmark, async function (candidates) {
         // Persist changes to database
-        let rootFolder = folders[0];
+        let rootFolder = getRootFolder(candidates)[0];
+        if (logging) console.log("bg root folder", rootFolder);
         let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
         let children = [];
         let domains = [];
@@ -249,7 +250,8 @@ async function parseBkmk(bkmkid, callback) {
 async function retrieveMetadata(sendResponse, callback) {
     // return JSON.parse(localStorage[name]);
     if (logging) console.log("bg find SSP bookmark folder");
-    chrome.bookmarks.search(sitedataBookmark, (folders) => {
+    chrome.bookmarks.search(sitedataBookmark, (candidates) => {
+        let folders = getRootFolder(candidates);
         if (folders.length === 1) {
             if (logging) console.log("Found bookmarks folder: ", folders[0]);
             parseBkmk(folders[0].id, callback);
@@ -273,11 +275,20 @@ async function retrieveMetadata(sendResponse, callback) {
         }
     });
 }
+function getRootFolder(candidates) {
+    // bookmarks.search finds any bookmark with a title containing the
+    // search string, but I need to find one with an exact match
+    let folders = [];
+    for (let i = 0; i < candidates.length; i++) {
+        if (candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
+    }
+    return folders;
+}
 function retrieved(callback) {
     if (logging) console.log("bg retrieved", database);
-    // Doing it this way because bg.js used to be a background page, 
-    // and I don't want to change a lot of code after I moved it to
-    // the popup.
+    if (!database.sites) {
+        console.log("stop here please");
+    }
     let sitename = database.sites[domainname];
     let settings;
     if (sitename) {
