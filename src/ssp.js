@@ -59,11 +59,10 @@ async function getMetadata() {
     });
 }
 function getsettings(pwdomain) {
-    // var sitename = getlowertrim("sitename");
     if (logging) console.log("popup getsettings", pwdomain);
     chrome.runtime.sendMessage({
         "cmd": "getMetadata",
-        "domainname": pwdomain,
+        "domainname": domainname,
     }, (response) => {
         bg = response.bg;
         database = response.database;
