@@ -1,5 +1,6 @@
 'use strict';
 import { characters, generate, isMasterPw } from "./generate.js";
+import { defaultSettings } from "./bg.js";
 const logging = false;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -67,7 +68,6 @@ function getsettings(pwdomain) {
         bg = response.bg;
         database = response.database;
         if (!bg.settings.sitename) bg.settings.sitename = "";
-        //get("domainname").value = bg.settings.domainname;
         get("masterpw").value = response.masterpw;
         init();
         if (logging) console.log("popup got metadata", bg, database);
@@ -89,8 +89,8 @@ function eventSetup() {
             bg.masterpw = get("masterpw").value;
             bg.settings.sitename = get("sitename").value;
             if (bg.settings.sitename) {
-                database.domains[bg.settings.sitename] = clone(bg.settings);
-                database.sites[bg.settings.domainname] = bg.settings.sitename;
+                database.sites[bg.settings.sitename] = clone(bg.settings);
+                database.domains[bg.settings.domainname] = bg.settings.sitename;
             }
             let s = get("sitename").value;
             changePlaceholder();
@@ -252,9 +252,9 @@ function eventSetup() {
         get("sitename").disabled = false;
         msgoff("phishing");
         var sitename = get("sitename").value;
-        bg.settings = clone(database.domains[sitename]);
+        bg.settings = clone(database.sites[sitename]);
         bg.settings.sitename = get("sitename").value;
-        database.sites[get("domainname").value] = bg.settings.sitename;
+        database.domains[get("domainname").value] = bg.settings.sitename;
         get("username").value = bg.settings.username;
         ask2generate();
     }
@@ -382,7 +382,7 @@ function forgetDomain() {
         get("sitename").value = "";
         get("username").value = "";
         get("forgetbutton").style.visibility = "hidden";
-        bg.settings = database.domains.default;
+        bg.settings = defaultSettings;
         bg.settings.sitename = "";
         ask2generate();
         chrome.runtime.sendMessage({
@@ -410,13 +410,13 @@ function pwoptions(options) {
     }
 }
 function sitedataHTML() {
-    var sites = database.sites
-    var sitenames = database.domains;
-    var sorted = Object.keys(sites).sort(function (x, y) {
+    var domainnames = database.domains
+    var sitenames = database.sites;
+    var sorted = Object.keys(domainnames).sort(function (x, y) {
         var a = x.toLowerCase();
         var b = y.toLowerCase();
-        if (sites[a].toLowerCase() < sites[b].toLowerCase()) return -1;
-        if (sites[a].toLowerCase() == sites[b].toLowerCase()) return 0;
+        if (domainnames[a].toLowerCase() < domainnames[b].toLowerCase()) return -1;
+        if (domainnames[a].toLowerCase() == domainnames[b].toLowerCase()) return 0;
         return 1;
     });
     let sd = "data:application/octet-stream,"
@@ -438,7 +438,7 @@ function sitedataHTML() {
     sd += "</tr>";
     for (var i = 0; i < sorted.length; i++) {
         var domainname = sorted[i];
-        var sitename = sites[sorted[i]];
+        var sitename = domainnames[sorted[i]];
         var s = sitenames[sitename];
         sd += "<tr>";
         sd += "<td><pre>" + sitename + "</pre></td>";
@@ -473,10 +473,10 @@ function sitedataHTML() {
 function isphishing(sitename) {
     if (!sitename) return false;
     var domainname = getlowertrim("domainname");
-    var domains = Object.keys(database.sites);
+    var domains = Object.keys(database.domains);
     var phishing = false;
     domains.forEach(function (d) {
-        if ((database.sites[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
+        if ((database.domains[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
             (d.toLowerCase().trim() != domainname)) {
             phishing = true;
         }

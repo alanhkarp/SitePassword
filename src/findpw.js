@@ -145,7 +145,7 @@ function handleMutations(mutations) {
         keyPressed = false;
         setPlaceholder(userid);
         let myMutations = mutationObserver.takeRecords();
-        console.log("findpw lastry my mutations", myMutations);
+        if (logging) console.log("findpw lastry my mutations", myMutations);
         handleMutations(mutations);
     }, 500);
     if (oldpwfield && oldpwfield === cpi.pwfields[0]) return; // Stop looking once I've found a password field

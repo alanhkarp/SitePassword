@@ -21,7 +21,7 @@ export const config = {
     miniter: 10,
     maxiter: 1000
 };
-const defaultSettings = {
+export const defaultSettings = {
     sitename: "",
     username: "",
     length: 12,
@@ -40,7 +40,7 @@ const defaultSettings = {
 
 if (logging) console.log("bg clear masterpw");
 
-if (logging) console.log("bg starting");
+if (logging) console.log("bg starting with database", database);
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (logging) console.log(Date.now(), "bg got message request, sender", request, sender);
@@ -55,15 +55,15 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             if (request.cmd === "forget") {
                 console.log("bg forget feature not implemented");
                 // let domainname = request.domainname;
-                // let sitename = database.sites[domainname];
-                // let domains = Object.keys(database.sites);
+                // let sitename = database.domains[domainname];
+                // let domains = Object.keys(database.domains);
                 // let count = 0;
                 // domains.forEach(function (d) {
-                //     if ((database.sites[d].toLowerCase().trim() === sitename.toLowerCase().trim()) &&
+                //     if ((database.domains[d].toLowerCase().trim() === sitename.toLowerCase().trim()) &&
                 //         (d.toLowerCase().trim() !== domainname)) count++;
                 // });
                 // if (count === 0) delete database.domains[sitename]; // If this is the only use of sitename
-                // delete database.sites[domainname];
+                // delete database.domains[domainname];
                 // chrome.bookmarks.search(sitedataBookmark, async function (folders) {
                 //     // Persist changes to database
                 //     let rootFolder = folders[0];
@@ -83,11 +83,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 bg = clone(request.bg);
                 masterpw = bg.masterpw;
                 database.clearmasterpw = request.clearmasterpw;
-                database.domains[request.sitename] = bg.settings;
+                database.sites[request.sitename] = bg.settings;
                 persistMetadata();
             } else if (request.cmd === "getPassword") {
                 let origin = getdomainname(sender.origin);
-                let domainname = pwfielddomain[origin] || origin;
+                domainname = pwfielddomain[origin] || origin;
                 bg.settings = bgsettings(domainname);
                 let pr = generate(bg);
                 if (database.clearmasterpw) {
@@ -117,9 +117,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 async function getMetadata(request, _sender, sendResponse) {
     if (logging) console.log("bg getMetadata", bg, request);
-    let sitename = database.sites[request.domainname];
+    let sitename = database.domains[request.domainname];
     if (sitename) {
-        bg.settings = database.domains[sitename];
+        bg.settings = database.sites[sitename];
     } else {
         bg.settings = clone(defaultSettings);
     }
@@ -137,11 +137,11 @@ function onContentPageload(request, sender, sendResponse) {
         pwfielddomain[getdomainname(sender.tab.url)] = getdomainname(sender.origin);
     }
     let origin = getdomainname(sender.origin);
-    let domainname = pwfielddomain[origin] || origin;
+    domainname = pwfielddomain[origin] || origin;
     if (logging) console.log("bg pwcount, domainname, masterpw", database, bg.pwcount, domainname, isMasterPw(masterpw));
     let sitename = database.sites[domainname];
     if (sitename) {
-        bg.settings = database.domains[sitename];
+        bg.settings = database.sites[sitename];
     } else {
         bg.settings = clone(defaultSettings);
     }
@@ -162,8 +162,8 @@ async function persistMetadata() {
     // localStorage[name] = JSON.stringify(value);
     if (logging) console.log("bg persistMetadata", bg, database);
     if (bg.settings.sitename) {
-        database.sites[bg.settings.domainname] = bg.settings.sitename;
-        database.domains[bg.settings.sitename] = bg.settings;
+        database.domains[bg.settings.domainname] = bg.settings.sitename;
+        database.sites[bg.settings.sitename] = bg.settings;
     }
     if (database && database.sites && database.sites[""]) {
         console.log("bg bad sitename", database);
@@ -206,10 +206,10 @@ async function persistMetadata() {
             }
         }
         // Persist changes to domain settings
-        let domainNames = Object.keys(database.sites);
+        let domainNames = Object.keys(database.domains);
         for (let i = 0; i < domainNames.length; i++) {
-            let sitename = database.sites[domainNames[i]];
-            let settings = "ssp://" + JSON.stringify(database.domains[sitename]);
+            let sitename = database.domains[domainNames[i]];
+            let settings = "ssp://" + JSON.stringify(database.sites[sitename]);
             let found = domains.find((item) => item.title === domainNames[i]);
             if (found) {
                 chrome.bookmarks.update(found.id, { "url": settings }, (e) => {
@@ -239,7 +239,7 @@ async function parseBkmk(bkmkid, callback) {
         try {
             // JSON.stringify turns some of my " into %22
             // and some of my blanks into %20
-            database = JSON.parse(databasestr.replace(/%22/g, "\"").replace(/%20/g, " "));
+            if (databasestr) database = JSON.parse(databasestr.replace(/%22/g, "\"").replace(/%20/g, " "));
         } catch (e) {
             console.log("Error parsing metadata " + e);
             database = clone(databaseDefault);
@@ -257,7 +257,6 @@ async function retrieveMetadata(sendResponse, callback) {
             parseBkmk(folders[0].id, callback);
         } else if (folders.length === 0) {
             if (logging) console.log("Creating SSP bookmark folder");
-            database = undefined;
             // findpw.js sends the SiteData message twice, once for document.onload
             // and once for window.onload.  The latter can arrive while the bookmark
             // folder is being created, resulting in two of them.  My solution is to
@@ -289,10 +288,10 @@ function retrieved(callback) {
     if (!database.sites) {
         console.log("stop here please");
     }
-    let sitename = database.sites[domainname];
+    let sitename = database.domains[domainname];
     let settings;
     if (sitename) {
-        settings = database.domains[sitename];
+        settings = database.sites[sitename];
     } else {
         settings = clone(defaultSettings);
     }
@@ -307,8 +306,8 @@ function retrieved(callback) {
     callback();
 }
 function bgsettings(domainname) {
-    if (database.sites[domainname]) {
-        bg.settings = database.domains[database.sites[domainname]];
+    if (database.domains[domainname]) {
+        bg.settings = database.sites[database.domains[domainname]];
     } else {
         bg.settings = clone(defaultSettings);
         bg.settings.domainname = domainname;
