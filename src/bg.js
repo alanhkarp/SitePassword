@@ -62,7 +62,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 //     if ((database.domains[d].toLowerCase().trim() === sitename.toLowerCase().trim()) &&
                 //         (d.toLowerCase().trim() !== domainname)) count++;
                 // });
-                // if (count === 0) delete database.domains[sitename]; // If this is the only use of sitename
+                // if (count === 0) delete database.sites[sitename]; // If this is the only use of sitename
                 // delete database.domains[domainname];
                 // chrome.bookmarks.search(sitedataBookmark, async function (folders) {
                 //     // Persist changes to database
@@ -139,7 +139,7 @@ function onContentPageload(request, sender, sendResponse) {
     let origin = getdomainname(sender.origin);
     domainname = pwfielddomain[origin] || origin;
     if (logging) console.log("bg pwcount, domainname, masterpw", database, bg.pwcount, domainname, isMasterPw(masterpw));
-    let sitename = database.sites[domainname];
+    let sitename = database.domains[domainname];
     if (sitename) {
         bg.settings = database.sites[sitename];
     } else {
@@ -165,7 +165,7 @@ async function persistMetadata() {
         database.domains[bg.settings.domainname] = bg.settings.sitename;
         database.sites[bg.settings.sitename] = bg.settings;
     }
-    if (database && database.sites && database.sites[""]) {
+    if (database && database.sites && database.sites[""] && database.sites["undefined"]) {
         console.log("bg bad sitename", database);
     }
     chrome.storage.session.set({ "ssp": { "masterpw": masterpw } });

@@ -29,7 +29,6 @@ if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw 
 // Most pages work if I start looking for password fields as soon as the basic HTML is loaded
 if (document.readyState !== "loading") {
     if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw running", document.readyState);
-    localStorage.removeItem("SitePassword");
     startup();
 } else {
     if (logging) console.log(document.URL, Date.now() - start, "findpw running document.onload");
@@ -102,16 +101,11 @@ function startup() {
                     }
                     break;
                 case "count":
-                    chrome.storage.local.get("SitePassword", (localdata) => {
-                        let count = 0;
-                        let pwdomain = "";
-                        if (localdata) {
-                            pwdomain = localdata.SitePassword.pwdomain;
-                            count = localdata.SitePassword.count;
-                        }
-                        if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", count, pwdomain);
-                        sendResponse({ "pwcount": count, "pwdomain": pwdomain });
-                    });
+                    cpi = countpwid();
+                    let pwdomain = document.location.hostname;
+                    let count = cpi.pwfields.length;
+                    if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", count, pwdomain);
+                    sendResponse({ "pwcount": count, "pwdomain": pwdomain });
                     break;
                 default:
                     if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
@@ -135,7 +129,7 @@ function handleMutations(mutations) {
     // in case the page cleared the values.
     lasttry = setTimeout(() => {
         let mutations = mutationObserver.takeRecords();
-        if (logging) console.log("findpw lasttry");
+        if (logging) console.log("findpw last try");
         if (userid && cpi.idfield && cpi.idfield.value !== userid && !keyPressed) { // In case the mutations took away my changes
             fillfield(cpi.idfield, userid);
         }
@@ -288,7 +282,6 @@ function countpwid() {
         }
     }
     if (c > 0) {
-        chrome.storage.local.set({ "SitePassword": { "count": c, "pwdomain": document.location.hostname } });
         for (var i = found - 1; i >= 0; i--) {
             // Skip over invisible input fields above the password field
             visible = !isHidden(inputs[i]);

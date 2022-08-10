@@ -51,7 +51,7 @@ async function getMetadata() {
             pwdomain = response.pwdomain;
         }
         if (response) {
-            message("zero", response.pwcount == 0);
+            message("zero", response.pwcount === 0);
         } else {
             message("zero", true);            
         }
