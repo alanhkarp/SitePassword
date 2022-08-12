@@ -134,7 +134,7 @@ function onContentPageload(request, sender, sendResponse) {
     bg.pwcount = request.count;
     pwcount = bg.pwcount;
     if (pwcount > 0) {
-        pwfielddomain[getdomainname(sender.tab.url)] = getdomainname(sender.origin);
+        pwfielddomain[getdomainname(sender.origin)] = getdomainname(sender.tab.url);
     }
     let origin = getdomainname(sender.origin);
     domainname = pwfielddomain[origin] || origin;
@@ -165,7 +165,7 @@ async function persistMetadata() {
         database.domains[bg.settings.domainname] = bg.settings.sitename;
         database.sites[bg.settings.sitename] = bg.settings;
     }
-    if (database && database.sites && database.sites[""] && database.sites["undefined"]) {
+    if (database && database.domains && database.domains[""] || database.domains["undefined"]) {
         console.log("bg bad sitename", database);
     }
     chrome.storage.session.set({ "ssp": { "masterpw": masterpw } });

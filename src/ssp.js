@@ -93,8 +93,7 @@ function eventSetup() {
             }
             let s = get("sitename").value;
             changePlaceholder();
-            bg.settings.domainname = pwdomain;
-            bg.settings.displayname = domainname;
+            bg.settings.domainname = pwdomain || domainname;
             if (logging) console.log("popup sending site data", pwdomain, bg);
             chrome.runtime.sendMessage({
                 "cmd": "siteData",
