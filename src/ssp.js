@@ -6,6 +6,7 @@ if (logging) console.log("Version 1.0");
 var activetab;
 var domainname;
 var pwdomain;
+
 var phishing = false;
 var bg = { "settings": {} };
 // I need all the metadata stored in database for both the phishing check
@@ -24,6 +25,7 @@ window.onload = function () {
         if (logging) console.log("popup tab", activetab);
         domainname = activetab.url.split("/")[2];
         get("domainname").value = domainname;
+        get("sitepw").value = "";
         if (logging) console.log("popup got tab", domainname, activetab);
         if (logging) console.log(Date.now(), "popup getting metadata");
         getMetadata();
@@ -46,12 +48,14 @@ async function getMetadata() {
     chrome.tabs.sendMessage(activetab.id, { "cmd": "count" }, (response) => {
         if (logging) console.log("popup got pwcount", response);
         pwdomain = undefined;
+        let pwcount = response.pwcount;
         if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
-        if (response && response.pwcount > 0) {
+        if (response && pwcount > 0) {
             pwdomain = response.pwdomain;
         }
         if (response) {
-            message("zero", response.pwcount === 0);
+            if (logging) console.log("popup setting pwcount warning", pwcount);
+            message("zero", pwcount === 0);
         } else {
             message("zero", true);            
         }
@@ -311,16 +315,12 @@ function clearmasterpw() {
     }
 }
 function ask2generate() {
-    var u = get("username").value;
-    var n = get("sitename").value;
-    var m = get("masterpw").value;
     var p = "";
     if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
         msgon("nopw");
     } else {
         msgoff("nopw");
-        var r = generate(bg);
-        p = r.p;
+        p = generate(bg);
         if (p) {
             msgoff("nopw");
         } else {
@@ -330,14 +330,8 @@ function ask2generate() {
             }
         }
     }
+    if (logging) console.log("popup filling sitepw field", p);
     get("sitepw").value = p;
-    if ((r.r == 1) && u && n && m) {
-        msgoff("multiple");
-        msgoff("zero");
-    } else if (u && n && m) {
-        message("zero", r.r == 0);
-        message("multiple", r.r > 1)
-    }
     return true;
 }
 function fill() {

@@ -89,14 +89,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 let origin = getdomainname(sender.origin);
                 domainname = pwfielddomain[origin] || origin;
                 bg.settings = bgsettings(domainname);
-                let pr = generate(bg);
+                let p = generate(bg);
                 if (database.clearmasterpw) {
                     masterpw = "";
                     bg.masterpw = "";
                     persistMetadata();
                 }
-                if (logging) console.log("bg calculated sitepw", bg, database, pr, isMasterPw(masterpw));
-                sendResponse(pr.p);
+                if (logging) console.log("bg calculated sitepw", bg, database, p, isMasterPw(masterpw));
+                sendResponse(p);
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin);
                 bg.domainname = domainname;
@@ -125,11 +125,11 @@ async function getMetadata(request, _sender, sendResponse) {
     }
     // Domain name comes from popup, which is trusted not to spoof it
     bg.settings.domainname = pwfielddomain[request.domainname] || request.domainname;
-    if (logging) console.log("bg sending metadata", bg, database);
-    sendResponse({ "masterpw": masterpw || "", "bg": bg, "database": database });
+    if (logging) console.log("bg sending metadata", pwcount, bg, database);
+    sendResponse({ "masterpw": masterpw || "", "pwcount": pwcount, "bg": bg, "database": database });
 }
 function onContentPageload(request, sender, sendResponse) {
-    if (logging) console.log("bg onContentPageLoad");
+    if (logging) console.log("bg onContentPageLoad", request);
     activetab = sender.tab;
     bg.pwcount = request.count;
     pwcount = bg.pwcount;
@@ -152,8 +152,8 @@ function onContentPageload(request, sender, sendResponse) {
     }
     let sitepass = "";
     if (bg.pwcount !== 0 && bg.settings.username) {
-        let pr = generate(bg);
-        sitepass = pr.p;
+        let p = generate(bg);
+        sitepass = p;
     }
     if (logging) console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
     sendResponse({ cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
@@ -191,7 +191,7 @@ async function persistMetadata() {
                 let url = "ssp://" + pieces[i];
                 if (children[i]) {
                     chrome.bookmarks.update(children[i].id, { "url": url }, (e) => {
-                        if (logging) console.log("bg updated bookmark", e, children[i].id);
+                        //if (logging) console.log("bg updated bookmark", e, children[i].id);
                     });
                 } else {
                     chrome.bookmarks.create({ "parentId": rootFolder.id, "title": i.toString(), "url": url }, (e) => {
@@ -213,7 +213,7 @@ async function persistMetadata() {
             let found = domains.find((item) => item.title === domainNames[i]);
             if (found) {
                 chrome.bookmarks.update(found.id, { "url": settings }, (e) => {
-                    if (logging) console.log("bg updated settings bookmark", e, found);
+                    //if (logging) console.log("bg updated settings bookmark", e, found);
                 });
             } else {
                 chrome.bookmarks.create({ "parentId": rootFolder.id, "title": domainNames[i], "url": settings }, (e) => {

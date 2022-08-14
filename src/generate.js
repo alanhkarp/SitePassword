@@ -4,16 +4,15 @@ import { Utf8Encode, str2binb, binl2b64 } from "./sha256.js";
 import { config } from "./bg.js";
 export function generate(bg) {
     let settings = bg.settings;
-    let pwcount = bg.pwcount;
     var n = settings.sitename.toLowerCase().trim();
     var u = settings.username.toLowerCase().trim();
     let m = bg.masterpw;
     if (!m) {
-        return { p: "", r: pwcount };
+        return { p: "" };
     }
     let s = n.toString() + u.toString() + m.toString();
     let p = compute(s, settings);
-    return { p: p, r: pwcount };
+    return p;
 }
 export function isMasterPw(masterpw) {
     if (masterpw) return "MasterPW";

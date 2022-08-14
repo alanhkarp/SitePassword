@@ -1,146 +1,184 @@
 .serif {
-    /*
-      font-family: "New York", Cambria, "Lucida Serif", Lucida, serif;
-    */
-      font-family: serif;
-    }
-    .sans {
-    /*
-      font-family: "Helvetica Neue", Calibri, "Lucida Sans Unicode", sans-serif;
-    */
-      font-family: sans-serif;
-    }
-    .fixed {
-    /*
-      font-family: Menlo, Consolas, "Lucida Console", monospace;
-    */
-      font-family: monospace;
-    }
-    .column {
-      flex: 1;
-    }
-    #root {
-      display: block;
-    }
-    #content {
-      display: flex;
-      flex-flow: row wrap;
-    }
-    #mainpanel {
-      flex: 0 0 auto;
-    }
-    #instructionpanel {
-      flex: 0 0 auto;
-      padding-left: 1em;
-    }
-    #main {
-      margin: 1ex;
-      border: 2pt solid #47A;
-      border-radius: 6pt;
-      padding: 0 1ex 0.5ex;
-      width: 22em;
-      background-color: #8CF;
-    }
-    #bookmarks {
-      cursor: default;
-    }
-    #sections {
-      margin: 1ex 0;
-      width: 22em;
-    }
-    #masterpw {
-      padding-right: 3em;
-    }
-    #sitepw {
-      padding-right: 5em;
-    }
-    .sr-only {
-      border: 0;
-      clip: rect(0 0 0 0);
-      height: 1px;
-      margin: -1px;
-      overflow: hidden !important;
-      padding: 0;
-      position: absolute;
-      width: 1px;
-    }
-    h1 {
-      margin: 1ex;
-      text-align: center;
-    }
-    p {
-      margin: 1ex;
-    }
-    button {
-      flex: 1;
-      margin: 1ex 1ex;
-      border-radius: 6pt;
-      padding: 1ex 0.5ex;
-    }
-    button:disabled {
-      border: 1pt solid #666;
-      color: #CCC;
-      background-color: #999;
-      cursor: defaut;
-    }
-    button:enabled {
-      border: 1pt solid #000;
-      color: #FFF;
-      background-color: #369;
-      cursor: pointer;
-    }
-    button:enabled:hover {
-      border: 1pt solid #FFF;
-    }
-    button:enabled:active {
-      background-color: #58B;
-    }
-    .form-row {
-      display: flex;
-      position: relative;
-    }
-    .form-row input {
-      flex: auto;
-      border: 0;
-      border-radius: 4pt;
-      margin: 1ex 0;
-      padding: 1.2ex;
-      height: 16px;
-    }
-    .setting-row {
-      margin: 0.5ex 0;
-      height: 1.5em;
-    }
-    .icon {
-      flex: none;
-      margin: auto 0;
-      padding: 4px;
-      width: 24px;
-      height: 24px;
-      background-color: transparent;
-      cursor: pointer;
-    }
-    .inner-icon-1 {
-      position: absolute;
-      right: 0;
-      top: 5px;
-    }
-    .inner-icon-2 {
-      position: absolute;
-      right: 2em;
-      top: 5px;
-    }
-    .accordian {
-      float: left;
-      padding-right: 1ex;
-      cursor: pointer;
-    }
-    .warning {
-      margin: 1ex;
-      border : 4pt solid red;
-      background-color : white;
-      padding : 1em;
-    }
-    .nodisplay {
-      display: none;
-    }
+  /*
+    font-family: "New York", Cambria, "Lucida Serif", Lucida, serif;
+  */
+    font-family: serif;
+  }
+  .sans {
+  /*
+    font-family: "Helvetica Neue", Calibri, "Lucida Sans Unicode", sans-serif;
+  */
+    font-family: sans-serif;
+  }
+  .fixed {
+  /*
+    font-family: Menlo, Consolas, "Lucida Console", monospace;
+  */
+    font-family: monospace;
+  }
+  .column {
+    flex: 1;
+  }
+  #root {
+    display: block;
+  }
+  #content {
+    display: flex;
+    flex-flow: row wrap;
+  }
+  #mainpanel {
+    flex: 0 0 auto;
+  }
+  #instructionpanel {
+    flex: 0 0 auto;
+    padding-left: 1em;
+  }
+  #main {
+    margin: 1ex;
+    border: 2pt solid #47A;
+    border-radius: 6pt;
+    padding: 0 1ex 0.5ex;
+    width: 22em;
+    background-color: #8CF;
+  }
+  #bookmarks {
+    cursor: default;
+  }
+  #sections {
+    margin: 1ex 0;
+    width: 22em;
+  }
+  #masterpw {
+    padding-right: 3em;
+  }
+  #resetbutton {
+  /*
+    background-color: #060;
+  */
+    background-color: #FF0;
+    color: #000;
+  }
+  #trustbutton {
+    background-color: #0C0;
+  /*
+    color: #000;
+  */
+  }
+  #sitepw {
+    padding-right: 5em;
+  }
+  #pwfail {
+    display: none;
+  }
+  #failedpw {
+    flex: auto;
+    border: 0;
+    border-radius: 4pt;
+    margin: 6px 0;
+    padding: 6px;
+    background-color : #C00;
+    color: #FFF;
+    font-size: 10pt;
+    height: 16px;
+    overflow: clip;
+  }
+  .sr-only {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden !important;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }
+  h1, h4 {
+    margin: 1ex;
+    text-align: center;
+  }
+  p {
+    margin: 1ex;
+  }
+  button {
+    flex: 1;
+    margin: 1ex 1ex;
+    border-radius: 6pt;
+    padding: 6px 3px;
+  }
+  button:disabled {
+    border: 1pt solid #666;
+    color: #CCC;
+    background-color: #999;
+    cursor: defaut;
+  }
+  button:enabled {
+    border: 1pt solid #000;
+    color: #FFF;
+    background-color: #369;
+    cursor: pointer;
+  }
+  button:enabled:hover {
+    border: 1pt solid #FFF;
+  }
+  button:enabled:active {
+    background-color: #58B;
+  }
+  .form-row {
+    display: flex;
+    position: relative;
+  }
+  .form-row input {
+    flex: auto;
+    border: 0;
+    border-radius: 4pt;
+    margin: 6px 0;
+    padding: 6px;
+    height: 16px;
+  }
+  .setting-row {
+    margin: 0.5ex 0;
+    height: 1.5em;
+  }
+  .icon {
+    flex: none;
+    margin: auto 0;
+    padding: 4px;
+    width: 24px;
+    height: 24px;
+    background-color: transparent;
+    cursor: pointer;
+  }
+  .inner-icon-1 {
+    position: absolute;
+    right: 0;
+    top: 4px;
+  }
+  .inner-icon-2 {
+    position: absolute;
+    right: 2em;
+    top: 4px;
+  }
+  .accordian {
+    float: left;
+    padding-right: 1ex;
+    cursor: pointer;
+  }
+  .bad-input {
+    border: 2px solid #F00 !important;
+    padding: 4px !important;
+    color: #C00 !important;
+  }
+  .warning {
+    margin: 1ex;
+    padding : 1ex;
+    border : 4pt solid red;
+    background-color : white;
+  /*
+    padding : 1ex;
+    background-color : #C00;
+    color: #FFF;
+  */  
+  }
+  .nodisplay {
+    display: none;
+  }
