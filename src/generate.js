@@ -10,7 +10,7 @@ export function generate(bg) {
     if (!m) {
         return "";
     }
-    let s = n.toString() + u.toString() + m.toString();
+    let s = n.toString() + '\t' + u.toString() + '\t' + m.toString();
     let p = compute(s, settings);
     return p;
 }
@@ -77,20 +77,22 @@ function verify(p, settings) {
 }
 // The computation assumes there are 64 characters to choose from
 export function characters(settings) {
-    let chars = config.lower + config.upper + config.digits + config.lower.substring(0, 2);
+    // generate a set of 64 characters for encoding
+    let chars = "";
     if (settings.allowspecial) {
-        chars = settings.specials + config.lower.substring(settings.specials.length - 2) + config.upper + config.digits;
+        chars += settings.specials;
     }
-    if (!settings.allowlower) chars = chars.toUpperCase();
-    if (!settings.allowupper) chars = chars.toLowerCase();
-    if (!(settings.allowlower || settings.allowupper)) {
-        chars = config.digits + config.digits + config.digits +
-            config.digits + config.digits + config.digits;
-        if (settings.allowspecials) {
-            chars = chars + settings.specials.substring(0, 4);
-        } else {
-            chars = chars + config.digits.substring(0, 4);
-        }
+    if (settings.allownumber) {
+        chars += config.digits;
+    }
+    if (settings.allowupper) {
+        chars += config.upper;
+    }
+    if (settings.allowlower) {
+        chars += config.lower;
+    }
+    while ((chars.length > 0) && (chars.length < 64)) {
+        chars += chars;
     }
     return chars;
 }

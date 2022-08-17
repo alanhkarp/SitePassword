@@ -18,7 +18,7 @@ export const config = {
     upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     digits: "0123456789",
     specials: "/!=@?._-",
-    miniter: 10,
+    miniter: 100,
     maxiter: 1000
 };
 export const defaultSettings = {

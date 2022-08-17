@@ -6,7 +6,7 @@
 *  Original code by Angel Marin, Paul Johnston.
 *
 **/
-export var chrsz = 16;// 8; UTF8 or UTF16
+export var chrsz = 8;// 8; UTF8 or UTF16
 var hexcase = 0;
 
 export function core_sha256(m, l) {

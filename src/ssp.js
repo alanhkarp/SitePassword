@@ -5,7 +5,6 @@ const logging = false;
 if (logging) console.log("Version 1.0");
 var activetab;
 var domainname;
-var pwdomain;
 
 var phishing = false;
 var bg = { "settings": {} };
@@ -28,7 +27,7 @@ window.onload = function () {
         get("sitepw").value = "";
         if (logging) console.log("popup got tab", domainname, activetab);
         if (logging) console.log(Date.now(), "popup getting metadata");
-        getMetadata();
+        getsettings();
         eventSetup();
     });
 }
@@ -43,27 +42,8 @@ function init() {
     defaultfocus();
     ask2generate();
 }
-async function getMetadata() {
-    if (logging) console.log("popup requesting pwcount");
-    chrome.tabs.sendMessage(activetab.id, { "cmd": "count" }, (response) => {
-        if (logging) console.log("popup got pwcount", response);
-        pwdomain = undefined;
-        let pwcount = response.pwcount;
-        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
-        if (response && pwcount > 0) {
-            pwdomain = response.pwdomain;
-        }
-        if (response) {
-            if (logging) console.log("popup setting pwcount warning", pwcount);
-            message("zero", pwcount === 0);
-        } else {
-            message("zero", true);            
-        }
-        getsettings(pwdomain);
-    });
-}
-function getsettings(pwdomain) {
-    if (logging) console.log("popup getsettings", pwdomain);
+function getsettings() {
+    if (logging) console.log("popup getsettings", domainname);
     chrome.runtime.sendMessage({
         "cmd": "getMetadata",
         "domainname": domainname,
@@ -97,8 +77,8 @@ function eventSetup() {
             }
             let s = get("sitename").value;
             changePlaceholder();
-            bg.settings.domainname = pwdomain || domainname;
-            if (logging) console.log("popup sending site data", pwdomain, bg);
+            bg.settings.domainname = domainname;
+            if (logging) console.log("popup sending site data", domainname, bg);
             chrome.runtime.sendMessage({
                 "cmd": "siteData",
                 "sitename": s,
