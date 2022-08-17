@@ -8,7 +8,7 @@ export function generate(bg) {
     var u = settings.username.toLowerCase().trim();
     let m = bg.masterpw;
     if (!m) {
-        return { p: "" };
+        return "";
     }
     let s = n.toString() + u.toString() + m.toString();
     let p = compute(s, settings);
