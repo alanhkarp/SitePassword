@@ -34,7 +34,7 @@ function compute(s, settings) {
             hswap[i] = swap32(h[i]);
         }
         let chars = characters(settings);
-        sitePassword = binl2b64(hswap, chars).substring(0, settings.length);
+        sitePassword = binl2b64(hswap, chars).substring(0, settings.pwlength);
         if (verify(sitePassword, settings)) break;
         iter++;
         if (iter >= config.maxiter) {

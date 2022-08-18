@@ -326,7 +326,7 @@ function fill() {
     get("masterpw").value = bg.masterpw;
     if (logging) console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
     get("clearmasterpw").checked = database.clearmasterpw;
-    get("pwlength").value = bg.settings.length;
+    get("pwlength").value = bg.settings.pwlength;
     get("startwithletter").checked = bg.settings.startwithletter;
     get("minnumber").value = bg.settings.minnumber;
     get("minlower").value = bg.settings.minlower;

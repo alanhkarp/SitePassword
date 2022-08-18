@@ -24,7 +24,7 @@ export const config = {
 export const defaultSettings = {
     sitename: "",
     username: "",
-    length: 12,
+    pwlength: 12,
     domainname: "",
     startwithletter: true,
     allowlower: true,
