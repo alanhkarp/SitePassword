@@ -412,7 +412,7 @@ function sitedataHTML() {
         var domainname = sorted[i];
         var sitename = domainnames[sorted[i]];
         var s = sitenames[sitename];
-        let specials = cleanSpecials(s.specials);
+        let specials = encodeURIComponent(s.specials);
         sd += "<tr>";
         sd += "<td><pre>" + sitename + "</pre></td>";
         sd += "<td><pre>" + domainname + "</pre></td>";
@@ -454,18 +454,6 @@ function isphishing(sitename) {
     });
     return phishing;
 }
-// From https://stackoverflow.com/questions/16576983/replace-multiple-characters-in-one-replace-call
-function cleanSpecials(specials) {
-    let chars = {"!": "%21", '"': "%22", "#": "%23", "$": "%24", "%": "%25",
-                 "&": "%26", "'": "%27", "(": "%28", ")": "%29", "*": "%2A", 
-                 "+": "%2B", ",": "%2C", "-": "%2D", ".": "%2E", "/": "%2F",
-                 ":": "%3A", ";": "%3B", "<": "%3C", "=": "%3D", ">": "%3E",
-                 "?": "%3F", "@": "%40", "[": "%5B", "\\": "%5C", "]": "%5D",
-                 "^": "%5E", "_": "%5F", "`": "%60", "{": "%7B", "|": "%7C", 
-                 "}": "%7D", "~": "%7#"};
-    let result = specials.replace(/[!\"#$%&'()*+,-\./:;<=>?@\[\]^_`{|}~]/g, m => chars[m]);
-    return result;
-} 
 function specialclick() {
     var minspecial = get("minspecial");
     var specials = get("specials");
