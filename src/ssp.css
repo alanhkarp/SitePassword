@@ -33,6 +33,10 @@
     flex: 0 0 auto;
     padding-left: 1em;
   }
+  #instructionpanelext {
+    padding-left: 1em;
+    width: 500px;
+  }
   #main {
     margin: 1ex;
     border: 2pt solid #47A;

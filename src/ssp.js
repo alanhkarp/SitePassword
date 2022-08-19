@@ -225,7 +225,7 @@ function eventSetup() {
     }
     get("sitedatagetbutton").onclick = sitedataHTML;
     get("maininfo").onclick = function () {
-        chrome.tabs.create({ "url": "https://sitepassword.info/instructions" });
+        chrome.tabs.create({ "url": "https://sitepassword.info/instructions.html" });
     }
     get("warningbutton").onclick = function () {
         phishing = false;
@@ -412,11 +412,12 @@ function sitedataHTML() {
         var domainname = sorted[i];
         var sitename = domainnames[sorted[i]];
         var s = sitenames[sitename];
+        let specials = cleanSpecials(s.specials);
         sd += "<tr>";
         sd += "<td><pre>" + sitename + "</pre></td>";
         sd += "<td><pre>" + domainname + "</pre></td>";
         sd += "<td><pre>" + s.username + "</pre></td>";
-        sd += "<td><pre>" + s.length + "</pre></td>";
+        sd += "<td><pre>" + s.pwlength + "</pre></td>";
         sd += "<td><pre>" + s.startwithletter + "</pre></td>";
         sd += "<td><pre>" + s.allowlower + "</pre></td>";
         sd += "<td><pre>" + s.minlower + "</pre></td>";
@@ -426,14 +427,12 @@ function sitedataHTML() {
         sd += "<td><pre>" + s.minnumber + "</pre></td>";
         sd += "<td><pre>" + s.allowspecial + "</pre></td>";
         sd += "<td><pre>" + s.minspecial + "</pre></td>";
-        sd += "<td><pre>" + s.specials + "</pre></td>";
+        sd += "<td><pre>" + specials + "</pre></td>";
         sd += "</tr>";
     }
     sd += "</table></body></html>";
     chrome.downloads.download({
         "url": sd,
-        "filename": "SiteData.html",
-        "filename": "SiteData.html",
         "filename": "SiteData.html",
         "conflictAction": "uniquify",
         "saveAs": true
@@ -455,6 +454,18 @@ function isphishing(sitename) {
     });
     return phishing;
 }
+// From https://stackoverflow.com/questions/16576983/replace-multiple-characters-in-one-replace-call
+function cleanSpecials(specials) {
+    let chars = {"!": "%21", '"': "%22", "#": "%23", "$": "%24", "%": "%25",
+                 "&": "%26", "'": "%27", "(": "%28", ")": "%29", "*": "%2A", 
+                 "+": "%2B", ",": "%2C", "-": "%2D", ".": "%2E", "/": "%2F",
+                 ":": "%3A", ";": "%3B", "<": "%3C", "=": "%3D", ">": "%3E",
+                 "?": "%3F", "@": "%40", "[": "%5B", "\\": "%5C", "]": "%5D",
+                 "^": "%5E", "_": "%5F", "`": "%60", "{": "%7B", "|": "%7C", 
+                 "}": "%7D", "~": "%7#"};
+    let result = specials.replace(/[!\"#$%&'()*+,-\./:;<=>?@\[\]^_`{|}~]/g, m => chars[m]);
+    return result;
+} 
 function specialclick() {
     var minspecial = get("minspecial");
     var specials = get("specials");
