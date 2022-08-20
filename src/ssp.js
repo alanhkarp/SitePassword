@@ -391,8 +391,9 @@ function sitedataHTML() {
         if (domainnames[a].toLowerCase() == domainnames[b].toLowerCase()) return 0;
         return 1;
     });
-    let sd = "data:application/octet-stream,"
+    let sd = ""
     sd += "<html><body><table>";
+    sd += "<tr>";
     sd += "<th>Site Name</th>";
     sd += "<th>Domain Name</th>";
     sd += "<th>User Name</th>";
@@ -412,7 +413,6 @@ function sitedataHTML() {
         var domainname = sorted[i];
         var sitename = domainnames[sorted[i]];
         var s = sitenames[sitename];
-        let specials = encodeURIComponent(s.specials);
         sd += "<tr>";
         sd += "<td><pre>" + sitename + "</pre></td>";
         sd += "<td><pre>" + domainname + "</pre></td>";
@@ -427,12 +427,13 @@ function sitedataHTML() {
         sd += "<td><pre>" + s.minnumber + "</pre></td>";
         sd += "<td><pre>" + s.allowspecial + "</pre></td>";
         sd += "<td><pre>" + s.minspecial + "</pre></td>";
-        sd += "<td><pre>" + specials + "</pre></td>";
+        sd += "<td><pre>" + s.specials + "</pre></td>";
         sd += "</tr>";
     }
     sd += "</table></body></html>";
+    let url = "data:application/octet-stream," + encodeURIComponent(sd);
     chrome.downloads.download({
-        "url": sd,
+        "url": url,
         "filename": "SiteData.html",
         "conflictAction": "uniquify",
         "saveAs": true
