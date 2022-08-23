@@ -91,15 +91,6 @@ function startup() {
                     fillfield(cpi.idfield, userid);
                     setPlaceholder(userid);
                     break;
-                case "forget":
-                    cpi.idfield.value = "";
-                    cpi.pwfields[0].value = "";
-                    cpi.pwfields[0].placeholder = clickSitePassword;
-                    if (cpi.pwfields[1]) {
-                        cpi.pwfields[1].value = "";
-                        cpi.pwfields[1].placeholder = "";
-                    }
-                    break;
                 case "count":
                     cpi = countpwid();
                     let pwdomain = document.location.hostname;

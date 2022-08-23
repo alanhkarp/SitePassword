@@ -1,6 +1,5 @@
 'use strict';
 import { characters, generate, isMasterPw } from "./generate.js";
-import { defaultSettings } from "./bg.js";
 const logging = false;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -35,10 +34,6 @@ function init() {
     get("masterpw").value = bg.masterpw;
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;
-    // Use if I get "Forget" working
-    // if (bg.settings.sitename) {
-    //     get("forgetbutton").style.visibility = "hidden";
-    // }
     defaultfocus();
     ask2generate();
 }
@@ -348,23 +343,6 @@ function hidesettings() {
     get("settingsshow").style.display = "inline";
     get("settingssave").style.display = "none";
     get("settings").style.display = "none";
-}
-function forgetDomain() {
-    if (get("username").value) {
-        get("sitename").value = "";
-        get("username").value = "";
-        get("forgetbutton").style.visibility = "hidden";
-        bg.settings = defaultSettings;
-        bg.settings.sitename = "";
-        ask2generate();
-        chrome.runtime.sendMessage({
-            "cmd": "forget",
-            "domainname": get("domainname").value
-        }, (response) => {
-            database = response;
-        });
-        chrome.tabs.sendMessage(activetab.id, { "cmd": "forget" })
-    };
 }
 function pwoptions(options) {
     for (var x in options) {

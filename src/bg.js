@@ -6,7 +6,7 @@ const logging = false;
 var bg = {};
 var masterpw = "";
 var activetab;
-const databaseDefault = {"domains": {}, "sites": {}};
+const databaseDefault = { "domains": {}, "sites": {} };
 var database = clone(databaseDefault);
 var domainname = "";
 var protocol = "";
@@ -52,31 +52,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 bg.masterpw = masterpw;
                 if (logging) console.log("bg got ssp");
             }
-            if (request.cmd === "forget") {
-                console.log("bg forget feature not implemented");
-                // let domainname = request.domainname;
-                // let sitename = database.domains[domainname];
-                // let domains = Object.keys(database.domains);
-                // let count = 0;
-                // domains.forEach(function (d) {
-                //     if ((database.domains[d].toLowerCase().trim() === sitename.toLowerCase().trim()) &&
-                //         (d.toLowerCase().trim() !== domainname)) count++;
-                // });
-                // if (count === 0) delete database.sites[sitename]; // If this is the only use of sitename
-                // delete database.domains[domainname];
-                // chrome.bookmarks.search(sitedataBookmark, async function (folders) {
-                //     // Persist changes to database
-                //     let rootFolder = folders[0];
-                //     let children = await chrome.bookmarks.getChildren(rootFolder.id);
-                //     let found = children.find(element => element.title = domainname);
-                //     if (found) chrome.bookmarks.remove(found.id, () =>{
-                //         if (logging) console.log("bg removed bookmark", found.id, "for", domainname);
-                //     });
-                // });
-                // bg.settings.sitename = "";
-                if (logging) console.log("bg forgot", domainname, database);
-                persistMetadata();
-            } else if (request.cmd === "getMetadata") {
+            if (request.cmd === "getMetadata") {
                 getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);
@@ -84,7 +60,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 masterpw = bg.masterpw;
                 database.clearmasterpw = request.clearmasterpw;
                 database.sites[request.sitename] = bg.settings;
-                persistMetadata();
+                persistMetadata(sendResponse);
             } else if (request.cmd === "getPassword") {
                 let origin = getdomainname(sender.origin);
                 domainname = pwfielddomain[origin] || origin;
@@ -93,7 +69,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 if (database.clearmasterpw) {
                     masterpw = "";
                     bg.masterpw = "";
-                    persistMetadata();
+                    persistMetadata(sendResponse);
                 }
                 if (logging) console.log("bg calculated sitepw", bg, database, p, isMasterPw(masterpw));
                 sendResponse(p);
@@ -108,7 +84,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 }
             } else if (request.onload) {
                 onContentPageload(request, sender, sendResponse);
-                persistMetadata();
+                persistMetadata(sendResponse);
             }
             if (logging) console.log(Date.now(), "bg addListener returning", isMasterPw(masterpw));
         });
@@ -158,71 +134,89 @@ function onContentPageload(request, sender, sendResponse) {
     if (logging) console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
     sendResponse({ cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
 }
-async function persistMetadata() {
+async function persistMetadata(sendResponse) {
     // localStorage[name] = JSON.stringify(value);
     if (logging) console.log("bg persistMetadata", bg, database);
+    chrome.storage.session.set({ "ssp": { "masterpw": masterpw } });
+    let found = await getRootFolder(sendResponse);
+    if (found.length > 1) return;
+    let rootFolder = found[0];
+    let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);;
     if (bg.settings.sitename) {
         database.domains[bg.settings.domainname] = bg.settings.sitename;
         database.sites[bg.settings.sitename] = bg.settings;
-    }
-    if (database && database.domains && database.domains[""] || database.domains["undefined"]) {
-        console.log("bg bad sitename", database);
-    }
-    chrome.storage.session.set({ "ssp": { "masterpw": masterpw } });
-    chrome.bookmarks.search(sitedataBookmark, async function (candidates) {
-        // Persist changes to database
-        let rootFolder = getRootFolder(candidates)[0];
-        if (logging) console.log("bg root folder", rootFolder);
-        let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
-        let children = [];
-        let domains = [];
+    } else if (bg.settings.domainname) {
+        let sitename = database.domains[bg.settings.domainname];
+        delete database.domains[bg.settings.domainname];
+        // Delete the item in domain.sites if there are no entries in
+        // database.domains that refers to it
+        if (Object.values(database.domains).indexOf(sitename) == -1) {
+            delete database.sites[sitename];
+        }
         for (let i = 0; i < allchildren.length; i++) {
-            // database is saved in 4K chunks of bookmarks each with the string of an integer as a title
-            // All other bookmarks are domain names, which can't be converted to integers
-            if (!isNaN(allchildren[i].title)) {
-                children.push(allchildren[i]);
-            } else {
-                domains.push(allchildren[i]);
-            }
+            if (allchildren[i].title === bg.settings.domainname) chrome.bookmarks.remove(allchildren[i].id, (_e) => {
+                if (logging) console.log("bg removed settings bookmark", _e, allchildren[i]);
+            });
         }
-        let pieces = JSON.stringify(database).match(/.{1,4090}/g);
-        for (let i = 0; i < Math.max(pieces.length, children.length); i++) {
-            if (pieces[i]) {
-                let url = "ssp://" + pieces[i];
-                if (children[i]) {
-                    chrome.bookmarks.update(children[i].id, { "url": url }, (e) => {
-                        //if (logging) console.log("bg updated bookmark", e, children[i].id);
-                    });
-                } else {
-                    chrome.bookmarks.create({ "parentId": rootFolder.id, "title": i.toString(), "url": url }, (e) => {
-                        if (logging) console.log("bg created bookmark", e.id);
-                    });
-                }
-            } else {
-                let id = children[i].id;
-                chrome.bookmarks.remove(children[i].id, (e) => {
-                    if (logging) console.log("bg removed bookmark", e, id);
-                });
-            }
+    }
+    if (database && database.sites && database.sites[""] || database.sites["undefined"]) {
+        console.log("bg bad sitename", database);
+        delete database.sites[""];
+        delete database.sites["undefined"];
+    }
+    if (logging) console.log("bg root folder", rootFolder);
+    // There are two types of bookmarks in the root folder.  One is for the 
+    // database, and the other is for using the web page.
+    allchildren = await chrome.bookmarks.getChildren(rootFolder.id);;
+    let children = [];
+    let domains = [];
+    for (let i = 0; i < allchildren.length; i++) {
+        // database is saved in 4K chunks of bookmarks each with the string of an integer as a title
+        // All other bookmarks are domain names, which can't be converted to integers
+        if (!isNaN(allchildren[i].title)) {
+            children.push(allchildren[i]);
+        } else {
+            domains.push(allchildren[i]);
         }
-        // Persist changes to domain settings
-        let domainNames = Object.keys(database.domains);
-        for (let i = 0; i < domainNames.length; i++) {
-            let sitename = database.domains[domainNames[i]];
-            let settings = "ssp://" + JSON.stringify(database.sites[sitename]);
-            let found = domains.find((item) => item.title === domainNames[i]);
-            if (found) {
-                chrome.bookmarks.update(found.id, { "url": settings }, (e) => {
-                    //if (logging) console.log("bg updated settings bookmark", e, found);
+    }
+    let pieces = JSON.stringify(database).match(/.{1,4090}/g);
+    for (let i = 0; i < Math.max(pieces.length, children.length); i++) {
+        if (pieces[i]) {
+            let url = "ssp://" + pieces[i];
+            if (children[i]) {
+                chrome.bookmarks.update(children[i].id, { "url": url }, (_e) => {
+                    //if (logging) console.log("bg updated bookmark", _e, children[i].id);
                 });
             } else {
+                chrome.bookmarks.create({ "parentId": rootFolder.id, "title": i.toString(), "url": url }, (e) => {
+                    if (logging) console.log("bg created bookmark", e.id);
+                });
+            }
+        } else {
+            let id = children[i].id;
+            chrome.bookmarks.remove(children[i].id, (e) => {
+                if (logging) console.log("bg removed bookmark", e, id);
+            });
+        }
+    }
+    // Persist changes to domain settings
+    let domainNames = Object.keys(database.domains);
+    for (let i = 0; i < domainNames.length; i++) {
+        let sitename = database.domains[domainNames[i]];
+        let settings = "ssp://" + JSON.stringify(database.sites[sitename]);
+        let found = domains.find((item) => item.title === domainNames[i]);
+        if (found) {
+            chrome.bookmarks.update(found.id, { "url": settings }, (_e) => {
+                //if (logging) console.log("bg updated settings bookmark", _e, found);
+            });
+        } else {
+            if (bg.settings.sitename) {
                 chrome.bookmarks.create({ "parentId": rootFolder.id, "title": domainNames[i], "url": settings }, (e) => {
                     if (logging) console.log("bg created settings bookmark", e, domainNames[i]);
                 });
             }
-
         }
-    });
+    }
 }
 // Assumes bookmarks fetched in the order created
 async function parseBkmk(bkmkid, callback) {
@@ -250,36 +244,36 @@ async function parseBkmk(bkmkid, callback) {
 async function retrieveMetadata(sendResponse, callback) {
     // return JSON.parse(localStorage[name]);
     if (logging) console.log("bg find SSP bookmark folder");
-    chrome.bookmarks.search(sitedataBookmark, (candidates) => {
-        let folders = getRootFolder(candidates);
-        if (folders.length === 1) {
-            if (logging) console.log("Found bookmarks folder: ", folders[0]);
-            parseBkmk(folders[0].id, callback);
-        } else if (folders.length === 0) {
+    let folders = await getRootFolder(sendResponse);
+    if (folders.length === 1) {
+        if (logging) console.log("Found bookmarks folder: ", folders[0]);
+        parseBkmk(folders[0].id, callback);
+    } else if (folders.length === 0) {
+        // findpw.js sends the SiteData message twice, once for document.onload
+        // and once for window.onload.  The latter can arrive while the bookmark
+        // folder is being created, resulting in two of them.  My solution is to
+        // use a flag to make sure I only create it once.
+        if (createBookmarksFolder) {
             if (logging) console.log("Creating SSP bookmark folder");
-            // findpw.js sends the SiteData message twice, once for document.onload
-            // and once for window.onload.  The latter can arrive while the bookmark
-            // folder is being created, resulting in two of them.  My solution is to
-            // use a flag to make sure I only create it once.
-            if (createBookmarksFolder) {
-                createBookmarksFolder = false;
-                chrome.bookmarks.create({ "parentId": "1", "title": sitedataBookmark },
-                    (bkmk) => {
-                        parseBkmk(bkmk.id, callback);
-                    });
-            }
-        } else {
-            console.log("bg found multiple", sitedataBookmark, "folders", folders);
-            sendResponse("multiple");
+            createBookmarksFolder = false;
+            let bkmk = await chrome.bookmarks.create({ "parentId": "1", "title": sitedataBookmark });
+            parseBkmk(bkmk.id, callback);
         }
-    });
+    }
 }
-function getRootFolder(candidates) {
+async function getRootFolder(sendResponse) {
     // bookmarks.search finds any bookmark with a title containing the
-    // search string, but I need to find one with an exact match
+    // search string, but I need to find one with an exact match.  I
+    // also only want to include those in the bookmarks bar.
+    let candidates = await chrome.bookmarks.search({ "title": sitedataBookmark });
     let folders = [];
     for (let i = 0; i < candidates.length; i++) {
-        if (candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
+        if (candidates[i].parentId === "1" &&
+            candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
+    }
+    if (folders.length > 1) {
+        console.log("bg found multiple", sitedataBookmark, "folders", folders);
+        sendResponse("multiple");
     }
     return folders;
 }
@@ -295,6 +289,7 @@ function retrieved(callback) {
     } else {
         settings = clone(defaultSettings);
     }
+    if (activetab) protocol = getprotocol(activetab.url);
     bg = {
         "activetab": activetab,
         "masterpw": masterpw,
