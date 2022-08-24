@@ -150,7 +150,7 @@ async function persistMetadata(sendResponse) {
         delete database.domains[bg.settings.domainname];
         // Delete the item in domain.sites if there are no entries in
         // database.domains that refers to it
-        if (Object.values(database.domains).indexOf(sitename) == -1) {
+        if (Object.values(database.domains).includes(sitename)) {
             delete database.sites[sitename];
         }
         for (let i = 0; i < allchildren.length; i++) {
