@@ -98,6 +98,14 @@ function startup() {
                     if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", count, pwdomain);
                     sendResponse({ "pwcount": count, "pwdomain": pwdomain });
                     break;
+                case "clear":
+                    cpi = countpwid();
+                    if (cpi.idfield) cpi.idfield.value = "";
+                    for (let i = 0; i < cpi.pwfields.length; i++) {
+                        cpi.pwfields[i].value = "";
+                    }
+                    setPlaceholder("");
+                    break;
                 default:
                     if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
             }

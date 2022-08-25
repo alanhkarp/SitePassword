@@ -74,6 +74,7 @@ function eventSetup() {
             changePlaceholder();
             bg.settings.domainname = domainname;
             if (logging) console.log("popup sending site data", domainname, bg);
+            if (!s) chrome.tabs.sendMessage(activetab.id, {"cmd": "clear"});
             chrome.runtime.sendMessage({
                 "cmd": "siteData",
                 "sitename": s,
