@@ -50,6 +50,8 @@ function getsettings() {
         init();
         if (logging) console.log("popup got metadata", bg, database);
         if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
+        message("multiple", bg.pwcount > 1);
+        message("zero", bg.pwcount == 0);
     });
 }
 function eventSetup() {
