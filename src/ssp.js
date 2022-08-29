@@ -1,6 +1,7 @@
 'use strict';
 import { characters, generate, isMasterPw } from "./generate.js";
-const logging = false;
+const testMode = false;
+let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
 var domainname;
@@ -86,8 +87,8 @@ function eventSetup() {
         }
         // If I close the window immediately, then messages in flight get lost
         setTimeout(() => {
-            window.close();
-        }, 250);
+            if (!testMode) window.close();
+        }, 500);
     }
     // UI Event handlers
     get("domainname").onkeyup = function () {

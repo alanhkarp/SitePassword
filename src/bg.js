@@ -1,8 +1,13 @@
 'use strict';
 import { generate, isMasterPw } from "./generate.js";
+const testMode = false;
 // State I want to keep around that doesn't appear in the file system
-const sitedataBookmark = "SitePasswordData";
-const logging = false;
+let sitedataBookmark = "SitePasswordData";
+let logging = false;
+if (testMode) {
+    sitedataBookmark = "SitePasswordDataTest";
+    logging = true;
+}
 var bg = {};
 var masterpw = "";
 var activetab;
@@ -59,7 +64,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 bg = clone(request.bg);
                 masterpw = bg.masterpw;
                 database.clearmasterpw = request.clearmasterpw;
-                database.sites[request.sitename] = bg.settings;
+                database.sites[request.sitename.toLowerCase().trim()] = bg.settings;
                 persistMetadata(sendResponse);
             } else if (request.cmd === "getPassword") {
                 let origin = getdomainname(sender.origin);
@@ -141,18 +146,20 @@ async function persistMetadata(sendResponse) {
     let found = await getRootFolder(sendResponse);
     if (found.length > 1) return;
     let rootFolder = found[0];
-    let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);;
-    if (bg.settings.sitename) {
+    let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
+    let sitename = bg.settings.sitename.toLowerCase().trim();
+    if (sitename) {
         let oldsitename = database.domains[bg.settings.domainname];
-        if ((!oldsitename) || bg.settings.sitename === oldsitename) {
-            database.domains[bg.settings.domainname] = bg.settings.sitename;
-            database.sites[bg.settings.sitename] = bg.settings;
+        if ((!oldsitename) || sitename === oldsitename) {
+            database.domains[bg.settings.domainname] = bg.settings.sitename.toLowerCase().trim();
+            database.sites[sitename] = bg.settings;
         } else {
             // Find all domains that point to oldsitename and have them point to
             // the new one
             for (let entry of Object.entries(database.domains)) {
-                if (database.domains[entry[0]] === oldsitename) database.domains[entry[0]] = bg.settings.sitename;
+                if (database.domains[entry[0]] === oldsitename) database.domains[entry[0]] = bg.settings.sitename.toLowerCase().trim();
             }
+            database.sites[sitename] = bg.settings;
             // then remove the old site name from database.sites
             delete database.sites[oldsitename];
         }
