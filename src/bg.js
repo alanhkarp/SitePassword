@@ -143,8 +143,19 @@ async function persistMetadata(sendResponse) {
     let rootFolder = found[0];
     let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);;
     if (bg.settings.sitename) {
-        database.domains[bg.settings.domainname] = bg.settings.sitename;
-        database.sites[bg.settings.sitename] = bg.settings;
+        let oldsitename = database.domains[bg.settings.domainname];
+        if ((!oldsitename) || bg.settings.sitename === oldsitename) {
+            database.domains[bg.settings.domainname] = bg.settings.sitename;
+            database.sites[bg.settings.sitename] = bg.settings;
+        } else {
+            // Find all domains that point to oldsitename and have them point to
+            // the new one
+            for (let entry of Object.entries(database.domains)) {
+                if (database.domains[entry[0]] === oldsitename) database.domains[entry[0]] = bg.settings.sitename;
+            }
+            // then remove the old site name from database.sites
+            delete database.sites[oldsitename];
+        }
     } else if (bg.settings.domainname) {
         let sitename = database.domains[bg.settings.domainname];
         delete database.domains[bg.settings.domainname];
