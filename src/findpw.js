@@ -280,7 +280,7 @@ function countpwid() {
             }
         }
     }
-    if (c > 0) {
+    if (c == 1) {
         for (var i = found - 1; i >= 0; i--) {
             // Skip over invisible input fields above the password field
             visible = !isHidden(inputs[i]);
