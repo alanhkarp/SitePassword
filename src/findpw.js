@@ -7,6 +7,7 @@ var clickHere = "Click here for password";
 var pasteHere = "Paste your password here";
 var sitepw = "";
 var userid = "";
+var maxidfields = 0;
 var keyPressed = false;
 var cleared = false; // Has password been cleared from the clipboars
 var cpi = { count: 0, pwfields: [], idfield: null };
@@ -280,7 +281,12 @@ function countpwid() {
             }
         }
     }
-    if (c == 1) {
+    // Some sites let you see your passwords, which changes the input type from
+    // password to text.  The result is that the heuristic for finding a userid
+    // field actually finds a password field with a visible password and replaces
+    // the password with the userid.
+    if (c > maxidfields) maxidfields = c;
+    if (maxidfields == 1) {
         for (var i = found - 1; i >= 0; i--) {
             // Skip over invisible input fields above the password field
             visible = !isHidden(inputs[i]);
