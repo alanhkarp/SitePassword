@@ -216,11 +216,14 @@ function eventSetup() {
     get("minspecial").onblur = function () {
         handleblur("minspecial", "minspecial");
     }
-    get("specials").onmouseleave = function () {
-        handleblur("specials", "specials");
-    }
-    get("specials").onblur = function () {
-        handleblur("specials", "specials");
+    const alphanumerics = /[0-9A-Za-z]/g;
+    get("specials").onkeyup = function() {
+        let specials = get("specials");
+        specials.value = specials.value
+            .replace(alphanumerics, '')  // eliminate alphanumerics
+            .substring(0, 12);  // limit to 12 specials
+        bg.settings.specials = specials.value;
+        handlekeyup("specials");
     }
     get("sitedatagetbutton").onclick = sitedataHTML;
     get("maininfo").onclick = function () {
