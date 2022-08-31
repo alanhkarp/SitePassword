@@ -68,12 +68,12 @@ function eventSetup() {
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
             bg.masterpw = get("masterpw").value;
-            bg.settings.sitename = get("sitename").value;
+            bg.settings.sitename = get("sitename").value.toLowerCase().trim();
             if (bg.settings.sitename) {
                 database.sites[bg.settings.sitename] = clone(bg.settings);
                 database.domains[bg.settings.domainname] = bg.settings.sitename;
             }
-            let s = get("sitename").value;
+            let s = get("sitename").value.toLowerCase().trim();
             changePlaceholder();
             bg.settings.domainname = domainname;
             if (logging) console.log("popup sending site data", domainname, bg);
