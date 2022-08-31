@@ -232,7 +232,7 @@ function eventSetup() {
         get("username").disabled = false;
         get("sitename").disabled = false;
         msgoff("phishing");
-        var sitename = get("sitename").value;
+        var sitename = get("sitename").value.toLowerCase().trim();
         bg.settings = clone(database.sites[sitename]);
         bg.settings.sitename = get("sitename").value;
         database.domains[get("domainname").value] = bg.settings.sitename;
