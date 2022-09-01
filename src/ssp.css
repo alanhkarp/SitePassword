@@ -162,7 +162,10 @@
     right: 2em;
     top: 4px;
   }
-  .accordian {
+  #sitepwcopy:active {
+    color: #aa0;
+  }
+    .accordian {
     float: left;
     padding-right: 1ex;
     cursor: pointer;
