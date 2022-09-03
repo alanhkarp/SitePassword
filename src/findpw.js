@@ -253,7 +253,8 @@ function pwfieldOnclick() {
 }
 function countpwid() {
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
-    if (document.location.host === "sitepassword.info") return { "pwfields": [], "useridfield": null };
+    // However, someone may have hosted the page at a different URL.  Hence, the test.
+    if (document.getElementById("SitePasswordWeb") === "SitePasswordWeb") return { "pwfields": [], "useridfield": null };
     var useridfield = null;
     var visible = true;
     var pwfields = [];
