@@ -44,6 +44,8 @@ function compute(s, settings) {
     return sitePassword;
 }
 function verify(p, settings) {
+    let report = zxcvbn(p);
+    if (report.score < 4) return false;
     let counts = { lower: 0, upper: 0, number: 0, special: 0 };
     for (let i = 0; i < p.length; i++) {
         let c = p.substring(i, i+1);
