@@ -43,12 +43,15 @@ function compute(s, settings) {
     }
     return sitePassword;
 }
-function verify(p, settings) {
-    let report = zxcvbn(p);
-    if (report.score < 4) return false;
+function verify(pw, settings) {
+    let report = zxcvbn(pw);
+    if ((pw.length >= 12 && report.score < 4) ||
+        (pw.length >= 10 && pw.length < 12 && report.score < 3) ||
+        (pw.length >= 8 && pw.length < 10 && report.score < 2) ||
+        (pw.length < 8 && report.score < 1)) return false;
     let counts = { lower: 0, upper: 0, number: 0, special: 0 };
-    for (let i = 0; i < p.length; i++) {
-        let c = p.substring(i, i+1);
+    for (let i = 0; i < pw.length; i++) {
+        let c = pw.substring(i, i + 1);
         if (-1 < config.lower.indexOf(c)) counts.lower++;
         if (-1 < config.upper.indexOf(c)) counts.upper++;
         if (-1 < config.digits.indexOf(c)) counts.number++;
@@ -56,7 +59,7 @@ function verify(p, settings) {
     }
     let valOK = true;
     if (settings.startwithletter) {
-        let start = p.substring(0, 1).toLowerCase();
+        let start = pw.substring(0, 1).toLowerCase();
         valOK = valOK && -1 < config.lower.indexOf(start);
     }
     if (settings.allowlower) valOK = valOK && (counts.lower >= settings.minlower)

@@ -162,6 +162,24 @@
     right: 2em;
     top: 4px;
   }
+  .strength {
+    position: absolute;
+    right: 2em;
+    top: 4px;
+    background-color: #eee;
+    flex: none;
+    margin: 4px;
+    padding: 4px;
+    width: 120px;
+    height: 16px;
+  }
+  .strength-text {
+    padding-right: 2px; 
+    text-align: right;
+    left: 2px;
+    width: 4em; 
+    display: inline-block  
+  }
   #sitepwcopy:active {
     color: #aa0;
   }
@@ -188,4 +206,40 @@
   }
   .nodisplay {
     display: none;
+  }
+  #meter {
+    /* Reset the default appearance */
+    -webkit-appearance: none;
+       -moz-appearance: none;
+            appearance: none;
+  
+    margin: 0 auto 1em;
+    width: 100%;
+    height: 0.5em;
+  
+    /* Applicable only to Firefox */
+    background: none;
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  meter::-webkit-meter-bar {
+    background: none;
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  /*  const strengthColor = { 0: "black", 1: "red", 2: "yellow", 3: "orange", 4: "green" }  */
+  /*  const strengthColor = { 0: "#bbb", 1: "#f63", 2: "#fc0", 3: "#0c0", 4: "#036" }  */
+  /* Webkit based browsers */
+  meter[value="0"]::-webkit-meter-optimum-value { background: #bbb; }
+  meter[value="1"]::-webkit-meter-optimum-value { background: #f63; }
+  meter[value="2"]::-webkit-meter-optimum-value { background: #fc0; }
+  meter[value="3"]::-webkit-meter-optimum-value { background: #0c0; }
+  meter[value="4"]::-webkit-meter-optimum-value { background: #036; }
+  /* Gecko based browsers */
+  meter[value="0"]::-moz-meter-bar { background: #bbb; }
+  meter[value="1"]::-moz-meter-bar { background: #f63; }
+  meter[value="2"]::-moz-meter-bar { background: #fc0; }
+  meter[value="3"]::-moz-meter-bar { background: #0c0; }
+  meter[value="4"]::-moz-meter-bar { background: #036; }
+  #password-strength-text {
+    font-size: 90%;
+    padding-left: 1ex;
   }

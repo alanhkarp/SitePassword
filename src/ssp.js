@@ -5,6 +5,7 @@ let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
 var domainname;
+const strengthColor = ["#bbb", "#f63", "#fc0", "#0c0", "#036"]; // 0,3,6,9,C,F
 
 var phishing = false;
 var bg = { "settings": {} };
@@ -35,6 +36,10 @@ function init() {
     get("masterpw").value = bg.masterpw;
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;
+    if (get("masterpw").value) {
+        get("strength").style.display = "block";
+        setMasterpwMeter(get("masterpw").value);
+    }
     defaultfocus();
     ask2generate();
 }
@@ -101,24 +106,28 @@ function eventSetup() {
             ask2generate();
         });
     }
+    const $masterpw = get("masterpw");
     get("masterpw").onkeyup = function () {
         bg.masterpw = get("masterpw").value;
         ask2generate();
+        setMasterpwMeter($masterpw.value);
     }
     get("masterpw").onblur = function () {
         if (logging) console.log("popup masterpw onblur");
         handleblur("masterpw", "masterpw");
         changePlaceholder();
-    }
+}
     get("masterpwshow").onclick = function() {
         get("masterpw").type = "text";
         get("masterpwhide").style.display = "block";
         get("masterpwshow").style.display = "none";
+        get("strength").style.display = "none";
     }
     get("masterpwhide").onclick = function() {
         get("masterpw").type = "password";
         get("masterpwhide").style.display = "none";
         get("masterpwshow").style.display = "block";
+        get("strength").style.display = "block";
     }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
@@ -171,10 +180,10 @@ function eventSetup() {
         database.clearmasterpw = get("clearmasterpw").checked;
     }
     get("pwlength").onmouseleave = function () {
-        handleblur("pwlength", "length");
+        handleblur("pwlength", "pwlength");
     }
     get("pwlength").onblur = function () {
-        handleblur("pwlength", "length");
+        handleblur("pwlength", "pwlength");
     }
     get("startwithletter").onclick = function () {
         bg.settings.startwithletter = get("startwithletter").checked;
@@ -252,6 +261,24 @@ function eventSetup() {
         window.close();
     }
 }
+function setMasterpwMeter(pw) {
+    const $masterpw = get("masterpw");
+    const strengthText = ["Don't Use", "Bad", "Weak", "Good", "Strong"];
+    const $strength = get("strength");
+    const $meter = get("password-strength-meter");
+    const $meterText = get("password-strength-text");
+    const report = zxcvbn(pw);
+    $meter.value = report.score;
+    $meterText.innerHTML = strengthText[report.score];
+    $masterpw.style.color = strengthColor[report.score];
+    $masterpw.title = strengthText[report.score] + " Master Password";
+    if ($masterpw.value && $masterpw.type === "password") {
+        $strength.style = "display:inline";
+    } else {
+        $strength.style = "display:none"
+    }
+}
+
 function handlekeyup(element, field) {
     handleblur(element, field);
 }
@@ -314,7 +341,9 @@ function ask2generate() {
     }
     if (logging) console.log("popup filling sitepw field", p);
     get("sitepw").value = p;
-    return true;
+    const report = zxcvbn(p);
+    get("sitepw").style.color = strengthColor[report.score];
+return true;
 }
 function fill() {
     if (bg.settings[domainname]) {
