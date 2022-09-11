@@ -1,4 +1,5 @@
 'use strict';
+import { zxcvbnExport as zxcvbn } from "./zxcvbn.js";
 import { core_sha256, swap32, chrsz } from "./sha256.js";
 import { Utf8Encode, str2binb, binl2b64 } from "./sha256.js";
 import { config } from "./bg.js";
