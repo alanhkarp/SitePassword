@@ -5,7 +5,7 @@ let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
 var domainname;
-const strengthColor = ["#bbb", "#f63", "#fc0", "#0c0", "#036"]; // 0,3,6,9,C,F
+const strengthColor = ["#bbb", "#f40", "#f90", "#0c0", "#036"]; // 0,3,6,9,C,F
 
 var phishing = false;
 var bg = { "settings": {} };
