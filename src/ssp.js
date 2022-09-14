@@ -1,11 +1,11 @@
 'use strict';
 import { characters, generate, isMasterPw } from "./generate.js";
-const testMode = false;
+const testMode = true;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
 var domainname;
-const strengthColor = ["#bbb", "#f40", "#f90", "#0c0", "#036"]; // 0,3,6,9,C,F
+const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 
 var phishing = false;
 var bg = { "settings": {} };
@@ -37,7 +37,6 @@ function init() {
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;
     if (get("masterpw").value) {
-        get("strength").style.display = "block";
         setMasterpwMeter(get("masterpw").value);
     }
     defaultfocus();
@@ -121,13 +120,11 @@ function eventSetup() {
         get("masterpw").type = "text";
         get("masterpwhide").style.display = "block";
         get("masterpwshow").style.display = "none";
-        get("strength").style.display = "none";
     }
     get("masterpwhide").onclick = function() {
         get("masterpw").type = "password";
         get("masterpwhide").style.display = "none";
         get("masterpwshow").style.display = "block";
-        get("strength").style.display = "block";
     }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
@@ -264,7 +261,6 @@ function eventSetup() {
 function setMasterpwMeter(pw) {
     const $masterpw = get("masterpw");
     const strengthText = ["Don't Use", "Bad", "Weak", "Good", "Strong"];
-    const $strength = get("strength");
     const $meter = get("password-strength-meter");
     const $meterText = get("password-strength-text");
     const report = zxcvbn(pw);
@@ -272,11 +268,6 @@ function setMasterpwMeter(pw) {
     $meterText.innerHTML = strengthText[report.score];
     $masterpw.style.color = strengthColor[report.score];
     $masterpw.title = strengthText[report.score] + " Master Password";
-    if ($masterpw.value && $masterpw.type === "password") {
-        $strength.style = "display:inline";
-    } else {
-        $strength.style = "display:none"
-    }
 }
 
 function handlekeyup(element, field) {
