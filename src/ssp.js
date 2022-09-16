@@ -1,6 +1,6 @@
 'use strict';
 import { characters, generate, isMasterPw } from "./generate.js";
-const testMode = true;
+const testMode = false;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;

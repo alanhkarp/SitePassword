@@ -5,8 +5,8 @@ import { Utf8Encode, str2binb, binl2b64 } from "./sha256.js";
 import { config } from "./bg.js";
 export function generate(bg) {
     let settings = bg.settings;
-    var n = settings.sitename.toLowerCase().trim();
-    var u = settings.username.toLowerCase().trim();
+    var n = (settings.sitename || "").toLowerCase().trim();
+    var u = (settings.username || "").toLowerCase().trim();
     let m = bg.masterpw;
     if (!m) {
         return "";

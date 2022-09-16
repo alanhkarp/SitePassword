@@ -321,6 +321,8 @@ function retrieved(callback) {
 function bgsettings(domainname) {
     if (database.domains[domainname]) {
         bg.settings = database.sites[database.domains[domainname]];
+        if (!bg.settings.username) bg.settings.username = "";
+        if (!bg.settings.sitename) bg.settings.sitename = "";
     } else {
         bg.settings = clone(defaultSettings);
         bg.settings.domainname = domainname;
