@@ -121,10 +121,6 @@ function startup() {
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
     cpi = countpwid();
-    if ( httpAlert && cpi.pwfields.length > 0 && document.location.protocol !== "https:") {
-        alert("The connection to this page is not secure.  Are you sure you want to enter your password?")
-        httpAlert = false;
-    }
     sendpageinfo(cpi, false, true);
 }
 function handleMutations(mutations) {
@@ -205,6 +201,10 @@ function sendpageinfo(cpi, clicked, onload) {
         fillfield(cpi.idfield, userid);
         setPlaceholder(userid, response.p);
         if (userid) fillfield(cpi.pwfields[0], "");
+        if ( httpAlert && !userid && document.location.protocol !== "https:") {
+            alert("The connection to this page is not secure.  Are you sure you want to enter your password?")
+            httpAlert = false;
+        }
         let myMutations = mutationObserver.takeRecords();
         if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
         handleMutations(mutations);

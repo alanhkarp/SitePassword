@@ -14,7 +14,7 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://*/*"],
+            "matches": ["https://*/*", "http://*/*"],
             "run_at": "document_idle",
             "js": [
                 "findpw.js" 
