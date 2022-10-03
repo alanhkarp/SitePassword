@@ -2,6 +2,7 @@
 'use strict';
 var logging = false;
 var hideLabels = true; // Make it easy to turn off label hiding
+var httpAlert = true;
 var clickSitePassword = "Click SitePassword";
 var clickHere = "Click here for password";
 var pasteHere = "Paste your password here";
@@ -120,6 +121,10 @@ function startup() {
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
     cpi = countpwid();
+    if ( httpAlert && cpi.pwfields.length > 0 && document.location.protocol !== "https:") {
+        alert("The connection to this page is not secure.  Are you sure you want to enter your password?")
+        httpAlert = false;
+    }
     sendpageinfo(cpi, false, true);
 }
 function handleMutations(mutations) {
