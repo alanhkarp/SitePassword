@@ -2,7 +2,6 @@
 'use strict';
 var logging = false;
 var hideLabels = true; // Make it easy to turn off label hiding
-var httpAlert = true;
 var clickSitePassword = "Click SitePassword";
 var clickHere = "Click here for password";
 var pasteHere = "Paste your password here";
@@ -201,10 +200,6 @@ function sendpageinfo(cpi, clicked, onload) {
         fillfield(cpi.idfield, userid);
         setPlaceholder(userid, response.p);
         if (userid) fillfield(cpi.pwfields[0], "");
-        if ( httpAlert && !userid && document.location.protocol !== "https:") {
-            alert("The connection to this page is not secure.  Are you sure you want to enter your password?")
-            httpAlert = false;
-        }
         let myMutations = mutationObserver.takeRecords();
         if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
         handleMutations(mutations);

@@ -36,6 +36,8 @@ function init() {
     get("masterpw").value = bg.masterpw;
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;
+    if (logging) console.log("popup testing for http", bg.protocol);
+    message("http", bg.protocol.toLowerCase() !== "https");
     if (get("masterpw").value) {
         setMasterpwMeter(get("masterpw").value);
     }
@@ -488,6 +490,7 @@ function clone(object) {
 // Messages in priority order high to low
 var messages = [
     { name: "phishing", ison: false, transient: false },
+    { name: "http", ison: false, transient: false },
     { name: "nopw", ison: false, transient: false },
     { name: "zero", ison: false, transient: false },
     { name: "multiple", ison: false, transient: false }
