@@ -14,7 +14,7 @@ var cpi = { count: 0, pwfields: [], idfield: null };
 var readyForClick = false;
 var mutationObserver;
 var oldpwfield = null;
-var lasttry = setTimeout( () => { // I want to be able to cancel without it firing
+var lasttry = setTimeout(() => { // I want to be able to cancel without it firing
     if (logging) console.log("findpw initialize last try timer")
 }, 1000000);
 var observerOptions = {
@@ -273,7 +273,7 @@ function countpwid() {
                 c++;
                 if (c === 1) {
                     found = i;
-                    inputs[i].onkeydown = function(event) {
+                    inputs[i].onkeydown = function (event) {
                         if (event.key) {
                             keyPressed = true;
                         }

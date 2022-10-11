@@ -36,8 +36,9 @@ function init() {
     get("masterpw").value = bg.masterpw;
     get("sitename").value = bg.settings.sitename;
     get("username").value = bg.settings.username;
-    if (logging) console.log("popup testing for http", bg.protocol);
-    message("http", bg.protocol.toLowerCase() !== "https");
+    let protocol = activetab.url.split(":")[0];
+    if (logging) console.log("popup testing for http", protocol);
+    message("http", protocol !== "https");
     if (get("masterpw").value) {
         setMasterpwMeter(get("masterpw").value);
     }
