@@ -237,8 +237,8 @@ function setPlaceholder(userid) {
         }
     }
 }
-function pwfieldOnclick() {
-    if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass");
+function pwfieldOnclick(event) {
+    if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
     if ((!this.placeholder) || this.placeholder === clickHere) {
         chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
             sitepw = response;
@@ -322,9 +322,10 @@ function clearLabel(field) {
     }
 }
 function isHidden(field) {
+    // Elements with position=fixed do not have an offsetParent
     let hidden =
+        (field.style.position !== "fixed" && field.offsetParent === null) ||
         (window.getComputedStyle(field).display === 'none') ||
-        (field.offsetParent === null) ||
         (field.ariaHidden === "true");
     return hidden;
 }
