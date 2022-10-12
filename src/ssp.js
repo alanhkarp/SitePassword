@@ -6,6 +6,8 @@ if (logging) console.log("Version 1.0");
 var activetab;
 var domainname;
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
+const clipboardText = "PW";
+var defaultTitle;
 
 var phishing = false;
 var bg = { "settings": {} };
@@ -20,6 +22,11 @@ if (logging) console.log("popup starting");
 
 window.onload = function () {
     if (logging) console.log("popup getting active tab");
+    if (!defaultTitle) {
+        chrome.action.getTitle({}, (title) => {
+            defaultTitle = title;
+        })
+    }
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         activetab = tabs[0];
         if (logging) console.log("popup tab", activetab);
@@ -160,6 +167,8 @@ function eventSetup() {
         let sitepass = get("sitepw").value;
         navigator.clipboard.writeText(sitepass).then(() => {
             if (logging) console.log("findpw wrote to clipboard", sitepass);
+            chrome.action.setBadgeText({text: clipboardText});
+            chrome.action.setTitle({title: "A password may be on the clipboard."});
         }).catch((e) => {
             if (logging) console.log("findpw clipboard write failed", e);
         });
@@ -175,6 +184,11 @@ function eventSetup() {
         get("sitepwshow").style.display = "none";
     }
     get("settingsshow").onclick = showsettings;
+    get("clearclipboard").onclick = function() {
+        navigator.clipboard.writeText("Password cleared");
+        chrome.action.setBadgeText({text: ""});
+        chrome.action.setTitle({title: defaultTitle});
+    }
     get("settingssave").onclick = hidesettings;
     get("clearmasterpw").onclick = function () {
         database.clearmasterpw = get("clearmasterpw").checked;
