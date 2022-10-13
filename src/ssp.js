@@ -164,6 +164,7 @@ function eventSetup() {
             if (logging) console.log("findpw wrote to clipboard", sitepass);
             chrome.action.setBadgeText({text: clipboardText});
             chrome.action.setTitle({title: "A site password may be on the clipboard."});
+            chrome.action.setBadgeBackgroundColor({color: "#CC0000"});
         }).catch((e) => {
             if (logging) console.log("findpw clipboard write failed", e);
         });
