@@ -55,7 +55,7 @@
           <div class="form-row">
             <div style="flex: 1;"></div>
             <meter max="4" id="password-strength-meter"></meter>
-            <span id="password-strength-text"></span>
+            <span id="password-strength-text">Don't Use</span>
             <div style="flex: 1;"></div>
           </div>
           <div class="form-row">
@@ -113,7 +113,7 @@
                 There is more than one password field
                 on this page. Click the Copy icon in the site password field to put it 
                 on the clipboard.  <b> When you are done pasting your 
-                password, put something else on the clipboard.</b>
+                password, come back here and click the Clear Clipboard button.</b>
               </span>
             </div>
           </div>
@@ -166,9 +166,8 @@
               <svg class="icon" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.994 6.994 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.992 6.992 0 0 1-1.819 1.052L14 21z"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 12 2 2 4-4"/></svg>
             </div>
             <span style="flex: 1"></span>
-            <div id="clearclipboard" style="display:block; margin-top: 6px;" title = "Clear Clipboard">
-              <svg class="icon" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M8 5v0a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v0M8 5v0a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v0"/></svg>
-              <p style="position: relative; font-size: 12px; left: 3px; top: -30px;">pw</p>
+            <div id="clearclipboard" style="display:block;" title = "In case a site password is on the clipboard">
+              <button>Clear Clipboard</button>
             </div> 
             <span style="flex: 1"></span>
             <div id="maininfo" class="icon" title="Instructions">
