@@ -44,7 +44,7 @@ window.onload = function () {
 // Modified from https://www.phpied.com/when-is-a-stylesheet-really-loaded/
 var cssnum = document.styleSheets.length;
 setInterval(() => {
-    if (document.styleSheets.length > cssnum) {
+    if (!document.hidden && document.styleSheets.length > cssnum) {
         cssnum = document.styleSheets.length;
         if (logging) console.log(document.URL, Date.now() - start, "findpw css added", cssnum);
         startup();
@@ -123,7 +123,7 @@ function startup() {
     sendpageinfo(cpi, false, true);
 }
 function handleMutations(mutations) {
-    if (!mutations[0]) return;
+    if (document.hidden || !mutations[0]) return;
     clearTimeout(lasttry);
     // Find password field if added late
     if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
