@@ -30,6 +30,7 @@ window.onload = function () {
         get("sitepw").value = "";
         if (logging) console.log("popup got tab", domainname, activetab);
         if (logging) console.log(Date.now(), "popup getting metadata");
+        instructionSetup();
         getsettings();
         eventSetup();
     });
@@ -246,7 +247,12 @@ function eventSetup() {
     }
     get("sitedatagetbutton").onclick = sitedataHTML;
     get("maininfo").onclick = function () {
-        chrome.tabs.create({ "url": "https://sitepassword.info/instructions.html" });
+        let $instructions = get("instructionpanel");
+        if ($instructions.style.display == "none") {
+            $instructions.style = "display:block";
+        } else {
+            $instructions.style = "display:none";
+        }
     }
     get("warningbutton").onclick = function () {
         phishing = false;
@@ -532,6 +538,34 @@ function cleartransientmsgs() {
 function clearallmessages() {
     for (var i = 0; i < messages.length; i++) {
         msgoff(messages[i].name);
+    }
+}
+function instructionSetup() {
+    get("overviewinfo").onclick = function () { sectionClick("overview"); };
+    get("basicinfo").onclick = function () { sectionClick("basic") };
+    get("masterinfo").onclick = function () { sectionClick("master"); };
+    get("siteinfo").onclick = function () { sectionClick("site"); };
+    get("syncinfo").onclick = function () { sectionClick("sync"); };
+    get("clipboardinfo").onclick = function () { sectionClick("clipboard"); };
+    get("acceptableinfo").onclick = function () { sectionClick("acceptable"); };
+    get("changeinfo").onclick = function () { sectionClick("change"); };
+    get("phishinginfo").onclick = function () { sectionClick("phishing"); };
+    get("extensioninfo").onclick = function () { sectionClick("extension"); };
+    get("downloadinfo").onclick = function () { sectionClick("download"); };
+    get("sharedinfo").onclick = function () { sectionClick("shared"); };
+    get("sourceinfo").onclick = function () { sectionClick("source"); };
+    get("paymentinfo").onclick = function () { sectionClick("payment"); };
+    function sectionClick(id) {
+        const element = get(id + "div");
+        if (element.style.display === "none") {
+            element.style.display = "block";
+            get("open" + id).style.display = "none";
+            get("close" + id).style.display = "block";
+        } else {
+            element.style.display = "none";
+            get("open" + id).style.display = "block";
+            get("close" + id).style.display = "none";
+        }
     }
 }
 /* 
