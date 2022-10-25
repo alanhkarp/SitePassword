@@ -469,15 +469,27 @@ function sitedataHTML() {
 function isphishing(sitename) {
     if (!sitename) return false;
     var domainname = getlowertrim("domainname");
+    // Special case for my demo
+    if (domainname === "allantheguru.alanhkarp.com") return true;
+    let owner = getOwner(domainname);
     var domains = Object.keys(database.domains);
     var phishing = false;
     domains.forEach(function (d) {
         if ((database.domains[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
-            (d.toLowerCase().trim() != domainname)) {
+            (d.toLowerCase().trim() != domainname) && 
+            owner !== getOwner(d)) {
             phishing = true;
         }
     });
     return phishing;
+}
+function getOwner(domainname) {
+    try {
+        // From beautysleep at https://stackoverflow.com/questions/569137/how-to-get-domain-name-from-url
+        return domainname.match(/(\w|-)+(?=(\.(com|net|org|info|coop|int|co|ac|ie|co|ai|eu|ca|icu|top|xyz|tk|cn|ga|cf|nl|us|eu|de|hk|am|tv|bingo|blackfriday|gov|edu|mil|arpa|au|ru)(\.|\/|$)))/g)[0];
+    } catch {
+        return "";
+    }
 }
 function specialclick() {
     var minspecial = get("minspecial");
