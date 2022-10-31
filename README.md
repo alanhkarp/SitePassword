@@ -86,8 +86,7 @@ say either *Click SitePassword* or *Click here for password*.
 SitePassword could generate a weak site password just by chance.  
 To let you know that has happened, it uses the same colors that 
 appear in the master password 
-strength meter to tell you how strong your site password is. For example, if your site password is orange, then it is weak.  
-In that case, just choose a different nickname for the site.
+strength meter to tell you how strong your site password is. For example, if your site password is orange, then it is weak. In that case, just choose a different nickname for the site.
 
 Since SitePassword doesn't store your passwords, there's no way
 you can use your existing passwords with it. You will have to use
