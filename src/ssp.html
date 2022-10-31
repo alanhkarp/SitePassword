@@ -279,7 +279,7 @@
                               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M12 15v-3m0-3v0" />
                           </svg>
-                          icon on the SitePassword window takes you to these
+                          icon on the SitePassword window opens these
                           instructions.
                       </p>
                   </div>
@@ -403,7 +403,7 @@
                         strength meter to tell you how strong your site password is.    
                         For example, if your site password is orange, then it is weak.  
                         In that case, just choose a different nickname for the site.
-                            </p>
+                      </p>
                       <p>
                           Since SitePassword doesn't store your passwords, there's no way
                           you can use your existing passwords with it. You will have to use
@@ -418,7 +418,41 @@
                       </p>
                   </div>
               </section>
-              <section id="changeinfo">
+              <section id="acceptableinfo">
+                <svg id="openacceptable" class="accordian" style="display: block;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 11 3 3 3-3" />
+                </svg>
+                <svg id="closeacceptable" class="accordian" style="display: none;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 13 3-3 3 3" />
+                </svg>
+                <h3>Computing an Acceptable Password</h3>
+                <div id="acceptablediv" style="display: none;">
+                    <p>
+                        Some web sites have strict password rules, how long it must be,
+                        if it must contain upper case or lower case letters, numbers, or
+                        special characters, including restrictions on which special
+                        characters are allowed. If you run into a site that doesn't
+                        accept the calculated password, click 
+                        <svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg"
+                            fill="none">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
+                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        and change the appropriate menu entries. SitePassword
+                        was tested on hundreds of web sites to make sure it can always
+                        compute a valid password.
+                </div>
+            </section>
+            <section id="changeinfo">
                   <svg id="openchange" class="accordian" style="display: block;" width="24px" height="24px"
                       viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
                       <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -488,40 +522,6 @@
                           tell if you pasted something else to the clipboard.  However, you can reset 
                           the warning by using the SitePassword <em>Clear Clipboard</em> button. 
                       </p>
-                  </div>
-              </section>
-              <section id="acceptableinfo">
-                  <svg id="openacceptable" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closeacceptable" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>Computing an Acceptable Password</h3>
-                  <div id="acceptablediv" style="display: none;">
-                      <p>
-                          Some web sites have strict password rules, how long it must be,
-                          if it must contain upper case or lower case letters, numbers, or
-                          special characters, including restrictions on which special
-                          characters are allowed. If you run into a site that doesn't
-                          accept the calculated password, click 
-                          <svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg"
-                              fill="none">
-                              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
-                              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
-                          </svg>
-                          and change the appropriate menu entries. SitePassword
-                          was tested on hundreds of web sites to make sure it can always
-                          compute a valid password.
                   </div>
               </section>
               <section id="phishinginfo">
