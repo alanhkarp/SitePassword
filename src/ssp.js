@@ -136,7 +136,13 @@ function eventSetup() {
         handlekeyup("sitename", "sitename");
     }
     get("sitename").onblur = function () {
-        if (isphishing(bg.settings.sitename)) {
+        let d = isphishing(bg.settings.sitename)
+        if (d) {
+            let warnElement = get("phishingtext");
+            warnElement.innerHTML = "Warning: The domain name" 
+            warnElement.innerHTML += "<br /><br />" + d + "<br /><br />";
+            warnElement.innerHTML += "is different from what you saved for this site name. " 
+            warnElement.innerHTML += "You may be at a fake site that is trying to steal your password."
             phishing = true;
             msgon("phishing");
             // bg.settings.domainname;
@@ -467,14 +473,13 @@ function sitedataHTML() {
     return sd;
 }
 function isphishing(sitename) {
-    if (!sitename) return false;
-    var domainname = getlowertrim("domainname");
+    if (!sitename) return "";
     var domains = Object.keys(database.domains);
-    var phishing = false;
+    var phishing = "";
     domains.forEach(function (d) {
         if ((database.domains[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
             (d.toLowerCase().trim() != domainname)) {
-            phishing = true;
+            phishing = domainname;
         }
     });
     return phishing;
