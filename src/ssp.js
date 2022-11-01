@@ -56,6 +56,7 @@ function getsettings() {
     }, (response) => {
         bg = response.bg;
         database = response.database;
+        domainname = bg.settings.domainname;
         if (!bg.settings.sitename) bg.settings.sitename = "";
         get("masterpw").value = response.masterpw;
         init();
@@ -85,7 +86,6 @@ function eventSetup() {
             }
             let s = get("sitename").value.toLowerCase().trim();
             changePlaceholder();
-            bg.settings.domainname = domainname;
             if (logging) console.log("popup sending site data", domainname, bg);
             if (!s) chrome.tabs.sendMessage(activetab.id, {"cmd": "clear"});
             chrome.runtime.sendMessage({
@@ -266,7 +266,7 @@ function eventSetup() {
         get("username").disabled = false;
         get("sitename").disabled = false;
         msgoff("phishing");
-        var sitename = get("sitename").value.toLowerCase().trim();
+        var sitename = getlowertrim("sitename");
         bg.settings = clone(database.sites[sitename]);
         bg.settings.sitename = get("sitename").value;
         database.domains[get("domainname").value] = bg.settings.sitename;
@@ -366,7 +366,6 @@ function fill() {
         if (!get("username").value) get("username").value = bg.settings.username;
         if (!get("sitename").value) get("sitename").value = bg.settings.sitename;
     } else {
-        bg.settings.domainname = getlowertrim("domainname");
         bg.settings.sitename = getlowertrim("sitename");
         bg.settings.username = getlowertrim("username");
     }
