@@ -62,13 +62,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);
                 bg = clone(request.bg);
-                bg.settings.domainname = pwfielddomain[bg.settings.domainname];
                 masterpw = bg.masterpw;
                 database.clearmasterpw = request.clearmasterpw;
                 database.sites[request.sitename.toLowerCase().trim()] = bg.settings;
                 persistMetadata(sendResponse);
             } else if (request.cmd === "getPassword") {
-                let domainname = getdomainname(sender.origin);
+                let origin = getdomainname(sender.origin);
+                domainname = pwfielddomain[origin] || origin;
                 bg.settings = bgsettings(domainname);
                 let p = generate(bg);
                 if (database.clearmasterpw) {
@@ -98,15 +98,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 async function getMetadata(request, _sender, sendResponse) {
     if (logging) console.log("bg getMetadata", bg, request);
-    // Domain name comes from popup, which is trusted not to spoof it
-    let domainname = pwfielddomain[request.domainname] || request.domainname;
-    let sitename = database.domains[domainname];
+    let sitename = database.domains[request.domainname];
     if (sitename) {
         bg.settings = database.sites[sitename];
     } else {
         bg.settings = clone(defaultSettings);
     }
-    bg.settings.domainname = domainname;
+    // Domain name comes from popup, which is trusted not to spoof it
+    bg.settings.domainname = pwfielddomain[request.domainname] || request.domainname;
     if (logging) console.log("bg sending metadata", pwcount, bg, database);
     sendResponse({ "masterpw": masterpw || "", "pwcount": pwcount, "bg": bg, "database": database });
 }
@@ -117,9 +116,9 @@ function onContentPageload(request, sender, sendResponse) {
     pwcount = bg.pwcount;
     if (pwcount > 0) {
         pwfielddomain[getdomainname(sender.origin)] = getdomainname(sender.tab.url);
-        pwfielddomain[getdomainname(sender.tab.url)] = getdomainname(sender.origin);
     }
-    domainname = getdomainname(sender.origin);
+    let origin = getdomainname(sender.origin);
+    domainname = pwfielddomain[origin] || origin;
     if (logging) console.log("bg pwcount, domainname, masterpw", database, bg.pwcount, domainname, isMasterPw(masterpw));
     let sitename = database.domains[domainname];
     if (sitename) {
@@ -128,7 +127,10 @@ function onContentPageload(request, sender, sendResponse) {
         bg.settings = clone(defaultSettings);
     }
     bg.settings.domainname = domainname;
-    let readyForClick = masterpw && bg.settings.sitename && bg.settings.username;
+    let readyForClick = false;
+    if (masterpw && bg.settings.sitename && bg.settings.username) {
+        readyForClick = true;
+    }
     let sitepass = "";
     if (bg.pwcount !== 0 && bg.settings.username) {
         let p = generate(bg);
@@ -162,29 +164,23 @@ async function persistMetadata(sendResponse) {
             delete database.sites[oldsitename];
         }
     } else if (bg.settings.domainname) {
-        let pwdomain = bg.settings.domainname;
-        let sitename = database.domains[pwdomain];
-        delete database.domains[pwdomain];
+        let sitename = database.domains[bg.settings.domainname];
+        delete database.domains[bg.settings.domainname];
         // Delete the item in domain.sites if there are no entries in
         // database.domains that refers to it
-        if (sitename && !Object.values(database.domains).includes(sitename)) {
+        if (!Object.values(database.domains).includes(sitename)) {
             delete database.sites[sitename];
         }
         for (let i = 0; i < allchildren.length; i++) {
-            if (allchildren[i].title === pwdomain) chrome.bookmarks.remove(allchildren[i].id, (_e) => {
+            if (allchildren[i].title === bg.settings.domainname) chrome.bookmarks.remove(allchildren[i].id, (_e) => {
                 if (logging) console.log("bg removed settings bookmark", _e, allchildren[i]);
             });
         }
     }
     if (database && database.sites && database.sites[""] || database.sites["undefined"]) {
-        console.log("bg bad siten ame", database);
+        console.log("bg bad sitename", database);
         delete database.sites[""];
         delete database.sites["undefined"];
-    }
-    if (database && database.domains && database.domains[""] || database.domains["undefined"]) {
-        console.log("bad domain name", database);
-        delete database.domains[""];
-        delete database.domains["undefined"];
     }
     if (logging) console.log("bg root folder", rootFolder);
     // There are two types of bookmarks in the root folder.  One is for the 
@@ -225,20 +221,16 @@ async function persistMetadata(sendResponse) {
     let domainNames = Object.keys(database.domains);
     for (let i = 0; i < domainNames.length; i++) {
         let sitename = database.domains[domainNames[i]];
-        let settings = database.sites[sitename];
-        // Want title of bookmark to match domainname in case of iframe
-        let pwdomain = pwfielddomain[domainNames[i]] || domainNames[i];
-        settings.domainname = pwdomain;
-        let settingStr = "ssp://" + JSON.stringify(settings);
-        let found = domains.find((item) => item.title === pwdomain);
+        let settings = "ssp://" + JSON.stringify(database.sites[sitename]);
+        let found = domains.find((item) => item.title === domainNames[i]);
         if (found) {
-            chrome.bookmarks.update(found.id, { "url": settingStr }, (_e) => {
+            chrome.bookmarks.update(found.id, { "url": settings }, (_e) => {
                 //if (logging) console.log("bg updated settings bookmark", _e, found);
             });
         } else {
             if (bg.settings.sitename) {
-                chrome.bookmarks.create({ "parentId": rootFolder.id, "title": pwdomain, "url": settingStr }, (e) => {
-                    if (logging) console.log("bg created settings bookmark", e, pwdomain);
+                chrome.bookmarks.create({ "parentId": rootFolder.id, "title": domainNames[i], "url": settings }, (e) => {
+                    if (logging) console.log("bg created settings bookmark", e, domainNames[i]);
                 });
             }
         }
@@ -278,10 +270,7 @@ async function retrieveMetadata(sendResponse, callback) {
         // findpw.js sends the SiteData message twice, once for document.onload
         // and once for window.onload.  The latter can arrive while the bookmark
         // folder is being created, resulting in two of them.  My solution is to
-        // use a flag to make sure I only create it once.  This flag depends on
-        // the service worker not shutting down between document.onload and
-        // window.onload.  That's typically a short time, but on one web site
-        // it's 30 seconds, which is why I use document.onload in the first place.
+        // use a flag to make sure I only create it once.
         if (createBookmarksFolder) {
             if (logging) console.log("Creating SSP bookmark folder");
             createBookmarksFolder = false;
