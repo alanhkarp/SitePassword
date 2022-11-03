@@ -62,13 +62,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);
                 bg = clone(request.bg);
-                bg.settings.domainname = pwfielddomain[bg.settings.domainname] || domainname;
+                bg.settings.domainname = pwfielddomain[bg.settings.domainname];
                 masterpw = bg.masterpw;
                 database.clearmasterpw = request.clearmasterpw;
                 database.sites[request.sitename.toLowerCase().trim()] = bg.settings;
                 persistMetadata(sendResponse);
             } else if (request.cmd === "getPassword") {
-                let domainname = getdomainname(sender.origin) || bg.settings.domainname;
+                let domainname = getdomainname(sender.origin);
                 bg.settings = bgsettings(domainname);
                 let p = generate(bg);
                 if (database.clearmasterpw) {
@@ -80,7 +80,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 sendResponse(p);
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin);
-                bg.settingss.domainname = domainname;
+                bg.domainname = domainname;
                 if (logging) console.log("bg clicked: sending response", bg);
                 sendResponse(bg);
                 if (database.clearmasterpw) {
@@ -164,22 +164,20 @@ async function persistMetadata(sendResponse) {
     } else if (bg.settings.domainname) {
         let pwdomain = bg.settings.domainname;
         let sitename = database.domains[pwdomain];
-        if (sitename) { // Nothing to delete if not in database
-            delete database.domains[pwdomain];
-            // Delete the item in domain.sites if there are no entries in
-            // database.domains that refers to it
-            if (sitename && !Object.values(database.domains).includes(sitename)) {
-                delete database.sites[sitename];
-            }
-            for (let i = 0; i < allchildren.length; i++) {
-                if (allchildren[i].title === pwdomain) chrome.bookmarks.remove(allchildren[i].id, (_e) => {
-                    if (logging) console.log("bg removed settings bookmark", _e, allchildren[i]);
-                });
-            }
+        delete database.domains[pwdomain];
+        // Delete the item in domain.sites if there are no entries in
+        // database.domains that refers to it
+        if (sitename && !Object.values(database.domains).includes(sitename)) {
+            delete database.sites[sitename];
+        }
+        for (let i = 0; i < allchildren.length; i++) {
+            if (allchildren[i].title === pwdomain) chrome.bookmarks.remove(allchildren[i].id, (_e) => {
+                if (logging) console.log("bg removed settings bookmark", _e, allchildren[i]);
+            });
         }
     }
     if (database && database.sites && database.sites[""] || database.sites["undefined"]) {
-        console.log("bg bad site name", database);
+        console.log("bg bad siten ame", database);
         delete database.sites[""];
         delete database.sites["undefined"];
     }
