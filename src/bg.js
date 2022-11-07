@@ -17,7 +17,6 @@ var domainname = "";
 var protocol = "";
 var pwcount = 0;
 var createBookmarksFolder = true;
-var pwfielddomain = {};
 export const config = {
     lower: "abcdefghijklmnopqrstuvwxyz",
     upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -30,7 +29,8 @@ export const defaultSettings = {
     sitename: "",
     username: "",
     pwlength: 12,
-    domainname: "",
+    domainname: "",     // Domain name from the tab
+    pwdomainname: "",   // Domain name from iframe with password field
     startwithletter: true,
     allowlower: true,
     allowupper: true,
@@ -51,11 +51,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (logging) console.log(Date.now(), "bg got message request, sender", request, sender);
     retrieveMetadata(sendResponse, () => {
         if (logging) console.log("bg listener back from retrieveMetadata", database);
-        chrome.storage.session.get(["ssp"], (ssp) => {
-            if (ssp.ssp) {
-                masterpw = ssp.ssp.masterpw || "";
+        chrome.storage.session.get(["SitePassword"], (value) => {
+            if (value.SitePassword) {
+                masterpw = value.SitePassword.masterpw || "";
                 bg.masterpw = masterpw;
-                if (logging) console.log("bg got ssp");
+                if (logging) console.log("bg got ssp", value.SitePassword);
             }
             if (request.cmd === "getMetadata") {
                 getMetadata(request, sender, sendResponse);
@@ -67,8 +67,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 database.sites[request.sitename.toLowerCase().trim()] = bg.settings;
                 persistMetadata(sendResponse);
             } else if (request.cmd === "getPassword") {
-                let origin = getdomainname(sender.origin);
-                domainname = pwfielddomain[origin] || origin;
+                let domainname = getdomainname(sender.origin);
                 bg.settings = bgsettings(domainname);
                 let p = generate(bg);
                 if (database.clearmasterpw) {
@@ -105,7 +104,7 @@ async function getMetadata(request, _sender, sendResponse) {
         bg.settings = clone(defaultSettings);
     }
     // Domain name comes from popup, which is trusted not to spoof it
-    bg.settings.domainname = pwfielddomain[request.domainname] || request.domainname;
+    bg.settings.domainname = request.domainname;
     if (logging) console.log("bg sending metadata", pwcount, bg, database);
     sendResponse({ "masterpw": masterpw || "", "pwcount": pwcount, "bg": bg, "database": database });
 }
@@ -114,11 +113,7 @@ function onContentPageload(request, sender, sendResponse) {
     activetab = sender.tab;
     bg.pwcount = request.count;
     pwcount = bg.pwcount;
-    if (pwcount > 0) {
-        pwfielddomain[getdomainname(sender.origin)] = getdomainname(sender.tab.url);
-    }
-    let origin = getdomainname(sender.origin);
-    domainname = pwfielddomain[origin] || origin;
+    let domainname = getdomainname(activetab.url);
     if (logging) console.log("bg pwcount, domainname, masterpw", database, bg.pwcount, domainname, isMasterPw(masterpw));
     let sitename = database.domains[domainname];
     if (sitename) {
@@ -127,6 +122,7 @@ function onContentPageload(request, sender, sendResponse) {
         bg.settings = clone(defaultSettings);
     }
     bg.settings.domainname = domainname;
+    bg.settings.pwdomainname = getdomainname(sender.origin);
     let readyForClick = false;
     if (masterpw && bg.settings.sitename && bg.settings.username) {
         readyForClick = true;
@@ -142,7 +138,7 @@ function onContentPageload(request, sender, sendResponse) {
 async function persistMetadata(sendResponse) {
     // localStorage[name] = JSON.stringify(value);
     if (logging) console.log("bg persistMetadata", bg, database);
-    chrome.storage.session.set({ "ssp": { "masterpw": masterpw } });
+    chrome.storage.session.set({ "SitePassword": { "masterpw": masterpw } });
     let found = await getRootFolder(sendResponse);
     if (found.length > 1) return;
     let rootFolder = found[0];
@@ -181,6 +177,11 @@ async function persistMetadata(sendResponse) {
         console.log("bg bad sitename", database);
         delete database.sites[""];
         delete database.sites["undefined"];
+    }
+    if (database && database.domains && database.domains[""] || database.sites["undefined"]) {
+        console.log("bg bad domainname", database);
+        delete database.domains[""];
+        delete database.domains["undefined"];
     }
     if (logging) console.log("bg root folder", rootFolder);
     // There are two types of bookmarks in the root folder.  One is for the 
@@ -229,8 +230,9 @@ async function persistMetadata(sendResponse) {
             });
         } else {
             if (bg.settings.sitename) {
-                chrome.bookmarks.create({ "parentId": rootFolder.id, "title": domainNames[i], "url": settings }, (e) => {
-                    if (logging) console.log("bg created settings bookmark", e, domainNames[i]);
+                let title = bg.settings.domainname;
+                chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": settings }, (e) => {
+                    if (logging) console.log("bg created settings bookmark", e, title);
                 });
             }
         }
