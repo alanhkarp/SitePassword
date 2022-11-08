@@ -1,6 +1,6 @@
 'use strict';
 import { generate, isMasterPw } from "./generate.js";
-const testMode = false;
+const testMode = true;
 // State I want to keep around that doesn't appear in the file system
 let sitedataBookmark = "SitePasswordData";
 let logging = false;
@@ -148,6 +148,9 @@ async function persistMetadata(sendResponse) {
         let oldsitename = database.domains[bg.settings.domainname];
         if ((!oldsitename) || sitename === oldsitename) {
             database.domains[bg.settings.domainname] = bg.settings.sitename.toLowerCase().trim();
+            if (bg.settings.pwdomainname && bg.settings.pwdomainname !== bg.settings.domainname) {
+                database.domains[bg.settings.pwdomainname] = bg.settings.sitename.toLowerCase().trim();
+            }
             database.sites[sitename] = bg.settings;
         } else {
             // Find all domains that point to oldsitename and have them point to
@@ -162,6 +165,7 @@ async function persistMetadata(sendResponse) {
     } else if (bg.settings.domainname) {
         let sitename = database.domains[bg.settings.domainname];
         delete database.domains[bg.settings.domainname];
+        if (bg.settings.pwdomainname) delete database.domains[bg.settings.pwdomainname];
         // Delete the item in domain.sites if there are no entries in
         // database.domains that refers to it
         if (!Object.values(database.domains).includes(sitename)) {
@@ -219,17 +223,17 @@ async function persistMetadata(sendResponse) {
         }
     }
     // Persist changes to domain settings
-    let domainNames = Object.keys(database.domains);
-    for (let i = 0; i < domainNames.length; i++) {
-        let sitename = database.domains[domainNames[i]];
+    let domainnames = Object.keys(database.domains);
+    for (let i = 0; i < domainnames.length; i++) {
+        let sitename = database.domains[domainnames[i]];
         let settings = "ssp://" + JSON.stringify(database.sites[sitename]);
-        let found = domains.find((item) => item.title === domainNames[i]);
+        let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
             chrome.bookmarks.update(found.id, { "url": settings }, (_e) => {
                 //if (logging) console.log("bg updated settings bookmark", _e, found);
             });
         } else {
-            if (bg.settings.sitename) {
+            if (bg.settings.sitename && domainnames[i] === bg.settings.domainname) {
                 let title = bg.settings.domainname;
                 chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": settings }, (e) => {
                     if (logging) console.log("bg created settings bookmark", e, title);

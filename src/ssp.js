@@ -479,7 +479,7 @@ function isphishing(sitename) {
     domains.forEach(function (d) {
         if ((database.domains[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
             (d.toLowerCase().trim() != domainname)) {
-            let settings = database.sites[sitename];
+            let settings = database.sites[sitename.toLowerCase().trim()];
             if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
                 phishing = settings.pwdomainname;
             } else {
