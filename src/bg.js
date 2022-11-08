@@ -1,6 +1,6 @@
 'use strict';
 import { generate, isMasterPw } from "./generate.js";
-const testMode = true;
+const testMode = false;
 // State I want to keep around that doesn't appear in the file system
 let sitedataBookmark = "SitePasswordData";
 let logging = false;
