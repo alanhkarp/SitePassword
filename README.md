@@ -161,7 +161,7 @@ scary warning. It's telling you that you may be at a site
 spoofing the one you think you are at. Unfortunately, you will
 also see this warning when you are not being tricked. Many
 websites have several different login pages with different domain
-names. So, when you see the warning, check the URL of the page
+names. So, when you see the warning, check the URL in the warning message
 to make sure it's a login page for the site you think it is.
 
 [Synchronizing across Your Machines](#sync)
@@ -186,7 +186,7 @@ device.  You can still get your passwords by going to
 using, you can paste the appropriate bookmark into the form to 
 get your settings for the site.
 
-See the instructions on the web page for more information.
+See the instructions on the [sitepassword.info](https://sitepassword.info) web page for more information.
 
 [Downloading Your Settings](#download)
 --------------------------
