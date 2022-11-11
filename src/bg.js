@@ -314,13 +314,7 @@ function retrieved(callback) {
         settings = clone(defaultSettings);
     }
     if (activetab) protocol = getprotocol(activetab.url);
-    bg = {
-        "activetab": activetab,
-        "masterpw": masterpw,
-        "protocol": protocol,
-        "pwcount": pwcount,
-        "settings": settings,
-    };
+    bg.settings = settings; 
     if (logging) console.log(Date.now(), "bg leaving retrieived", bg, database);
     callback();
 }
