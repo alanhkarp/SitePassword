@@ -3,6 +3,7 @@
 var logging = false;
 var hideLabels = true; // Make it easy to turn off label hiding
 var clickSitePassword = "Click SitePassword";
+var clickSitePasswordTitle = "Click on the SitePassword icon"
 var clickHere = "Click here for password";
 var pasteHere = "Paste your password here";
 var sitepw = "";
@@ -232,7 +233,7 @@ function setPlaceholder(userid) {
             if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", clickSitePassword);
             cpi.pwfields[0].placeholder = clickSitePassword;
             cpi.pwfields[0].ariaPlaceholder = clickSitePassword;
-            cpi.pwfields[0].title = clickSitePassword;
+            cpi.pwfields[0].title = clickSitePasswordTitle;
             clearLabel(cpi.pwfields[0]);
         }
     }
