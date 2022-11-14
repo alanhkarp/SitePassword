@@ -315,6 +315,7 @@ function retrieved(callback) {
     }
     if (activetab) protocol = getprotocol(activetab.url);
     bg.settings = settings; 
+    bg.masterpw = masterpw || "";
     if (logging) console.log(Date.now(), "bg leaving retrieived", bg, database);
     callback();
 }
