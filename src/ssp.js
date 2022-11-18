@@ -5,6 +5,7 @@ let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
 var domainname;
+var mainPanelTimer;
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 const clipboardText = "PW";
 var defaultTitle = "SitePassword";
@@ -96,9 +97,12 @@ function eventSetup() {
             });
         }
         // If I close the window immediately, then messages in flight get lost
-        setTimeout(() => {
+        mainPanelTimer = setTimeout(() => {
             if (!testMode) window.close();
-        }, 500);
+        }, 750);
+    }
+    get("mainpanel").onmouseenter = function () {
+        clearTimeout(mainPanelTimer);
     }
     // UI Event handlers
     get("domainname").onkeyup = function () {
