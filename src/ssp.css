@@ -19,6 +19,12 @@
   .column {
     flex: 1;
   }
+  .logo {
+    height: 25px;
+    width: 25px;
+    position: relative;
+    top: 10px;
+  }
   #root {
     display: block;
   }
