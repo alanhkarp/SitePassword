@@ -1,12 +1,11 @@
 'use strict';
-import { generate, isMasterPw } from "./generate.js";
+import { generate, isMasterPw, normalize } from "./generate.js";
 const testMode = false;
+let logging = testMode;
 // State I want to keep around that doesn't appear in the file system
 let sitedataBookmark = "SitePasswordData";
-let logging = false;
 if (testMode) {
     sitedataBookmark = "SitePasswordDataTest";
-    logging = true;
 }
 var bg = {};
 var masterpw = "";
@@ -64,7 +63,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 bg = clone(request.bg);
                 masterpw = bg.masterpw;
                 database.clearmasterpw = request.clearmasterpw;
-                database.sites[request.sitename.toLowerCase().trim()] = bg.settings;
+                database.sites[normalize(request.sitename)] = bg.settings;
                 persistMetadata(sendResponse);
             } else if (request.cmd === "getPassword") {
                 let domainname = getdomainname(sender.origin);
@@ -143,20 +142,20 @@ async function persistMetadata(sendResponse) {
     if (found.length > 1) return;
     let rootFolder = found[0];
     let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
-    let sitename = bg.settings.sitename.toLowerCase().trim();
+    let sitename = normalize(bg.settings.sitename);
     if (sitename) {
         let oldsitename = database.domains[bg.settings.domainname];
         if ((!oldsitename) || sitename === oldsitename) {
-            database.domains[bg.settings.domainname] = bg.settings.sitename.toLowerCase().trim();
+            database.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
             if (bg.settings.pwdomainname && bg.settings.pwdomainname !== bg.settings.domainname) {
-                database.domains[bg.settings.pwdomainname] = bg.settings.sitename.toLowerCase().trim();
+                database.domains[bg.settings.pwdomainname] = normalize(bg.settings.sitename);
             }
             database.sites[sitename] = bg.settings;
         } else {
             // Find all domains that point to oldsitename and have them point to
             // the new one
             for (let entry of Object.entries(database.domains)) {
-                if (database.domains[entry[0]] === oldsitename) database.domains[entry[0]] = bg.settings.sitename.toLowerCase().trim();
+                if (database.domains[entry[0]] === oldsitename) database.domains[entry[0]] = normalize(bg.settings.sitename);
             }
             database.sites[sitename] = bg.settings;
             // then remove the old site name from database.sites

@@ -1,5 +1,5 @@
 'use strict';
-import { characters, generate, isMasterPw } from "./generate.js";
+import { characters, generate, isMasterPw, normalize } from "./generate.js";
 const testMode = false;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
@@ -79,19 +79,19 @@ function eventSetup() {
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
             bg.masterpw = get("masterpw").value;
-            bg.settings.sitename = get("sitename").value.toLowerCase().trim();
+            bg.settings.sitename = get("sitename").value;
             if (bg.settings.sitename) {
                 database.sites[bg.settings.sitename] = clone(bg.settings);
                 database.domains[bg.settings.domainname] = bg.settings.sitename;
             }
-            let s = get("sitename").value.toLowerCase().trim();
+            let sitename = get("sitename");
             changePlaceholder();
             bg.settings.domainname = domainname;
             if (logging) console.log("popup sending site data", domainname, bg);
-            if (!s) chrome.tabs.sendMessage(activetab.id, {"cmd": "clear"});
+            if (!sitename) chrome.tabs.sendMessage(activetab.id, {"cmd": "clear"});
             chrome.runtime.sendMessage({
                 "cmd": "siteData",
-                "sitename": s,
+                "sitename": sitename,
                 "clearmasterpw": get("clearmasterpw").checked,
                 "bg": bg
             });
@@ -270,7 +270,7 @@ function eventSetup() {
         get("username").disabled = false;
         get("sitename").disabled = false;
         msgoff("phishing");
-        var sitename = get("sitename").value.toLowerCase().trim();
+        var sitename = getlowertrim("sitename");
         bg.settings = clone(database.sites[sitename]);
         bg.settings.sitename = get("sitename").value;
         database.domains[get("domainname").value] = bg.settings.sitename;
@@ -481,9 +481,9 @@ function isphishing(sitename) {
     var domains = Object.keys(database.domains);
     var phishing = "";
     domains.forEach(function (d) {
-        if ((database.domains[d].toLowerCase().trim() == sitename.toLowerCase().trim()) &&
-            (d.toLowerCase().trim() != domainname)) {
-            let settings = database.sites[sitename.toLowerCase().trim()];
+        if ((database.domains[d] == normalize(sitename)) &&
+            (d != domainname)) {
+            let settings = database.sites[normalize(sitename)];
             if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
                 phishing = settings.pwdomainname;
             } else {

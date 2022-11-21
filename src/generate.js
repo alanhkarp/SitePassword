@@ -5,8 +5,8 @@ import { Utf8Encode, str2binb, binl2b64 } from "./sha256.js";
 import { config } from "./bg.js";
 export function generate(bg) {
     let settings = bg.settings;
-    var n = (settings.sitename || "").toLowerCase().trim();
-    var u = (settings.username || "").toLowerCase().trim();
+    var n = normalize(settings.sitename || "");
+    var u = normalize(settings.username || "");
     let m = bg.masterpw;
     if (!m) {
         return "";
@@ -102,6 +102,17 @@ export function characters(settings) {
     }
     return chars;
 }
+export function normalize(name) {
+    if (name) {
+        try {
+            return name.trim().toLowerCase();
+        } catch (e) {
+            console.log(e);
+        }
+    }
+    return "";
+}
+
 /* 
 This code is a major modification of the code released with the
 following licence.  Neither Hewlett-Packard Company nor Hewlett-Packard
