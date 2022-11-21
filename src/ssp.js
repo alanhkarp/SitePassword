@@ -169,6 +169,14 @@ function eventSetup() {
         handleblur("username", "username");
         changePlaceholder();
     }
+    get("useridcopy").onclick = function () {
+        let userid = get("username").value || "";
+        navigator.clipboard.writeText(userid).then(() => {
+            if (logging) console.log("findpw wrote to clipboard", userid);
+        }).catch((e) => {
+            if (logging) console.log("findpw clipboard write failed", e);
+        });
+    };
     get("sitepwcopy").onclick = function () {
         let sitepass = get("sitepw").value;
         navigator.clipboard.writeText(sitepass).then(() => {

@@ -171,10 +171,13 @@
   #sitepwcopy:active {
     color: #aa0;
   }
+  #useridcopy:active {
+    color: #aa0;
+  }
   #clearclipboard:active {
     color: #aa0;
   }
-    .accordian {
+  .accordian {
     float: left;
     padding-right: 1ex;
     cursor: pointer;
