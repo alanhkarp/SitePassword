@@ -85,7 +85,7 @@ function eventSetup() {
                 database.sites[bg.settings.sitename] = clone(bg.settings);
                 database.domains[bg.settings.domainname] = bg.settings.sitename;
             }
-            let sitename = get("sitename");
+            let sitename = get("sitename").value;
             changePlaceholder();
             bg.settings.domainname = domainname;
             if (logging) console.log("popup sending site data", domainname, bg);
