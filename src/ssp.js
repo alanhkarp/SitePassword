@@ -57,6 +57,7 @@ function getsettings() {
     }, (response) => {
         bg = response.bg;
         database = response.database;
+        hidesitepw();
         if (!bg.settings.sitename) bg.settings.sitename = "";
         get("masterpw").value = response.masterpw;
         init();
@@ -93,6 +94,7 @@ function eventSetup() {
                 "cmd": "siteData",
                 "sitename": sitename,
                 "clearmasterpw": get("clearmasterpw").checked,
+                "hidesitepw": get("hidesitepw").checked,
                 "bg": bg
             });
         }
@@ -208,6 +210,10 @@ function eventSetup() {
     get("clearmasterpw").onclick = function () {
         database.clearmasterpw = get("clearmasterpw").checked;
     }
+    get("hidesitepw").onclick = function () {
+        database.hidesitepw = get("hidesitepw").checked;
+        hidesitepw();
+    }
     get("pwlength").onmouseleave = function () {
         handleblur("pwlength", "pwlength");
     }
@@ -295,6 +301,14 @@ function eventSetup() {
         window.close();
     }
 }
+function hidesitepw() {
+    console.log("popup checking hidesitepw", get("hidesitepw").checked, database.hidesitepw);
+    if (get("hidesitepw").checked || database.hidesitepw) {
+        get("sitepw").type = "password";
+    } else {
+        get("sitepw").type = "text";
+    }
+}
 function setMasterpwMeter(pw) {
     const $masterpw = get("masterpw");
     const strengthText = ["Don't Use", "Bad", "Weak", "Good", "Strong"];
@@ -369,9 +383,10 @@ function ask2generate() {
     }
     if (logging) console.log("popup filling sitepw field", p);
     get("sitepw").value = p;
+    hidesitepw();
     const report = zxcvbn(p);
     get("sitepw").style.color = strengthColor[report.score];
-return true;
+    return true;
 }
 function fill() {
     if (bg.settings[domainname]) {
@@ -385,6 +400,8 @@ function fill() {
     get("masterpw").value = bg.masterpw;
     if (logging) console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
     get("clearmasterpw").checked = database.clearmasterpw;
+   get("hidesitepw").checked =  database.hidesitepw;
+    hidesitepw();
     get("pwlength").value = bg.settings.pwlength;
     get("startwithletter").checked = bg.settings.startwithletter;
     get("minnumber").value = bg.settings.minnumber;

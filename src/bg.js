@@ -10,7 +10,7 @@ if (testMode) {
 var bg = {};
 var masterpw = "";
 var activetab;
-const databaseDefault = { "domains": {}, "sites": {} };
+const databaseDefault = { "clearmasterpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
 var database = clone(databaseDefault);
 var domainname = "";
 var protocol = "";
@@ -63,6 +63,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 bg = clone(request.bg);
                 masterpw = bg.masterpw;
                 database.clearmasterpw = request.clearmasterpw;
+                database.hidesitepw = request.hidesitepw;
                 database.sites[normalize(request.sitename)] = bg.settings;
                 persistMetadata(sendResponse);
             } else if (request.cmd === "getPassword") {
