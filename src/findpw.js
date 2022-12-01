@@ -324,10 +324,8 @@ function clearLabel(field) {
 }
 function isHidden(field) {
     // Elements with position=fixed do not have an offsetParent
-    let hidden =
-        (field.style.position !== "fixed" && field.offsetParent === null) ||
-        (window.getComputedStyle(field).display === 'none') ||
-        (field.ariaHidden === "true");
+    let hidden = (field.style.position !== "fixed" && field.offsetParent === null) ||
+                 (window.getComputedStyle(field).display === 'none');
     return hidden;
 }
 function overlaps(field, label) {
