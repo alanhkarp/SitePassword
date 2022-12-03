@@ -78,6 +78,8 @@ function searchShadowRoots(element) {
     return result.concat(childResults).flat();
 }
 function startup() {
+    // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
+    // However, someone may have hosted the page at a different URL.  Hence, the test.
     // Don't do anything if this is a SitePasswordWeb page
     if (document.getElementById("SitePasswordWebMarker")) return;
     // The code in this function used to be called once, but now it's called several times.
@@ -255,8 +257,6 @@ function pwfieldOnclick(event) {
     }
 }
 function countpwid() {
-    // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
-    // However, someone may have hosted the page at a different URL.  Hence, the test.
     var useridfield = null;
     var visible = true;
     var pwfields = [];
