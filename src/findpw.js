@@ -325,6 +325,7 @@ function clearLabel(field) {
 function isHidden(field) {
     // Elements with position=fixed do not have an offsetParent
     let hidden = (field.style.position !== "fixed" && field.offsetParent === null) ||
+                 (field.style.opacity && Number(field.style.opacity) < Number("0.5")) ||
                  (window.getComputedStyle(field).display === 'none');
     return hidden;
 }
