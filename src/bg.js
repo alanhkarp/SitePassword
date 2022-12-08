@@ -1,11 +1,12 @@
 'use strict';
 import { generate, isMasterPw, normalize } from "./generate.js";
+const testMerge = true;
 const testMode = false;
 let logging = testMode;
 // State I want to keep around that doesn't appear in the file system
-let sitedataBookmark = "SitePasswordData";
+let sitedataBookmark = "SitePasswordDataMerge"; // So I don't step on my real bookmards
 if (testMode) {
-    sitedataBookmark = "SitePasswordDataTest";
+    sitedataBookmark = "SitePasswordDataMerge"; //"SitePasswordDataTest";
 }
 var bg = {};
 var masterpw = "";
@@ -25,6 +26,7 @@ export const config = {
     maxiter: 1000
 };
 export const defaultSettings = {
+    updateTime: 0,
     sitename: "",
     username: "",
     pwlength: 12,
@@ -60,6 +62,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);
+                // Update time stamp if settings changed
+                let domainname = request.bg.settings.domainname;
+                let sitename = database.domains[domainname];
+                let oldsettings = database.sites[sitename];
+                if (!sameSettings(oldsettings,request.bg.settings)) {
+                    request.bg.settings.updateTime = Date.now();
+                }
                 bg = clone(request.bg);
                 masterpw = bg.masterpw;
                 database.clearmasterpw = request.clearmasterpw;
@@ -203,9 +212,10 @@ async function persistMetadata(sendResponse) {
         }
     }
     let pieces = JSON.stringify(database).match(/.{1,4090}/g);
+    let updateTime = Date.now();
     for (let i = 0; i < Math.max(pieces.length, children.length); i++) {
         if (pieces[i]) {
-            let url = "ssp://" + pieces[i];
+            let url = "ssp://" + updateTime + "/" + pieces[i];
             if (children[i]) {
                 chrome.bookmarks.update(children[i].id, { "url": url }, (_e) => {
                     //if (logging) console.log("bg updated bookmark", _e, children[i].id);
@@ -226,7 +236,7 @@ async function persistMetadata(sendResponse) {
     let domainnames = Object.keys(database.domains);
     for (let i = 0; i < domainnames.length; i++) {
         let sitename = database.domains[domainnames[i]];
-        let settings = "ssp://" + JSON.stringify(database.sites[sitename]);
+        let settings = "ssp://" + updateTime + "/" + JSON.stringify(database.sites[sitename]);
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
             chrome.bookmarks.update(found.id, { "url": settings }, (_e) => {
@@ -250,8 +260,14 @@ async function parseBkmk(bkmkid, callback) {
         for (let i = 0; i < children.length; i++) {
             // Only use bookmarks containing pieces of database
             if (!isNaN(children[i].title)) {
-                let data = children[i].url.substring(6);
-                databasestr += data;
+                let data = children[i].url.substring(6).split("/");
+                let datastr = "";
+                if (isNaN(data[0])) {
+                    datastr = data.join();
+                } else {
+                    datastr = data.slice(1).join();
+                }
+                databasestr += datastr;
             }
         }
         try {
@@ -329,6 +345,17 @@ function bgsettings(domainname) {
         bg.settings.domainname = domainname;
     }
     return bg.settings;
+}
+function sameSettings(a, b) {
+    if (!a || !b) return false;  // Assumes one or the other is set
+    // To deal with old format that doesn't include updateTime
+    if (!a.updateTime) a.updateTime = 0;
+    if (!b.updateTime) b.updateTime = 0;
+    // Assumes a and b have the same properties
+    for (let key in a) {
+        if (a[key] !== b[key]) return false;
+    }
+    return true;
 }
 function clone(object) {
     return JSON.parse(JSON.stringify(object))
