@@ -256,30 +256,40 @@ async function persistMetadata(sendResponse) {
 async function parseBkmk(bkmkid, callback) {
     if (logging) console.log("bg parsing bookmark");
     chrome.bookmarks.getChildren(bkmkid, (children) => {
-        let databasestr = "";
+        let databasestrs = {};
         for (let i = 0; i < children.length; i++) {
             // Only use bookmarks containing pieces of database
             if (!isNaN(children[i].title)) {
                 let data = children[i].url.substring(6).split("/");
                 let datastr = "";
-                if (isNaN(data[0])) {
+                let machineId = 0;
+                if (isNaN(data[0])) { // Accomodate legacy databases that don't have time stamp
                     datastr = data.join();
                 } else {
+                    machineId = data[0];
                     datastr = data.slice(1).join();
                 }
-                databasestr += datastr;
+                if (!databasestrs[machineId]) databasestrs[machineId] = ""
+                databasestrs[machineId] += datastr;
             }
         }
+        database = merge(databasestrs);
+        retrieved(callback);
+    });
+}
+function merge(databasestrs) {
+    let databases = [];
+    for (let databasestr in databasestrs) {
         try {
             // JSON.stringify turns some of my " into %22
             // and some of my blanks into %20
-            if (databasestr) database = JSON.parse(databasestr.replace(/%22/g, "\"").replace(/%20/g, " "));
+            databases.push(JSON.parse(databasestrs[databasestr].replace(/%22/g, "\"").replace(/%20/g, " ")));
         } catch (e) {
             console.log("Error parsing metadata " + e);
-            database = clone(databaseDefault);
+            databases.push(clone(databaseDefault));
         }
-        retrieved(callback);
-    });
+    }
+    return databases[0]; // No merge for now
 }
 async function retrieveMetadata(sendResponse, callback) {
     // return JSON.parse(localStorage[name]);
