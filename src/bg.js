@@ -222,7 +222,7 @@ async function persistMetadata(sendResponse) {
         });
     }
     let url = "ssp://" + JSON.stringify(common);
-    if (commonSettings.length > 0 && url !== commonSettings[0].url) {
+    if (commonSettings.length > 0 && url !== commonSettings[0].url.replace(/%22/g, "\"").replace(/%20/g, " ")) {
         common.updateTime = Date.now();
         let url = "ssp://" + JSON.stringify(common);
         chrome.bookmarks.update(commonSettings[0].id, { "url": url }, (_e) => {
@@ -233,16 +233,23 @@ async function persistMetadata(sendResponse) {
     let domainnames = Object.keys(database.domains);
     for (let i = 0; i < domainnames.length; i++) {
         let sitename = database.domains[domainnames[i]];
-        let settings = "ssp://" + JSON.stringify(database.sites[sitename]);
+        let settings = database.sites[sitename];
+        let url = "ssp://" + JSON.stringify(settings);
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
-            chrome.bookmarks.update(found.id, { "url": settings }, (_e) => {
-                //if (logging) console.log("bg updated settings bookmark", _e, found);
-            });
+            if (url !== found.url.replace(/%22/g, "\"").replace(/%20/g, " ")) {
+                settings.updateTime = Date.now();
+                url = "ssp://" + JSON.stringify(settings);
+                chrome.bookmarks.update(found.id, { "url": url }, (_e) => {
+                    //if (logging) console.log("bg updated settings bookmark", _e, found);
+                });
+        }
         } else {
             if (bg.settings.sitename && domainnames[i] === bg.settings.domainname) {
                 let title = bg.settings.domainname;
-                chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": settings }, (e) => {
+                settings.updateTime = Date.now()
+                url = "ssp://" + JSON.stringify(settings);
+                chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url }, (e) => {
                     if (logging) console.log("bg created settings bookmark", e, title);
                 });
             }
