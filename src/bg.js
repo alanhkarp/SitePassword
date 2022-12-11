@@ -1,6 +1,5 @@
 'use strict';
 import { generate, isMasterPw, normalize } from "./generate.js";
-const testMerge = true;
 const testMode = false;
 const commonSettingsTitle = "CommonSettings";
 let logging = testMode;
@@ -119,13 +118,14 @@ async function getMetadata(request, _sender, sendResponse) {
     sendResponse({ "masterpw": masterpw || "", "pwcount": pwcount, "bg": bg, "database": database });
 }
 function onContentPageload(request, sender, sendResponse) {
-    if (logging) console.log("bg onContentPageLoad", request);
+    if (logging) console.log("bg onContentPageLoad", bg, request, sender);
     activetab = sender.tab;
     bg.pwcount = request.count;
     pwcount = bg.pwcount;
     let domainname = getdomainname(activetab.url);
-    if (logging) console.log("bg pwcount, domainname, masterpw", database, bg.pwcount, domainname, isMasterPw(masterpw));
+    if (logging) console.log("domainname, masterpw, database, bg", domainname, isMasterPw(masterpw), database, bg);
     let sitename = database.domains[domainname];
+    if (logging) console.log("bg |sitename|, settings, database", sitename, database.sites[sitename], database);
     if (sitename) {
         bg.settings = database.sites[sitename];
     } else {
@@ -253,40 +253,22 @@ async function persistMetadata(sendResponse) {
 async function parseBkmk(bkmkid, callback) {
     if (logging) console.log("bg parsing bookmark");
     chrome.bookmarks.getChildren(bkmkid, (children) => {
-        let databasestrs = {};
+        let newdb = clone(databaseDefault);
         for (let i = 0; i < children.length; i++) {
-            // Only use bookmarks containing pieces of database
-            if (!isNaN(children[i].title)) {
-                let data = children[i].url.substring(6).split("/");
-                let datastr = "";
-                let machineId = 0;
-                if (isNaN(data[0])) { // Accomodate legacy databases that don't have time stamp
-                    datastr = data.join();
-                } else {
-                    machineId = data[0];
-                    datastr = data.slice(1).join();
-                }
-                if (!databasestrs[machineId]) databasestrs[machineId] = ""
-                databasestrs[machineId] += datastr;
+            if (children[i].title === commonSettingsTitle) {
+                let common = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
+                newdb.updateTime = common.updateTime;
+                newdb.clearmasterpw = common.clearmasterpw;
+                newdb.hidesitepw = common.hidesitepw;
+            } else {
+                let settings = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
+                newdb.domains[settings.domainname] = normalize(settings.sitename);
+                newdb.sites[normalize(settings.sitename)] = settings;
             }
         }
-        // Transition comment database = merge(databasestrs);
+        database = newdb;
         retrieved(callback);
     });
-}
-function merge(databasestrs) {
-    let databases = [];
-    for (let databasestr in databasestrs) {
-        try {
-            // JSON.stringify turns some of my " into %22
-            // and some of my blanks into %20
-            databases.push(JSON.parse(databasestrs[databasestr].replace(/%22/g, "\"").replace(/%20/g, " ")));
-        } catch (e) {
-            console.log("Error parsing metadata " + e);
-            databases.push(clone(databaseDefault));
-        }
-    }
-    return databases[0]; // No merge for now
 }
 async function retrieveMetadata(sendResponse, callback) {
     // return JSON.parse(localStorage[name]);
