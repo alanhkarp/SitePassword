@@ -10,6 +10,7 @@ var sitepw = "";
 var userid = "";
 var maxidfields = 0;
 var keyPressed = false;
+var dupNotified = false;
 var cleared = false; // Has password been cleared from the clipboars
 var cpi = { count: 0, pwfields: [], idfield: null };
 var readyForClick = false;
@@ -195,7 +196,8 @@ function sendpageinfo(cpi, clicked, onload) {
             alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Remove or rename the ones you don't want SitePassword to use.  Then reload this page.");
             return;
         }
-        if (response === "duplicate") {
+        if (response === "duplicate" && !dupNotified) {
+            dupNotified = true;
             alert("You have one or more duplicate bookmarks in your SitePasswordData bookmark folder.  Remove the ones you don't want");
             return;
         }

@@ -149,7 +149,6 @@ async function persistMetadata(sendResponse) {
     let found = await getRootFolder(sendResponse);
     if (found.length > 1) return;
     let rootFolder = found[0];
-    let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
     let sitename = normalize(bg.settings.sitename);
     if (sitename) {
         let oldsitename = database.domains[bg.settings.domainname];
@@ -183,7 +182,7 @@ async function persistMetadata(sendResponse) {
     if (logging) console.log("bg root folder", rootFolder);
     // The databae is saved as one bookmark for the common settings
     // and a bookmark for each domain name.
-    allchildren = await chrome.bookmarks.getChildren(rootFolder.id); // Deleted some so recreate list
+    let allchildren = await chrome.bookmarks.getChildren(rootFolder.id); // Deleted some so recreate list
     let commonSettings = [];
     let domains = [];
     for (let i = 0; i < allchildren.length; i++) {
@@ -246,23 +245,23 @@ async function parseBkmk(rootFolder, callback, sendResponse) {
     chrome.bookmarks.getChildren(rootFolder, (children) => {
         let seenTitles = {};
         let newdb = clone(databaseDefault);
-        let duplicates = {};
         for (let i = 0; i < children.length; i++) {
             let title = children[i].title;
+            // Remove legacy bookmarks
+            if (!isNaN(title)) {
+                chrome.bookmarks.remove(children[i].id);
+            }
             if (seenTitles[title]) {
                 let seen = JSON.parse(children[seenTitles[title]].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
                 let dupl = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
                 if (sameSettings(seen, dupl)) {
                     chrome.bookmarks.remove(children[i].id);
                 } else {
-                    duplicates[title] = i;
+                    sendResponse("duplicate");
+                    continue;
                 }
             } else {
                 seenTitles[title] = i;
-            }
-            // Remove legacy bookmarks
-            if (!isNaN(title)) {
-                chrome.bookmarks.remove(children[i].id);
             }
             if (title === commonSettingsTitle) {
                 let common = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
@@ -274,9 +273,6 @@ async function parseBkmk(rootFolder, callback, sendResponse) {
                 newdb.domains[title] = normalize(settings.sitename);
                 newdb.sites[normalize(settings.sitename)] = settings;
             }
-        }
-        if (Object.keys(duplicates).length > 0) {
-            sendResponse("duplicate");
         }
         database = newdb;
         retrieved(callback);
