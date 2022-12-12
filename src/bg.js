@@ -254,11 +254,15 @@ async function persistMetadata(sendResponse) {
     }
 }
 // Assumes bookmarks fetched in the order created
-async function parseBkmk(bkmkid, callback) {
+async function parseBkmk(rootFolder, callback) {
     if (logging) console.log("bg parsing bookmark");
-    chrome.bookmarks.getChildren(bkmkid, (children) => {
+    chrome.bookmarks.getChildren(rootFolder, (children) => {
         let newdb = clone(databaseDefault);
         for (let i = 0; i < children.length; i++) {
+            // Remove legacy bookmarks
+            if (!isNaN(children[i].title)) {
+                chrome.bookmarks.remove(children[i].id);
+            }
             if (children[i].title === commonSettingsTitle) {
                 let common = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
                 newdb.updateTime = common.updateTime;
