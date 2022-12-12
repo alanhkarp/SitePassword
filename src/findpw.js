@@ -195,6 +195,10 @@ function sendpageinfo(cpi, clicked, onload) {
             alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Remove or rename the ones you don't want SitePassword to use.  Then reload this page.");
             return;
         }
+        if (response === "duplicate") {
+            alert("You have one or more duplicate bookmarks in your SitePasswordData bookmark folder.  Remove the ones you don't want");
+            return;
+        }
         if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
         if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
         readyForClick = response.readyForClick;

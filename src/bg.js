@@ -241,25 +241,42 @@ async function persistMetadata(sendResponse) {
     }
 }
 // Assumes bookmarks fetched in the order created
-async function parseBkmk(rootFolder, callback) {
+async function parseBkmk(rootFolder, callback, sendResponse) {
     if (logging) console.log("bg parsing bookmark");
     chrome.bookmarks.getChildren(rootFolder, (children) => {
+        let seenTitles = {};
         let newdb = clone(databaseDefault);
+        let duplicates = {};
         for (let i = 0; i < children.length; i++) {
+            let title = children[i].title;
+            if (seenTitles[title]) {
+                let seen = JSON.parse(children[seenTitles[title]].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
+                let dupl = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
+                if (sameSettings(seen, dupl)) {
+                    chrome.bookmarks.remove(children[i].id);
+                } else {
+                    duplicates[title] = i;
+                }
+            } else {
+                seenTitles[title] = i;
+            }
             // Remove legacy bookmarks
-            if (!isNaN(children[i].title)) {
+            if (!isNaN(title)) {
                 chrome.bookmarks.remove(children[i].id);
             }
-            if (children[i].title === commonSettingsTitle) {
+            if (title === commonSettingsTitle) {
                 let common = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
                 newdb.updateTime = common.updateTime;
                 newdb.clearmasterpw = common.clearmasterpw;
                 newdb.hidesitepw = common.hidesitepw;
             } else {
                 let settings = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
-                newdb.domains[children[i].title] = normalize(settings.sitename);
+                newdb.domains[title] = normalize(settings.sitename);
                 newdb.sites[normalize(settings.sitename)] = settings;
             }
+        }
+        if (Object.keys(duplicates).length > 0) {
+            sendResponse("duplicate");
         }
         database = newdb;
         retrieved(callback);
@@ -271,7 +288,7 @@ async function retrieveMetadata(sendResponse, callback) {
     let folders = await getRootFolder(sendResponse);
     if (folders.length === 1) {
         if (logging) console.log("Found bookmarks folder: ", folders[0]);
-        parseBkmk(folders[0].id, callback);
+        parseBkmk(folders[0].id, callback, sendResponse);
     } else if (folders.length === 0) {
         // findpw.js sends the SiteData message twice, once for document.onload
         // and once for window.onload.  The latter can arrive while the bookmark
@@ -281,7 +298,7 @@ async function retrieveMetadata(sendResponse, callback) {
             if (logging) console.log("Creating SSP bookmark folder");
             createBookmarksFolder = false;
             let bkmk = await chrome.bookmarks.create({ "parentId": "1", "title": sitedataBookmark });
-            parseBkmk(bkmk.id, callback);
+            parseBkmk(bkmk.id, callback, sendResponse);
         }
     }
 }
@@ -341,6 +358,7 @@ function sameSettings(a, b) {
     for (let key in a) {
         // The domain name may change for domains that share setting
         if (key === "domainname") continue;
+        if (key === "updateTime") continue;
         if (a[key] !== b[key]) return false;
     }
     return true;
