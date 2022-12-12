@@ -169,21 +169,7 @@ async function persistMetadata(sendResponse) {
             // then remove the old site name from database.sites
             delete database.sites[oldsitename];
         }
-    } else if (bg.settings.domainname) {
-        let sitename = database.domains[bg.settings.domainname];
-        delete database.domains[bg.settings.domainname];
-        if (bg.settings.pwdomainname) delete database.domains[bg.settings.pwdomainname];
-        // Delete the item in domain.sites if there are no entries in
-        // database.domains that refers to it
-        if (!Object.values(database.domains).includes(sitename)) {
-            delete database.sites[sitename];
-        }
-        for (let i = 0; i < allchildren.length; i++) {
-            if (allchildren[i].title === bg.settings.domainname) chrome.bookmarks.remove(allchildren[i].id, (_e) => {
-                if (logging) console.log("bg removed settings bookmark", _e, allchildren[i]);
-            });
-        }
-    }
+    } // Ignore blank sitename
     if (database && database.sites && database.sites[""] || database.sites["undefined"]) {
         console.log("bg bad sitename", database);
         delete database.sites[""];
@@ -234,7 +220,8 @@ async function persistMetadata(sendResponse) {
         let url = "ssp://" + JSON.stringify(settings);
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
-            if (url !== found.url.replace(/%22/g, "\"").replace(/%20/g, " ")) {
+            let foundSettings = JSON.parse(found.url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
+            if (!sameSettings(settings, foundSettings)) {
                 settings.updateTime = Date.now();
                 url = "ssp://" + JSON.stringify(settings);
                 chrome.bookmarks.update(found.id, { "url": url }, (_e) => {
@@ -352,6 +339,8 @@ function sameSettings(a, b) {
     if (!b.updateTime) b.updateTime = 0;
     // Assumes a and b have the same properties
     for (let key in a) {
+        // The domain name may change for domains that share setting
+        if (key === "domainname") continue;
         if (a[key] !== b[key]) return false;
     }
     return true;
