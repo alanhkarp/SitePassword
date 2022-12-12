@@ -71,9 +71,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 }
                 bg = clone(request.bg);
                 masterpw = bg.masterpw;
-                database.clearmasterpw = request.clearmasterpw;
-                database.hidesitepw = request.hidesitepw;
-                database.sites[normalize(request.sitename)] = bg.settings;
                 persistMetadata(sendResponse);
             } else if (request.cmd === "getPassword") {
                 let domainname = getdomainname(sender.origin);
@@ -158,7 +155,7 @@ async function persistMetadata(sendResponse) {
         let oldsitename = database.domains[bg.settings.domainname];
         if ((!oldsitename) || sitename === oldsitename) {
             database.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
-            if (bg.settings.pwdomainname && bg.settings.pwdomainname !== bg.settings.domainname) {
+            if (bg.settings.pwdomainname !== bg.settings.domainname) {
                 database.domains[bg.settings.pwdomainname] = normalize(bg.settings.sitename);
             }
             database.sites[sitename] = bg.settings;
@@ -269,7 +266,7 @@ async function parseBkmk(bkmkid, callback) {
                 newdb.hidesitepw = common.hidesitepw;
             } else {
                 let settings = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
-                newdb.domains[settings.domainname] = normalize(settings.sitename);
+                newdb.domains[children[i].title] = normalize(settings.sitename);
                 newdb.sites[normalize(settings.sitename)] = settings;
             }
         }
