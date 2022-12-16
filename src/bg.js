@@ -50,6 +50,9 @@ if (logging) console.log("bg starting with database", database);
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (logging) console.log(Date.now(), "bg got message request, sender", request, sender);
+    // Start with a new database in case something changed while the service worker stayed open
+    database = clone(databaseDefault);
+    bg = {};
     retrieveMetadata(sendResponse, () => {
         if (logging) console.log("bg listener back from retrieveMetadata", database);
         chrome.storage.session.get(["SitePassword"], (value) => {
@@ -288,7 +291,8 @@ async function parseBkmk(rootFolder, callback, sendResponse) {
     });
 }
 async function retrieveMetadata(sendResponse, callback) {
-    // return JSON.parse(localStorage[name]);
+    database = clone(databaseDefault); // Start with an empty database
+    bg = {}; // and settings
     if (logging) console.log("bg find SSP bookmark folder");
     let folders = await getRootFolder(sendResponse);
     if (folders.length === 1) {
@@ -326,6 +330,10 @@ async function getRootFolder(sendResponse) {
 }
 function retrieved(callback) {
     if (logging) console.log("bg retrieved", database);
+    if (!domainname) {
+        callback();
+        return;
+    };
     if (!database || !database.sites) {
         console.log("stop here please");
         callback();

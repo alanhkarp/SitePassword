@@ -32,7 +32,7 @@ if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw 
 // Most pages work if I start looking for password fields as soon as the basic HTML is loaded
 if (document.readyState !== "loading") {
     if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw running", document.readyState);
-    startup();
+    startup(true);
 } else {
     if (logging) console.log(document.URL, Date.now() - start, "findpw running document.onload");
     document.onload = startup;
@@ -40,7 +40,7 @@ if (document.readyState !== "loading") {
 // A few other pages don't find the password fields until all downloads have completed
 window.onload = function () {
     if (logging) console.log(document.URL, Date.now() - start, "findpw running window.onload");
-    startup();
+    startup(false);
 }
 // Other pages add additional CSS at runtime that makes a password field visible
 // Modified from https://www.phpied.com/when-is-a-stylesheet-really-loaded/
@@ -49,7 +49,7 @@ setInterval(() => {
     if (!document.hidden && document.styleSheets.length > cssnum) {
         cssnum = document.styleSheets.length;
         if (logging) console.log(document.URL, Date.now() - start, "findpw css added", cssnum);
-        startup();
+        startup(true);
     }
 }, 2000);
 // Some pages change CSS to make the password field visible after clicking the Sign In button
@@ -57,7 +57,7 @@ document.body.onclick = function () {
     if (logging) console.log("findpw click on body");
     setTimeout(() => {
         if (logging) console.log("findpw body.onclick");
-        startup();
+        startup(true);
     }, 500);
 };
 // Some sites change the page contents based on the fragment
@@ -78,7 +78,7 @@ function searchShadowRoots(element) {
     let result = Array.from(element.querySelectorAll("input"));
     return result.concat(childResults).flat();
 }
-function startup() {
+function startup(sendPageInfo) {
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
     // However, someone may have hosted the page at a different URL.  Hence, the test.
     // Don't do anything if this is a SitePasswordWeb page
@@ -124,7 +124,7 @@ function startup() {
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
     cpi = countpwid();
-    sendpageinfo(cpi, false, true);
+    if (sendPageInfo) sendpageinfo(cpi, false, true);
 }
 function handleMutations(mutations) {
     if (document.hidden || !mutations[0]) return;
