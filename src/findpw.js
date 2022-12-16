@@ -198,7 +198,10 @@ function sendpageinfo(cpi, clicked, onload) {
         }
         if (response === "duplicate" && !dupNotified) {
             dupNotified = true;
-            alert("You have one or more duplicate bookmarks in your SitePasswordData bookmark folder.  Open the Bookmark Manager and delete or rename the ones you don't want. Then reload this page");
+            let alertString = "You have one or more duplicate bookmarks in your SitePasswordData bookmark folder.  ";
+            alertString += "Open the Bookmark Manager and delete the ones in the SitePasswordData folder ";
+            alertString +- "that you don't want.  Then reload this page.";
+            alert(alertString);
             return;
         }
         if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);

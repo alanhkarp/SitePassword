@@ -11,7 +11,7 @@ if (testMode) {
 var bg = {};
 var masterpw = "";
 var activetab;
-const databaseDefault = { "updateTime": 0, "clearmasterpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
+const databaseDefault = { "clearmasterpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
 var database = clone(databaseDefault);
 var domainname = "";
 var protocol = "";
@@ -26,7 +26,6 @@ export const config = {
     maxiter: 1000
 };
 export const defaultSettings = {
-    updateTime: 0,
     sitename: "",
     username: "",
     pwlength: 12,
@@ -69,9 +68,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 let domainname = request.bg.settings.domainname;
                 let sitename = database.domains[domainname];
                 let oldsettings = database.sites[sitename];
-                if (!sameSettings(oldsettings,request.bg.settings)) {
-                    request.bg.settings.updateTime = Date.now();
-                }
                 bg = clone(request.bg);
                 masterpw = bg.masterpw;
                 persistMetadata(sendResponse);
@@ -202,7 +198,6 @@ async function persistMetadata(sendResponse) {
     delete common.sites;
     // No merge for now
     if (commonSettings.length === 0) {
-        common.updateTime = Date.now();
         let url = "ssp://" + JSON.stringify(common);
         chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url }, (commonBkmk) => {
             if (logging) console.log("bg created bookmark", commonBkmk.id);
@@ -211,7 +206,6 @@ async function persistMetadata(sendResponse) {
     }
     let url = "ssp://" + JSON.stringify(common);
     if (commonSettings.length > 0 && url !== commonSettings[0].url.replace(/%22/g, "\"").replace(/%20/g, " ")) {
-        common.updateTime = Date.now();
         let url = "ssp://" + JSON.stringify(common);
         chrome.bookmarks.update(commonSettings[0].id, { "url": url }, (_e) => {
             if (logging) console.log("bg updated bookmark", _e, commonSettings[0].id);
@@ -228,7 +222,6 @@ async function persistMetadata(sendResponse) {
         if (found) {
             let foundSettings = JSON.parse(found.url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
             if (!sameSettings(settings, foundSettings)) {
-                settings.updateTime = Date.now();
                 url = "ssp://" + JSON.stringify(settings);
                 chrome.bookmarks.update(found.id, { "url": url }, (_e) => {
                     //if (logging) console.log("bg updated settings bookmark", _e, found);
@@ -240,7 +233,6 @@ async function persistMetadata(sendResponse) {
                 (domainnames[i] === bg.settings.domainname) ||
                 (domainnames[i] === bg.settings.pwdomainname)) {
                 let title = domainnames[i];
-                settings.updateTime = Date.now()
                 url = "ssp://" + JSON.stringify(settings);
                 chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url }, (e) => {
                     if (logging) console.log("bg created settings bookmark", e, title);
@@ -277,7 +269,6 @@ async function parseBkmk(rootFolder, callback, sendResponse) {
             }
             if (title === commonSettingsTitle) {
                 let common = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
-                newdb.updateTime = common.updateTime;
                 newdb.clearmasterpw = common.clearmasterpw;
                 newdb.hidesitepw = common.hidesitepw;
             } else {
@@ -348,7 +339,6 @@ function retrieved(callback) {
     if (activetab) protocol = getprotocol(activetab.url);
     if (!bg.settings) bg.settings = settings; 
     bg.masterpw = masterpw || "";
-    bg.updateTime = Date.now();
     if (logging) console.log(Date.now(), "bg leaving retrieived", bg, database);
     callback();
 }
@@ -365,10 +355,7 @@ function bgsettings(domainname) {
 }
 function sameSettings(a, b) {
     if (!a || !b) return false;  // Assumes one or the other is set
-    // To deal with old format that doesn't include updateTime
-    if (!a.updateTime) a.updateTime = 0;
-    if (!b.updateTime) b.updateTime = 0;
-    // Assumes a and b have the same properties
+    if (Object.keys(a).length !== Object.keys(b).length) return false;
     for (let key in a) {
         // The domain name may change for domains that share setting
         if (key === "domainname") continue;
