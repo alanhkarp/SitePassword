@@ -4,9 +4,9 @@ const testMode = false;
 const commonSettingsTitle = "CommonSettings";
 let logging = testMode;
 // State I want to keep around that doesn't appear in the file system
-let sitedataBookmark = "SitePasswordDataMerge"; // So I don't step on my real bookmards
+let sitedataBookmark = "SitePasswordData"; 
 if (testMode) {
-    sitedataBookmark = "SitePasswordDataMerge"; //"SitePasswordDataTest";
+    sitedataBookmark = "SitePasswordDataTest"; //"SitePasswordDataTest";
 }
 var bg = {};
 var masterpw = "";
