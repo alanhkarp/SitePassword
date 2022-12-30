@@ -111,8 +111,9 @@ async function getMetadata(request, _sender, sendResponse) {
     }
     // Domain name comes from popup, which is trusted not to spoof it
     bg.settings.domainname = request.domainname;
+    bg.pwcount = pwcount;
     if (logging) console.log("bg sending metadata", pwcount, bg, database);
-    sendResponse({ "masterpw": masterpw || "", "pwcount": pwcount, "bg": bg, "database": database });
+    sendResponse({ "masterpw": masterpw || "", "bg": bg, "database": database });
 }
 function onContentPageload(request, sender, sendResponse) {
     if (logging) console.log("bg onContentPageLoad", bg, request, sender);
