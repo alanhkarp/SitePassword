@@ -37,9 +37,9 @@ window.onload = function () {
     });
 }
 function init() {
-    get("masterpw").value = bg.masterpw;
-    get("sitename").value = bg.settings.sitename;
-    get("username").value = bg.settings.username;
+    get("masterpw").value = bg.masterpw || "";
+    get("sitename").value = bg.settings.sitename || "";
+    get("username").value = bg.settings.username || "";
     let protocol = activetab.url.split(":")[0];
     if (logging) console.log("popup testing for http", protocol);
     message("http", protocol !== "https");
@@ -59,7 +59,7 @@ function getsettings() {
         database = response.database;
         hidesitepw();
         if (!bg.settings.sitename) bg.settings.sitename = "";
-        get("masterpw").value = response.masterpw;
+        get("masterpw").value = response.masterpw || "";
         init();
         if (logging) console.log("popup got metadata", bg, database);
         if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
@@ -79,7 +79,7 @@ function eventSetup() {
         if (phishing) return; // Don't persist phishing sites
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
-            bg.masterpw = get("masterpw").value;
+            bg.masterpw = get("masterpw").value || "";
             bg.settings.sitename = get("sitename").value;
             if (bg.settings.sitename) {
                 database.sites[bg.settings.sitename] = clone(bg.settings);
@@ -118,7 +118,7 @@ function eventSetup() {
     }
     const $masterpw = get("masterpw");
     get("masterpw").onkeyup = function () {
-        bg.masterpw = get("masterpw").value;
+        bg.masterpw = get("masterpw").value || "";
         ask2generate();
         setMasterpwMeter($masterpw.value);
     }
@@ -360,7 +360,7 @@ function defaultfocus() {
 function clearmasterpw() {
     if (get("clearmasterpw").checked) {
         bg.masterpw = "";
-        get("masterpw").value = bg.masterpw;
+        get("masterpw").value = bg.masterpw || "";
         get("sitepw").value = "";
     }
 }
@@ -396,7 +396,7 @@ function fill() {
         bg.settings.sitename = getlowertrim("sitename");
         bg.settings.username = getlowertrim("username");
     }
-    get("masterpw").value = bg.masterpw;
+    get("masterpw").value = bg.masterpw || "";
     if (logging) console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
     get("clearmasterpw").checked = database.clearmasterpw;
    get("hidesitepw").checked =  database.hidesitepw;
@@ -414,7 +414,7 @@ function showsettings() {
     get("settingsshow").style.display = "none";
     get("settingssave").style.display = "inline";
     //get("domainname").value = bg.settings.domainname;
-    get("masterpw").value = bg.masterpw;
+    get("masterpw").value = bg.masterpw || "";
     fill();
     get("settings").style.display = "block";
     pwoptions(["lower", "upper", "number", "special"]);

@@ -69,7 +69,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 let sitename = database.domains[domainname];
                 let oldsettings = database.sites[sitename];
                 bg = clone(request.bg);
-                masterpw = bg.masterpw;
+                masterpw = bg.masterpw || "";
                 persistMetadata(sendResponse);
             } else if (request.cmd === "getPassword") {
                 let domainname = getdomainname(sender.origin);
