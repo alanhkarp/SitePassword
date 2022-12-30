@@ -1,2 +1,6 @@
-SitePassword processes user data, such as userids, on the 
-device being used, but it does not collect any user data.
+SitePassword does not transmit or share any user data.  It
+stores your userids and other settings only on your devices
+for the sole purpose of calculating your passwords. 
+
+SitePassword relies on bookmark synchronization, which is 
+subject to your browser's privacy policy.
