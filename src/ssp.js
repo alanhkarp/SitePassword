@@ -54,6 +54,7 @@ function getsettings() {
     chrome.runtime.sendMessage({
         "cmd": "getMetadata",
         "domainname": domainname,
+        "activetab": activetab
     }, (response) => {
         bg = response.bg;
         database = response.database;

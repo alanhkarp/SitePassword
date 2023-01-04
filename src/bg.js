@@ -107,19 +107,46 @@ async function getMetadata(request, _sender, sendResponse) {
     if (sitename) {
         bg.settings = database.sites[sitename];
     } else {
-        if (!bg.settings) bg.settings = clone(defaultSettings);
+        bg.settings = clone(defaultSettings);
     }
     // Domain name comes from popup, which is trusted not to spoof it
     bg.settings.domainname = request.domainname;
-    bg.pwcount = pwcount;
-    if (logging) console.log("bg sending metadata", pwcount, bg, database);
-    sendResponse({ "masterpw": masterpw || "", "bg": bg, "database": database });
+    activetab = request.activetab;
+    // Restores data stored the last time this page was loaded
+    let activetabUrl = activetab.url;
+    if (logging) console.log("bg got active tab", activetab);
+    chrome.storage.session.get(["savedData"], (s)=> {
+        if (logging) console.log("bg got saved data", s.savedData);
+        if (!s.savedData) return;
+        if (chrome.runtime.lastError) {
+            console.log("bg lastError", chrome.runtime.lastError);
+        } else if (s.savedData[activetabUrl]) {
+            if (logging) console.log("bg got saved data for", activetabUrl, s.savedData[activetabUrl]);
+            pwcount = s.savedData[activetabUrl];
+            bg.pwcount = pwcount;
+        } else {
+            if (logging) console.log("bg no saved data for", activetabUrl, s.savedData);
+            pwcount = 0;
+            bg.pwcount = 0;
+        }
+        domainname = getdomainname(activetabUrl);
+        if (logging) console.log("bg sending metadata", pwcount, bg, database);
+        sendResponse({ "masterpw": masterpw || "", "bg": bg, "database": database });
+    });
 }
 function onContentPageload(request, sender, sendResponse) {
     if (logging) console.log("bg onContentPageLoad", bg, request, sender);
     activetab = sender.tab;
     bg.pwcount = request.count;
-    pwcount = bg.pwcount;
+    pwcount = request.count;
+    // Save data that service worker needs after it restarts
+    chrome.storage.session.get(["savedData"], (s) => {
+        let savedData = {};
+        if (Object.keys(s).length > 0) savedData = s.savedData;
+        savedData[activetab.url] = pwcount;
+        if (logging) console.log("bg saving data", savedData[activetab.url]);
+        chrome.storage.session.set({"savedData": savedData});    
+    });
     let domainname = getdomainname(activetab.url);
     if (logging) console.log("domainname, masterpw, database, bg", domainname, isMasterPw(masterpw), database, bg);
     let sitename = database.domains[domainname];
@@ -127,7 +154,7 @@ function onContentPageload(request, sender, sendResponse) {
     if (sitename) {
         bg.settings = database.sites[sitename];
     } else {
-        if (!bg.settings) bg.settings = clone(defaultSettings);
+        bg.settings = clone(defaultSettings);
     }
     bg.settings.domainname = domainname;
     bg.settings.pwdomainname = getdomainname(sender.origin);
