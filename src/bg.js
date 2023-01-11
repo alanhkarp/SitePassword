@@ -112,6 +112,8 @@ async function getMetadata(request, _sender, sendResponse) {
     // Domain name comes from popup, which is trusted not to spoof it
     bg.settings.domainname = request.domainname;
     activetab = request.activetab;
+    // Don't lose database across async call
+    let db = database;
     // Restores data stored the last time this page was loaded
     let activetabUrl = activetab.url;
     if (logging) console.log("bg got active tab", activetab);
@@ -130,8 +132,8 @@ async function getMetadata(request, _sender, sendResponse) {
             bg.pwcount = 0;
         }
         domainname = getdomainname(activetabUrl);
-        if (logging) console.log("bg sending metadata", pwcount, bg, database);
-        sendResponse({ "masterpw": masterpw || "", "bg": bg, "database": database });
+        if (logging) console.log("bg sending metadata", pwcount, bg, db);
+        sendResponse({ "masterpw": masterpw || "", "bg": bg, "database": db });
     });
 }
 function onContentPageload(request, sender, sendResponse) {
