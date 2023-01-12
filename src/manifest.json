@@ -3,7 +3,7 @@
     "name": "Site Password",
     "short_name": "Site Password",
     "description": "Don't remember your passwords. Don't store them.  Calculate them!",
-    "version": "1.0",
+    "version": "1.0.1",
     "background": {
         "service_worker": "bg.js", 
         "type": "module"
