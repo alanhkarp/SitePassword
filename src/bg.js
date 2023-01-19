@@ -122,7 +122,7 @@ async function getMetadata(request, _sender, sendResponse) {
         // I don't create savedData in onContentPageLoad() for two reasons.
         //    1. Pages without a password field never send the message to trigger the save.
         //    2. file:/// pages don't get a content script to send that message.
-        // In those cases s is undefined, but I still need to send a response.
+        // In those cases s === {}, but I still need to send a response.
         if (chrome.runtime.lastError) {
             console.log("bg lastError", chrome.runtime.lastError);
         } else if (s && s.savedData && s.savedData[activetabUrl]) {
