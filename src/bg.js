@@ -119,10 +119,13 @@ async function getMetadata(request, _sender, sendResponse) {
     if (logging) console.log("bg got active tab", activetab);
     chrome.storage.session.get(["savedData"], (s)=> {
         if (logging) console.log("bg got saved data", s.savedData);
-        if (!s.savedData) return;
+        // I don't create savedData in onContentPageLoad() for two reasons.
+        //    1. Pages without a password field never send the message to trigger the save.
+        //    2. file:/// pages don't get a content script to send that message.
+        // In those cases s is undefined, but I still need to send a response.
         if (chrome.runtime.lastError) {
             console.log("bg lastError", chrome.runtime.lastError);
-        } else if (s.savedData[activetabUrl]) {
+        } else if (s && s.savedData && s.savedData[activetabUrl]) {
             if (logging) console.log("bg got saved data for", activetabUrl, s.savedData[activetabUrl]);
             pwcount = s.savedData[activetabUrl];
             bg.pwcount = pwcount;
@@ -133,7 +136,7 @@ async function getMetadata(request, _sender, sendResponse) {
         }
         domainname = getdomainname(activetabUrl);
         if (logging) console.log("bg sending metadata", pwcount, bg, db);
-        sendResponse({ "masterpw": masterpw || "", "bg": bg, "database": db });
+        sendResponse({"masterpw": masterpw || "", "bg": bg, "database": db});
     });
 }
 function onContentPageload(request, sender, sendResponse) {
