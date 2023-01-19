@@ -27,6 +27,7 @@
   }
   #root {
     display: block;
+    transition: opacity 2s;
   }
   #content {
     display: flex;

@@ -77,6 +77,7 @@ function eventSetup() {
     // this race is the source of any problems related to loss of the message sent here.
     get("mainpanel").onmouseleave = function () {
         if (logging) console.log(Date.now(), "popup window.mouseleave", phishing, bg);
+        get("root").style.opacity = 0.1;
         if (phishing) return; // Don't persist phishing sites
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
@@ -104,6 +105,7 @@ function eventSetup() {
         }, 750);
     }
     get("mainpanel").onmouseenter = function () {
+        get("root").style.opacity = 1;                
         clearTimeout(mainPanelTimer);
     }
     // UI Event handlers
