@@ -54,12 +54,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     bg = {};
     retrieveMetadata(sendResponse, () => {
         if (logging) console.log("bg listener back from retrieveMetadata", database);
-        chrome.storage.session.get(["SitePassword"], (value) => {
-            if (value.SitePassword) {
-                masterpw = value.SitePassword.masterpw || "";
-                bg.masterpw = masterpw;
-                if (logging) console.log("bg got ssp", value.SitePassword);
-            }
+        chrome.storage.session.get(["masterpw"], (value) => {
+            masterpw = value.masterpw || "";
+            bg.masterpw = masterpw;
+            if (logging) console.log("bg got ssp", value.SitePassword);
             if (request.cmd === "getMetadata") {
                 getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "siteData") {
@@ -178,7 +176,7 @@ function onContentPageload(request, sender, sendResponse) {
 async function persistMetadata(sendResponse) {
     // localStorage[name] = JSON.stringify(value);
     if (logging) console.log("bg persistMetadata", bg, database);
-    chrome.storage.session.set({ "SitePassword": { "masterpw": masterpw } });
+    chrome.storage.session.set({"masterpw": masterpw});
     let found = await getRootFolder(sendResponse);
     if (found.length > 1) return;
     let rootFolder = found[0];
