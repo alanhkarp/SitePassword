@@ -39,7 +39,7 @@ export const defaultSettings = {
     minlower: 1,
     minupper: 1,
     minnumber: 1,
-    minspecial: 0,
+    minspecial: 1,
     specials: config.specials,
 };
 
