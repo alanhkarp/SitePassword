@@ -6,6 +6,7 @@ if (logging) console.log("Version 1.0");
 var activetab;
 var domainname;
 var mainPanelTimer;
+var autoclose = true;
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 const clipboardText = "PW";
 var defaultTitle = "SitePassword";
@@ -77,13 +78,15 @@ function eventSetup() {
     // this race is the source of any problems related to loss of the message sent here.
     get("root").onmouseleave = function () {
         // If I close the window immediately, then messages in flight get lost
-        mainPanelTimer = setTimeout(() => {
-            if (!testMode) window.close();
-        }, 750);
+        if (autoclose) {
+            get("root").style.opacity = 0.1;
+            mainPanelTimer = setTimeout(() => {
+                if (!testMode) window.close();
+            }, 750);
+        }
     }
     get("mainpanel").onmouseleave = function () {
         if (logging) console.log(Date.now(), "popup window.mouseleave", phishing, bg);
-        get("root").style.opacity = 0.1;
         if (phishing) return; // Don't persist phishing sites
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
@@ -278,8 +281,10 @@ function eventSetup() {
         let $instructions = get("instructionpanel");
         if ($instructions.style.display == "none") {
             $instructions.style = "display:block";
+            autoclose = false;
         } else {
             $instructions.style = "display:none";
+            autoclose = true;
         }
     }
     get("warningbutton").onclick = function () {
@@ -306,7 +311,7 @@ function eventSetup() {
     }
 }
 function hidesitepw() {
-    console.log("popup checking hidesitepw", get("hidesitepw").checked, database.hidesitepw);
+    if (logging) console.log("popup checking hidesitepw", get("hidesitepw").checked, database.hidesitepw);
     if (get("hidesitepw").checked || database.hidesitepw) {
         get("sitepw").type = "password";
     } else {
