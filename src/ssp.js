@@ -92,7 +92,7 @@ function eventSetup() {
     }
     get("mainpanel").onmouseleave = function () {
         if (logging) console.log(Date.now(), "popup window.mouseleave", phishing, bg);
-        if (phishing) return; // Don't persist phishing sites
+        if (isphishing(get("sitename").value)) return; // Don't persist phishing sites
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
             bg.masterpw = get("masterpw").value || "";

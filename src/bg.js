@@ -64,8 +64,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 if (logging) console.log("bg got site data", request);
                 // Update time stamp if settings changed
                 let domainname = request.bg.settings.domainname;
-                let sitename = database.domains[domainname];
-                let oldsettings = database.sites[sitename];
                 bg = clone(request.bg);
                 masterpw = bg.masterpw || "";
                 persistMetadata(sendResponse);
