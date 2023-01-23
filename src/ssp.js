@@ -60,7 +60,12 @@ function getsettings() {
         bg = response.bg;
         database = response.database;
         hidesitepw();
-        if (!bg.settings.sitename) bg.settings.sitename = "";
+        if (!bg.settings.sitename) {
+            bg.settings.sitename = "";
+            get("settingsshow").style.display = "none";
+            get("settingssave").style.display = "inline";
+            get("settings").style.display = "block";
+    }
         get("masterpw").value = response.masterpw || "";
         init();
         if (logging) console.log("popup got metadata", bg, database);
@@ -423,10 +428,10 @@ function fill() {
 function showsettings() {
     get("settingsshow").style.display = "none";
     get("settingssave").style.display = "inline";
+    get("settings").style.display = "block";
     //get("domainname").value = bg.settings.domainname;
     get("masterpw").value = bg.masterpw || "";
     fill();
-    get("settings").style.display = "block";
     pwoptions(["lower", "upper", "number", "special"]);
 }
 function hidesettings() {
