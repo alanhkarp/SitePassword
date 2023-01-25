@@ -159,9 +159,10 @@ function eventSetup() {
         let d = isphishing(bg.settings.sitename)
         if (d) {
             let warnElement = get("phishingtext");
-            warnElement.innerHTML = "Warning: The domain name" 
-            warnElement.innerHTML += "<br /><br />" + d + "<br /><br />";
-            warnElement.innerHTML += "is different from what you saved for this site name. " 
+            warnElement.innerHTML = "Warning: You previously used this nickname for"
+            warnElement.innerHTML += "<br /></br />" + d + ",<br /><br />"
+            warnElement.innerHTML += "but the domain name for this page is"
+            warnElement.innerHTML += "<br /><br />" + get("domainname").value + ".<br /><br />";
             warnElement.innerHTML += "You may be at a fake site that is trying to steal your password."
             phishing = true;
             msgon("phishing");
@@ -315,6 +316,10 @@ function eventSetup() {
         get("username").value = "";
         chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
         window.close();
+    }
+    get("nicknamebutton").onclick = function () {
+        setfocus(get("sitename"));
+        msgoff("phishing");
     }
 }
 function hidesitepw() {
@@ -528,7 +533,7 @@ function isphishing(sitename) {
             if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
                 phishing = settings.pwdomainname;
             } else {
-                phishing = domainname;
+                phishing = d;
             }
         }
     });
