@@ -84,7 +84,7 @@ function eventSetup() {
     get("root").onmouseleave = function () {
         // If I close the window immediately, then messages in flight get lost
         if (autoclose) {
-            get("root").style.opacity = 0.1;
+            if (!testMode) get("root").style.opacity = 0.1;
             mainPanelTimer = setTimeout(() => {
                 if (!testMode) window.close();
             }, 750);
@@ -110,7 +110,9 @@ function eventSetup() {
                 "sitename": sitename,
                 "clearmasterpw": get("clearmasterpw").checked,
                 "hidesitepw": get("hidesitepw").checked,
-                "bg": bg
+                "bg": bg,
+                "clearMasterpw": database.clearMasterpw,
+                "hideSitepw": database.hideSitepw
             });
         }
     }

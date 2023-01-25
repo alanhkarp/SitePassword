@@ -63,8 +63,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);
                 // Update time stamp if settings changed
-                let domainname = request.bg.settings.domainname;
                 bg = clone(request.bg);
+                database.clearmasterpw = request.clearmasterpw;
+                database.hidesitepw = request.hidesitepw;
                 masterpw = bg.masterpw || "";
                 persistMetadata(sendResponse);
             } else if (request.cmd === "getPassword") {
@@ -169,44 +170,49 @@ function onContentPageload(request, sender, sendResponse) {
         sitepass = p;
     }
     if (logging) console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
-    sendResponse({ cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
+    sendResponse({ "cmd": "fillfields", 
+                   "u": bg.settings.username || "", "p": sitepass, 
+                   "clearMasterpw": database.clearMasterpw,
+                   "hideSitepw": database.hideSitepw,
+                   "readyForClick": readyForClick });
 }
 async function persistMetadata(sendResponse) {
     // localStorage[name] = JSON.stringify(value);
     if (logging) console.log("bg persistMetadata", bg, database);
     chrome.storage.session.set({"masterpw": masterpw});
+    let db = database;
     let found = await getRootFolder(sendResponse);
     if (found.length > 1) return;
     let rootFolder = found[0];
     let sitename = normalize(bg.settings.sitename);
     if (sitename) {
-        let oldsitename = database.domains[bg.settings.domainname];
+        let oldsitename = db.domains[bg.settings.domainname];
         if ((!oldsitename) || sitename === oldsitename) {
-            database.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
+            db.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
             if (bg.settings.pwdomainname !== bg.settings.domainname) {
-                database.domains[bg.settings.pwdomainname] = normalize(bg.settings.sitename);
+                db.domains[bg.settings.pwdomainname] = normalize(bg.settings.sitename);
             }
-            database.sites[sitename] = bg.settings;
+            db.sites[sitename] = bg.settings;
         } else {
             // Find all domains that point to oldsitename and have them point to
             // the new one
-            for (let entry of Object.entries(database.domains)) {
-                if (database.domains[entry[0]] === oldsitename) database.domains[entry[0]] = normalize(bg.settings.sitename);
+            for (let entry of Object.entries(db.domains)) {
+                if (db.domains[entry[0]] === oldsitename) db.domains[entry[0]] = normalize(bg.settings.sitename);
             }
-            database.sites[sitename] = bg.settings;
+            db.sites[sitename] = bg.settings;
             // then remove the old site name from database.sites
-            delete database.sites[oldsitename];
+            delete db.sites[oldsitename];
         }
     } // Ignore blank sitename
-    if (database && database.sites && database.sites[""] || database.sites["undefined"]) {
-        console.log("bg bad sitename", database);
-        delete database.sites[""];
-        delete database.sites["undefined"];
+    if (db && db.sites && db.sites[""] || db.sites["undefined"]) {
+        console.log("bg bad sitename", db);
+        delete db.sites[""];
+        delete db.sites["undefined"];
     }
-    if (database && database.domains && database.domains[""] || database.sites["undefined"]) {
-        console.log("bg bad domainname", database);
-        delete database.domains[""];
-        delete database.domains["undefined"];
+    if (db && db.domains && db.domains[""] || db.sites["undefined"]) {
+        console.log("bg bad domainname", db);
+        delete db.domains[""];
+        delete db.domains["undefined"];
     }
     if (logging) console.log("bg root folder", rootFolder);
     // The databae is saved as one bookmark for the common settings
@@ -222,7 +228,7 @@ async function persistMetadata(sendResponse) {
             domains.push(allchildren[i]);
         }
     }
-    let common = clone(database);
+    let common = clone(db);
     delete common.domains;
     delete common.sites;
     // No merge for now
@@ -242,10 +248,10 @@ async function persistMetadata(sendResponse) {
         if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
     }
     // Persist changes to domain settings
-    let domainnames = Object.keys(database.domains);
+    let domainnames = Object.keys(db.domains);
     for (let i = 0; i < domainnames.length; i++) {
-        let sitename = database.domains[domainnames[i]];
-        let settings = database.sites[sitename];
+        let sitename = db.domains[domainnames[i]];
+        let settings = db.sites[sitename];
         let url = "ssp://" + JSON.stringify(settings);
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
