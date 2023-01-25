@@ -47,6 +47,14 @@ if (logging) console.log("bg clear masterpw");
 
 if (logging) console.log("bg starting with database", database);
 
+// Need to clear cache following an update
+chrome.runtime.onInstalled.addListener(function(details) {
+    if (logging) console.log("bg clearing browser cache because of", details)
+    chrome.browsingData.removeCache({}, function() {
+        if (logging) console.log("bg cleared the browser cache");
+    });
+});
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (logging) console.log(Date.now(), "bg got message request, sender", request, sender);
     // Start with a new database in case something changed while the service worker stayed open
