@@ -190,11 +190,11 @@
     color: #C00 !important;
   }
   .warning {
-    margin: 1ex;
     padding : 1ex;
     border : 4pt solid red;
     background-color : white;
   /*
+    margin: 1ex;
     padding : 1ex;
     background-color : #C00;
     color: #FFF;
