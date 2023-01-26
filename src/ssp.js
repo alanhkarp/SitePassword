@@ -62,9 +62,7 @@ function getsettings() {
         hidesitepw();
         if (!bg.settings.sitename) {
             bg.settings.sitename = "";
-            get("settingsshow").style.display = "none";
-            get("settingssave").style.display = "inline";
-            get("settings").style.display = "block";
+            showsettings();
     }
         get("masterpw").value = response.masterpw || "";
         init();
@@ -92,7 +90,11 @@ function eventSetup() {
     }
     get("mainpanel").onmouseleave = function () {
         if (logging) console.log(Date.now(), "popup window.mouseleave", phishing, bg);
-        if (isphishing(get("sitename").value)) return; // Don't persist phishing sites
+        if (!get("username").value && isphishing(get("sitename").value)) { // Don't persist phishing sites
+            autoclose = false;
+            hidesettings();
+            return;
+        } 
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
             bg.masterpw = get("masterpw").value || "";
@@ -159,14 +161,17 @@ function eventSetup() {
         let d = isphishing(bg.settings.sitename)
         if (d) {
             let warnElement = get("phishingtext");
-            warnElement.innerHTML = "Warning: You previously used this nickname for"
-            warnElement.innerHTML += "<br /></br />" + d + ",<br /><br />"
-            warnElement.innerHTML += "but the domain name for this page is"
-            warnElement.innerHTML += "<br /><br />" + get("domainname").value + ".<br /><br />";
-            warnElement.innerHTML += "You may be at a fake site that is trying to steal your password."
+            warnElement.innerHTML = "<strong>Warning:</strong> You may be at a fake site that is trying to steal your password. ";
+            warnElement.innerHTML += "You previously used this nickname for";
+            warnElement.innerHTML += "<pre style=\"margin-left:1em;\">" + d + "</pre>";
+            warnElement.innerHTML += "but the domain name asking for your password is";
+            warnElement.innerHTML += "<pre style=\"margin-left:1em;\">" + get("domainname").value + "</pre>";
+            warnElement.innerHTML += "It is common to see different domain names for the same account login. ";
+            warnElement.innerHTML += "Click the top (green) button if that's not the case or the middle (red) button if it is. ";
+            warnElement.innerHTML += "You can also pick a new nickname if this page is for a different account.";
             phishing = true;
             msgon("phishing");
-            // bg.settings.domainname;
+            hidesettings();
             get("masterpw").disabled = true;
             get("username").disabled = true;
             get("sitepw").value = "";
@@ -319,6 +324,7 @@ function eventSetup() {
     }
     get("nicknamebutton").onclick = function () {
         setfocus(get("sitename"));
+        showsettings();
         msgoff("phishing");
     }
 }
