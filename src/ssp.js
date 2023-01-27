@@ -122,6 +122,9 @@ function eventSetup() {
         get("root").style.opacity = 1;                
         clearTimeout(mainPanelTimer);
     }
+    get("title").onclick = function () {
+        window.open("https://sitepassword.info");
+    }
     // UI Event handlers
     get("domainname").onkeyup = function () {
         get("sitename").value = "";
@@ -479,6 +482,7 @@ function sitedataHTML() {
     });
     let sd = ""
     sd += "<html><body><table>";
+    sd += "<caption>You can use these settings at <a href='https://sitepassword.info'>https://sitepassword.info</a></caption>";
     sd += "<tr>";
     sd += "<th>Site Name</th>";
     sd += "<th>Domain Name</th>";
