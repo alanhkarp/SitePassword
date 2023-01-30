@@ -27,7 +27,14 @@ window.onload = function () {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         activetab = tabs[0];
         if (logging) console.log("popup tab", activetab);
-        domainname = activetab.url.split("/")[2];
+        let protocol = activetab.url.split(":")[0];
+        if ( protocol === "file") {
+            domainname = activetab.url.split("///")[1];
+        } else if (protocol === "mailto") {
+            domainname = activetab.url.split(":")[1];
+        } else {
+            domainname = activetab.url.split("/")[2]
+        }
         get("domainname").value = domainname;
         get("sitepw").value = "";
         if (logging) console.log("popup got tab", domainname, activetab);
