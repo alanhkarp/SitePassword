@@ -81,9 +81,9 @@
               id="username"
               class="sans"
               type="text"
-              title="User name"
+              title="Your user-id for this account"
               value=""
-              placeholder="Your user-id for this site"
+              placeholder="Your user-id for this account"
             />
             <div id="useridcopy" class="icon inner-icon-1" title="Copy username to clipboard">
               <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M8 5v0a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v0M8 5v0a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v0"/></svg>
@@ -96,7 +96,7 @@
               class="fixed"
               readonly="readonly"
               type="text"
-              title="Your password for this site"
+              title="Your password for this account"
               value=""
               placeholder="Generated site password"
             />
@@ -111,7 +111,7 @@
             </div>
           </div>
           <div class="form-row">
-            <div id="nopw" class="warning nodisplay">
+            <div id="nopw" class="warning nodisplay" title="You may need to enable some characters, increase the pasword length, or reduce the number of special characters you're asking for.">
               <span id="nopwtext">
                 Site Password can't compute a password with these settings. You
                 either need to enable some characters, increase the pasword length,
@@ -156,7 +156,7 @@
                 id="cancelwarning"
                 type="button"
                 style="background-color: #00ff00; margin: auto; color: black; width:100%"
-                title="I don't recognize this domain name. Take me away from this web site.">
+                title="I don't recognize this domain name. Take me away from this web page.">
                 Get me to safety!
               </button>
               <p></p>
@@ -255,8 +255,18 @@
             </div>
             <hr />
             <div class="form-row">
-              <button id="sitedatagetbutton" type="button" style="display: inline" target="_blank" title="Download settings for all sites">Download Site Data</button>
-              <a id="data" href="data:application/octet-stream," target="_blank" style="display: none" download="SiteData.html">SiteData.html</a>
+              <button id="sitedatagetbutton" 
+                type="button" 
+                style="display: inline" 
+                target="_blank" 
+                title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
+                Download Site Data
+              </button>
+              <a id="data" 
+                 href="data:application/octet-stream," 
+                 target="_blank" 
+                 style="display: none" 
+                 download="SiteData.html">SiteData.html</a>
             </div>
           </div>
         </div>
@@ -280,7 +290,7 @@
                   <h3>Overview</h3>
                   <div id="overviewdiv" style="display: none">
                       <p>
-                          It's too hard for you to remember a strong password for every site
+                          It's too hard for you to remember a strong password for every account
                           you use. Password managers take care of this problem for you. Most
                           of them store your passwords in encrypted form, either on your
                           machine or in the cloud.
@@ -289,7 +299,7 @@
                           SitePassword is different from most password managers. Instead of
                           storing your passwords, it calculates them from a single master password
                           and your nickname and user name
-                          for the site. That means you can usually get your password if
+                          for the account. That means you can usually get your password if
                           you remember those three things. (Some web pages require additional
                           settings.) SitePassword automatically saves your settings, so
                           you don't have to remember them.
@@ -331,11 +341,11 @@
                           <em>Click SitePassword</em>. When you click on the SitePassword
                           icon, you'll see a form with the domain name field filled in.
                           Enter your master password, an easy to remember nickname for the
-                          site and your user name for the site. You will see your site
+                          account and your user name for the account. You will see your site
                           password being calculated as you type. 
                       </p>
                       <p>
-                          Mouse over to the site's password field, which now should tell you to
+                          Mouse over to the login form's password field, which now should tell you to
                           <em>Click here for password</em>. Click, and your password gets
                           filled in. When you reload the page, you'll see your user name filled in and
                           instructions to <em>Click here for password</em>. Click, and your
@@ -351,11 +361,11 @@
                       </p>
                       <p>
                           There may be a time when you want to forget the settings for a
-                          particular domain name. Maybe you cancelled your account at the
-                          site and want to use the site name for another one. Or, maybe
+                          particular domain name. Maybe you cancelled your accountand want 
+                          to use the account name for another one. Or, maybe
                           you inadverently accepted a phishing site. You can forget the
                           settings by opening the Bookmark Manager, and deleting the enty 
-                          in the <em<SitePasswordData</em> folder with the domain name you 
+                          in the <em>SitePasswordData</em> folder with the domain name you 
                           wish to forget.
                       </p>
                   </div>
@@ -378,23 +388,29 @@
                   <h3>Your Master Password</h3>
                   <div id="masterdiv" style="display:none">
                       <p>
-                          You should choose a strong master password, one with upper and
-                          lower case letters, numbers, and special characters. The stronger
-                          the better. The reason is simple. A bad guy who knows one site
-                          password and can guess your nickname and user name for that site
-                          can start guessing master passwords. You want to make that job has
-                          hard as you can.
+                        You should choose a strong master password, one with upper and
+                        lower case letters, numbers, and special characters. The stronger
+                        the better. The reason is simple. A bad guy who knows one site
+                        password and can guess your nickname and user name for that account
+                        can start guessing master passwords. You want to make that job has
+                        hard as you can.
                       </p>
                       <p>
-                          SitePassword doesn't prevent you from using a weak master password,
-                          but it does warn you. There is a strength indicator directly below
-                          the master password field. It uses a meter, words, and color to
-                          let you know how strong your master password is.
+                        You can protect yourself further by using different master passwords 
+                        for different kinds of accounts.  You could have one that you use for 
+                        banking, another for subscriptions, and a third for sites you find 
+                        sketchy.
                       </p>
                       <p>
-                          SitePassword cannot retrieve your master password. You should make
-                          sure it's something you won't easily forget. You might even want
-                          to write it down and keep the copy in a secure place.
+                        SitePassword doesn't prevent you from using a weak master password,
+                        but it does warn you. There is a strength indicator directly below
+                        the master password field. It uses a meter, words, and color to
+                        let you know how strong your master password is.
+                      </p>
+                      <p>
+                        SitePassword cannot retrieve your master password. You should make
+                        sure it's something you won't easily forget. You might even want
+                        to write it down and keep the copy in a secure place.
                       </p>
                   </div>
               </section>
@@ -432,7 +448,7 @@
                         appear in the master password 
                         strength meter to tell you how strong your site password is.    
                         For example, if your site password is orange, then it is weak. In 
-                        that case, just choose a different nickname for the site.
+                        that case, just choose a different nickname for the account.
                       </p>
                       <p>
                           Since SitePassword doesn't store your passwords, there's no way
@@ -501,10 +517,10 @@
                   <div id="changediv" style="display: none;">
                       <p>
                           Some sites make you change your password periodically. SitePassword
-                          makes that easy. Just change your nickname for the site. For example,
-                          if your current nickname is <em>MyBank2021</em>, and they make you change
-                          your password once a year, you could change the nickname to
-                          <em>MyBank2022</em>. Your new site password will be completely different
+                          makes that easy. Just change your nickname for the account. For example,
+                          if your current nickname is <em>MyBank1</em>, and they make you change
+                          your password, you could change the nickname to
+                          <em>MyBank2</em>. Your new site password will be completely different
                           from the old one.
                       </p>
                   </div>
@@ -533,7 +549,7 @@
                           is that you don't see either <em>Click here for password</em> or
                           <em>Click SitePassword</em> in the password field.  You'll know for 
                           sure that happened if neither of them shows up as a tooltip after 
-                          holding your mouse over the site's password field for a couple of
+                          holding your mouse over the login form's password field for a couple of
                           seconds.  In that case, click on the SitePassword icon and copy 
                           your site password to the clipboard
                       </p>
@@ -578,8 +594,8 @@
                           spoofing the one you think you are at. Unfortunately, you will
                           also see this warning when you are not being tricked. Many
                           websites have several different login pages with different domain
-                          names. So, when you see the warning, check the URL in the warning message
-                          to make sure it's a login page for the site you think it is.
+                          names. So, when you see the warning, check the domain name in the warning message
+                          to make sure it's a login page for the account you think it is.
                       </p>
                   </div>
               </section>
@@ -603,7 +619,7 @@
                       <p>
                           If you go to the same login page on a different machine that you
                           synchronize bookmarks with, you'll see your user name
-                          for the site filled in for you. That's because the extension
+                          for the account filled in for you. That's because the extension
                           stores your settings in a bookmark folder called
                           <em>SitePasswordData</em>. The extension uses the bookmark named 
                           CommonSettings for its own use. The
@@ -631,13 +647,13 @@
                   <div id="extensiondiv" style="display: none;">
                       <p>
                           There will be times when you are on a device that doesn't have 
-                          SitePassword installed, such as at a friend's house or on a mobile 
+                          SitePassword installed, such as at a friend's house or on your mobile 
                           device.  You can still get your passwords by going to 
                           <a href="https://sitepassword.info">sitepassword.info</a> or 
                           <a href="https://github.com/alanhkarp/SitePasswordWeb">the page on Github</a>.  
                           If you have synched your bookmarks to the device you are 
                           using, you can paste the appropriate bookmark into the form to 
-                          get your settings for the site.
+                          get your settings for the account.
                       </p>
                       <p>
                           See the instructions on the <a href="https://sitepassword.info">sitepassword.info</a> 
@@ -697,9 +713,9 @@
                       <p>
                           Many households have one machine shared by everybody. It's likely
                           that everyone uses the same user name and password for certain
-                          sites, such as streaming services. It's also likely that those
-                          people use their individual usernames and passwords for other
-                          sites, such as social media.
+                          accounts, such as streaming services. It's also likely that those
+                          people use their individual user names and passwords for other
+                          accounts, such as social media.
                       </p>
                       <p>
                           SitePassword accomodates those uses with a feature provided by
