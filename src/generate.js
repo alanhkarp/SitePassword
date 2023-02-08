@@ -112,6 +112,47 @@ export function normalize(name) {
     }
     return "";
 }
+function xorStrings(provided, sitepw) {
+    let b = sitepw;
+    // Make the strings equal length
+    while (sitepw.length > 0 && provided.length > b.length) {
+        b += sitepw;
+    } // b.length >= a.length
+    b = b.substring(0, provided.length); // b.length === provided.length
+    let result = [];
+    for (let i = 0; i < provided.length; i++) {
+      result.push(provided.charCodeAt(i) ^ b.charCodeAt(i));
+    }
+    return result;
+}
+function stringXorArray(sitepw, array) {
+    if (!sitepw) return "";
+    let b = sitepw;
+    while (array.length > b.length) {
+        b += sitepw;
+    }
+    b = b.substring(0, array.length);
+    let a = string2array(b);
+    for (let i = 0; i < array.length; i++) {
+        a[i] = a[i] ^ array[i];
+    }
+    let result = array2string(a);
+    return result;
+}
+function string2array(str) {
+    let array = [];
+    for (let i = 0; i < str.length; i++) {
+        array.push(str[i].charCodeAt());
+    }
+    return array;
+}
+function array2string(array) {
+    let str = "";
+    for (let i = 0; i < array.length; i++) {
+        str += String.fromCharCode(array[i]);
+    }
+    return str;
+}
 
 /* 
 This code is a major modification of the code released with the

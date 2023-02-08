@@ -1,6 +1,6 @@
 'use strict';
 import { generate, isMasterPw, normalize } from "./generate.js";
-const testMode = false;
+const testMode = true;
 const commonSettingsTitle = "CommonSettings";
 let logging = testMode;
 // State I want to keep around that doesn't appear in the file system
@@ -28,6 +28,8 @@ export const config = {
 export const defaultSettings = {
     sitename: "",
     username: "",
+    providedsitepw: false,
+    xor: new Array(12).fill(0),
     pwlength: 12,
     domainname: "",     // Domain name from the tab
     pwdomainname: "",   // Domain name from iframe with password field
