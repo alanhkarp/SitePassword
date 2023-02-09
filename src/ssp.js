@@ -48,6 +48,7 @@ function init() {
     get("masterpw").value = bg.masterpw || "";
     get("sitename").value = bg.settings.sitename || "";
     get("username").value = bg.settings.username || "";
+    fill();
     let protocol = activetab.url.split(":")[0];
     if (logging) console.log("popup testing for http", protocol);
     message("http", protocol !== "https");
@@ -237,6 +238,20 @@ function eventSetup() {
         chrome.action.setTitle({title: defaultTitle});
     }
     get("settingssave").onclick = hidesettings;
+    get("providesitepw").onclick = function () {
+        if (!(get("sitename") && get("username"))) return;
+        if (get("providesitepw").checked) {
+            get("sitepw").removeAttribute("readOnly");
+            get("sitepw").value = "";
+            get("sitepw").focus();
+            get("sitepw").placeholder = "Enter your site password";
+        } else {
+            get("sitepw").readOnly = true;
+            get("sitepw").placeholder = "Generated site password";
+            ask2generate();
+            defaultfocus();
+        }
+    }
     get("clearmasterpw").onclick = function () {
         database.clearmasterpw = get("clearmasterpw").checked;
     }
@@ -368,6 +383,11 @@ function handleblur(element, field) {
         bg.settings[field] = get(element).value;
     }
     bg.settings.characters = characters(bg.settings, database);
+    if (get("sitename").value && get("username").value) {
+        get("providesitepw").disabled = false;
+    } else {
+        get("providesitepw").disabled = true;
+    }
     ask2generate();
 }
 function handleclick(which) {
@@ -436,8 +456,23 @@ function fill() {
     }
     get("masterpw").value = bg.masterpw || "";
     if (logging) console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
+    get("providesitepw").checked = bg.settings.providesitepw;
+    if (get("sitename") && get("username")) {
+        get("providesitepw").disabled = false;
+    } else {
+        get("providesitepw").disabled = true;
+    }
+    if (get("providesitepw").checked && get("sitename") && get("username")) {
+        get("sitepw").removeAttribute("reaOonly");
+        get("sitepw").placeholder = "Enter your master password";
+        get("masterpw").focus();
+    } else {
+        get("sitepw").setAttribute("readOnly", true);
+        get("sitepw").placeholder = "Generated site password";
+        defaultfocus();
+    }
     get("clearmasterpw").checked = database.clearmasterpw;
-   get("hidesitepw").checked =  database.hidesitepw;
+    get("hidesitepw").checked =  database.hidesitepw;
     hidesitepw();
     get("pwlength").value = bg.settings.pwlength;
     get("startwithletter").checked = bg.settings.startwithletter;
