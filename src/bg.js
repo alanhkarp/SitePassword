@@ -1,6 +1,6 @@
 'use strict';
-import { generate, isMasterPw, normalize } from "./generate.js";
-const testMode = true;
+import { generate, isMasterPw, normalize, stringXorArray } from "./generate.js";
+const testMode = false;
 const commonSettingsTitle = "CommonSettings";
 let logging = testMode;
 // State I want to keep around that doesn't appear in the file system
@@ -28,7 +28,7 @@ export const config = {
 export const defaultSettings = {
     sitename: "",
     username: "",
-    providedsitepw: false,
+    providesitepw: false,
     xor: new Array(12).fill(0),
     pwlength: 12,
     domainname: "",     // Domain name from the tab
@@ -82,6 +82,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 let domainname = getdomainname(sender.origin);
                 bg.settings = bgsettings(domainname);
                 let p = generate(bg);
+                p = stringXorArray(p, bg.settings.xor);
                 if (database.clearmasterpw) {
                     masterpw = "";
                     bg.masterpw = "";
@@ -142,6 +143,7 @@ async function getMetadata(request, _sender, sendResponse) {
             bg.pwcount = 0;
         }
         domainname = getdomainname(activetabUrl);
+        if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
         if (logging) console.log("bg sending metadata", pwcount, bg, db);
         sendResponse({"masterpw": masterpw || "", "bg": bg, "database": db});
     });
@@ -177,6 +179,7 @@ function onContentPageload(request, sender, sendResponse) {
     let sitepass = "";
     if (bg.pwcount !== 0 && bg.settings.username) {
         let p = generate(bg);
+        p = stringXorArray(p, bg.settings.xor);
         sitepass = p;
     }
     if (logging) console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });

@@ -13,6 +13,9 @@ export function generate(bg) {
     }
     let s = n.toString() + '\t' + u.toString() + '\t' + m.toString();
     let p = compute(s, settings);
+    if (!settings.providesitepw) {
+        settings.xor = xorStrings(p, p); // set to 0s
+    }
     return p;
 }
 export function isMasterPw(masterpw) {
@@ -112,7 +115,7 @@ export function normalize(name) {
     }
     return "";
 }
-function xorStrings(provided, sitepw) {
+export function xorStrings(provided, sitepw) {
     let b = sitepw;
     // Make the strings equal length
     while (sitepw.length > 0 && provided.length > b.length) {
@@ -125,7 +128,7 @@ function xorStrings(provided, sitepw) {
     }
     return result;
 }
-function stringXorArray(sitepw, array) {
+export function stringXorArray(sitepw, array) {
     if (!sitepw) return "";
     let b = sitepw;
     while (array.length > b.length) {

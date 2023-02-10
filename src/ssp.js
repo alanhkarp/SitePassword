@@ -1,6 +1,6 @@
 'use strict';
-import { characters, generate, isMasterPw, normalize } from "./generate.js";
-const testMode = true;
+import { characters, generate, isMasterPw, normalize, stringXorArray, xorStrings } from "./generate.js";
+const testMode = false;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -210,6 +210,16 @@ function eventSetup() {
             if (logging) console.log("findpw clipboard write failed", e);
         });
     };
+    get("sitepw").onblur = function () {
+        if (get("sitepw").readOnly || !get("sitepw").value) return;
+        let provided = get("sitepw").value;
+        let computed = ask2generate(bg);
+        bg.settings.xor = xorStrings(provided, computed);
+        get("sitepw").value = provided;
+    }
+    get("sitepw").onkeyup = function () {
+        get("sitepw").onblur();
+    }
     get("sitepwcopy").onclick = function () {
         let sitepass = get("sitepw").value;
         navigator.clipboard.writeText(sitepass).then(() => {
@@ -240,6 +250,7 @@ function eventSetup() {
     get("settingssave").onclick = hidesettings;
     get("providesitepw").onclick = function () {
         if (!(get("sitename") && get("username"))) return;
+        bg.settings.providesitepw = get("providesitepw").checked;
         if (get("providesitepw").checked) {
             get("sitepw").removeAttribute("readOnly");
             get("sitepw").value = "";
@@ -423,27 +434,28 @@ function clearmasterpw() {
     }
 }
 function ask2generate() {
-    var p = "";
+    var computed = "";
     if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
         msgon("nopw");
     } else {
         msgoff("nopw");
-        p = generate(bg);
-        if (p) {
+        computed = generate(bg);
+        if (computed) {
             msgoff("nopw");
         } else {
-            p = "";
+            computed = "";
             if (get("masterpw").value) {
                 msgon("nopw");
             }
         }
     }
-    if (logging) console.log("popup filling sitepw field", p);
-    get("sitepw").value = p;
+    let provided = stringXorArray(computed, bg.settings.xor);
+    if (logging) console.log("popup filling sitepw field", computed);
+    get("sitepw").value = provided;
     hidesitepw();
-    const report = zxcvbn(p);
+    const report = zxcvbn(provided);
     get("sitepw").style.color = strengthColor[report.score];
-    return true;
+    return computed;
 }
 function fill() {
     if (bg.settings[domainname]) {
