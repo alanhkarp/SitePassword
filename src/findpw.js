@@ -131,23 +131,6 @@ function handleMutations(mutations) {
     clearTimeout(lasttry);
     // Find password field if added late
     if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
-    // Fill in the userid and password fields half a second after the last mutation
-    // in case the page cleared the values.
-    lasttry = setTimeout(() => {
-        let mutations = mutationObserver.takeRecords();
-        if (logging) console.log("findpw last try");
-        if (userid && cpi.idfield && cpi.idfield.value !== userid && !keyPressed) { // In case the mutations took away my changes
-            fillfield(cpi.idfield, userid);
-        }
-        if (sitepw && cpi.pwfields[0] && cpi.pwfields[0].value !== sitepw) {
-            fillfield(cpi.pwfields[0], sitepw);
-        }
-        keyPressed = false;
-        setPlaceholder(userid);
-        let myMutations = mutationObserver.takeRecords();
-        if (logging) console.log("findpw lastry my mutations", myMutations);
-        handleMutations(mutations);
-    }, 500);
     if (oldpwfield && oldpwfield === cpi.pwfields[0]) return; // Stop looking once I've found a password field
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from mutation observer");
     cpi = countpwid();
