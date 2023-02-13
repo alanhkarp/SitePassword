@@ -249,10 +249,10 @@ function eventSetup() {
     }
     get("settingssave").onclick = hidesettings;
     get("providesitepw").onclick = function () {
-        if (!(get("sitename") && get("username"))) return;
+        if (!(get("sitename").value && get("username").value)) return;
         bg.settings.providesitepw = get("providesitepw").checked;
         if (get("providesitepw").checked) {
-            get("sitepw").removeAttribute("readOnly");
+            get("sitepw").readOnly = false;
             get("sitepw").value = "";
             get("sitepw").focus();
             get("sitepw").placeholder = "Enter your site password";
@@ -469,17 +469,18 @@ function fill() {
     get("masterpw").value = bg.masterpw || "";
     if (logging) console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
     get("providesitepw").checked = bg.settings.providesitepw;
-    if (get("sitename") && get("username")) {
+    if (get("sitename").value && get("username").value) {
         get("providesitepw").disabled = false;
     } else {
         get("providesitepw").disabled = true;
     }
-    if (get("providesitepw").checked && get("sitename") && get("username")) {
-        get("sitepw").removeAttribute("reaOonly");
+    console.log("sitename username disabled", get("sitename").value, get("username").value, get("providesitepw").disabled);
+    if (get("providesitepw").checked && get("sitename").value && get("username").value) {
+        get("sitepw").readOnly = false;
         get("sitepw").placeholder = "Enter your master password";
         get("masterpw").focus();
     } else {
-        get("sitepw").setAttribute("readOnly", true);
+        get("sitepw").readOnly = true;
         get("sitepw").placeholder = "Generated site password";
         defaultfocus();
     }
