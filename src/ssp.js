@@ -394,7 +394,7 @@ function handleblur(element, field) {
         bg.settings[field] = get(element).value;
     }
     bg.settings.characters = characters(bg.settings, database);
-    if (get("sitename").value && get("username").value) {
+    if (get("providesitepw").value && get("sitename").value && get("username").value) {
         get("providesitepw").disabled = false;
     } else {
         get("providesitepw").disabled = true;
@@ -469,7 +469,7 @@ function fill() {
     get("masterpw").value = bg.masterpw || "";
     if (logging) console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
     get("providesitepw").checked = bg.settings.providesitepw;
-    if (get("sitename").value && get("username").value) {
+    if (get("masterpw").value && get("sitename").value && get("username").value) {
         get("providesitepw").disabled = false;
     } else {
         get("providesitepw").disabled = true;
