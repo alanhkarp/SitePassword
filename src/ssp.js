@@ -1,5 +1,5 @@
 'use strict';
-import { characters, generate, isMasterPw, normalize } from "./generate.js";
+import { characters, generate, isMasterPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 const testMode = false;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
@@ -48,6 +48,7 @@ function init() {
     get("masterpw").value = bg.masterpw || "";
     get("sitename").value = bg.settings.sitename || "";
     get("username").value = bg.settings.username || "";
+    fill();
     let protocol = activetab.url.split(":")[0];
     if (logging) console.log("popup testing for http", protocol);
     message("http", protocol !== "https");
@@ -209,6 +210,16 @@ function eventSetup() {
             if (logging) console.log("findpw clipboard write failed", e);
         });
     };
+    get("sitepw").onblur = function () {
+        if (get("sitepw").readOnly || !get("sitepw").value) return;
+        let provided = get("sitepw").value;
+        let computed = ask2generate(bg);
+        bg.settings.xor = xorStrings(provided, computed);
+        get("sitepw").value = provided;
+    }
+    get("sitepw").onkeyup = function () {
+        get("sitepw").onblur();
+    }
     get("sitepwcopy").onclick = function () {
         let sitepass = get("sitepw").value;
         navigator.clipboard.writeText(sitepass).then(() => {
@@ -237,6 +248,21 @@ function eventSetup() {
         chrome.action.setTitle({title: defaultTitle});
     }
     get("settingssave").onclick = hidesettings;
+    get("providesitepw").onclick = function () {
+        if (!(get("sitename").value && get("username").value)) return;
+        bg.settings.providesitepw = get("providesitepw").checked;
+        if (get("providesitepw").checked) {
+            get("sitepw").readOnly = false;
+            get("sitepw").value = "";
+            get("sitepw").focus();
+            get("sitepw").placeholder = "Enter your site password";
+        } else {
+            get("sitepw").readOnly = true;
+            get("sitepw").placeholder = "Generated site password";
+            ask2generate();
+            defaultfocus();
+        }
+    }
     get("clearmasterpw").onclick = function () {
         database.clearmasterpw = get("clearmasterpw").checked;
     }
@@ -368,6 +394,11 @@ function handleblur(element, field) {
         bg.settings[field] = get(element).value;
     }
     bg.settings.characters = characters(bg.settings, database);
+    if (get("sitename").value && get("username").value) {
+        get("providesitepw").disabled = false;
+    } else {
+        get("providesitepw").disabled = true;
+    }
     ask2generate();
 }
 function handleclick(which) {
@@ -403,27 +434,28 @@ function clearmasterpw() {
     }
 }
 function ask2generate() {
-    var p = "";
+    var computed = "";
     if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
         msgon("nopw");
     } else {
         msgoff("nopw");
-        p = generate(bg);
-        if (p) {
+        computed = generate(bg);
+        if (computed) {
             msgoff("nopw");
         } else {
-            p = "";
+            computed = "";
             if (get("masterpw").value) {
                 msgon("nopw");
             }
         }
     }
-    if (logging) console.log("popup filling sitepw field", p);
-    get("sitepw").value = p;
+    let provided = stringXorArray(computed, bg.settings.xor);
+    if (logging) console.log("popup filling sitepw field", computed);
+    get("sitepw").value = provided;
     hidesitepw();
-    const report = zxcvbn(p);
+    const report = zxcvbn(provided);
     get("sitepw").style.color = strengthColor[report.score];
-    return true;
+    return computed;
 }
 function fill() {
     if (bg.settings[domainname]) {
@@ -436,8 +468,24 @@ function fill() {
     }
     get("masterpw").value = bg.masterpw || "";
     if (logging) console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
+    get("providesitepw").checked = bg.settings.providesitepw;
+    if (get("sitename").value && get("username").value) {
+        get("providesitepw").disabled = false;
+    } else {
+        get("providesitepw").disabled = true;
+    }
+    console.log("sitename username disabled", get("sitename").value, get("username").value, get("providesitepw").disabled);
+    if (get("providesitepw").checked && get("sitename").value && get("username").value) {
+        get("sitepw").readOnly = false;
+        get("sitepw").placeholder = "Enter your master password";
+        get("masterpw").focus();
+    } else {
+        get("sitepw").readOnly = true;
+        get("sitepw").placeholder = "Generated site password";
+        defaultfocus();
+    }
     get("clearmasterpw").checked = database.clearmasterpw;
-   get("hidesitepw").checked =  database.hidesitepw;
+    get("hidesitepw").checked =  database.hidesitepw;
     hidesitepw();
     get("pwlength").value = bg.settings.pwlength;
     get("startwithletter").checked = bg.settings.startwithletter;
