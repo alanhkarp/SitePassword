@@ -87,17 +87,22 @@ In that case, open SitePassword and copy your site password to the clipboard.
 SitePassword could generate a weak site password just by chance.  To 
 let you know that has happened, it uses the same colors that 
 appear in the master password 
-strength meter to tell you how strong your site password is. For example, if your site password is orange, then it is weak. In that case, just choose a different nickname for the site.
+strength meter to tell you how strong your site password is. 
+For example, if your site password is orange, then it is weak. 
+In that case, just choose a different nickname for the site.
 
-Since SitePassword doesn't store your passwords, there's no way
-you can use your existing passwords with it. You will have to use
-the web site's *Change Password* or
-*Forgot Password*
-feature on sites where you already have accounts.
+Although it is not recommended, SitePassword can remember passwords 
+you provide.  They are stored in your settings encrypted with the computed
+password for the site as a key.  That means you must fill in the form before entering 
+your password. After you fill in the form, open the settings by clicking the gear icon
+and click the <em>Provide your own site password</em> check box.  You can 
+then enter your password into the site password field. 
 
 You can also get your passwords without the extension. Go to
 [SitePassword.info](https://sitepassword.info) or 
-[the page on Github](https://alanhkarp.github.io/SitePasswordWeb) and fill in the form.
+[the page on Github](https://alanhkarp.github.io/SitePasswordWeb) and fill in the form.  
+The passwords you provided will not be available from the web page unless you have 
+access to the bookmark for the site.
 
 [Computing an Acceptable Password](#acceptable)
 --------------------------
@@ -178,7 +183,9 @@ bookmarks with domain names for titles are for use on the
 There will be times when you are on a device that doesn't have 
 SitePassword installed, such as at a friend's house or on a mobile 
 device.  You can still get your passwords by going to 
-[sitepassword.info](https://sitepassword.info) or [the page on Github](https://alanhkarp.github.io/SitePasswordWeb).  If you have synched your bookmarks to the device you are 
+[sitepassword.info](https://sitepassword.info) or 
+[the page on Github](https://alanhkarp.github.io/SitePasswordWeb).  
+If you have synched your bookmarks to the device you are 
 using, you can paste the appropriate bookmark into the form to 
 get your settings for the site.
 
@@ -188,13 +195,7 @@ See the instructions on the [sitepassword.info](https://sitepassword.info) web p
 --------------------------
 
 There is a <em>Download Site Data</em> button at the bottom of
-the popup window after you click
-<svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg"
-    fill="none">
-    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
-    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
-</svg>.
+the popup window after you click the gear icon.
 Clicking this button lets you save your settings in a file you
 can reference if you need to look them up.  All settings created on machines that 
 synch your bookmarks are included.
