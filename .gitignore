@@ -1,2 +1,6 @@
 src.pem
 .#*scratch*
+*.log
+*.gz
+*.out
+*.aux
