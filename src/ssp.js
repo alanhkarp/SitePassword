@@ -65,6 +65,7 @@ function getsettings() {
         "domainname": domainname,
         "activetab": activetab
     }, (response) => {
+        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
         bg = response.bg;
         database = response.database;
         hidesitepw();
