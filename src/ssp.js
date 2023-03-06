@@ -474,7 +474,7 @@ function fill() {
     } else {
         get("providesitepw").disabled = true;
     }
-    console.log("sitename username disabled", get("sitename").value, get("username").value, get("providesitepw").disabled);
+    if (logging) console.log("sitename username disabled", get("sitename").value, get("username").value, get("providesitepw").disabled);
     if (get("providesitepw").checked && get("sitename").value && get("username").value) {
         get("sitepw").readOnly = false;
         get("sitepw").placeholder = "Enter your master password";
