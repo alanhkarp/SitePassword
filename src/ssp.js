@@ -374,7 +374,7 @@ function hidesitepw() {
 }
 function setMasterpwMeter(pw) {
     const $masterpw = get("masterpw");
-    const strengthText = ["Too weak", "Very weak", "Weak", "Good", "Strong"];
+    const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
     const $meter = get("password-strength-meter");
     const $meterText = get("password-strength-text");
     const report = zxcvbn(pw);
