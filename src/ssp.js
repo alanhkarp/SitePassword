@@ -553,6 +553,7 @@ function sitedataHTML() {
     sd += "<th>Allow Specials</th>";
     sd += "<th>Min Specials</th>";
     sd += "<th>Specials</th>";
+    sd += "<th>Code for User Provided Password</th>";
     sd += "</tr>";
     for (var i = 0; i < sorted.length; i++) {
         var domainname = sorted[i];
@@ -573,6 +574,7 @@ function sitedataHTML() {
         sd += "<td><pre>" + s.allowspecial + "</pre></td>";
         sd += "<td><pre>" + s.minspecial + "</pre></td>";
         sd += "<td><pre>" + s.specials + "</pre></td>";
+        sd += "<td><pre>" + (s.xor || "") + "</pre></td>";
         sd += "</tr>";
     }
     sd += "</table></body></html>";
