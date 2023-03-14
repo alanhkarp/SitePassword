@@ -6,7 +6,7 @@ you use. Password managers take care of this problem for you. Most
 of them store your passwords in encrypted form, either on your
 machine or in the cloud.
 
-SitePassword is different from most password managers. Instead of
+SitePassword is different. Instead of
 storing your passwords, it calculates them from a single master password
 and your nickname and user name
 for the site. That means you can usually get your password if
@@ -25,13 +25,13 @@ login form, you'll see that the password field tells you to
 *Click SitePassword*. When you click on the SitePassword
 icon, you'll see a form with the domain name field filled in.
 Enter your master password, an easy to remember nickname for the
-site and your user name for the site. You will see your site
+site, and your user name for the site. You will see your site
 password being calculated as you type. 
 
 Mouse over to the login page's password field, which now should tell you to
 *Click here for password*. Click, and your password gets
 filled in. When you reload the page from any machine you synchronize bookmarks
-with, you'll see your user name filled in and
+with that has the extension installed, you'll see your user name filled in and
 instructions to *Click here for password*. Click, and your
 password gets filled in. 
 
@@ -74,8 +74,9 @@ to write it down and keep the copy in a secure place.
 [Your Site Passwords](#site)
 --------------------------
 
-You only need to open SitePassword to enter your master password or to 
-set up a new site.  Most of the time, you can just click on the login 
+You only need to open SitePassword to enter your master password, to 
+set up a new site, or when SitePassword can't find the password field.  
+Most of the time, you can just click on the login 
 form's password field.  You'll know which to do because the password field will 
 say either *Click SitePassword* or *Click here for password*.  If the 
 password field says neither, just click on the password field and see if
@@ -91,18 +92,15 @@ strength meter to tell you how strong your site password is.
 For example, if your site password is orange, then it is weak. 
 In that case, just choose a different nickname for the site.
 
-Although it is not recommended, SitePassword can remember passwords 
-you provide.  They are stored in your settings encrypted with the computed
+When SitePassword can't generate a password acceptable to the site, it can remember a password 
+you provide.  This password is stored in your settings encrypted with the computed
 password for the site as a key.  That means you must fill in the form before entering 
-your password. After you fill in the form, open the settings by clicking the gear icon
-and click the <em>Provide your own site password</em> check box.  You can 
-then enter your password into the site password field. 
+your password. After you fill in the form, click the <em>Provide your own site password</em> 
+check box.  You can then enter your password into the site password field. 
 
 You can also get your passwords without the extension. Go to
 [SitePassword.info](https://sitepassword.info) or 
 [the page on Github](https://alanhkarp.github.io/SitePasswordWeb) and fill in the form.  
-The passwords you provided will not be available from the web page unless you have 
-access to the bookmark for the site.
 
 [Computing an Acceptable Password](#acceptable)
 --------------------------
@@ -116,15 +114,14 @@ and change the appropriate menu entries. SitePassword
 was tested on hundreds of web sites to make sure it can always
 compute a valid password.
 
-
 [Changing a Site Password](#change)
 --------------------------
 
 Some sites make you change your password periodically. SitePassword
 makes that easy. Just change your nickname for the site. For example,
-if your current nickname is *MyBank2021*, and they make you change
+if your current nickname is *MyBank1*, and they make you change
 your password once a year, you could change the nickname to
-*MyBank2022*.  Your new site password will be completely different
+*MyBank2*.  Your new site password will be completely different
 from the old one.
 
 [Clipboard](#clipboard)
@@ -157,24 +154,24 @@ the warning by using the SitePassword *Clear Clipboard* button.
 --------------------------
 
 SitePassword includes an antiphishing feature. If you try to use
-the same nickname for another domain name, you will get a big,
+the same nickname for a domain name you've already used, you will get a big,
 scary warning. It's telling you that you may be at a site
 spoofing the one you think you are at. Unfortunately, you will
 also see this warning when you are not being tricked. Many
 websites have several different login pages with different domain
-names. So, when you see the warning, check the URL in the warning message
+names for the same account. So, when you see the warning, check the URL in the warning message
 to make sure it's a login page for the site you think it is.
 
 [Synchronizing across Your Machines](#sync)
 --------------------------
 
 If you go to the same login page on a different machine that you
-synchronize bookmarks with, you'll see your user name
+synchronize bookmarks with and that has the extension installed, you'll see your user name
 for the site filled in for you. That's because the extension
 stores your settings in a bookmark folder called
 *SitePasswordData*. The extension uses the bookmark named
 *CommonSettings* for its own use. The
-bookmarks with domain names for titles are for use on the 
+bookmarks with domain names for titles are cam be used on the 
 [SitePassword.info](https://sitepassword.info) page.
 
 [The Extension and the Web Page](#extension)
@@ -200,18 +197,25 @@ Clicking this button lets you save your settings in a file you
 can reference if you need to look them up.  All settings created on machines that 
 synch your bookmarks are included.
 
-
 [Shared Machines](#shared)
 --------------------------
 
-Many households have one machine shared by everybody. It's likely that everyone uses the same user name and password for certain sites, such as streaming services. It's also likely that those people use their individual usernames and passwords for other sites, such as social media.
+Many households have one machine shared by everybody. It's likely that everyone 
+uses the same user name and password for certain sites, such as streaming services. 
+It's also likely that those people use their individual usernames and passwords for 
+other sites, such as social media.
 
-SitePassword accomodates those uses with a feature provided by Google called *profiles*. Since each profile gets its own bookmarks, create one profile for the shared account and one for each individual user.
+SitePassword accomodates those uses with a feature provided by your browser called *profiles*. 
+Since each profile gets its own bookmarks, create one profile for the shared account and 
+one for each individual user.
 
 [Source Code](#source)
 ----------------------
 
-If you are worried that SitePassword might go away, you can download the source code for the extension from the [SitePassword](https://github.com/alanhkarp/SitePassword) project and that of the web page from the [SitePasswordWeb](https://github.com/alanhkarp/SitePasswordWeb) project. (For historical reasons, these are separate projects with a lot of duplicated code.)
+If you are worried that SitePassword might go away, you can download the source code 
+for the extension from the [SitePassword](https://github.com/alanhkarp/SitePassword) 
+project and that of the web page from the [SitePasswordWeb](https://github.com/alanhkarp/SitePasswordWeb) 
+project. (For historical reasons, these are separate projects with a lot of duplicated code.)
 
 [Voluntary Payment](#payment)
 -----------------------------

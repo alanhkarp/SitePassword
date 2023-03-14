@@ -65,7 +65,7 @@
           <div class="form-row">
             <div style="flex: 1;"></div>
             <meter max="4" id="password-strength-meter"></meter>
-            <span id="password-strength-text">Don't Use</span>
+            <span id="password-strength-text">Too Weak</span>
             <div style="flex: 1;"></div>
           </div>
           <div class="form-row">
@@ -316,7 +316,7 @@
                           machine or in the cloud.
                       </p>
                       <p>
-                          SitePassword is different from most password managers. Instead of
+                          SitePassword is different. Instead of
                           storing your passwords, it calculates them from a single master password
                           and your nickname and user name
                           for the account. That means you can usually get your password if
@@ -367,7 +367,8 @@
                       <p>
                           Mouse over to the login form's password field, which now should tell you to
                           <em>Click here for password</em>. Click, and your password gets
-                          filled in. When you reload the page, you'll see your user name filled in and
+                          filled in. When you return to the page on any machine that synchronized your 
+                          bookmarks and has the extenstion installed, you'll see your user name filled in and
                           instructions to <em>Click here for password</em>. Click, and your
                           password gets filled in. 
                       </p>    
@@ -381,7 +382,7 @@
                       </p>
                       <p>
                           There may be a time when you want to forget the settings for a
-                          particular domain name. Maybe you cancelled your accountand want 
+                          particular domain name. Maybe you cancelled your account and want 
                           to use the account name for another one. Or, maybe
                           you inadverently accepted a phishing site. You can forget the
                           settings by opening the Bookmark Manager, and deleting the enty 
@@ -471,8 +472,8 @@
                         that case, just choose a different nickname for the account.
                       </p>
                       <p>
-                        Although it is not recommended, SitePassword can remember passwords 
-                        you provide.  They are stored in your settings encrypted with the computed
+                        When SitePassword can't generate a password acceptable to the site, it can remember a password 
+                        you provide.  It is stored in your settings encrypted with the computed
                         password for the site as a key.  That means you must fill in the form before entering 
                         your password. After you fill in the form, open the settings by clicking
                         <svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
@@ -480,14 +481,13 @@
                             d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
                           <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
                         </svg>
-                        and click the <em>Provide your own site password</em> check box.  You can 
-                        then enter your password into the site password field. 
+                        and click the <em>Provide your own site password</em> 
+                        check box.  You can then enter your password into the site password field.                         
                       </p>
-                              <p>
+                      <p>
                           You can also get your passwords without the extension. Go to
                           <a href="https://sitepassword.info">SitePassword.info</a> and fill
-                          in the form.  <b>You will not be able to get passwords you provided
-                          unless your bookmarks are available.</b>
+                          in the form.  
                       </p>
                   </div>
               </section>
@@ -618,10 +618,13 @@
                           SitePassword includes an antiphishing feature. If you try to use
                           the same nickname for another domain name, you will get a big,
                           scary warning. It's telling you that you may be at a site
-                          spoofing the one you think you are at. Unfortunately, you will
+                          spoofing the one you think you are at. 
+                      </p>
+                      <p> 
+                          Unfortunately, you will
                           also see this warning when you are not being tricked. Many
-                          websites have several different login pages with different domain
-                          names. So, when you see the warning, check the domain name in the warning message
+                          websites have several different login pages for the same account. 
+                          So, when you see the warning, check the domain name in the warning message
                           to make sure it's a login page for the account you think it is.
                       </p>
                   </div>
@@ -650,7 +653,7 @@
                           stores your settings in a bookmark folder called
                           <em>SitePasswordData</em>. The extension uses the bookmark named 
                           CommonSettings for its own use. The
-                          bookmarks with domain names for titles are for use on the 
+                          bookmarks with domain names for titles can be used on the 
                           <a href="https://sitepassword.info">SitePassword.info</a> page.
                       </p>
                   </div>
@@ -746,7 +749,7 @@
                       </p>
                       <p>
                           SitePassword accomodates those uses with a feature provided by
-                          Google called <em>profiles</em>. Each profile gets its own
+                          your browser called <em>profiles</em>. Each profile gets its own
                           bookmarks. Simply create one profile for the
                           shared account and one for each individual.
                       </p>

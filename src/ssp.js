@@ -375,7 +375,7 @@ function hidesitepw() {
 }
 function setMasterpwMeter(pw) {
     const $masterpw = get("masterpw");
-    const strengthText = ["Don't Use", "Bad", "Weak", "Good", "Strong"];
+    const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
     const $meter = get("password-strength-meter");
     const $meterText = get("password-strength-text");
     const report = zxcvbn(pw);
@@ -475,7 +475,7 @@ function fill() {
     } else {
         get("providesitepw").disabled = true;
     }
-    console.log("sitename username disabled", get("sitename").value, get("username").value, get("providesitepw").disabled);
+    if (logging) console.log("sitename username disabled", get("sitename").value, get("username").value, get("providesitepw").disabled);
     if (get("providesitepw").checked && get("sitename").value && get("username").value) {
         get("sitepw").readOnly = false;
         get("sitepw").placeholder = "Enter your master password";
@@ -554,6 +554,7 @@ function sitedataHTML() {
     sd += "<th>Allow Specials</th>";
     sd += "<th>Min Specials</th>";
     sd += "<th>Specials</th>";
+    sd += "<th>Code for User Provided Password</th>";
     sd += "</tr>";
     for (var i = 0; i < sorted.length; i++) {
         var domainname = sorted[i];
@@ -574,6 +575,7 @@ function sitedataHTML() {
         sd += "<td><pre>" + s.allowspecial + "</pre></td>";
         sd += "<td><pre>" + s.minspecial + "</pre></td>";
         sd += "<td><pre>" + s.specials + "</pre></td>";
+        sd += "<td><pre>" + (s.xor || "") + "</pre></td>";
         sd += "</tr>";
     }
     sd += "</table></body></html>";
