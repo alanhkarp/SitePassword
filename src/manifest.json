@@ -9,7 +9,7 @@
         "type": "module"
     },
     "action": {
-        "default_icon": "ssp.png",
+        "default_icon": "ssplogo.png",
         "default_popup": "ssp.html"
     },
     "content_scripts": [
