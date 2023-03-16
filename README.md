@@ -220,4 +220,4 @@ project. (For historical reasons, these are separate projects with a lot of dupl
 [Voluntary Payment](#payment)
 -----------------------------
 
-If you like SitePassword, please make a contribution to the [Internet Archive](https://archive.org/donate?origin=iawww-TopNavDonateButton) or your favorite charity.
+If you like SitePassword, please make a contribution to the [Nancy Lee Hurtt '70 Maryland Promise Scholarship](https://giving.umd.edu/giving/fund.php?name=nancy-lee-hurtt-70-maryland-promise-scholarship) or your favorite charity.
