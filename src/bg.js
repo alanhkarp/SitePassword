@@ -64,7 +64,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     bg = {};
     retrieveMetadata(sendResponse, () => {
         if (logging) console.log("bg listener back from retrieveMetadata", database);
-        chrome.storage.session.get(["masterpw"], (value) => {
+        sessionStorage.getItem("masterpw", (value) => {
             masterpw = value.masterpw || "";
             bg.masterpw = masterpw;
             if (logging) console.log("bg got ssp", value.SitePassword);
@@ -125,7 +125,8 @@ async function getMetadata(request, _sender, sendResponse) {
     // Restores data stored the last time this page was loaded
     let activetabUrl = activetab.url;
     if (logging) console.log("bg got active tab", activetab);
-    chrome.storage.session.get(["savedData"], (s)=> {
+    sessionStorage.getItem("savedData", (t)=> {
+        let s = JSON.parse(t);
         if (logging) console.log("bg got saved data", s.savedData);
         // I don't create savedData in onContentPageLoad() for two reasons.
         //    1. Pages without a password field never send the message to trigger the save.
@@ -154,12 +155,13 @@ function onContentPageload(request, sender, sendResponse) {
     bg.pwcount = request.count;
     pwcount = request.count;
     // Save data that service worker needs after it restarts
-    chrome.storage.session.get(["savedData"], (s) => {
+    sessionStorage.getItem("savedData", (t) => {
+        let s = JSON.parse(t);
         let savedData = {};
         if (Object.keys(s).length > 0) savedData = s.savedData;
         savedData[activetab.url] = pwcount;
         if (logging) console.log("bg saving data", savedData[activetab.url]);
-        chrome.storage.session.set({"savedData": savedData});    
+        sessionStorage.setItem("savedData", JSON.stringify(savedData));    
     });
     let domainname = getdomainname(activetab.url);
     if (logging) console.log("domainname, masterpw, database, bg", domainname, isMasterPw(masterpw), database, bg);
@@ -192,7 +194,7 @@ function onContentPageload(request, sender, sendResponse) {
 async function persistMetadata(sendResponse) {
     // localStorage[name] = JSON.stringify(value);
     if (logging) console.log("bg persistMetadata", bg, database);
-    chrome.storage.session.set({"masterpw": masterpw});
+    sessionStorage.setItem("masterpw", masterpw);
     let db = database;
     let found = await getRootFolder(sendResponse);
     if (found.length > 1) return;
@@ -345,7 +347,7 @@ async function retrieveMetadata(sendResponse, callback) {
         if (createBookmarksFolder) {
             if (logging) console.log("Creating SSP bookmark folder");
             createBookmarksFolder = false;
-            let bkmk = await chrome.bookmarks.create({ "parentId": "1", "title": sitedataBookmark });
+            let bkmk = await chrome.bookmarks.create({ "parentId": "toolbar_____", "title": sitedataBookmark });
             if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
             parseBkmk(bkmk.id, callback, sendResponse);
         }
