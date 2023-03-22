@@ -50,14 +50,14 @@ if (logging) console.log("bg clear masterpw");
 if (logging) console.log("bg starting with database", database);
 
 // Need to clear cache following an update
-browser.runtime.onInstalled.addListener(function (details) {
+chrome.runtime.onInstalled.addListener(function (details) {
     if (logging) console.log("bg clearing browser cache because of", details)
-    browser.browsingData.removeCache({}, function () {
+    chrome.browsingData.removeCache({}, function () {
         if (logging) console.log("bg cleared the browser cache");
     });
 });
 
-browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (logging) console.log(Date.now(), "bg got message request, sender", request, sender);
     // Start with a new database in case something changed while the service worker stayed open
     database = clone(databaseDefault);
@@ -130,8 +130,8 @@ async function getMetadata(request, _sender, sendResponse) {
     //    1. Pages without a password field never send the message to trigger the save.
     //    2. file:/// pages don't get a content script to send that message.
     // In those cases s === {}, but I still need to send a response.
-    if (browser.runtime.lastError) {
-        console.log("bg lastError", browser.runtime.lastError);
+    if (chrome.runtime.lastError) {
+        console.log("bg lastError", chrome.runtime.lastError);
     } else if (savedData && savedData[activetabUrl]) {
         if (logging) console.log("bg got saved data for", activetabUrl, savedData[activetabUrl]);
         pwcount = savedData[activetabUrl];
@@ -229,8 +229,8 @@ async function persistMetadata(sendResponse) {
     if (logging) console.log("bg root folder", rootFolder);
     // The databae is saved as one bookmark for the common settings
     // and a bookmark for each domain name.
-    let allchildren = await browser.bookmarks.getChildren(rootFolder.id); // Deleted some so recreate list
-    if (browser.runtime.lastError) console.log("bg lastError", browser.runtime.lastError);
+    let allchildren = await chrome.bookmarks.getChildren(rootFolder.id); // Deleted some so recreate list
+    if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
     let commonSettings = [];
     let domains = [];
     for (let i = 0; i < allchildren.length; i++) {
@@ -246,18 +246,18 @@ async function persistMetadata(sendResponse) {
     // No merge for now
     if (commonSettings.length === 0) {
         let url = "ssp://" + JSON.stringify(common);
-        browser.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url }, (commonBkmk) => {
+        chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url }, (commonBkmk) => {
             if (logging) console.log("bg created bookmark", commonBkmk.id);
         });
-        if (browser.runtime.lastError) console.log("bg lastError", browser.runtime.lastError);
+        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
     }
     let url = "ssp://" + JSON.stringify(common);
     if (commonSettings.length > 0 && url !== commonSettings[0].url.replace(/%22/g, "\"").replace(/%20/g, " ")) {
         let url = "ssp://" + JSON.stringify(common);
-        browser.bookmarks.update(commonSettings[0].id, { "url": url }, (_e) => {
+        chrome.bookmarks.update(commonSettings[0].id, { "url": url }, (_e) => {
             if (logging) console.log("bg updated bookmark", _e, commonSettings[0].id);
         });
-        if (browser.runtime.lastError) console.log("bg lastError", browser.runtime.lastError);
+        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
     }
     // Persist changes to domain settings
     let domainnames = Object.keys(db.domains);
@@ -270,10 +270,10 @@ async function persistMetadata(sendResponse) {
             let foundSettings = JSON.parse(found.url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
             if (!sameSettings(settings, foundSettings)) {
                 url = "ssp://" + JSON.stringify(settings);
-                browser.bookmarks.update(found.id, { "url": url }, (_e) => {
+                chrome.bookmarks.update(found.id, { "url": url }, (_e) => {
                     //if (logging) console.log("bg updated settings bookmark", _e, found);
                 });
-                if (browser.runtime.lastError) console.log("bg lastError", browser.runtime.lastError);
+                if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
             }
         } else {
             if (bg.settings.sitename &&
@@ -281,32 +281,32 @@ async function persistMetadata(sendResponse) {
                 (domainnames[i] === bg.settings.pwdomainname)) {
                 let title = domainnames[i];
                 url = "ssp://" + JSON.stringify(settings);
-                browser.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url }, (e) => {
+                chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url }, (e) => {
                     if (logging) console.log("bg created settings bookmark", e, title);
                 });
-                if (browser.runtime.lastError) console.log("bg lastError", browser.runtime.lastError);
+                if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
             }
         }
     }
 }
 async function parseBkmk(rootFolder, callback, sendResponse) {
     if (logging) console.log("bg parsing bookmark");
-    browser.bookmarks.getChildren(rootFolder, (children) => {
+    chrome.bookmarks.getChildren(rootFolder, (children) => {
         let seenTitles = {};
         let newdb = clone(databaseDefault);
         for (let i = 0; i < children.length; i++) {
             let title = children[i].title;
             // Remove legacy bookmarks
             if (!isNaN(title)) {
-                browser.bookmarks.remove(children[i].id);
-                if (browser.runtime.lastError) console.log("bg lastError", browser.runtime.lastError);
+                chrome.bookmarks.remove(children[i].id);
+                if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
             }
             if (seenTitles[title]) {
                 let seen = JSON.parse(children[seenTitles[title]].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
                 let dupl = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
                 if (sameSettings(seen, dupl)) {
-                    browser.bookmarks.remove(children[i].id);
-                    if (browser.runtime.lastError) console.log("bg lastError", browser.runtime.lastError);
+                    chrome.bookmarks.remove(children[i].id);
+                    if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
                 } else {
                     sendResponse("duplicate");
                     continue;
@@ -344,8 +344,8 @@ async function retrieveMetadata(sendResponse, callback) {
         if (createBookmarksFolder) {
             if (logging) console.log("Creating SSP bookmark folder");
             createBookmarksFolder = false;
-            let bkmk = await browser.bookmarks.create({ "parentId": "toolbar_____", "title": sitedataBookmark });
-            if (browser.runtime.lastError) console.log("bg lastError", browser.runtime.lastError);
+            let bkmk = await chrome.bookmarks.create({ "parentId": "toolbar_____", "title": sitedataBookmark });
+            if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
             parseBkmk(bkmk.id, callback, sendResponse);
         }
     }
@@ -354,7 +354,7 @@ async function getRootFolder(sendResponse) {
     // bookmarks.search finds any bookmark with a title containing the
     // search string, but I need to find one with an exact match.  I
     // also only want to include those in the bookmarks bar.
-    let candidates = await browser.bookmarks.search({ "title": sitedataBookmark });
+    let candidates = await chrome.bookmarks.search({ "title": sitedataBookmark });
     let folders = [];
     for (let i = 0; i < candidates.length; i++) {
         if (candidates[i].parentId === "toolbar_____" &&

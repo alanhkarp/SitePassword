@@ -88,7 +88,7 @@ function startup(sendPageInfo) {
     if (!mutationObserver) {
         mutationObserver = new MutationObserver(handleMutations);
         mutationObserver.observe(document.body, observerOptions);
-        browser.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
+        chrome.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
             if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
             readyForClick = request.readyForClick;
             let mutations = mutationObserver.takeRecords();
@@ -170,7 +170,7 @@ function sendpageinfo(cpi, clicked, onload) {
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length);
-    browser.runtime.sendMessage({
+    chrome.runtime.sendMessage({
         "count": cpi.pwfields.length,
         "clicked": clicked,
         "onload": onload
@@ -187,7 +187,7 @@ function sendpageinfo(cpi, clicked, onload) {
             alert(alertString);
             return;
         }
-        if (browser.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", browser.runtime.lastError);
+        if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
         if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
         readyForClick = response.readyForClick;
         userid = response.u;
@@ -235,7 +235,7 @@ function setPlaceholder(userid) {
 function pwfieldOnclick(event) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
     if ((!this.placeholder) || this.placeholder === clickHere) {
-        browser.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
+        chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
             sitepw = response;
             let mutations = mutationObserver.takeRecords();
             fillfield(this, response);
