@@ -4,7 +4,7 @@ const testMode = true;
 const commonSettingsTitle = "CommonSettings";
 let logging = testMode;
 // State I want to keep around that doesn't appear in the file system
-let sitedataBookmark = "SitePasswordData"; 
+let sitedataBookmark = "SitePasswordData";
 if (testMode) {
     sitedataBookmark = "SitePasswordDataTest"; //"SitePasswordDataTest";
 }
@@ -50,9 +50,9 @@ if (logging) console.log("bg clear masterpw");
 if (logging) console.log("bg starting with database", database);
 
 // Need to clear cache following an update
-browser.runtime.onInstalled.addListener(function(details) {
+browser.runtime.onInstalled.addListener(function (details) {
     if (logging) console.log("bg clearing browser cache because of", details)
-    browser.browsingData.removeCache({}, function() {
+    browser.browsingData.removeCache({}, function () {
         if (logging) console.log("bg cleared the browser cache");
     });
 });
@@ -64,48 +64,46 @@ browser.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     bg = {};
     retrieveMetadata(sendResponse, () => {
         if (logging) console.log("bg listener back from retrieveMetadata", database);
-        sessionStorage.getItem("masterpw", (value) => {
-            masterpw = value.masterpw || "";
-            bg.masterpw = masterpw;
-            if (logging) console.log("bg got ssp", value.SitePassword);
-            if (request.cmd === "getMetadata") {
-                getMetadata(request, sender, sendResponse);
-            } else if (request.cmd === "siteData") {
-                if (logging) console.log("bg got site data", request);
-                // Update time stamp if settings changed
-                bg = clone(request.bg);
-                database.clearmasterpw = request.clearmasterpw;
-                database.hidesitepw = request.hidesitepw;
-                masterpw = bg.masterpw || "";
-                persistMetadata(sendResponse);
-            } else if (request.cmd === "getPassword") {
-                let domainname = getdomainname(sender.origin);
-                bg.settings = bgsettings(domainname);
-                let p = generate(bg);
-                p = stringXorArray(p, bg.settings.xor);
-                if (database.clearmasterpw) {
-                    masterpw = "";
-                    bg.masterpw = "";
-                    persistMetadata(sendResponse);
-                }
-                if (logging) console.log("bg calculated sitepw", bg, database, p, isMasterPw(masterpw));
-                sendResponse(p);
-            } else if (request.clicked) {
-                domainname = getdomainname(sender.origin);
-                bg.domainname = domainname;
-                if (logging) console.log("bg clicked: sending response", bg);
-                sendResponse(bg);
-                if (database.clearmasterpw) {
-                    masterpw = "";
-                    if (logging) console.log("bg clear masterpw")
-                }
-            } else if (request.onload) {
-                onContentPageload(request, sender, sendResponse);
+        let masterpw = sessionStorage.getItem("masterpw") || "";
+        bg.masterpw = masterpw;
+        if (logging) console.log("bg got masterpw");
+        if (request.cmd === "getMetadata") {
+            getMetadata(request, sender, sendResponse);
+        } else if (request.cmd === "siteData") {
+            if (logging) console.log("bg got site data", request);
+            // Update time stamp if settings changed
+            bg = clone(request.bg);
+            database.clearmasterpw = request.clearmasterpw;
+            database.hidesitepw = request.hidesitepw;
+            masterpw = bg.masterpw || "";
+            persistMetadata(sendResponse);
+        } else if (request.cmd === "getPassword") {
+            let domainname = getdomainname(sender.url); // sender.origin in Chrome
+            bg.settings = bgsettings(domainname);
+            let p = generate(bg);
+            p = stringXorArray(p, bg.settings.xor);
+            if (database.clearmasterpw) {
+                masterpw = "";
+                bg.masterpw = "";
                 persistMetadata(sendResponse);
             }
-            database = clone(databaseDefault);
-            if (logging) console.log(Date.now(), "bg addListener returning", isMasterPw(masterpw));
-        });
+            if (logging) console.log("bg calculated sitepw", bg, database, p, isMasterPw(masterpw));
+            sendResponse(p);
+        } else if (request.clicked) {
+            domainname = getdomainname(sender.origin);
+            bg.domainname = domainname;
+            if (logging) console.log("bg clicked: sending response", bg);
+            sendResponse(bg);
+            if (database.clearmasterpw) {
+                masterpw = "";
+                if (logging) console.log("bg clear masterpw")
+            }
+        } else if (request.onload) {
+            onContentPageload(request, sender, sendResponse);
+            persistMetadata(sendResponse);
+        }
+        database = clone(databaseDefault);
+        if (logging) console.log(Date.now(), "bg addListener returning", isMasterPw(masterpw));
     });
     return true;
 });
@@ -125,29 +123,28 @@ async function getMetadata(request, _sender, sendResponse) {
     // Restores data stored the last time this page was loaded
     let activetabUrl = activetab.url;
     if (logging) console.log("bg got active tab", activetab);
-    sessionStorage.getItem("savedData", (t)=> {
-        let s = JSON.parse(t);
-        if (logging) console.log("bg got saved data", s.savedData);
-        // I don't create savedData in onContentPageLoad() for two reasons.
-        //    1. Pages without a password field never send the message to trigger the save.
-        //    2. file:/// pages don't get a content script to send that message.
-        // In those cases s === {}, but I still need to send a response.
-        if (browser.runtime.lastError) {
-            console.log("bg lastError", browser.runtime.lastError);
-        } else if (s && s.savedData && s.savedData[activetabUrl]) {
-            if (logging) console.log("bg got saved data for", activetabUrl, s.savedData[activetabUrl]);
-            pwcount = s.savedData[activetabUrl];
-            bg.pwcount = pwcount;
-        } else {
-            if (logging) console.log("bg no saved data for", activetabUrl, s.savedData);
-            pwcount = 0;
-            bg.pwcount = 0;
-        }
-        domainname = getdomainname(activetabUrl);
-        if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
-        if (logging) console.log("bg sending metadata", pwcount, bg, db);
-        sendResponse({"masterpw": masterpw || "", "bg": bg, "database": db});
-    });
+    let t = sessionStorage.getItem("savedData");
+    let savedData = JSON.parse(t);
+    if (logging) console.log("bg got saved data", savedData);
+    // I don't create savedData in onContentPageLoad() for two reasons.
+    //    1. Pages without a password field never send the message to trigger the save.
+    //    2. file:/// pages don't get a content script to send that message.
+    // In those cases s === {}, but I still need to send a response.
+    if (browser.runtime.lastError) {
+        console.log("bg lastError", browser.runtime.lastError);
+    } else if (savedData && savedData[activetabUrl]) {
+        if (logging) console.log("bg got saved data for", activetabUrl, savedData[activetabUrl]);
+        pwcount = savedData[activetabUrl];
+        bg.pwcount = pwcount;
+    } else {
+        if (logging) console.log("bg no saved data for", activetabUrl, savedData);
+        pwcount = 0;
+        bg.pwcount = 0;
+    }
+    domainname = getdomainname(activetabUrl);
+    if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
+    if (logging) console.log("bg sending metadata", pwcount, bg, db);
+    sendResponse({ "masterpw": masterpw || "", "bg": bg, "database": db });
 }
 function onContentPageload(request, sender, sendResponse) {
     if (logging) console.log("bg onContentPageLoad", bg, request, sender);
@@ -155,16 +152,13 @@ function onContentPageload(request, sender, sendResponse) {
     bg.pwcount = request.count;
     pwcount = request.count;
     // Save data that service worker needs after it restarts
-    sessionStorage.getItem("savedData", (t) => {
-        let s = JSON.parse(t);
-        let savedData = {};
-        if (Object.keys(s).length > 0) savedData = s.savedData;
-        savedData[activetab.url] = pwcount;
-        if (logging) console.log("bg saving data", savedData[activetab.url]);
-        sessionStorage.setItem("savedData", JSON.stringify(savedData));    
-    });
+    let t = sessionStorage.getItem("savedData");
+    let savedData = JSON.parse(t) || {};
+    savedData[activetab.url] = pwcount;
+    if (logging) console.log("bg saving data", savedData[activetab.url]);
+    sessionStorage.setItem("savedData", JSON.stringify(savedData));
     let domainname = getdomainname(activetab.url);
-    if (logging) console.log("domainname, masterpw, database, bg", domainname, isMasterPw(masterpw), database, bg);
+    if (logging) console.log("bg domainname, masterpw, database, bg", domainname, isMasterPw(masterpw), database, bg);
     let sitename = database.domains[domainname];
     if (logging) console.log("bg |sitename|, settings, database", sitename, database.sites[sitename], database);
     if (sitename) {
@@ -173,7 +167,7 @@ function onContentPageload(request, sender, sendResponse) {
         bg.settings = clone(defaultSettings);
     }
     bg.settings.domainname = domainname;
-    bg.settings.pwdomainname = getdomainname(sender.origin);
+    bg.settings.pwdomainname = getdomainname(sender.url); // sender.origin in Chrome
     let readyForClick = false;
     if (masterpw && bg.settings.sitename && bg.settings.username) {
         readyForClick = true;
@@ -185,15 +179,18 @@ function onContentPageload(request, sender, sendResponse) {
         sitepass = p;
     }
     if (logging) console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
-    sendResponse({ "cmd": "fillfields", 
-                   "u": bg.settings.username || "", "p": sitepass, 
-                   "clearMasterpw": database.clearMasterpw,
-                   "hideSitepw": database.hideSitepw,
-                   "readyForClick": readyForClick });
+    sendResponse({
+        "cmd": "fillfields",
+        "u": bg.settings.username || "", "p": sitepass,
+        "clearMasterpw": database.clearMasterpw,
+        "hideSitepw": database.hideSitepw,
+        "readyForClick": readyForClick
+    });
 }
 async function persistMetadata(sendResponse) {
     // localStorage[name] = JSON.stringify(value);
     if (logging) console.log("bg persistMetadata", bg, database);
+    masterpw = bg.masterpw;
     sessionStorage.setItem("masterpw", masterpw);
     let db = database;
     let found = await getRootFolder(sendResponse);
@@ -279,7 +276,7 @@ async function persistMetadata(sendResponse) {
                 if (browser.runtime.lastError) console.log("bg lastError", browser.runtime.lastError);
             }
         } else {
-            if (bg.settings.sitename && 
+            if (bg.settings.sitename &&
                 (domainnames[i] === bg.settings.domainname) ||
                 (domainnames[i] === bg.settings.pwdomainname)) {
                 let title = domainnames[i];
@@ -387,7 +384,7 @@ function retrieved(callback) {
         settings = clone(defaultSettings);
     }
     if (activetab) protocol = getprotocol(activetab.url);
-    if (!bg.settings) bg.settings = settings; 
+    if (!bg.settings) bg.settings = settings;
     bg.masterpw = masterpw || "";
     if (logging) console.log(Date.now(), "bg leaving retrieived", bg, database);
     callback();
