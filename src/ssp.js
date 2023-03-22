@@ -24,7 +24,7 @@ if (logging) console.log("popup starting");
 
 window.onload = function () {
     if (logging) console.log("popup getting active tab");
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
+    browser.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         activetab = tabs[0];
         if (logging) console.log("popup tab", activetab);
         let protocol = activetab.url.split(":")[0];
@@ -60,12 +60,12 @@ function init() {
 }
 function getsettings() {
     if (logging) console.log("popup getsettings", domainname);
-    chrome.runtime.sendMessage({
+    browser.runtime.sendMessage({
         "cmd": "getMetadata",
         "domainname": domainname,
         "activetab": activetab
     }, (response) => {
-        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
+        if (browser.runtime.lastError) console.log("popup lastError", browser.runtime.lastError);
         bg = response.bg;
         database = response.database;
         hidesitepw();
@@ -76,7 +76,7 @@ function getsettings() {
         get("masterpw").value = response.masterpw || "";
         init();
         if (logging) console.log("popup got metadata", bg, database);
-        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
+        if (browser.runtime.lastError) console.log("popup lastError", browser.runtime.lastError);
         message("multiple", bg.pwcount > 1);
         message("zero", bg.pwcount == 0);
     });
@@ -116,7 +116,7 @@ function eventSetup() {
             changePlaceholder();
             bg.settings.domainname = domainname;
             if (logging) console.log("popup sending site data", domainname, bg);
-           chrome.runtime.sendMessage({
+           browser.runtime.sendMessage({
                 "cmd": "siteData",
                 "sitename": sitename,
                 "clearmasterpw": get("clearmasterpw").checked,
@@ -225,9 +225,9 @@ function eventSetup() {
         let sitepass = get("sitepw").value;
         navigator.clipboard.writeText(sitepass).then(() => {
             if (logging) console.log("findpw wrote to clipboard", sitepass);
-            chrome.action.setBadgeText({text: clipboardText});
-            chrome.action.setTitle({title: "A site password may be on the clipboard."});
-            chrome.action.setBadgeBackgroundColor({color: "#CC0000"});
+            browser.action.setBadgeText({text: clipboardText});
+            browser.action.setTitle({title: "A site password may be on the clipboard."});
+            browser.action.setBadgeBackgroundColor({color: "#CC0000"});
         }).catch((e) => {
             if (logging) console.log("findpw clipboard write failed", e);
         });
@@ -245,8 +245,8 @@ function eventSetup() {
     get("settingsshow").onclick = showsettings;
     get("clearclipboard").onclick = function() {
         navigator.clipboard.writeText("");
-        chrome.action.setBadgeText({text: ""});
-        chrome.action.setTitle({title: defaultTitle});
+        browser.action.setBadgeText({text: ""});
+        browser.action.setTitle({title: defaultTitle});
     }
     get("settingssave").onclick = hidesettings;
     get("providesitepw").onclick = function () {
@@ -356,7 +356,7 @@ function eventSetup() {
         get("domainname").value = "";
         get("sitename").value = "";
         get("username").value = "";
-        chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
+        browser.tabs.update(activetab.id, { url: "chrome://newtab" });
         window.close();
     }
     get("nicknamebutton").onclick = function () {
@@ -416,7 +416,7 @@ function changePlaceholder() {
     let u = get("username").value
     if (get("masterpw").value && get("sitename").value && u) {
         if (logging) console.log("popup sending fill fields", u);
-        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
+        browser.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
     }
 }
 function setfocus(element) {
@@ -580,7 +580,7 @@ function sitedataHTML() {
     }
     sd += "</table></body></html>";
     let url = "data:application/octet-stream," + encodeURIComponent(sd);
-    chrome.downloads.download({
+    browser.downloads.download({
         "url": url,
         "filename": "SiteData.html",
         "conflictAction": "uniquify",
