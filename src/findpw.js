@@ -1,6 +1,6 @@
 // Content script for ssp
 'use strict';
-var logging = true;
+var logging = false;
 var hideLabels = true; // Make it easy to turn off label hiding
 var clickSitePassword = "Click SitePassword";
 var clickSitePasswordTitle = "Click on the SitePassword icon"
@@ -35,7 +35,7 @@ if (document.readyState !== "loading") {
     startup(true);
 } else {
     if (logging) console.log(document.URL, Date.now() - start, "findpw running document.onload");
-    addEventListener("pageshow", (event) => startup(true));
+    document.onload = startup;
 }
 // A few other pages don't find the password fields until all downloads have completed
 window.onload = function () {
@@ -79,7 +79,6 @@ function searchShadowRoots(element) {
     return result.concat(childResults).flat();
 }
 function startup(sendPageInfo) {
-    if (logging) console.log(document.URL, Date.now() - start, "findpw startup");
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
     // However, someone may have hosted the page at a different URL.  Hence, the test.
     // Don't do anything if this is a SitePasswordWeb page
