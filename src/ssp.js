@@ -121,7 +121,7 @@ function eventSetup() {
                 "clearmasterpw": get("clearmasterpw").checked,
                 "hidesitepw": get("hidesitepw").checked,
                 "bg": bg,
-                "clearMasterpw": database.clearMasterpw,
+                "clearmasterpw": database.clearmasterpw,
                 "hideSitepw": database.hideSitepw
             });
         }

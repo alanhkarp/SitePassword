@@ -45,6 +45,11 @@ export const defaultSettings = {
     specials: config.specials,
 };
 
+let bkmksId;
+chrome.bookmarks.getTree((nodes) => {
+    bkmksId = nodes[0].children[0].id
+});
+
 if (logging) console.log("bg clear masterpw");
 
 if (logging) console.log("bg starting with database", database);
@@ -64,10 +69,18 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     bg = {};
     retrieveMetadata(sendResponse, () => {
         if (logging) console.log("bg listener back from retrieveMetadata", database);
-        chrome.storage.session.get(["masterpw"], (value) => {
-            masterpw = value.masterpw || "";
+        try {
+            let masterpw = sessionStorage.getItem("masterpw");
+            remainder(masterpw);
+        } catch {
+            chrome.storage.session.get(["masterpw"], (value) => {
+                remainder(value.masterpw);
+            });
+        }
+        function remainder(masterpw) {
+            masterpw = masterpw || ""; // Need to set global value
             bg.masterpw = masterpw;
-            if (logging) console.log("bg got ssp", value.SitePassword);
+            if (logging) console.log("bg got ssp", isMasterPw(masterpw));
             if (request.cmd === "getMetadata") {
                 getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "siteData") {
@@ -79,7 +92,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 masterpw = bg.masterpw || "";
                 persistMetadata(sendResponse);
             } else if (request.cmd === "getPassword") {
-                let domainname = getdomainname(sender.origin);
+                let domainname = getdomainname(sender.origin || sender.url);
                 bg.settings = bgsettings(domainname);
                 let p = generate(bg);
                 p = stringXorArray(p, bg.settings.xor);
@@ -91,13 +104,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 if (logging) console.log("bg calculated sitepw", bg, database, p, isMasterPw(masterpw));
                 sendResponse(p);
             } else if (request.clicked) {
-                domainname = getdomainname(sender.origin);
+                domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
                 if (logging) console.log("bg clicked: sending response", bg);
                 sendResponse(bg);
                 if (database.clearmasterpw) {
                     masterpw = "";
-                    if (logging) console.log("bg clear masterpw")
+                    if (logging) console.log("bg clear masterpw", isMasterPw(masterpw));
                 }
             } else if (request.onload) {
                 onContentPageload(request, sender, sendResponse);
@@ -105,7 +118,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             }
             database = clone(databaseDefault);
             if (logging) console.log(Date.now(), "bg addListener returning", isMasterPw(masterpw));
-        });
+        };
     });
     return true;
 });
@@ -125,20 +138,29 @@ async function getMetadata(request, _sender, sendResponse) {
     // Restores data stored the last time this page was loaded
     let activetabUrl = activetab.url;
     if (logging) console.log("bg got active tab", activetab);
-    chrome.storage.session.get(["savedData"], (s)=> {
-        if (logging) console.log("bg got saved data", s.savedData);
+    try {
+        let t = sessionStorage.getItem("savedData");
+        let savedData = JSON.parse(t) || {};
+        remainder(savedData);
+    } catch {
+        chrome.storage.session.get(["savedData"], (s)=> {
+            if (logging) console.log("bg got saved data", s);
+            let savedData = {};
+            if (s) savedData = s.savedData;
+            remainder(savedData);
+        });
+    }
+    function remainder(savedData) {
         // I don't create savedData in onContentPageLoad() for two reasons.
         //    1. Pages without a password field never send the message to trigger the save.
         //    2. file:/// pages don't get a content script to send that message.
         // In those cases s === {}, but I still need to send a response.
-        if (chrome.runtime.lastError) {
-            console.log("bg lastError", chrome.runtime.lastError);
-        } else if (s && s.savedData && s.savedData[activetabUrl]) {
-            if (logging) console.log("bg got saved data for", activetabUrl, s.savedData[activetabUrl]);
-            pwcount = s.savedData[activetabUrl];
+        if (savedData[activetabUrl]) {
+            if (logging) console.log("bg got saved data for", activetabUrl, savedData[activetabUrl]);
+            pwcount = savedData[activetabUrl];
             bg.pwcount = pwcount;
         } else {
-            if (logging) console.log("bg no saved data for", activetabUrl, s.savedData);
+            if (logging) console.log("bg no saved data for", activetabUrl, savedData);
             pwcount = 0;
             bg.pwcount = 0;
         }
@@ -146,7 +168,7 @@ async function getMetadata(request, _sender, sendResponse) {
         if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
         if (logging) console.log("bg sending metadata", pwcount, bg, db);
         sendResponse({"masterpw": masterpw || "", "bg": bg, "database": db});
-    });
+    };
 }
 function onContentPageload(request, sender, sendResponse) {
     if (logging) console.log("bg onContentPageLoad", bg, request, sender);
@@ -154,13 +176,27 @@ function onContentPageload(request, sender, sendResponse) {
     bg.pwcount = request.count;
     pwcount = request.count;
     // Save data that service worker needs after it restarts
-    chrome.storage.session.get(["savedData"], (s) => {
-        let savedData = {};
-        if (Object.keys(s).length > 0) savedData = s.savedData;
+    try {
+        let t = sessionStorage.getItem("savedData");
+        let savedData = JSON.parse(t) || {};
+        remainder(savedData);
+    } catch {
+        chrome.storage.session.get(["savedData"], (s) => {
+            let savedData = {};
+            if (Object.keys(s).length > 0) savedData = s.savedData;
+            remainder(savedData);
+        });
+    }
+    function remainder(savedData) {
         savedData[activetab.url] = pwcount;
         if (logging) console.log("bg saving data", savedData[activetab.url]);
-        chrome.storage.session.set({"savedData": savedData});    
-    });
+        try {
+            let s = JSON.stringify(savedData);
+            sessionStorage.setItem("savedData", s);
+        } catch {
+            chrome.storage.session.set({"savedData": savedData});
+        }    
+    };
     let domainname = getdomainname(activetab.url);
     if (logging) console.log("domainname, masterpw, database, bg", domainname, isMasterPw(masterpw), database, bg);
     let sitename = database.domains[domainname];
@@ -171,7 +207,7 @@ function onContentPageload(request, sender, sendResponse) {
         bg.settings = clone(defaultSettings);
     }
     bg.settings.domainname = domainname;
-    bg.settings.pwdomainname = getdomainname(sender.origin);
+    bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
     let readyForClick = false;
     if (masterpw && bg.settings.sitename && bg.settings.username) {
         readyForClick = true;
@@ -185,14 +221,19 @@ function onContentPageload(request, sender, sendResponse) {
     if (logging) console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
     sendResponse({ "cmd": "fillfields", 
                    "u": bg.settings.username || "", "p": sitepass, 
-                   "clearMasterpw": database.clearMasterpw,
+                   "clearmasterpw": database.clearmasterpw,
                    "hideSitepw": database.hideSitepw,
                    "readyForClick": readyForClick });
 }
 async function persistMetadata(sendResponse) {
     // localStorage[name] = JSON.stringify(value);
     if (logging) console.log("bg persistMetadata", bg, database);
-    chrome.storage.session.set({"masterpw": masterpw});
+    masterpw = bg.masterpw;
+    try {
+        sessionStorage.setItem("masterpw", masterpw);
+    } catch {
+        chrome.storage.session.set({"masterpw": masterpw});
+    }
     let db = database;
     let found = await getRootFolder(sendResponse);
     if (found.length > 1) return;
@@ -345,7 +386,7 @@ async function retrieveMetadata(sendResponse, callback) {
         if (createBookmarksFolder) {
             if (logging) console.log("Creating SSP bookmark folder");
             createBookmarksFolder = false;
-            let bkmk = await chrome.bookmarks.create({ "parentId": "1", "title": sitedataBookmark });
+            let bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
             if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
             parseBkmk(bkmk.id, callback, sendResponse);
         }
@@ -358,7 +399,7 @@ async function getRootFolder(sendResponse) {
     let candidates = await chrome.bookmarks.search({ "title": sitedataBookmark });
     let folders = [];
     for (let i = 0; i < candidates.length; i++) {
-        if (candidates[i].parentId === "1" &&
+        if (candidates[i].parentId === bkmksId &&
             candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
     }
     if (folders.length > 1) {
