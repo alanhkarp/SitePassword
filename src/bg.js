@@ -60,6 +60,14 @@ chrome.runtime.onInstalled.addListener(function(details) {
     chrome.browsingData.removeCache({}, function() {
         if (logging) console.log("bg cleared the browser cache");
     });
+    if (details.reason === "install") {
+        chrome.windows.create({
+            url: "./gettingStarted.html",
+            type:"popup",
+            height:800,
+            width:800
+        })
+    }
 });
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
