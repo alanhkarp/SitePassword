@@ -154,7 +154,7 @@ async function getMetadata(request, _sender, sendResponse) {
         chrome.storage.session.get(["savedData"], (s)=> {
             if (logging) console.log("bg got saved data", s);
             let savedData = {};
-            if (s) savedData = s.savedData;
+            if (s && Object.keys(s).length > 0) savedData = s.savedData;
             remainder(savedData);
         });
     }
