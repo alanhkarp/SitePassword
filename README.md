@@ -75,8 +75,8 @@ to write it down and keep the copy in a secure place.
 --------------------------
 
 You only need to open SitePassword to enter your master password, to 
-set up a new site, or when SitePassword can't find the password field.  
-Most of the time, you can just click on the login 
+set up a new site, or when SitePassword can't find the password field.  Most 
+of the time, you can just click on the login 
 form's password field.  You'll know which to do because the password field will 
 say either *Click SitePassword* or *Click here for password*.  If the 
 password field says neither, just click on the password field and see if
