@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
-    "name": "Site Password for Chromium",
-    "short_name": "Site Password",
+    "name": "SitePassword for Chromium",
+    "short_name": "SitePassword",
     "description": "Don't remember your passwords. Don't store them.  Calculate them!",
     "version": "1.1.1",
     "background": {

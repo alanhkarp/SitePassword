@@ -47,7 +47,7 @@ window.onload = function () {
 function init() {
     get("masterpw").value = bg.masterpw || "";
     get("sitename").value = bg.settings.sitename || "";
-    get("username").value = bg.settings.username || "";
+    get("siteun").value = bg.settings.username || "";
     fill();
     let protocol = activetab.url.split(":")[0];
     if (logging) console.log("popup testing for http", protocol);
@@ -98,7 +98,7 @@ function eventSetup() {
     }
     get("mainpanel").onmouseleave = function () {
         if (logging) console.log(Date.now(), "popup window.mouseleave", phishing, bg);
-        if (!get("username").value && isphishing(get("sitename").value)) { // Don't persist phishing sites
+        if (!get("siteun").value && isphishing(get("sitename").value)) { // Don't persist phishing sites
             autoclose = false;
             hidesettings();
             return;
@@ -184,26 +184,26 @@ function eventSetup() {
             msgon("phishing");
             hidesettings();
             get("masterpw").disabled = true;
-            get("username").disabled = true;
+            get("siteun").disabled = true;
             get("sitepw").value = "";
         } else {
             phishing = false;
             msgoff("phishing");
             get("masterpw").disabled = false;
-            get("username").disabled = false
+            get("siteun").disabled = false
             handleblur("sitename", "sitename");
             changePlaceholder();
         }
     }
-    get("username").onkeyup = function () {
-        handlekeyup("username", "username");
+    get("siteun").onkeyup = function () {
+        handlekeyup("siteun", "siteun");
     }
-    get("username").onblur = function () {
-        handleblur("username", "username");
+    get("siteun").onblur = function () {
+        handleblur("siteun", "siteun");
         changePlaceholder();
     }
     get("useridcopy").onclick = function () {
-        let userid = get("username").value || "";
+        let userid = get("siteun").value || "";
         navigator.clipboard.writeText(userid).then(() => {
             if (logging) console.log("findpw wrote to clipboard", userid);
         }).catch((e) => {
@@ -249,7 +249,7 @@ function eventSetup() {
     }
     get("settingssave").onclick = hidesettings;
     get("providesitepw").onclick = function () {
-        if (!(get("sitename").value && get("username").value)) return;
+        if (!(get("sitename").value && get("siteun").value)) return;
         bg.settings.providesitepw = get("providesitepw").checked;
         if (get("providesitepw").checked) {
             get("sitepw").readOnly = false;
@@ -339,14 +339,14 @@ function eventSetup() {
     get("warningbutton").onclick = function () {
         phishing = false;
         get("masterpw").disabled = false;
-        get("username").disabled = false;
+        get("siteun").disabled = false;
         get("sitename").disabled = false;
         msgoff("phishing");
         var sitename = getlowertrim("sitename");
         bg.settings = clone(database.sites[sitename]);
         bg.settings.sitename = get("sitename").value;
         database.domains[get("domainname").value] = bg.settings.sitename;
-        get("username").value = bg.settings.username;
+        get("siteun").value = bg.settings.username;
         ask2generate();
     }
     get("cancelwarning").onclick = function () {
@@ -354,7 +354,7 @@ function eventSetup() {
         msgoff("phishing");
         get("domainname").value = "";
         get("sitename").value = "";
-        get("username").value = "";
+        get("siteun").value = "";
         chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
         window.close();
     }
@@ -394,7 +394,7 @@ function handleblur(element, field) {
         bg.settings[field] = get(element).value;
     }
     bg.settings.characters = characters(bg.settings, database);
-    if (get("providesitepw").value && get("sitename").value && get("username").value) {
+    if (get("providesitepw").value && get("sitename").value && get("siteun").value) {
         get("providesitepw").disabled = false;
     } else {
         get("providesitepw").disabled = true;
@@ -412,7 +412,7 @@ function handleclick(which) {
     ask2generate();
 }
 function changePlaceholder() {
-    let u = get("username").value
+    let u = get("siteun").value
     if (get("masterpw").value && get("sitename").value && u) {
         if (logging) console.log("popup sending fill fields", u);
         chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
@@ -422,7 +422,7 @@ function setfocus(element) {
     element.focus();
 }
 function defaultfocus() {
-    if (!get("username").value) setfocus(get("username"));
+    if (!get("siteun").value) setfocus(get("siteun"));
     if (!get("sitename").value) setfocus(get("sitename"));
     if (!get("masterpw").value) setfocus(get("masterpw"));
 }
@@ -459,23 +459,23 @@ function ask2generate() {
 }
 function fill() {
     if (bg.settings[domainname]) {
-        if (!get("username").value) get("username").value = bg.settings.username;
+        if (!get("siteun").value) get("siteun").value = bg.settings.username;
         if (!get("sitename").value) get("sitename").value = bg.settings.sitename;
     } else {
         bg.settings.domainname = getlowertrim("domainname");
         bg.settings.sitename = getlowertrim("sitename");
-        bg.settings.username = getlowertrim("username");
+        bg.settings.username = getlowertrim("siteun");
     }
     get("masterpw").value = bg.masterpw || "";
     if (logging) console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
     get("providesitepw").checked = bg.settings.providesitepw;
-    if (get("masterpw").value && get("sitename").value && get("username").value) {
+    if (get("masterpw").value && get("sitename").value && get("siteun").value) {
         get("providesitepw").disabled = false;
     } else {
         get("providesitepw").disabled = true;
     }
-    if (logging) console.log("sitename username disabled", get("sitename").value, get("username").value, get("providesitepw").disabled);
-    if (get("providesitepw").checked && get("sitename").value && get("username").value) {
+    if (logging) console.log("sitename username disabled", get("sitename").value, get("siteun").value, get("providesitepw").disabled);
+    if (get("providesitepw").checked && get("sitename").value && get("siteun").value) {
         get("sitepw").readOnly = false;
         get("sitepw").placeholder = "Enter your master password";
         get("masterpw").focus();
