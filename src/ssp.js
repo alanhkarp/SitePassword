@@ -196,10 +196,10 @@ function eventSetup() {
         }
     }
     get("siteun").onkeyup = function () {
-        handlekeyup("siteun", "siteun");
+        handlekeyup("siteun", "username");
     }
     get("siteun").onblur = function () {
-        handleblur("siteun", "siteun");
+        handleblur("siteun", "username");
         changePlaceholder();
     }
     get("useridcopy").onclick = function () {
