@@ -334,7 +334,7 @@ async function persistMetadata(sendResponse) {
             if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
         } catch {
             bkmksSafari[commonSettingsTitle].url = url;
-            browser.storage.sync.set(JSON.stringify(bkmksSafari));
+            browser.storage.sync.set(bkmksSafari);
         }
     }
     // Persist changes to domain settings
