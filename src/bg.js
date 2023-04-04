@@ -54,12 +54,10 @@ try {
 } catch {
     // Safari
     bkmksId = -1;
-    let bkmks = storage.sync.get("bookmarks");
-    try {
-        bkmksSafari = JSON.parse(bkmks);
-    } catch (e) {
-        console.log("bg cannot parse bookmarks for Safari", e);
-    }
+    browser.storage.sync.get((value) => {
+        bkmksSafari = value;
+        if (logging) console.log("bg got Safari bookmarks", bkmksSafari);
+    });
 }
 
 if (logging) console.log("bg clear masterpw");
@@ -296,11 +294,12 @@ async function persistMetadata(sendResponse) {
         allchildren = await chrome.bookmarks.getChildren(rootFolder.id); // Deleted some so recreate list
         if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
     } catch {
-        allchildren = bkmksSafari;
+        allchildren = Object.values(bkmksSafari);
     }
     let commonSettings = [];
     let domains = [];
     for (let i = 0; i < allchildren.length; i++) {
+        // Bookmarks for Safari don't have a title
         if (allchildren[i].title === commonSettingsTitle) {
             commonSettings.push(allchildren[i]); // In case of duplicates
         } else {
@@ -320,8 +319,9 @@ async function persistMetadata(sendResponse) {
             if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
         } catch {
             bkmksSafari[commonSettingsTitle] = {};
+            bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
             bkmksSafari[commonSettingsTitle].url = url;
-            storage.sync.set(JSON.stringify(bkmksSafari));
+            browser.storage.sync.set(bkmksSafari);
         }
     }
     let url = "ssp://" + JSON.stringify(common);
@@ -334,7 +334,7 @@ async function persistMetadata(sendResponse) {
             if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
         } catch {
             bkmksSafari[commonSettingsTitle].url = url;
-            storage.sync.set(JSON.stringify(bkmksSafari));
+            browser.storage.sync.set(JSON.stringify(bkmksSafari));
         }
     }
     // Persist changes to domain settings
@@ -354,8 +354,8 @@ async function persistMetadata(sendResponse) {
                     });
                     if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
                 } catch {
-                    bkmksSafari[found] = url;
-                    storage.sync.set(JSON.stringify(bkmksSafari));
+                    bkmksSafari[found].url = url;
+                    browser.storage.sync.set(bkmksSafari);
                 }
             }
         } else {
@@ -370,20 +370,22 @@ async function persistMetadata(sendResponse) {
                         if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
                     });
                 } catch {
-                    bkmksSafari[title] = url;
-                    storage.sync.set(JSON.stringify(bkmksSafari));
+                    bkmksSafari[title] = {};
+                    bkmksSafari[title].title = title;
+                    bkmksSafari[title].url = url;
+                    browser.storage.sync.set(bkmksSafari);
                 }
             }
         }
     }
 }
-async function parseBkmk(rootFolder, callback, sendResponse) {
+async function parseBkmk(rootFolderId, callback, sendResponse) {
     if (logging) console.log("bg parsing bookmark");
     try {
-        chrome.bookmarks.getChildren(rootFolder, cleanbkmks);
+        chrome.bookmarks.getChildren(rootFolderId, cleanbkmks);
         if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
     } catch {
-        cleanbkmks(Object.keys(bkmksSafari))
+        cleanbkmks(Object.values(bkmksSafari));
     }
     function cleanbkmks(children) {
         let seenTitles = {};
@@ -397,7 +399,7 @@ async function parseBkmk(rootFolder, callback, sendResponse) {
                     if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
                 } catch {
                     delete bkmksSafari[children[i]];
-                    storage.sync.set(JSON.stringify(bkmksSafari));
+                    browser.storage.sync.set(bkmksSafari);
                 }
             }
             if (seenTitles[title]) {
@@ -448,11 +450,12 @@ async function retrieveMetadata(sendResponse, callback) {
         if (createBookmarksFolder) {
             if (logging) console.log("Creating SSP bookmark folder");
             createBookmarksFolder = false;
+            let bkmk = - 1;
             try {
-                let bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
+                bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
                 if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
             } catch {
-                // Nothing to do 
+                // Nothing to do here
             }
             parseBkmk(bkmk.id, callback, sendResponse);
         }
@@ -475,7 +478,7 @@ async function getRootFolder(sendResponse) {
             return folders;
         } 
     } catch {
-        return ["Safari"];
+        return [bkmksSafari];
     }
 }
 function retrieved(callback) {
