@@ -354,7 +354,7 @@ async function persistMetadata(sendResponse) {
                     });
                     if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
                 } catch {
-                    bkmksSafari[found].url = url;
+                    bkmksSafari[found.title].url = url;
                     browser.storage.sync.set(bkmksSafari);
                 }
             }
