@@ -54,7 +54,7 @@ try {
 } catch {
     // Safari
     bkmksId = -1;
-    browser.storage.sync.get((value) => {
+    chrome.storage.sync.get((value) => {
         bkmksSafari = value;
         if (logging) console.log("bg got Safari bookmarks", bkmksSafari);
     });
@@ -321,7 +321,7 @@ async function persistMetadata(sendResponse) {
             bkmksSafari[commonSettingsTitle] = {};
             bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
             bkmksSafari[commonSettingsTitle].url = url;
-            browser.storage.sync.set(bkmksSafari);
+            chrome.storage.sync.set(bkmksSafari);
         }
     }
     let url = "ssp://" + JSON.stringify(common);
@@ -334,7 +334,7 @@ async function persistMetadata(sendResponse) {
             if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
         } catch {
             bkmksSafari[commonSettingsTitle].url = url;
-            browser.storage.sync.set(bkmksSafari);
+            chrome.storage.sync.set(bkmksSafari);
         }
     }
     // Persist changes to domain settings
@@ -354,8 +354,10 @@ async function persistMetadata(sendResponse) {
                     });
                     if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
                 } catch {
-                    bkmksSafari[found.title].url = url;
-                    browser.storage.sync.set(bkmksSafari);
+                    if (bkmksSafari[found.title].url !== url) {
+                        bkmksSafari[found.title].url = url;
+                        chrome.storage.sync.set(bkmksSafari);
+                    }
                 }
             }
         } else {
@@ -373,7 +375,7 @@ async function persistMetadata(sendResponse) {
                     bkmksSafari[title] = {};
                     bkmksSafari[title].title = title;
                     bkmksSafari[title].url = url;
-                    browser.storage.sync.set(bkmksSafari);
+                    chrome.storage.sync.set(bkmksSafari);
                 }
             }
         }
@@ -399,7 +401,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                     if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
                 } catch {
                     delete bkmksSafari[children[i]];
-                    browser.storage.sync.set(bkmksSafari);
+                    chrome.storage.sync.set(bkmksSafari);
                 }
             }
             if (seenTitles[title]) {
