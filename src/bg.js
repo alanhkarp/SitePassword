@@ -1,6 +1,6 @@
 'use strict';
 import { generate, isMasterPw, normalize, stringXorArray } from "./generate.js";
-const testMode = true;
+const testMode = false;
 const commonSettingsTitle = "CommonSettings";
 let logging = testMode;
 // State I want to keep around that doesn't appear in the file system
@@ -477,8 +477,8 @@ async function getRootFolder(sendResponse) {
         if (folders.length > 1) {
             console.log("bg found multiple", sitedataBookmark, "folders", folders);
             sendResponse("multiple");
-            return folders;
         } 
+        return folders;
     } catch {
         return [bkmksSafari];
     }

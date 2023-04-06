@@ -1,6 +1,6 @@
 // Content script for ssp
 'use strict';
-var logging = true;
+var logging = false;
 var hideLabels = true; // Make it easy to turn off label hiding
 var clickSitePassword = "Click SitePassword";
 var clickSitePasswordTitle = "Click on the SitePassword icon"
