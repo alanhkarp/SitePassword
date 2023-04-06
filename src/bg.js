@@ -1,6 +1,6 @@
 'use strict';
 import { generate, isMasterPw, normalize, stringXorArray } from "./generate.js";
-const testMode = false;
+const testMode = true;
 const commonSettingsTitle = "CommonSettings";
 let logging = testMode;
 // State I want to keep around that doesn't appear in the file system
@@ -46,9 +46,19 @@ export const defaultSettings = {
 };
 
 let bkmksId;
-chrome.bookmarks.getTree((nodes) => {
-    bkmksId = nodes[0].children[0].id
-});
+let bkmksSafari = {};
+try {
+    chrome.bookmarks.getTree((nodes) => {
+        bkmksId = nodes[0].children[0].id
+    });
+} catch {
+    // Safari
+    bkmksId = -1;
+    chrome.storage.sync.get((value) => {
+        bkmksSafari = value;
+        if (logging) console.log("bg got Safari bookmarks", bkmksSafari);
+    });
+}
 
 if (logging) console.log("bg clear masterpw");
 
@@ -279,11 +289,17 @@ async function persistMetadata(sendResponse) {
     if (logging) console.log("bg root folder", rootFolder);
     // The databae is saved as one bookmark for the common settings
     // and a bookmark for each domain name.
-    let allchildren = await chrome.bookmarks.getChildren(rootFolder.id); // Deleted some so recreate list
-    if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+    let allchildren;
+    try {
+        allchildren = await chrome.bookmarks.getChildren(rootFolder.id); // Deleted some so recreate list
+        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+    } catch {
+        allchildren = Object.values(bkmksSafari);
+    }
     let commonSettings = [];
     let domains = [];
     for (let i = 0; i < allchildren.length; i++) {
+        // Bookmarks for Safari don't have a title
         if (allchildren[i].title === commonSettingsTitle) {
             commonSettings.push(allchildren[i]); // In case of duplicates
         } else {
@@ -296,18 +312,30 @@ async function persistMetadata(sendResponse) {
     // No merge for now
     if (commonSettings.length === 0) {
         let url = "ssp://" + JSON.stringify(common);
-        chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url }, (commonBkmk) => {
-            if (logging) console.log("bg created bookmark", commonBkmk.id);
-        });
-        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+        try {
+            chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url }, (commonBkmk) => {
+                if (logging) console.log("bg created bookmark", commonBkmk.id);
+            });
+            if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+        } catch {
+            bkmksSafari[commonSettingsTitle] = {};
+            bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
+            bkmksSafari[commonSettingsTitle].url = url;
+            chrome.storage.sync.set(bkmksSafari);
+        }
     }
     let url = "ssp://" + JSON.stringify(common);
     if (commonSettings.length > 0 && url !== commonSettings[0].url.replace(/%22/g, "\"").replace(/%20/g, " ")) {
         let url = "ssp://" + JSON.stringify(common);
-        chrome.bookmarks.update(commonSettings[0].id, { "url": url }, (_e) => {
-            if (logging) console.log("bg updated bookmark", _e, commonSettings[0].id);
-        });
-        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+        try {
+            chrome.bookmarks.update(commonSettings[0].id, { "url": url }, (_e) => {
+                if (logging) console.log("bg updated bookmark", _e, commonSettings[0].id);
+            });
+            if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+        } catch {
+            bkmksSafari[commonSettingsTitle].url = url;
+            chrome.storage.sync.set(bkmksSafari);
+        }
     }
     // Persist changes to domain settings
     let domainnames = Object.keys(db.domains);
@@ -320,10 +348,17 @@ async function persistMetadata(sendResponse) {
             let foundSettings = JSON.parse(found.url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
             if (!sameSettings(settings, foundSettings)) {
                 url = "ssp://" + JSON.stringify(settings);
-                chrome.bookmarks.update(found.id, { "url": url }, (_e) => {
-                    //if (logging) console.log("bg updated settings bookmark", _e, found);
-                });
-                if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                try {
+                    chrome.bookmarks.update(found.id, { "url": url }, (_e) => {
+                        //if (logging) console.log("bg updated settings bookmark", _e, found);
+                    });
+                    if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                } catch {
+                    if (bkmksSafari[found.title].url !== url) {
+                        bkmksSafari[found.title].url = url;
+                        chrome.storage.sync.set(bkmksSafari);
+                    }
+                }
             }
         } else {
             if (bg.settings.sitename && 
@@ -331,32 +366,54 @@ async function persistMetadata(sendResponse) {
                 (domainnames[i] === bg.settings.pwdomainname)) {
                 let title = domainnames[i];
                 url = "ssp://" + JSON.stringify(settings);
-                chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url }, (e) => {
-                    if (logging) console.log("bg created settings bookmark", e, title);
-                });
-                if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                try {
+                    chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url }, (e) => {
+                        if (logging) console.log("bg created settings bookmark", e, title);
+                        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                    });
+                } catch {
+                    bkmksSafari[title] = {};
+                    bkmksSafari[title].title = title;
+                    bkmksSafari[title].url = url;
+                    chrome.storage.sync.set(bkmksSafari);
+                }
             }
         }
     }
 }
-async function parseBkmk(rootFolder, callback, sendResponse) {
+async function parseBkmk(rootFolderId, callback, sendResponse) {
     if (logging) console.log("bg parsing bookmark");
-    chrome.bookmarks.getChildren(rootFolder, (children) => {
+    try {
+        chrome.bookmarks.getChildren(rootFolderId, cleanbkmks);
+        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+    } catch {
+        cleanbkmks(Object.values(bkmksSafari));
+    }
+    function cleanbkmks(children) {
         let seenTitles = {};
         let newdb = clone(databaseDefault);
         for (let i = 0; i < children.length; i++) {
             let title = children[i].title;
             // Remove legacy bookmarks
             if (!isNaN(title)) {
-                chrome.bookmarks.remove(children[i].id);
-                if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                try {
+                    chrome.bookmarks.remove(children[i].id);
+                    if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                } catch {
+                    delete bkmksSafari[children[i]];
+                    chrome.storage.sync.set(bkmksSafari);
+                }
             }
             if (seenTitles[title]) {
                 let seen = JSON.parse(children[seenTitles[title]].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
                 let dupl = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
                 if (sameSettings(seen, dupl)) {
-                    chrome.bookmarks.remove(children[i].id);
-                    if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                    try {
+                        chrome.bookmarks.remove(children[i].id);
+                        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                    } catch {
+                        delete bkmksSafari[children[i]];
+                    }
                 } else {
                     sendResponse("duplicate");
                     continue;
@@ -376,7 +433,8 @@ async function parseBkmk(rootFolder, callback, sendResponse) {
         }
         database = newdb;
         retrieved(callback);
-    });
+    
+    }
 }
 async function retrieveMetadata(sendResponse, callback) {
     database = clone(databaseDefault); // Start with an empty database
@@ -394,8 +452,13 @@ async function retrieveMetadata(sendResponse, callback) {
         if (createBookmarksFolder) {
             if (logging) console.log("Creating SSP bookmark folder");
             createBookmarksFolder = false;
-            let bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
-            if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+            let bkmk = - 1;
+            try {
+                bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
+                if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+            } catch {
+                // Nothing to do here
+            }
             parseBkmk(bkmk.id, callback, sendResponse);
         }
     }
@@ -404,17 +467,21 @@ async function getRootFolder(sendResponse) {
     // bookmarks.search finds any bookmark with a title containing the
     // search string, but I need to find one with an exact match.  I
     // also only want to include those in the bookmarks bar.
-    let candidates = await chrome.bookmarks.search({ "title": sitedataBookmark });
-    let folders = [];
-    for (let i = 0; i < candidates.length; i++) {
-        if (candidates[i].parentId === bkmksId &&
-            candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
+    try {
+        let candidates = await chrome.bookmarks.search({ "title": sitedataBookmark });
+        let folders = [];
+        for (let i = 0; i < candidates.length; i++) {
+            if (candidates[i].parentId === bkmksId &&
+                candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
+        }
+        if (folders.length > 1) {
+            console.log("bg found multiple", sitedataBookmark, "folders", folders);
+            sendResponse("multiple");
+            return folders;
+        } 
+    } catch {
+        return [bkmksSafari];
     }
-    if (folders.length > 1) {
-        console.log("bg found multiple", sitedataBookmark, "folders", folders);
-        sendResponse("multiple");
-    }
-    return folders;
 }
 function retrieved(callback) {
     if (logging) console.log("bg retrieved", database);

@@ -1,0 +1,703 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		E7F4EEA829D4E979006AE839 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F4EEA729D4E979006AE839 /* AppDelegate.swift */; };
+		E7F4EEAC29D4E979006AE839 /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEAA29D4E979006AE839 /* Main.html */; };
+		E7F4EEAE29D4E979006AE839 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEAD29D4E979006AE839 /* Icon.png */; };
+		E7F4EEB029D4E979006AE839 /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEAF29D4E979006AE839 /* Style.css */; };
+		E7F4EEB229D4E979006AE839 /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEB129D4E979006AE839 /* Script.js */; };
+		E7F4EEB429D4E979006AE839 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F4EEB329D4E979006AE839 /* ViewController.swift */; };
+		E7F4EEB729D4E979006AE839 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEB529D4E979006AE839 /* Main.storyboard */; };
+		E7F4EEB929D4E97B006AE839 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEB829D4E97B006AE839 /* Assets.xcassets */; };
+		E7F4EEC229D4E97C006AE839 /* Site Password for Safari Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E7F4EEC129D4E97C006AE839 /* Site Password for Safari Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E7F4EEC729D4E97C006AE839 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F4EEC629D4E97C006AE839 /* SafariWebExtensionHandler.swift */; };
+		E7F4EEF529D4E97D006AE839 /* sha256.js in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EED429D4E97D006AE839 /* sha256.js */; };
+		E7F4EEF629D4E97D006AE839 /* ssp.css in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EED529D4E97D006AE839 /* ssp.css */; };
+		E7F4EEF729D4E97D006AE839 /* icon16.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EED629D4E97D006AE839 /* icon16.png */; };
+		E7F4EEF829D4E97D006AE839 /* ssp4.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EED729D4E97D006AE839 /* ssp4.png */; };
+		E7F4EEF929D4E97D006AE839 /* ssp1.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EED829D4E97D006AE839 /* ssp1.png */; };
+		E7F4EEFA29D4E97D006AE839 /* ssp3.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EED929D4E97D006AE839 /* ssp3.png */; };
+		E7F4EEFB29D4E97D006AE839 /* ssp2.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEDA29D4E97D006AE839 /* ssp2.png */; };
+		E7F4EEFC29D4E97D006AE839 /* zxcvbn.js in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEDB29D4E97D006AE839 /* zxcvbn.js */; };
+		E7F4EEFD29D4E97D006AE839 /* ssp.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEDC29D4E97D006AE839 /* ssp.png */; };
+		E7F4EEFE29D4E97D006AE839 /* icon48.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEDD29D4E97D006AE839 /* icon48.png */; };
+		E7F4EEFF29D4E97D006AE839 /* Site Password for Safari in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEDE29D4E97D006AE839 /* Site Password for Safari */; };
+		E7F4EF0029D4E97D006AE839 /* bg.js in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEDF29D4E97D006AE839 /* bg.js */; };
+		E7F4EF0129D4E97D006AE839 /* bg.html in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEE029D4E97D006AE839 /* bg.html */; };
+		E7F4EF0229D4E97D006AE839 /* gettingstarted.html in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEE129D4E97D006AE839 /* gettingstarted.html */; };
+		E7F4EF0329D4E97D006AE839 /* ssplogo13.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEE229D4E97D006AE839 /* ssplogo13.png */; };
+		E7F4EF0429D4E97D006AE839 /* generate.js in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEE329D4E97D006AE839 /* generate.js */; };
+		E7F4EF0529D4E97D006AE839 /* findpw.js in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEE429D4E97D006AE839 /* findpw.js */; };
+		E7F4EF0629D4E97D006AE839 /* ssplogo12.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEE529D4E97D006AE839 /* ssplogo12.png */; };
+		E7F4EF0729D4E97D006AE839 /* icon128.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEE629D4E97D006AE839 /* icon128.png */; };
+		E7F4EF0829D4E97D006AE839 /* ssplogo8.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEE729D4E97D006AE839 /* ssplogo8.png */; };
+		E7F4EF0929D4E97D006AE839 /* ssplogo9.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEE829D4E97D006AE839 /* ssplogo9.png */; };
+		E7F4EF0A29D4E97D006AE839 /* ssplogo11.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEE929D4E97D006AE839 /* ssplogo11.png */; };
+		E7F4EF0B29D4E97D006AE839 /* startfig1.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEEA29D4E97D006AE839 /* startfig1.png */; };
+		E7F4EF0C29D4E97D006AE839 /* startfig3.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEEB29D4E97D006AE839 /* startfig3.png */; };
+		E7F4EF0D29D4E97D006AE839 /* ssp.js in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEEC29D4E97D006AE839 /* ssp.js */; };
+		E7F4EF0E29D4E97D006AE839 /* startfig2.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEED29D4E97D006AE839 /* startfig2.png */; };
+		E7F4EF0F29D4E97D006AE839 /* startfig5.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEEE29D4E97D006AE839 /* startfig5.png */; };
+		E7F4EF1029D4E97D006AE839 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEEF29D4E97D006AE839 /* manifest.json */; };
+		E7F4EF1129D4E97D006AE839 /* startfig4.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEF029D4E97D006AE839 /* startfig4.png */; };
+		E7F4EF1229D4E97D006AE839 /* ssp.html in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEF129D4E97D006AE839 /* ssp.html */; };
+		E7F4EF1329D4E97D006AE839 /* manifestFirefox.json in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEF229D4E97D006AE839 /* manifestFirefox.json */; };
+		E7F4EF1429D4E97D006AE839 /* ssplogo.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEF329D4E97D006AE839 /* ssplogo.png */; };
+		E7F4EF1529D4E97D006AE839 /* icon32.png in Resources */ = {isa = PBXBuildFile; fileRef = E7F4EEF429D4E97D006AE839 /* icon32.png */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E7F4EEC329D4E97C006AE839 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E7F4EE9C29D4E979006AE839 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E7F4EEC029D4E97C006AE839;
+			remoteInfo = "Site Password for Safari Extension";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		E7F4EECF29D4E97C006AE839 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				E7F4EEC229D4E97C006AE839 /* Site Password for Safari Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		E7F4EEA429D4E979006AE839 /* Site Password for Safari.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Site Password for Safari.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E7F4EEA729D4E979006AE839 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		E7F4EEAB29D4E979006AE839 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = ../Base.lproj/Main.html; sourceTree = "<group>"; };
+		E7F4EEAD29D4E979006AE839 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		E7F4EEAF29D4E979006AE839 /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
+		E7F4EEB129D4E979006AE839 /* Script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = Script.js; sourceTree = "<group>"; };
+		E7F4EEB329D4E979006AE839 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		E7F4EEB629D4E979006AE839 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		E7F4EEB829D4E97B006AE839 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E7F4EEBA29D4E97C006AE839 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E7F4EEBB29D4E97C006AE839 /* Site_Password_for_Safari.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Site_Password_for_Safari.entitlements; sourceTree = "<group>"; };
+		E7F4EEBC29D4E97C006AE839 /* Site Password for Safari.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Site Password for Safari.entitlements"; sourceTree = "<group>"; };
+		E7F4EEC129D4E97C006AE839 /* Site Password for Safari Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Site Password for Safari Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E7F4EEC629D4E97C006AE839 /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		E7F4EEC829D4E97C006AE839 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E7F4EEC929D4E97C006AE839 /* Site_Password_for_Safari_Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Site_Password_for_Safari_Extension.entitlements; sourceTree = "<group>"; };
+		E7F4EED429D4E97D006AE839 /* sha256.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = sha256.js; path = ../../sha256.js; sourceTree = "<group>"; };
+		E7F4EED529D4E97D006AE839 /* ssp.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = ssp.css; path = ../../ssp.css; sourceTree = "<group>"; };
+		E7F4EED629D4E97D006AE839 /* icon16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon16.png; path = ../../icon16.png; sourceTree = "<group>"; };
+		E7F4EED729D4E97D006AE839 /* ssp4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssp4.png; path = ../../ssp4.png; sourceTree = "<group>"; };
+		E7F4EED829D4E97D006AE839 /* ssp1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssp1.png; path = ../../ssp1.png; sourceTree = "<group>"; };
+		E7F4EED929D4E97D006AE839 /* ssp3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssp3.png; path = ../../ssp3.png; sourceTree = "<group>"; };
+		E7F4EEDA29D4E97D006AE839 /* ssp2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssp2.png; path = ../../ssp2.png; sourceTree = "<group>"; };
+		E7F4EEDB29D4E97D006AE839 /* zxcvbn.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = zxcvbn.js; path = ../../zxcvbn.js; sourceTree = "<group>"; };
+		E7F4EEDC29D4E97D006AE839 /* ssp.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssp.png; path = ../../ssp.png; sourceTree = "<group>"; };
+		E7F4EEDD29D4E97D006AE839 /* icon48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon48.png; path = ../../icon48.png; sourceTree = "<group>"; };
+		E7F4EEDE29D4E97D006AE839 /* Site Password for Safari */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Site Password for Safari"; sourceTree = SOURCE_ROOT; };
+		E7F4EEDF29D4E97D006AE839 /* bg.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = bg.js; path = ../../bg.js; sourceTree = "<group>"; };
+		E7F4EEE029D4E97D006AE839 /* bg.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = bg.html; path = ../../bg.html; sourceTree = "<group>"; };
+		E7F4EEE129D4E97D006AE839 /* gettingstarted.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = gettingstarted.html; path = ../../gettingstarted.html; sourceTree = "<group>"; };
+		E7F4EEE229D4E97D006AE839 /* ssplogo13.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssplogo13.png; path = ../../ssplogo13.png; sourceTree = "<group>"; };
+		E7F4EEE329D4E97D006AE839 /* generate.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = generate.js; path = ../../generate.js; sourceTree = "<group>"; };
+		E7F4EEE429D4E97D006AE839 /* findpw.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = findpw.js; path = ../../findpw.js; sourceTree = "<group>"; };
+		E7F4EEE529D4E97D006AE839 /* ssplogo12.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssplogo12.png; path = ../../ssplogo12.png; sourceTree = "<group>"; };
+		E7F4EEE629D4E97D006AE839 /* icon128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon128.png; path = ../../icon128.png; sourceTree = "<group>"; };
+		E7F4EEE729D4E97D006AE839 /* ssplogo8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssplogo8.png; path = ../../ssplogo8.png; sourceTree = "<group>"; };
+		E7F4EEE829D4E97D006AE839 /* ssplogo9.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssplogo9.png; path = ../../ssplogo9.png; sourceTree = "<group>"; };
+		E7F4EEE929D4E97D006AE839 /* ssplogo11.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssplogo11.png; path = ../../ssplogo11.png; sourceTree = "<group>"; };
+		E7F4EEEA29D4E97D006AE839 /* startfig1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = startfig1.png; path = ../../startfig1.png; sourceTree = "<group>"; };
+		E7F4EEEB29D4E97D006AE839 /* startfig3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = startfig3.png; path = ../../startfig3.png; sourceTree = "<group>"; };
+		E7F4EEEC29D4E97D006AE839 /* ssp.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = ssp.js; path = ../../ssp.js; sourceTree = "<group>"; };
+		E7F4EEED29D4E97D006AE839 /* startfig2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = startfig2.png; path = ../../startfig2.png; sourceTree = "<group>"; };
+		E7F4EEEE29D4E97D006AE839 /* startfig5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = startfig5.png; path = ../../startfig5.png; sourceTree = "<group>"; };
+		E7F4EEEF29D4E97D006AE839 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = ../../manifest.json; sourceTree = "<group>"; };
+		E7F4EEF029D4E97D006AE839 /* startfig4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = startfig4.png; path = ../../startfig4.png; sourceTree = "<group>"; };
+		E7F4EEF129D4E97D006AE839 /* ssp.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = ssp.html; path = ../../ssp.html; sourceTree = "<group>"; };
+		E7F4EEF229D4E97D006AE839 /* manifestFirefox.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifestFirefox.json; path = ../../manifestFirefox.json; sourceTree = "<group>"; };
+		E7F4EEF329D4E97D006AE839 /* ssplogo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssplogo.png; path = ../../ssplogo.png; sourceTree = "<group>"; };
+		E7F4EEF429D4E97D006AE839 /* icon32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon32.png; path = ../../icon32.png; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E7F4EEA129D4E979006AE839 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E7F4EEBE29D4E97C006AE839 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E7F4EE9B29D4E979006AE839 = {
+			isa = PBXGroup;
+			children = (
+				E7F4EEA629D4E979006AE839 /* Site Password for Safari */,
+				E7F4EEC529D4E97C006AE839 /* Site Password for Safari Extension */,
+				E7F4EEA529D4E979006AE839 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E7F4EEA529D4E979006AE839 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E7F4EEA429D4E979006AE839 /* Site Password for Safari.app */,
+				E7F4EEC129D4E97C006AE839 /* Site Password for Safari Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E7F4EEA629D4E979006AE839 /* Site Password for Safari */ = {
+			isa = PBXGroup;
+			children = (
+				E7F4EEA729D4E979006AE839 /* AppDelegate.swift */,
+				E7F4EEB329D4E979006AE839 /* ViewController.swift */,
+				E7F4EEB529D4E979006AE839 /* Main.storyboard */,
+				E7F4EEB829D4E97B006AE839 /* Assets.xcassets */,
+				E7F4EEBA29D4E97C006AE839 /* Info.plist */,
+				E7F4EEBB29D4E97C006AE839 /* Site_Password_for_Safari.entitlements */,
+				E7F4EEBC29D4E97C006AE839 /* Site Password for Safari.entitlements */,
+				E7F4EEA929D4E979006AE839 /* Resources */,
+			);
+			path = "Site Password for Safari";
+			sourceTree = "<group>";
+		};
+		E7F4EEA929D4E979006AE839 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				E7F4EEAA29D4E979006AE839 /* Main.html */,
+				E7F4EEAD29D4E979006AE839 /* Icon.png */,
+				E7F4EEAF29D4E979006AE839 /* Style.css */,
+				E7F4EEB129D4E979006AE839 /* Script.js */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		E7F4EEC529D4E97C006AE839 /* Site Password for Safari Extension */ = {
+			isa = PBXGroup;
+			children = (
+				E7F4EED329D4E97D006AE839 /* Resources */,
+				E7F4EEC629D4E97C006AE839 /* SafariWebExtensionHandler.swift */,
+				E7F4EEC829D4E97C006AE839 /* Info.plist */,
+				E7F4EEC929D4E97C006AE839 /* Site_Password_for_Safari_Extension.entitlements */,
+			);
+			path = "Site Password for Safari Extension";
+			sourceTree = "<group>";
+		};
+		E7F4EED329D4E97D006AE839 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				E7F4EED429D4E97D006AE839 /* sha256.js */,
+				E7F4EED529D4E97D006AE839 /* ssp.css */,
+				E7F4EED629D4E97D006AE839 /* icon16.png */,
+				E7F4EED729D4E97D006AE839 /* ssp4.png */,
+				E7F4EED829D4E97D006AE839 /* ssp1.png */,
+				E7F4EED929D4E97D006AE839 /* ssp3.png */,
+				E7F4EEDA29D4E97D006AE839 /* ssp2.png */,
+				E7F4EEDB29D4E97D006AE839 /* zxcvbn.js */,
+				E7F4EEDC29D4E97D006AE839 /* ssp.png */,
+				E7F4EEDD29D4E97D006AE839 /* icon48.png */,
+				E7F4EEDE29D4E97D006AE839 /* Site Password for Safari */,
+				E7F4EEDF29D4E97D006AE839 /* bg.js */,
+				E7F4EEE029D4E97D006AE839 /* bg.html */,
+				E7F4EEE129D4E97D006AE839 /* gettingstarted.html */,
+				E7F4EEE229D4E97D006AE839 /* ssplogo13.png */,
+				E7F4EEE329D4E97D006AE839 /* generate.js */,
+				E7F4EEE429D4E97D006AE839 /* findpw.js */,
+				E7F4EEE529D4E97D006AE839 /* ssplogo12.png */,
+				E7F4EEE629D4E97D006AE839 /* icon128.png */,
+				E7F4EEE729D4E97D006AE839 /* ssplogo8.png */,
+				E7F4EEE829D4E97D006AE839 /* ssplogo9.png */,
+				E7F4EEE929D4E97D006AE839 /* ssplogo11.png */,
+				E7F4EEEA29D4E97D006AE839 /* startfig1.png */,
+				E7F4EEEB29D4E97D006AE839 /* startfig3.png */,
+				E7F4EEEC29D4E97D006AE839 /* ssp.js */,
+				E7F4EEED29D4E97D006AE839 /* startfig2.png */,
+				E7F4EEEE29D4E97D006AE839 /* startfig5.png */,
+				E7F4EEEF29D4E97D006AE839 /* manifest.json */,
+				E7F4EEF029D4E97D006AE839 /* startfig4.png */,
+				E7F4EEF129D4E97D006AE839 /* ssp.html */,
+				E7F4EEF229D4E97D006AE839 /* manifestFirefox.json */,
+				E7F4EEF329D4E97D006AE839 /* ssplogo.png */,
+				E7F4EEF429D4E97D006AE839 /* icon32.png */,
+			);
+			name = Resources;
+			path = "Site Password for Safari Extension";
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E7F4EEA329D4E979006AE839 /* Site Password for Safari */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E7F4EED029D4E97C006AE839 /* Build configuration list for PBXNativeTarget "Site Password for Safari" */;
+			buildPhases = (
+				E7F4EEA029D4E979006AE839 /* Sources */,
+				E7F4EEA129D4E979006AE839 /* Frameworks */,
+				E7F4EEA229D4E979006AE839 /* Resources */,
+				E7F4EECF29D4E97C006AE839 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E7F4EEC429D4E97C006AE839 /* PBXTargetDependency */,
+			);
+			name = "Site Password for Safari";
+			productName = "Site Password for Safari";
+			productReference = E7F4EEA429D4E979006AE839 /* Site Password for Safari.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E7F4EEC029D4E97C006AE839 /* Site Password for Safari Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E7F4EECC29D4E97C006AE839 /* Build configuration list for PBXNativeTarget "Site Password for Safari Extension" */;
+			buildPhases = (
+				E7F4EEBD29D4E97C006AE839 /* Sources */,
+				E7F4EEBE29D4E97C006AE839 /* Frameworks */,
+				E7F4EEBF29D4E97C006AE839 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Site Password for Safari Extension";
+			productName = "Site Password for Safari Extension";
+			productReference = E7F4EEC129D4E97C006AE839 /* Site Password for Safari Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E7F4EE9C29D4E979006AE839 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1420;
+				LastUpgradeCheck = 1420;
+				TargetAttributes = {
+					E7F4EEA329D4E979006AE839 = {
+						CreatedOnToolsVersion = 14.2;
+					};
+					E7F4EEC029D4E97C006AE839 = {
+						CreatedOnToolsVersion = 14.2;
+					};
+				};
+			};
+			buildConfigurationList = E7F4EE9F29D4E979006AE839 /* Build configuration list for PBXProject "Site Password for Safari" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E7F4EE9B29D4E979006AE839;
+			productRefGroup = E7F4EEA529D4E979006AE839 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E7F4EEA329D4E979006AE839 /* Site Password for Safari */,
+				E7F4EEC029D4E97C006AE839 /* Site Password for Safari Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E7F4EEA229D4E979006AE839 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E7F4EEAE29D4E979006AE839 /* Icon.png in Resources */,
+				E7F4EEB729D4E979006AE839 /* Main.storyboard in Resources */,
+				E7F4EEB229D4E979006AE839 /* Script.js in Resources */,
+				E7F4EEAC29D4E979006AE839 /* Main.html in Resources */,
+				E7F4EEB929D4E97B006AE839 /* Assets.xcassets in Resources */,
+				E7F4EEB029D4E979006AE839 /* Style.css in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E7F4EEBF29D4E97C006AE839 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E7F4EEFD29D4E97D006AE839 /* ssp.png in Resources */,
+				E7F4EF0429D4E97D006AE839 /* generate.js in Resources */,
+				E7F4EF0829D4E97D006AE839 /* ssplogo8.png in Resources */,
+				E7F4EF0A29D4E97D006AE839 /* ssplogo11.png in Resources */,
+				E7F4EF0E29D4E97D006AE839 /* startfig2.png in Resources */,
+				E7F4EF1429D4E97D006AE839 /* ssplogo.png in Resources */,
+				E7F4EF0929D4E97D006AE839 /* ssplogo9.png in Resources */,
+				E7F4EF0D29D4E97D006AE839 /* ssp.js in Resources */,
+				E7F4EF0B29D4E97D006AE839 /* startfig1.png in Resources */,
+				E7F4EF1029D4E97D006AE839 /* manifest.json in Resources */,
+				E7F4EF1129D4E97D006AE839 /* startfig4.png in Resources */,
+				E7F4EEF629D4E97D006AE839 /* ssp.css in Resources */,
+				E7F4EF0C29D4E97D006AE839 /* startfig3.png in Resources */,
+				E7F4EF1529D4E97D006AE839 /* icon32.png in Resources */,
+				E7F4EF0729D4E97D006AE839 /* icon128.png in Resources */,
+				E7F4EEF929D4E97D006AE839 /* ssp1.png in Resources */,
+				E7F4EF0529D4E97D006AE839 /* findpw.js in Resources */,
+				E7F4EEFA29D4E97D006AE839 /* ssp3.png in Resources */,
+				E7F4EF0629D4E97D006AE839 /* ssplogo12.png in Resources */,
+				E7F4EF1229D4E97D006AE839 /* ssp.html in Resources */,
+				E7F4EEFE29D4E97D006AE839 /* icon48.png in Resources */,
+				E7F4EEF829D4E97D006AE839 /* ssp4.png in Resources */,
+				E7F4EF1329D4E97D006AE839 /* manifestFirefox.json in Resources */,
+				E7F4EF0129D4E97D006AE839 /* bg.html in Resources */,
+				E7F4EEFB29D4E97D006AE839 /* ssp2.png in Resources */,
+				E7F4EF0F29D4E97D006AE839 /* startfig5.png in Resources */,
+				E7F4EEF729D4E97D006AE839 /* icon16.png in Resources */,
+				E7F4EEF529D4E97D006AE839 /* sha256.js in Resources */,
+				E7F4EF0029D4E97D006AE839 /* bg.js in Resources */,
+				E7F4EF0229D4E97D006AE839 /* gettingstarted.html in Resources */,
+				E7F4EF0329D4E97D006AE839 /* ssplogo13.png in Resources */,
+				E7F4EEFC29D4E97D006AE839 /* zxcvbn.js in Resources */,
+				E7F4EEFF29D4E97D006AE839 /* Site Password for Safari in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E7F4EEA029D4E979006AE839 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E7F4EEB429D4E979006AE839 /* ViewController.swift in Sources */,
+				E7F4EEA829D4E979006AE839 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E7F4EEBD29D4E97C006AE839 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E7F4EEC729D4E97C006AE839 /* SafariWebExtensionHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E7F4EEC429D4E97C006AE839 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E7F4EEC029D4E97C006AE839 /* Site Password for Safari Extension */;
+			targetProxy = E7F4EEC329D4E97C006AE839 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		E7F4EEAA29D4E979006AE839 /* Main.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E7F4EEAB29D4E979006AE839 /* Base */,
+			);
+			name = Main.html;
+			sourceTree = "<group>";
+		};
+		E7F4EEB529D4E979006AE839 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E7F4EEB629D4E979006AE839 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		E7F4EECA29D4E97C006AE839 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.6;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		E7F4EECB29D4E97C006AE839 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.6;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		E7F4EECD29D4E97C006AE839 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Site Password for Safari Extension/Site_Password_for_Safari_Extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Site Password for Safari Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Site Password for Safari Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourCompany.Site-Password-for-Safari.Extension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E7F4EECE29D4E97C006AE839 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Site Password for Safari Extension/Site_Password_for_Safari_Extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Site Password for Safari Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Site Password for Safari Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourCompany.Site-Password-for-Safari.Extension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		E7F4EED129D4E97C006AE839 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Site Password for Safari/Site Password for Safari.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Site Password for Safari/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Site Password for Safari";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourCompany.Site-Password-for-Safari";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E7F4EED229D4E97C006AE839 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Site Password for Safari/Site Password for Safari.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Site Password for Safari/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Site Password for Safari";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourCompany.Site-Password-for-Safari";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E7F4EE9F29D4E979006AE839 /* Build configuration list for PBXProject "Site Password for Safari" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E7F4EECA29D4E97C006AE839 /* Debug */,
+				E7F4EECB29D4E97C006AE839 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E7F4EECC29D4E97C006AE839 /* Build configuration list for PBXNativeTarget "Site Password for Safari Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E7F4EECD29D4E97C006AE839 /* Debug */,
+				E7F4EECE29D4E97C006AE839 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E7F4EED029D4E97C006AE839 /* Build configuration list for PBXNativeTarget "Site Password for Safari" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E7F4EED129D4E97C006AE839 /* Debug */,
+				E7F4EED229D4E97C006AE839 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E7F4EE9C29D4E979006AE839 /* Project object */;
+}

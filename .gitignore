@@ -4,3 +4,6 @@ src.pem
 *.gz
 *.out
 *.aux
+src/Site Password for Safari/Site Password for Safari.xcodeproj
+*.xcuserstate
+src/Site Password for Safari/Site Password for Safari.xcodeproj/project.xcworkspace/xcuserdata/alan.xcuserdatad/UserInterfaceState.xcuserstate
