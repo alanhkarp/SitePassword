@@ -536,14 +536,7 @@ function sitedataHTML() {
         return 1;
     });
     let sd = ""
-    sd += "<html><header>"
-    sd += "<script>";
-    sd += "function copy(id) {";
-    sd += "  let bkmk = document.getElementById(id).value;"
-    sd += "  navigator.clipboard.writeText(bkmk)";
-    sd += "}";
-    sd += "</script>"
-    sd += "<body><table>";
+    sd += "<html><document><body><table>";
     sd += "<caption>You can use these settings at <a href='https://sitepassword.info'>https://sitepassword.info.</a>";
     sd += "<br />Right click on the domain name and copy the link address to paste into the bookmark field.</caption>";
     sd += "<tr>";
@@ -586,21 +579,13 @@ function sitedataHTML() {
         sd += "<td><pre>" + (s.xor || "") + "</pre></td>";
         sd += "</tr>";
     }
-    sd += "</table>";
-    sd += "</body></html>";
-    let url = "data:application/octet-stream," + encodeURIComponent(sd);
-    try {
-        chrome.downloads.download({
-            "url": url,
-            "filename": "SiteData.html",
-            "conflictAction": "uniquify",
-            "saveAs": true
-        }, (e) => {
-            console.log("ssp download complete", e);
-        });
-    } catch {
-        let w = window.open("data:text/html," + encodeURIComponent(sd));
-    }
+    sd += "</table></body></document></html>";
+    //let w = window.open("data:text/html," + encodeURIComponent(sd));
+    let iframe = "<iframe width='100%' height='100%' src='" + encodeURIComponent(sd) + "'></iframe>";
+    let w = window.open();
+    w.document.open();
+    w.document.write(sd);
+    w.document.close();
     return sd;
 }
 function isphishing(sitename) {
