@@ -221,3 +221,9 @@ project. (For historical reasons, these are separate projects with a lot of dupl
 -----------------------------
 
 If you like SitePassword, please make a contribution to the [Nancy Lee Hurtt '70 Maryland Promise Scholarship](https://giving.umd.edu/giving/fund.php?name=nancy-lee-hurtt-70-maryland-promise-scholarship) or your favorite charity.
+
+[Developers][#developers]
+
+The SitePassword extension can be installed for Firefox, Safari, and most Chromium browsers
+using the code here.  Simply rename the appropriate manifest file to manifest.json, and 
+install the extension using the mechanism provided by your browser.
