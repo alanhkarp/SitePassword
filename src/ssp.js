@@ -15,7 +15,7 @@ var phishing = false;
 var bg = { "settings": {} };
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
-var database;
+var database = {};
 if (logging) console.log("popup starting");
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
@@ -107,6 +107,7 @@ function eventSetup() {
         if (bg.settings) {
             bg.masterpw = get("masterpw").value || "";
             bg.settings.sitename = get("sitename").value;
+            bg.settings.username = get("siteun").value;
             if (bg.settings.sitename) {
                 database.sites[bg.settings.sitename] = clone(bg.settings);
                 database.domains[bg.settings.domainname] = bg.settings.sitename;
