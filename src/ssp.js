@@ -564,7 +564,7 @@ function sitedataHTML() {
         var bkmk = JSON.stringify(s);
         sd += "<tr>";
         sd += "<td><pre>" + sitename + "</pre></td>";
-        sd += "<td><a title='Right click to copy bookmark' href=" + bkmk + ">" + domainname + "</a></td>";
+        sd += "<td><a title='Right click to copy bookmark' href=ssp://" + bkmk + ">" + domainname + "</a></td>";
         sd += "<td><pre>" + s.username + "</pre></td>";
         sd += "<td><pre>" + s.pwlength + "</pre></td>";
         sd += "<td><pre>" + s.startwithletter + "</pre></td>";
@@ -581,11 +581,7 @@ function sitedataHTML() {
         sd += "</tr>";
     }
     sd += "</table></body></document></html>";
-    let a = document.createElement("a");
-    a.href = "data:text/html," + encodeURIComponent(sd);
-    a.setAttribute("download", "SitePasswordData.html");
-    document.body.appendChild(a);
-    a.click();
+    chrome.tabs.create({ url: "data:text/html," + encodeURIComponent(sd) });
     return sd;
 }
 function isphishing(sitename) {
