@@ -581,12 +581,11 @@ function sitedataHTML() {
         sd += "</tr>";
     }
     sd += "</table></body></document></html>";
-    //let w = window.open("data:text/html," + encodeURIComponent(sd));
-    let iframe = "<iframe width='100%' height='100%' src='" + encodeURIComponent(sd) + "'></iframe>";
-    let w = window.open();
-    w.document.open();
-    w.document.write(sd);
-    w.document.close();
+    let a = document.createElement("a");
+    a.href = "data:text/html," + encodeURIComponent(sd);
+    a.setAttribute("download", "SitePasswordData.html");
+    document.body.appendChild(a);
+    a.click();
     return sd;
 }
 function isphishing(sitename) {
