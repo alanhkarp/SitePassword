@@ -581,7 +581,14 @@ function sitedataHTML() {
         sd += "</tr>";
     }
     sd += "</table></body></document></html>";
-    chrome.tabs.create({ url: "data:text/html," + encodeURIComponent(sd) });
+    chrome.tabs.create({ url: "data:text/html," + encodeURIComponent(sd) }).then((e) => {
+        if (logging) console.log("popup downloaded settings");
+    }).catch((e) => {
+        let w = window.open();
+        w.document.open();
+        w.document.write(sd);
+        w.document.close();    
+    });
     return sd;
 }
 function isphishing(sitename) {
