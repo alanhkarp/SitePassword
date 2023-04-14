@@ -97,6 +97,7 @@ function startup(sendPageInfo) {
                     userid = request.u;
                     fillfield(cpi.idfield, userid);
                     setPlaceholder(userid);
+                    sendResponse();
                     break;
                 case "count":
                     cpi = countpwid();
@@ -112,9 +113,11 @@ function startup(sendPageInfo) {
                         cpi.pwfields[i].value = "";
                     }
                     setPlaceholder("");
+                    sendResponse();
                     break;
                 default:
                     if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
+                    sendResponse();
             }
             let myMutations = mutationObserver.takeRecords();
             if (logging) console.log("findpw listener fillfields my mutations", myMutations);
