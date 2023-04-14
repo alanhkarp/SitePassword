@@ -410,7 +410,7 @@ async function persistMetadata(sendResponse) {
                 } catch {
                     // Nothing to do
                 }
-                if (bkmksSync[found.title].url !== url) {
+                if (bkmksSync[found.title] && bkmksSync[found.title].url !== url) {
                     bkmksSync[found.title].url = url;
                     chrome.storage.sync.set(bkmksSync);
                 }

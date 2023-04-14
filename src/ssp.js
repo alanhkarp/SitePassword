@@ -674,16 +674,32 @@ function instructionSetup() {
     get("basicinfo").onclick = function () { sectionClick("basic") };
     get("masterinfo").onclick = function () { sectionClick("master"); };
     get("siteinfo").onclick = function () { sectionClick("site"); };
-    get("syncinfo").onclick = function () { sectionClick("sync"); };
     get("clipboardinfo").onclick = function () { sectionClick("clipboard"); };
     get("acceptableinfo").onclick = function () { sectionClick("acceptable"); };
     get("changeinfo").onclick = function () { sectionClick("change"); };
     get("phishinginfo").onclick = function () { sectionClick("phishing"); };
-    get("extensioninfo").onclick = function () { sectionClick("extension"); };
     get("downloadinfo").onclick = function () { sectionClick("download"); };
     get("sharedinfo").onclick = function () { sectionClick("shared"); };
     get("sourceinfo").onclick = function () { sectionClick("source"); };
     get("paymentinfo").onclick = function () { sectionClick("payment"); };
+    // Safari doesn't support the bookmarks API
+    if (!chrome.bookmarks) {
+        get("sharedinfo").style.display = "none";
+    }
+    get("syncinfo").onclick = function () { 
+        if (chrome.bookmarks) {
+            sectionClick("sync");
+        } else {
+            sectionClick("syncSafari");
+        }
+    }
+    get("extensioninfo").onclick = function () {
+        if (chrome.bookmarks) {
+            sectionClick("extension");
+        } else {
+            sectionClick("extensionSafari");
+        } 
+    };
     function sectionClick(id) {
         const element = get(id + "div");
         if (element.style.display === "none") {

@@ -368,8 +368,8 @@
                       <p>
                           Mouse over to the login form's password field, which now should tell you to
                           <em>Click here for password</em>. Click, and your password gets
-                          filled in. When you return to the page on any machine that synchronized your 
-                          bookmarks and has the extenstion installed, you'll see your user name filled in and
+                          filled in. When you return to the page on any machine that you synchronize with
+                          and has the extenstion installed, you'll see your user name filled in and
                           instructions to <em>Click here for password</em>. Click, and your
                           password gets filled in. 
                       </p>    
@@ -380,15 +380,6 @@
                           browser session. If your settings aren't there when you think they
                           should be, reloading the page with the login form will solve the
                           problem.  
-                      </p>
-                      <p>
-                          There may be a time when you want to forget the settings for a
-                          particular domain name. Maybe you cancelled your account and want 
-                          to use the account name for another one. Or, maybe
-                          you inadverently accepted a phishing site. You can forget the
-                          settings by opening the Bookmark Manager, and deleting the enty 
-                          in the <em>SitePasswordData</em> folder with the domain name you 
-                          wish to forget.
                       </p>
                   </div>
               </section>
@@ -454,8 +445,9 @@
                   <h3>Your Site Passwords</h3>
                   <div id="sitediv" style="display: none;">
                       <p>
-                          You only need to open SitePassword to enter your master password or to 
-                          set up a new site.  Most of the time, you can just click on the login 
+                          You only need to open SitePassword to enter your master password, to 
+                          set up a new site, or when you have to paste your site password.  Most 
+                          of the time, you can just click on the login 
                           form's password field.  You'll know which to do because the password field will 
                           say either <em>Click SitePassword</em> or <em>Click here for password</em>.  If 
                           the password field says neither, just click on the password field and see if 
@@ -473,7 +465,8 @@
                         that case, just choose a different nickname for the account.
                       </p>
                       <p>
-                        When SitePassword can't generate a password acceptable to the site, it can remember a password 
+                        When the generated password can't be used, say if you've been given one that
+                        you're not allowed to change, SitePassword can remember a password 
                         you provide.  It is stored in your settings encrypted with the computed
                         password for the site as a key.  That means you must fill in the form before entering 
                         your password. After you fill in the form, open the settings by clicking
@@ -658,7 +651,16 @@
                           <a href="https://sitepassword.info">SitePassword.info</a> page.
                       </p>
                   </div>
-              </section>
+                  <div id="syncSafaridiv" style="display:none">
+                    <p>
+                        If you go to the same login page on a different machine that 
+                        you synchronize with, 
+                        you'll see your user name for the account filled in for you. 
+                        That's because SitePassword uses the browser to synchronize
+                        your settings.  
+                    </p>
+                </div>
+            </section>
               <section id="extensioninfo">
                   <svg id="openextension" class="accordian" style="display: block;" width="24px" height="24px"
                       viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
@@ -691,7 +693,20 @@
                           web page for more information.
                       </p>
                   </div>
-              </section>
+                  <div id="extensionSafaridiv" style="display: none;">
+                    <p>
+                        There will be times when you are on a device that doesn't have 
+                        SitePassword installed, such as at a friend's house or on your mobile 
+                        device.  You can still get your passwords by going to 
+                        <a href="https://sitepassword.info">sitepassword.info</a> or 
+                        <a href="https://github.com/alanhkarp/SitePasswordWeb">the page on Github</a>.  
+                    </p>
+                    <p>
+                        See the instructions on the <a href="https://sitepassword.info">sitepassword.info</a> 
+                        web page for more information.
+                    </p>
+                </div>
+            </section>
               <section id="downloadinfo">
                   <svg id="opendownload" class="accordian" style="display: block;" width="24px" height="24px"
                       viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
@@ -719,8 +734,8 @@
                               <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
                           </svg>.
                           Clicking this button lets you save your settings in a file you
-                          can reference if you need to look them up.  All settings created on machines that 
-                          synch your bookmarks are included.
+                          can reference if you need to look them up.  All settings created on machines  
+                          you synchronize with are included.
                       </p>
                   </div>
               </section>
