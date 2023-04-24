@@ -539,7 +539,7 @@ function sitedataHTML() {
     let sd = ""
     sd += "<html><document><body><table>";
     sd += "<caption>You can use these settings at <a href='https://sitepassword.info'>https://sitepassword.info.</a>";
-    sd += "<br />Right click on the domain name and copy the link address to paste into the bookmark field.</caption>";
+    sd += "<br />Click on the domain name to open sitepassword.info or right click on the domain name and copy the link address to paste into the bookmark field.</caption>";
     sd += "<tr>";
     sd += "<th>Site Name</th>";
     sd += "<th>Domain Name</th>";
@@ -564,7 +564,7 @@ function sitedataHTML() {
         var bkmk = JSON.stringify(s);
         sd += "<tr>";
         sd += "<td><pre>" + sitename + "</pre></td>";
-        sd += "<td><a title='Right click to copy bookmark' href=ssp://" + bkmk + ">" + domainname + "</a></td>";
+        sd += "<td><a title='Right click to copy bookmark' href=https://sitepassword.info/index.html?bkmk=ssp://" + bkmk + ">" + domainname + "</a></td>";
         sd += "<td><pre>" + s.username + "</pre></td>";
         sd += "<td><pre>" + s.pwlength + "</pre></td>";
         sd += "<td><pre>" + s.startwithletter + "</pre></td>";
