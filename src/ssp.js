@@ -1,4 +1,5 @@
 'use strict';
+import { webpage } from "./bg.js";
 import { characters, generate, isMasterPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 const testMode = false;
 let logging = testMode;
@@ -564,7 +565,7 @@ function sitedataHTML() {
         var bkmk = JSON.stringify(s);
         sd += "<tr>";
         sd += "<td><pre>" + sitename + "</pre></td>";
-        sd += "<td><a title='Right click to copy bookmark' href=https://sitepassword.info/index.html?bkmk=ssp://" + bkmk + ">" + domainname + "</a></td>";
+        sd += "<td><a title='Right click to copy bookmark' href=" + webpage + "?bkmk=ssp://" + bkmk + ">" + domainname + "</a></td>";
         sd += "<td><pre>" + s.username + "</pre></td>";
         sd += "<td><pre>" + s.pwlength + "</pre></td>";
         sd += "<td><pre>" + s.startwithletter + "</pre></td>";

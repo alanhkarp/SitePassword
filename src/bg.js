@@ -17,6 +17,7 @@ var domainname = "";
 var protocol = "";
 var pwcount = 0;
 var createBookmarksFolder = true;
+export const webpage = "https://sitepassword.info/index.html";
 export const config = {
     lower: "abcdefghijklmnopqrstuvwxyz",
     upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -396,12 +397,13 @@ async function persistMetadata(sendResponse) {
     for (let i = 0; i < domainnames.length; i++) {
         let sitename = db.domains[domainnames[i]];
         let settings = db.sites[sitename];
-        let url = "ssp://" + JSON.stringify(settings);
+        let url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
-            let foundSettings = JSON.parse(found.url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
-            if (!sameSettings(settings, foundSettings)) {
-                url = "ssp://" + JSON.stringify(settings);
+            let foundSettings = JSON.parse(sspUrl(found.url).replace(/%22/g, "\"").replace(/%20/g, " "));
+            // Second clause to handle legacy bookmarks
+            if (!sameSettings(settings, foundSettings) || found.url.substr(0,6) === "ssp://") {
+                url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
                 try {
                     chrome.bookmarks.update(found.id, { "url": url }, (_e) => {
                         //if (logging) console.log("bg updated settings bookmark", _e, found);
@@ -420,7 +422,7 @@ async function persistMetadata(sendResponse) {
                 (domainnames[i] === bg.settings.domainname) ||
                 (domainnames[i] === bg.settings.pwdomainname)) {
                 let title = domainnames[i];
-                url = "ssp://" + JSON.stringify(settings);
+                url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
                 try {
                     chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url }, (e) => {
                         if (logging) console.log("bg created settings bookmark", e, title);
@@ -462,8 +464,8 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 chrome.storage.sync.set(bkmksSync);
         }
             if (seenTitles[title]) {
-                let seen = JSON.parse(children[seenTitles[title]].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
-                let dupl = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
+                let seen = JSON.parse(sspUrl(children[seenTitles[title]].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+                let dupl = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
                 if (sameSettings(seen, dupl)) {
                     try {
                         chrome.bookmarks.remove(children[i].id);
@@ -480,11 +482,11 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 seenTitles[title] = i;
             }
             if (title === commonSettingsTitle) {
-                let common = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
+                let common = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
                 newdb.clearmasterpw = common.clearmasterpw;
                 newdb.hidesitepw = common.hidesitepw;
             } else {
-                let settings = JSON.parse(children[i].url.substr(6).replace(/%22/g, "\"").replace(/%20/g, " "));
+                let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
                 newdb.domains[title] = normalize(settings.sitename);
                 newdb.sites[normalize(settings.sitename)] = settings;
             }
@@ -584,6 +586,15 @@ function sameSettings(a, b) {
         if (a[key] !== b[key]) return false;
     }
     return true;
+}
+function sspUrl(url) {
+    let sspUrl = url.split("ssp://")[1];
+    if (sspUrl) {
+        return sspUrl;
+    } else {
+        console.log("bg bad URL", url);
+        return undefined;
+    }
 }
 function clone(object) {
     return JSON.parse(JSON.stringify(object))
