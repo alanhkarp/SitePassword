@@ -59,6 +59,14 @@ function init() {
     defaultfocus();
     ask2generate();
 }
+function setupdatalist(element, list) {
+    let datalist = get(element.id + "s");
+    list.forEach((data) => {
+        let option = document.createElement("option");
+        option.value = data;
+        datalist.appendChild(option);
+    });
+}
 function getsettings() {
     if (logging) console.log("popup getsettings", domainname);
     chrome.runtime.sendMessage({
@@ -167,6 +175,14 @@ function eventSetup() {
         get("masterpwhide").style.display = "none";
         get("masterpwshow").style.display = "block";
     }
+    get("sitename").onfocus = function () {
+        let set = new Set();
+        Object.keys(database.sites).forEach((sitename) => {
+            set.add(sitename);
+        })
+        let list = [... set].sort();
+        setupdatalist(this, list);
+    }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
     }
@@ -196,12 +212,22 @@ function eventSetup() {
             handleblur("sitename", "sitename");
             changePlaceholder();
         }
+        clearDatalist("sitenames");
+    }
+    get("siteun").onfocus = function () {
+        let set = new Set();
+        Object.keys(database.sites).forEach((sitename) => {
+            set.add(database.sites[normalize(sitename)].username);
+        })
+        let list = [... set].sort();
+        setupdatalist(this, list);
     }
     get("siteun").onkeyup = function () {
         handlekeyup("siteun", "username");
     }
     get("siteun").onblur = function () {
         handleblur("siteun", "username");
+        clearDatalist("siteuns");
         changePlaceholder();
     }
     get("useridcopy").onclick = function () {
@@ -629,7 +655,7 @@ function get(element) {
     return document.getElementById(element);
 }
 function getlowertrim(element) {
-    return document.getElementById(element).value.toLowerCase().trim();
+    return (document.getElementById(element).value || "").toLowerCase().trim();
 }
 function clone(object) {
     return JSON.parse(JSON.stringify(object))
@@ -657,6 +683,13 @@ function message(msgname, turnon) {
         get(msg.name).style.display = msg.ison ? "block" : "none";
         if (ison) get(msg.name).style.display = "none";
         ison = ison || msg.ison;
+    }
+}
+function clearDatalist(listid) {
+    let datalist = get(listid);
+    if (datalist.hasChildNodes) {
+        const newDatalist = datalist.cloneNode(false);
+        datalist.replaceWith(newDatalist);
     }
 }
 function cleartransientmsgs() {

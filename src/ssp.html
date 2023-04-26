@@ -32,7 +32,7 @@
               SitePassword.info
             </button>
             <span style="flex:1"></span>
-            <img id="logo" class="logo" style="visibility: hidden;" src="ssp.png"/>
+            <img id="logo" class="logo" style="visibility: hidden;" src="ssplogo.png"/>
             <span style="flex:1"></span>
             </div>
         <div class="form-row">
@@ -73,18 +73,21 @@
             <label for="sitename" class="sr-only">Nickname:</label>
             <input
               id="sitename"
+              list="sitenames"
               class="sans"
               type="text"
               autocomplete="off"
               title="A unique nickname you associate with this account.  For example, use the same nickname for www.example.com and login.example.com."
               value=""
               placeholder="A unique nickname for this account"
-            />
+            >
+            <datalist id="sitenames"></datalist>
           </div>
           <div class="form-row">
             <label for="siteun" class="sr-only">User name:</label>
             <input
               id="siteun"
+              list="siteuns"
               class="sans"
               type="text"
               title="Your user-id for this account"
@@ -92,6 +95,7 @@
               value=""
               placeholder="Your user-id for this account"
             />
+            <datalist id="siteuns"></datalist>
             <div id="useridcopy" class="icon inner-icon-1" title="Copy username to clipboard">
               <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M8 5v0a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v0M8 5v0a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v0"/></svg>
             </div>
