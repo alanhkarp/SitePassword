@@ -64,6 +64,7 @@ function setupdatalist(element, list) {
     list.forEach((data) => {
         let option = document.createElement("option");
         option.value = data;
+        option.innerText = data;
         datalist.appendChild(option);
     });
 }

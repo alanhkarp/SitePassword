@@ -240,3 +240,7 @@ meter[value="4"]::-moz-meter-bar { background: #036; }
   padding-left: 1ex;
   width: 10ex;
 }
+/* From dmartins at https://stackoverflow.com/questions/20937475/remove-datalist-dropdown-arrow-in-chrome */
+[list]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+}
