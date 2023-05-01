@@ -558,10 +558,8 @@ function sitedataHTML() {
     var domainnames = database.domains
     var sitenames = database.sites;
     var sorted = Object.keys(domainnames).sort(function (x, y) {
-        var a = x.toLowerCase();
-        var b = y.toLowerCase();
-        if (domainnames[a].toLowerCase() < domainnames[b].toLowerCase()) return -1;
-        if (domainnames[a].toLowerCase() == domainnames[b].toLowerCase()) return 0;
+        if (x.toLowerCase() < y.toLowerCase()) return -1;
+        if (x.toLowerCase() == y.toLowerCase()) return 0;
         return 1;
     });
     let sd = ""
@@ -569,8 +567,8 @@ function sitedataHTML() {
     sd += "<caption>You can use these settings at <a href='https://sitepassword.info'>https://sitepassword.info.</a>";
     sd += "<br />Click on the domain name to open sitepassword.info or right click on the domain name and copy the link address to paste into the bookmark field.</caption>";
     sd += "<tr>";
-    sd += "<th>Site Name</th>";
     sd += "<th>Domain Name</th>";
+    sd += "<th>Site Name</th>";
     sd += "<th>User Name</th>";
     sd += "<th>Password Length</th>";
     sd += "<th>Start with Letter</th>";
@@ -591,8 +589,8 @@ function sitedataHTML() {
         var s = sitenames[sitename];
         var bkmk = JSON.stringify(s);
         sd += "<tr>";
-        sd += "<td><pre>" + sitename + "</pre></td>";
         sd += "<td><a title='Right click to copy bookmark' href=" + webpage + "?bkmk=ssp://" + bkmk + ">" + domainname + "</a></td>";
+        sd += "<td><pre>" + s.sitename + "</pre></td>";
         sd += "<td><pre>" + s.username + "</pre></td>";
         sd += "<td><pre>" + s.pwlength + "</pre></td>";
         sd += "<td><pre>" + s.startwithletter + "</pre></td>";
