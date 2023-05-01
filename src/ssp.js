@@ -179,7 +179,7 @@ function eventSetup() {
     get("sitename").onfocus = function () {
         let set = new Set();
         Object.keys(database.sites).forEach((sitename) => {
-            set.add(sitename);
+            set.add(database.sites[normalize(sitename)].sitename);
         })
         let list = [... set].sort();
         setupdatalist(this, list);
