@@ -30,7 +30,6 @@
         "background",
         "bookmarks",
         "browsingData",
-        "downloads",
         "storage",
         "tabs"
     ]
