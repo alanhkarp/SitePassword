@@ -408,7 +408,7 @@ function setMasterpwMeter(pw) {
     const $meterText = get("password-strength-text");
     const report = zxcvbn(pw);
     $meter.value = report.score;
-    $meterText.innerHTML = strengthText[report.score];
+    $meterText.innerText = strengthText[report.score];
     $masterpw.style.color = strengthColor[report.score];
     $masterpw.title = strengthText[report.score] + " Master Password";
 }
