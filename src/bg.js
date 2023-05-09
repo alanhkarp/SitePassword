@@ -450,6 +450,9 @@ async function retrieveMetadata(sendResponse, callback) {
     let folders = await getRootFolder(sendResponse);
     if (folders.length === 1) {
         if (logging) console.log("Found bookmarks folder: ", folders[0]);
+        // An earlier version mistakenly put bookmarks in sync storage.
+        // They aren't needed, so get rid of them.
+        chrome.storage.sync.clear();
         parseBkmk(folders[0].id, callback, sendResponse);
     } else if (folders.length === 0) {
         // findpw.js sends the SiteData message twice, once for document.onload
@@ -461,8 +464,16 @@ async function retrieveMetadata(sendResponse, callback) {
             createBookmarksFolder = false;
             let bkmk = - 1;
             try {
+                // If there's no bookmarks folder, but there are entries in sync storage,
+                // then copy those entries to bookmarks and clear sync storage.  This will
+                // happen when the browser newly implements the bookmarks API.
                 bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
                 if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                let values = await chrome.storage.sync.get();
+                for (let title in values) {
+                    chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
+                }
+                //chrome.storage.sync.clear();
             } catch {
                 // Nothing to do here
             }
