@@ -47,65 +47,19 @@ export const defaultSettings = {
 };
 
 let bkmksId;
-let bkmksSync = {};
-// Safari does not currently support the bookmarks API,
-// but it might in the future.  If I don't do anything,
-// Safari users will lose their settings.  Even worse,
-// they'll get confusing results if they upgrade their
-// browser on one machine but not another.  My solution
-// is to always set sync storage but use bookmarks if
-// they are supported.
-chrome.storage.sync.get((value) => {
-    bkmksSync = value;
-    if (logging) console.log("bg got sync bookmarks", bkmksSync);
-    try {
-        chrome.bookmarks.getTree((nodes) => {
-            bkmksId = nodes[0].children[0].id; // Parent of bookmarks folder
-            if (logging) console.log("bg got parent of bookmarks folder", nodes[0].children[0]);
-            chrome.bookmarks.getChildren(bkmksId, (children) => {
-                if (logging) console.log("bg got children of parent of bookmarks folder", children);
-                let rootFolders = [];
-                for (let i = 0; i < children.length; i++) {
-                    if (children[i].title === sitedataBookmark) {
-                        rootFolders.push(children[i]);
-                    }
-                }
-                if (logging) console.log("bg got rootFolder", rootFolders);
-                if (rootFolders.length > 1) throw new Error("Multiple root folders");
-                let values = Object.values(bkmksSync);
-                if (rootFolders.length === 1 && values.length === 0) {
-                    // Bookmarks but no sync data
-                    if (logging) console.log("bg creating sync data from bookmarks");
-                    chrome.bookmarks.getChildren(rootFolders[0].id, (children) => {
-                        for (let i = 0; i < children.length; i++) {
-                            bkmksSync[children[i].title] = {"title": children[i].title, "url": children[i].url};
-                        }
-                        chrome.storage.sync.set(bkmksSync);
-                        if (logging) console.log("bg created sync data from bookmarks", bkmksSync);
-                    });
-                    if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
-                } else if (rootFolders.length === 0 && values.length > 0) {
-                    // Sync data but no bookmarks
-                    if (logging) console.log("bg creating bookmarks from sync data");
-                    chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark }, (rootFolder) => {
-                        if (logging) console.log("bg creating entries in bookmarks folder", rootFolder);
-                        for (let i = 0; i < values.length; i++) {
-                            chrome.bookmarks.create({"parentId": rootFolder.id, "title": values[i].title, "url": values[i].url});
-                        }
-                        if (logging) console.log("bg created bookmarks from sync data");
-                    });
-                    if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
-
-                }
-            });
-            if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
-
-        });
-        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
-    } catch {
-        // nothing to do
-    }
-});
+let bkmksSafari = {};
+try {
+    chrome.bookmarks.getTree((nodes) => {
+        bkmksId = nodes[0].children[0].id
+    });
+} catch {
+    // Safari
+    bkmksId = -1;
+    chrome.storage.sync.get((value) => {
+        bkmksSafari = value;
+        if (logging) console.log("bg got Safari bookmarks", bkmksSafari);
+    });
+}
 if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
 
 // Make sure previous asynch calls have finished
@@ -347,7 +301,7 @@ async function persistMetadata(sendResponse) {
         allchildren = await chrome.bookmarks.getChildren(rootFolder.id); // Deleted some so recreate list
         if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
     } catch {
-        allchildren = Object.values(bkmksSync);
+        allchildren = Object.values(bkmksSafari);
     }
     let commonSettings = [];
     let domains = [];
@@ -371,13 +325,12 @@ async function persistMetadata(sendResponse) {
             });
             if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
         } catch {
-            // Nothing to do
+            bkmksSafari[commonSettingsTitle] = {};
+            bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
+            bkmksSafari[commonSettingsTitle].url = url;
+            chrome.storage.sync.set(bkmksSafari);
         }
-        bkmksSync[commonSettingsTitle] = {};
-        bkmksSync[commonSettingsTitle].title = commonSettingsTitle;
-        bkmksSync[commonSettingsTitle].url = url;
-        chrome.storage.sync.set(bkmksSync);
-}
+    }
     let url = "ssp://" + JSON.stringify(common);
     if (commonSettings.length > 0 && url !== commonSettings[0].url.replace(/%22/g, "\"").replace(/%20/g, " ")) {
         let url = "ssp://" + JSON.stringify(common);
@@ -387,10 +340,9 @@ async function persistMetadata(sendResponse) {
             });
             if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
         } catch {
-            // Nothing to do
+            bkmksSafari[commonSettingsTitle].url = url;
+            chrome.storage.sync.set(bkmksSafari);
         }
-        bkmksSync[commonSettingsTitle].url = url;
-        chrome.storage.sync.set(bkmksSync);
 }
     // Persist changes to domain settings
     let domainnames = Object.keys(db.domains);
@@ -410,13 +362,12 @@ async function persistMetadata(sendResponse) {
                     });
                     if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
                 } catch {
-                    // Nothing to do
+                    if (bkmksSafari[found.title] && bkmksSafari[found.title].url !== url) {
+                        bkmksSafari[found.title].url = url;
+                        chrome.storage.sync.set(bkmksSafari);
+                    }
                 }
-                if (bkmksSync[found.title] && bkmksSync[found.title].url !== url) {
-                    bkmksSync[found.title].url = url;
-                    chrome.storage.sync.set(bkmksSync);
-                }
-        }
+            }
         } else {
             if (bg.settings.sitename && 
                 (domainnames[i] === bg.settings.domainname) ||
@@ -429,13 +380,12 @@ async function persistMetadata(sendResponse) {
                         if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
                     });
                 } catch {
-                    // Nothig to do
+                    bkmksSafari[title] = {};
+                    bkmksSafari[title].title = title;
+                    bkmksSafari[title].url = url;
+                    chrome.storage.sync.set(bkmksSafari);
                 }
-                bkmksSync[title] = {};
-                bkmksSync[title].title = title;
-                bkmksSync[title].url = url;
-                chrome.storage.sync.set(bkmksSync);
-        }
+            }
         }
     }
 }
@@ -445,7 +395,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         chrome.bookmarks.getChildren(rootFolderId, cleanbkmks);
         if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
     } catch {
-        cleanbkmks(Object.values(bkmksSync));
+        cleanbkmks(Object.values(bkmksSafari));
     }
     function cleanbkmks(children) {
         let seenTitles = {};
@@ -458,11 +408,10 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                     chrome.bookmarks.remove(children[i].id);
                     if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
                 } catch {
-                    // Nothing to do
+                    delete bkmksSafari[children[i]];
+                    chrome.storage.sync.set(bkmksSafari);
                 }
-                delete bkmksSync[children[i]];
-                chrome.storage.sync.set(bkmksSync);
-        }
+            }
             if (seenTitles[title]) {
                 let seen = JSON.parse(sspUrl(children[seenTitles[title]].url).replace(/%22/g, "\"").replace(/%20/g, " "));
                 let dupl = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
@@ -471,10 +420,9 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                         chrome.bookmarks.remove(children[i].id);
                         if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
                     } catch {
-                        // Nothing to do
+                        delete bkmksSafari[children[i]];
                     }
-                    delete bkmksSync[children[i]];
-                } else {
+               } else {
                     sendResponse("duplicate");
                     continue;
                 }
@@ -539,7 +487,7 @@ async function getRootFolder(sendResponse) {
         } 
         return folders;
     } catch {
-        return [bkmksSync];
+        return [bkmksSafari];
     }
 }
 function retrieved(callback) {
