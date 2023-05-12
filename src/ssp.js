@@ -194,7 +194,7 @@ function eventSetup() {
             warnElement1.innerText  = "Warning: You may be at a fake site that is trying to steal your password. ";
             warnElement1.innerText += "You previously used this nickname for";
             get("phishingtext2").innerText = d;
-            get("phishingtext3").innerText = "but the domain name asking for your password is";
+            get("phishingtext3").innerText = "The domain name asking for your password is";
             get("phishingtext4").innerText = get("domainname").value;
             let warnElement5 = get("phishingtext5");
             warnElement5.innerText  = "It is common to see different domain names for the same account login. ";
