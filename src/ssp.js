@@ -1,7 +1,7 @@
 'use strict';
 import { webpage } from "./bg.js";
 import { characters, generate, isMasterPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = false;
+const testMode = true;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -190,15 +190,16 @@ function eventSetup() {
     get("sitename").onblur = function () {
         let d = isphishing(bg.settings.sitename)
         if (d) {
-            let warnElement = get("phishingtext");
-            warnElement.innerHTML = "<strong>Warning:</strong> You may be at a fake site that is trying to steal your password. ";
-            warnElement.innerHTML += "You previously used this nickname for";
-            warnElement.innerHTML += "<pre style=\"margin-left:1em;\">" + d + "</pre>";
-            warnElement.innerHTML += "but the domain name asking for your password is";
-            warnElement.innerHTML += "<pre style=\"margin-left:1em;\">" + get("domainname").value + "</pre>";
-            warnElement.innerHTML += "It is common to see different domain names for the same account login. ";
-            warnElement.innerHTML += "Click the top (green) button if that's not the case or the middle (red) button if it is. ";
-            warnElement.innerHTML += "You can also pick a new nickname if this page is for a different account.";
+            let warnElement1 = get("phishingtext1");
+            warnElement1.innerText  = "Warning: You may be at a fake site that is trying to steal your password. ";
+            warnElement1.innerText += "You previously used this nickname for";
+            get("phishingtext2").innerText = d;
+            get("phishingtext3").innerText = "but the domain name asking for your password is";
+            get("phishingtext4").innerText = get("domainname").value;
+            let warnElement5 = get("phishingtext5");
+            warnElement5.innerText  = "It is common to see different domain names for the same account login. ";
+            warnElement5.innerText += "Click the top (green) button if that's not the case or the middle (red) button if it is. ";
+            warnElement5.innerText += "You can also pick a new nickname if this page is for a different account.";
             phishing = true;
             msgon("phishing");
             hidesettings();

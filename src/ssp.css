@@ -25,6 +25,12 @@
     position: relative;
     top: 10px;
   }
+  .phishing {
+    font-family: monospace; 
+    font-size: 10pt;
+    width: 20pt;
+    word-wrap: break-word;
+  }
   #root {
     display: block;
     margin: 0;
@@ -193,6 +199,7 @@
     padding : 1ex;
     border : 4pt solid red;
     background-color : white;
+    width: 92%;
   /*
     margin: 1ex;
     padding : 1ex;
