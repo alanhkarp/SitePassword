@@ -265,17 +265,29 @@ function countpwid() {
             if (logging) console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
             let pattern = inputs[i].getAttribute("pattern"); // Pattern [0-9]* is a PIN or SSN
             if (visible && pattern !== "[0-9]*") {
-                pwfields.push(inputs[i]);
-                c++;
-                if (c === 1) {
-                    found = i;
-                    inputs[i].onkeydown = function (event) {
-                        if (event.key) {
-                            keyPressed = true;
+                if (self.origin === null || self.origin === "null") {
+                    inputs[i].type = "text";
+                    inputs[i].value = "Untrusted: Input disabled.";
+                    inputs[i].style.opacity = 1;
+                    inputs[i].disabled = true;
+                    //inputs[i].style.display = "none";
+                    inputs[i].title = "Since this login form is probably provided by someone who is trying to steal your password, ";
+                    inputs[i].title += "the password field will not accept input from you.  ";
+                    inputs[i].title += "If you must use this form, turn off SitePassword in the extensions manager, ";
+                    inputs[i].title += "reload the page, and enter your password manually."
+                } else {
+                    pwfields.push(inputs[i]);
+                    c++;
+                    if (c === 1) {
+                        found = i;
+                        inputs[i].onkeydown = function (event) {
+                            if (event.key) {
+                                keyPressed = true;
+                            }
                         }
                     }
+                    inputs[i].onclick = pwfieldOnclick;
                 }
-                inputs[i].onclick = pwfieldOnclick;
             }
         }
     }
