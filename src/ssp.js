@@ -97,9 +97,9 @@ function eventSetup() {
     // is a race between message delivery and the next user click.  Fortunately, messages
     // are delivered in just a couple of ms, so there's no problem.  Just be aware that
     // this race is the source of any problems related to loss of the message sent here.
-    get("root").onmouseleave = function () {
+    get("root").onmouseleave = function (event) {
         // If I close the window immediately, then messages in flight get lost
-        if (autoclose) {
+        if (autoclose && !document.elementFromPoint(event.pageX, event.pageY)) {
             if (!testMode) get("root").style.opacity = 0.1;
             mainPanelTimer = setTimeout(() => {
                 if (!testMode) window.close();
@@ -108,7 +108,7 @@ function eventSetup() {
     }
     get("mainpanel").onmouseleave = function () {
         if (logging) console.log(Date.now(), "popup window.mouseleave", phishing, bg);
-        if (!get("siteun").value && isphishing(get("sitename").value)) { // Don't persist phishing sites
+        if (isphishing(get("sitename").value)) { // Don't persist phishing sites
             autoclose = false;
             hidesettings();
             return;

@@ -3,10 +3,10 @@
     "name": "Site Password",
     "short_name": "Site Password for Firefox",
     "description": "Don't remember your passwords. Don't store them.  Calculate them!",
-    "version": "1.3.3",
+    "version": "1.3.4",
     "browser_specific_settings": {
         "gecko": {
-            "id": "sitepassword1.3.3@sitepassword.info"
+            "id": "sitepassword1.3.2@sitepassword.info"
         }
     },
     "background": {
