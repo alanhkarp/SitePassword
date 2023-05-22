@@ -16,6 +16,16 @@
   */
     font-family: monospace;
   }
+  .pw {
+    color: white;
+    background-color: #cc0000;
+    font-size: 12pt;   
+  }
+  .pwdiv {
+    position: relative;
+    top: 5pt;
+    width: 35pt;
+  }  
   .column {
     flex: 1;
   }

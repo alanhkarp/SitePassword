@@ -10,10 +10,22 @@ var mainPanelTimer;
 var autoclose = true;
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 const clipboardText = "PW";
+var onClipboard = false;
 var defaultTitle = "SitePassword";
 
 var phishing = false;
 var bg = { "settings": {} };
+
+chrome.storage.local.get("onClipboard", (v) => {
+    console.log("pwdiv", v);
+    if (v.onClipboard) {
+        get("logo").style.display = "none";
+        get("logopw").style.display = "block";
+    } else {
+        get("logo").style.display = "block";
+        get("logopw").style.display = "none";
+    }
+});
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
 var database = {};
@@ -257,6 +269,10 @@ function eventSetup() {
             chrome.action.setBadgeText({text: clipboardText});
             chrome.action.setTitle({title: "A site password may be on the clipboard."});
             chrome.action.setBadgeBackgroundColor({color: "#CC0000"});
+            get("logo").style.display = "none";
+            get("logopw").style.display = "block";
+            onClipboard = true;
+            chrome.storage.local.set({"onClipboard": true})
         }).catch((e) => {
             if (logging) console.log("findpw clipboard write failed", e);
         });
@@ -276,6 +292,9 @@ function eventSetup() {
         navigator.clipboard.writeText("");
         chrome.action.setBadgeText({text: ""});
         chrome.action.setTitle({title: defaultTitle});
+        chrome.storage.local.set({"onClipboard": false});
+        get("logo").style.display = "block";
+        get("logopw").style.display = "none";
     }
     get("settingssave").onclick = hidesettings;
     get("providesitepw").onclick = function () {
