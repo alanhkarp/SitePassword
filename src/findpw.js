@@ -78,6 +78,11 @@ function searchShadowRoots(element) {
     let result = Array.from(element.querySelectorAll("input"));
     return result.concat(childResults).flat();
 }
+// Tell the service worker that the user has copied something to the clipboard
+// so it can clear the icon
+document.oncopy = function () {
+    chrome.runtime.sendMessage({"cmd": "resetIcon"});
+}
 function startup(sendPageInfo) {
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
     // However, someone may have hosted the page at a different URL.  Hence, the test.

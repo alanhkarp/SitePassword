@@ -9,8 +9,6 @@ var domainname;
 var mainPanelTimer;
 var autoclose = true;
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
-const clipboardText = "PW";
-var onClipboard = false;
 var defaultTitle = "SitePassword";
 
 var phishing = false;
