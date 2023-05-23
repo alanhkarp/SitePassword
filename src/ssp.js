@@ -17,7 +17,6 @@ var phishing = false;
 var bg = { "settings": {} };
 
 chrome.storage.local.get("onClipboard", (v) => {
-    console.log("pwdiv", v);
     if (v.onClipboard) {
         chrome.action.setTitle({title: "A site password may be on the clipboard."});
         get("logopw").title = "A site password may be on the clipboard."
@@ -283,6 +282,7 @@ function eventSetup() {
             if (logging) console.log("findpw clipboard write failed", e);
         });
     };
+    get("sitepw").oncopy = get("sitepwcopy").onclick
     get("sitepwhide").onclick = function() {
         get("sitepw").type = "password";
         get("sitepwhide").style.display = "none";
