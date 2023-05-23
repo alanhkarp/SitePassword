@@ -19,13 +19,17 @@ var bg = { "settings": {} };
 chrome.storage.local.get("onClipboard", (v) => {
     console.log("pwdiv", v);
     if (v.onClipboard) {
+        chrome.action.setTitle({title: "A site password may be on the clipboard."});
+        get("logopw").title = "A site password may be on the clipboard."
         get("logo").style.display = "none";
         get("logopw").style.display = "block";
         chrome.action.setIcon({"path": "icon128pw.png"});
     } else {
+        chrome.action.setTitle({title: defaultTitle});
+        get("logo").title = defaultTitle;
         get("logo").style.display = "block";
         get("logopw").style.display = "none";
-        chrome.action.setIcon({"path": "iconpw.png"});
+        chrome.action.setIcon({"path": "icon128.png"});
     }
 });
 // I need all the metadata stored in database for both the phishing check
@@ -269,6 +273,7 @@ function eventSetup() {
         navigator.clipboard.writeText(sitepass).then(() => {
             if (logging) console.log("findpw wrote to clipboard", sitepass);
             chrome.action.setTitle({title: "A site password may be on the clipboard."});
+            get("logopw").title = "A site password may be on the clipboard."
             get("logo").style.display = "none";
             get("logopw").style.display = "block";
             chrome.action.setIcon({"path": "icon128pw.png"});
@@ -292,6 +297,7 @@ function eventSetup() {
     get("clearclipboard").onclick = function() {
         navigator.clipboard.writeText("");
         chrome.action.setTitle({title: defaultTitle});
+        get("logo").title = defaultTitle;
         chrome.storage.local.set({"onClipboard": false});
         get("logo").style.display = "block";
         get("logopw").style.display = "none";
