@@ -274,7 +274,6 @@ function eventSetup() {
             get("logo").style.display = "none";
             get("logopw").style.display = "block";
             chrome.action.setIcon({"path": "icon128pw.png"});
-            onClipboard = true;
             chrome.storage.local.set({"onClipboard": true})
         }).catch((e) => {
             if (logging) console.log("findpw clipboard write failed", e);
@@ -293,6 +292,7 @@ function eventSetup() {
     }
     get("settingsshow").onclick = showsettings;
     get("clearclipboard").onclick = function() {
+        if (logging) console.log("popup clear clipboard");
         navigator.clipboard.writeText("");
         chrome.action.setTitle({title: defaultTitle});
         get("logo").title = defaultTitle;
@@ -301,6 +301,7 @@ function eventSetup() {
         get("logopw").style.display = "none";
         chrome.action.setIcon({"path": "icon128.png"});
     }
+    document.oncopy = get("clearclipboard").onclick;
     get("settingssave").onclick = hidesettings;
     get("providesitepw").onclick = function () {
         if (!(get("sitename").value && get("siteun").value)) return;
