@@ -1,11 +1,12 @@
 {
     "manifest_version": 3,
     "name": "Site Password",
-    "short_name": "Site Password for Safari",
+    "short_name": "Site Password for Chrome",
     "description": "Don't remember your passwords. Don't store them.  Calculate them!",
     "version": "1.3.6",
     "background": {
-        "page": "./bg.html"
+        "service_worker": "bg.js", 
+        "type": "module"
     },
     "action": {
         "default_icon": "ssplogo.png",
@@ -29,7 +30,6 @@
         "background",
         "bookmarks",
         "browsingData",
-        "downloads",
         "storage",
         "tabs"
     ]

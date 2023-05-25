@@ -588,8 +588,9 @@ function sitedataHTML() {
         if (x.toLowerCase() == y.toLowerCase()) return 0;
         return 1;
     });
-    let sd = ""
-    sd += "<html><document><body><table>";
+    let sd = "";
+    sd += "<html><document>";
+    sd = "<body><table>";
     sd += "<caption>You can use these settings at <a href='https://sitepassword.info'>https://sitepassword.info.</a>";
     sd += "<br />Click on the domain name to open sitepassword.info or right click on the domain name and copy the link address to paste into the bookmark field.</caption>";
     sd += "<tr>";
@@ -636,14 +637,10 @@ function sitedataHTML() {
     chrome.tabs.create({ url: "data:text/html," + encodeURIComponent(sd) }).then((e) => {
         if (logging) console.log("popup downloaded settings");
     }).catch((e) => {
-//        let w = window.open();
-//        w.document.open();
-//        w.document.write(sd);
-//        w.document.close();
-        let fileManager = new fileManager();
-        let path = fileManager.homeDirectoryforCurrentUser().path();
-        let file = path.stringByAppendingPathComponent("SitePasswordData");
-        sd.writeToFileAtomically(file, true);
+       let w = window.open();
+       w.document.open();
+       w.document.write(sd);
+       w.document.close();
     });
     return sd;
 }
