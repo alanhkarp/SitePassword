@@ -439,6 +439,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 newdb.hidesitepw = common.hidesitepw;
             } else {
                 let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+                delete settings.undefined; // Clean up from development work
                 newdb.domains[title] = normalize(settings.sitename);
                 newdb.sites[normalize(settings.sitename)] = settings;
             }

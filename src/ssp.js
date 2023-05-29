@@ -588,61 +588,76 @@ function sitedataHTML() {
         if (x.toLowerCase() == y.toLowerCase()) return 0;
         return 1;
     });
-    let sd = "";
-    sd += "<html><document>";
-    sd = "<body><table>";
-    sd += "<caption>You can use these settings at <a href='https://sitepassword.info'>https://sitepassword.info.</a>";
-    sd += "<br />Click on the domain name to open sitepassword.info or right click on the domain name and copy the link address to paste into the bookmark field.</caption>";
-    sd += "<tr>";
-    sd += "<th>Domain Name</th>";
-    sd += "<th>Site Name</th>";
-    sd += "<th>User Name</th>";
-    sd += "<th>Password Length</th>";
-    sd += "<th>Start with Letter</th>";
-    sd += "<th>Allow Lower</th>";
-    sd += "<th>Min Lower</th>";
-    sd += "<th>Allow Upper</th>";
-    sd += "<th>Min Upper</th>";
-    sd += "<th>Allow Numbers</th>";
-    sd += "<th>Min Numbers</th>";
-    sd += "<th>Allow Specials</th>";
-    sd += "<th>Min Specials</th>";
-    sd += "<th>Specials</th>";
-    sd += "<th>Code for User Provided Password</th>";
-    sd += "</tr>";
-    for (var i = 0; i < sorted.length; i++) {
-        var domainname = sorted[i];
-        var sitename = domainnames[sorted[i]];
-        var s = sitenames[sitename];
-        var bkmk = JSON.stringify(s);
-        sd += "<tr>";
-        sd += "<td><a title='Right click to copy bookmark' href=" + webpage + "?bkmk=ssp://" + bkmk + ">" + domainname + "</a></td>";
-        sd += "<td><pre>" + s.sitename + "</pre></td>";
-        sd += "<td><pre>" + s.username + "</pre></td>";
-        sd += "<td><pre>" + s.pwlength + "</pre></td>";
-        sd += "<td><pre>" + s.startwithletter + "</pre></td>";
-        sd += "<td><pre>" + s.allowlower + "</pre></td>";
-        sd += "<td><pre>" + s.minlower + "</pre></td>";
-        sd += "<td><pre>" + s.allowupper + "</pre></td>";
-        sd += "<td><pre>" + s.minupper + "</pre></td>";
-        sd += "<td><pre>" + s.allownumber + "</pre></td>";
-        sd += "<td><pre>" + s.minnumber + "</pre></td>";
-        sd += "<td><pre>" + s.allowspecial + "</pre></td>";
-        sd += "<td><pre>" + s.minspecial + "</pre></td>";
-        sd += "<td><pre>" + s.specials + "</pre></td>";
-        sd += "<td><pre>" + (s.xor || "") + "</pre></td>";
-        sd += "</tr>";
-    }
-    sd += "</table></body></document></html>";
-    chrome.tabs.create({ url: "data:text/html," + encodeURIComponent(sd) }).then((e) => {
+    let workingdoc = document.implementation.createHTMLDocument("SitePassword Data");
+    let doc = sitedataHTMLDoc(workingdoc, sorted);
+    let sd = doc.outerHTML
+    let url = "data:text/html," + encodeURIComponent(sd);
+    chrome.tabs.create({ "url": url }).then((e) => {
         if (logging) console.log("popup downloaded settings");
     }).catch((e) => {
-       let w = window.open();
-       w.document.open();
-       w.document.write(sd);
-       w.document.close();
+        // Can't SaveAs on Chrome
+        let w = window.open();
+        sitedataHTMLDoc(w.document, sorted);
     });
     return sd;
+}
+function sitedataHTMLDoc(doc, sorted) {
+    let body = doc.getElementsByTagName("body")[0];
+    let table = addElement(body, "table");
+    tableCaption(table);
+    let headings = ["Domain Name", "Site Name", "User Name", "Password Length", "Start with Letter",
+        "Allow Lower", "Min Lower", "Allow Upper", "Min Upper", "Allow Numbers", "Min Numbers",
+        "Allow Specials", "Min Specials", "Specials", "Code for User Provided Passwords"];
+    tableHeader(table, headings);
+    for (let i = 0; i < sorted.length; i++) {
+        let tr = addElement(table, "tr");
+        addRow(tr, sorted[i]);
+    }
+    return doc.documentElement;
+    // Helper functions
+    function addElement(parent, type) {
+        let e = doc.createElement(type);
+        parent.appendChild(e);
+        return e;
+    }
+    function tableCaption(table) {
+        let caption = addElement(table, "caption");
+        caption.innerText = "You can use these settings at ";
+        let a = addElement(caption, "a");
+        a.href = "https://sitepassword.info";
+        a.innerText = "https://sitepassword.info."; 
+        let p = addElement(caption, "p");
+        p.innerText = "Click on the domain name to open sitepassword.info or right click on the domain name and copy the link address to paste into the bookmark field."; 
+    }
+    function tableHeader(table, headings) {
+        let tr = addElement(table, "tr");
+        for (let i = 0; i < headings.length; i++) {
+            let th = addElement(tr, "th");
+            th.innerText = headings[i];
+        }
+    }
+    function addColumnEntries(tr, settings) {
+        if ( settings[0] === "carbonite") { chrome.storage.local.set({"settings": settings})};
+        for (let i = 0; i < settings.length; i++) {
+            let td = addElement(tr, "td");
+            let pre = addElement(td, "pre");
+            pre.innerText = settings[i];    
+        }
+    }
+    function addRow(tr, domainname) {
+        let sitename = database.domains[domainname];
+        let s = database.sites[sitename];
+        let bkmk = JSON.stringify(s);
+        let td = addElement(tr, "td");
+        let a = addElement(td, "a");
+        a.title = "Right click to copy bookmark";
+        a.href = webpage + "?bkmk=ssp://" + bkmk;
+        a.innerText = domainname;
+        let entries = [s.sitename, s.username, s.pwlength, s.startwithletter, 
+            s.allowlower, s.minlower, s.allowupper, s.minupper, s.allownumber, s.minnumber,
+            s.allowspecial, s.minspecial, s.specials, s.xor || ""];
+        addColumnEntries(tr, entries);
+    }
 }
 function isphishing(sitename) {
     if (!sitename) return "";
