@@ -142,14 +142,14 @@ export function stringXorArray(sitepw, array) {
     let result = array2string(a);
     return result;
 }
-function string2array(str) {
+export function string2array(str) {
     let array = [];
     for (let i = 0; i < str.length; i++) {
         array.push(str[i].charCodeAt());
     }
     return array;
 }
-function array2string(array) {
+export function array2string(array) {
     let str = "";
     for (let i = 0; i < array.length; i++) {
         str += String.fromCharCode(array[i]);

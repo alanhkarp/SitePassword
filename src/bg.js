@@ -1,5 +1,5 @@
 'use strict';
-import { generate, isMasterPw, normalize, stringXorArray } from "./generate.js";
+import { generate, isMasterPw, normalize,  string2array, array2string, stringXorArray } from "./generate.js";
 const testMode = false;
 const commonSettingsTitle = "CommonSettings";
 let logging = testMode;
@@ -353,6 +353,10 @@ async function persistMetadata(sendResponse) {
     for (let i = 0; i < domainnames.length; i++) {
         let sitename = db.domains[domainnames[i]];
         let settings = db.sites[sitename];
+        if ("string" === typeof settings.specials) {
+            let array = string2array(settings.specials);
+            settings.specials = array;
+        }
         let url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
@@ -439,6 +443,10 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 newdb.hidesitepw = common.hidesitepw;
             } else {
                 let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+                if ('string' !== typeof settings.specials) {
+                    let specials = array2string(settings.specials);
+                    settings.specials = specials;
+                }
                 delete settings.undefined; // Clean up from development work
                 newdb.domains[title] = normalize(settings.sitename);
                 newdb.sites[normalize(settings.sitename)] = settings;
