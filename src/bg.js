@@ -64,7 +64,7 @@ if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastErr
 
 // Make sure previous asynch calls have finished
 setTimeout(() => {
-    console.log("bg finished waiting");
+    if (logging) console.log("bg finished waiting");
 }, 0);
 
 if (logging) console.log("bg clear masterpw");
