@@ -7,7 +7,7 @@ export function generate(bg) {
     let settings = bg.settings;
     var n = normalize(settings.sitename || "");
     var u = normalize(settings.username || "");
-    let m = bg.masterpw;
+    let m = bg.superpw;
     if (!m) {
         return "";
     }
@@ -18,8 +18,8 @@ export function generate(bg) {
     }
     return p;
 }
-export function isMasterPw(masterpw) {
-    if (masterpw) return "MasterPW";
+export function isMasterPw(superpw) {
+    if (superpw) return "MasterPW";
     else return "No MasterPW";
 }
 function compute(s, settings) {

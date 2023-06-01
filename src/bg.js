@@ -9,9 +9,9 @@ if (testMode) {
     sitedataBookmark = "SitePasswordDataTest"; //"SitePasswordDataTest";
 }
 var bg = {};
-var masterpw = "";
+var superpw = "";
 var activetab;
-const databaseDefault = { "clearmasterpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
+const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
 var database = clone(databaseDefault);
 var domainname = "";
 var protocol = "";
@@ -67,7 +67,7 @@ setTimeout(() => {
     if (logging) console.log("bg finished waiting");
 }, 0);
 
-if (logging) console.log("bg clear masterpw");
+if (logging) console.log("bg clear superpw");
 
 if (logging) console.log("bg starting with database", database);
 
@@ -95,17 +95,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     retrieveMetadata(sendResponse, () => {
         if (logging) console.log("bg listener back from retrieveMetadata", database);
         try {
-            let masterpw = sessionStorage.getItem("masterpw");
-            remainder(masterpw);
+            let superpw = sessionStorage.getItem("superpw");
+            remainder(superpw);
         } catch {
-            chrome.storage.session.get(["masterpw"], (value) => {
-                remainder(value.masterpw);
+            chrome.storage.session.get(["superpw"], (value) => {
+                remainder(value.superpw);
             });
         }
-        function remainder(masterpw) {
-            masterpw = masterpw || ""; // Need to set global value
-            bg.masterpw = masterpw;
-            if (logging) console.log("bg got ssp", isMasterPw(masterpw));
+        function remainder(superpw) {
+            superpw = superpw || ""; // Need to set global value
+            bg.superpw = superpw;
+            if (logging) console.log("bg got ssp", isMasterPw(superpw));
             if (request.cmd === "getMetadata") {
                 getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "resetIcon") {
@@ -116,21 +116,21 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 if (logging) console.log("bg got site data", request);
                 // Update time stamp if settings changed
                 bg = clone(request.bg);
-                database.clearmasterpw = request.clearmasterpw;
+                database.clearsuperpw = request.clearsuperpw;
                 database.hidesitepw = request.hidesitepw;
-                masterpw = bg.masterpw || "";
+                superpw = bg.superpw || "";
                 persistMetadata(sendResponse);
             } else if (request.cmd === "getPassword") {
                 let domainname = getdomainname(sender.origin || sender.url);
                 bg.settings = bgsettings(domainname);
                 let p = generate(bg);
                 p = stringXorArray(p, bg.settings.xor);
-                if (database.clearmasterpw) {
-                    masterpw = "";
-                    bg.masterpw = "";
+                if (database.clearsuperpw) {
+                    superpw = "";
+                    bg.superpw = "";
                     persistMetadata(sendResponse);
                 }
-                if (logging) console.log("bg calculated sitepw", bg, database, p, isMasterPw(masterpw));
+                if (logging) console.log("bg calculated sitepw", bg, database, p, isMasterPw(superpw));
                 sendResponse(p);
             } else if (request.cmd === "keepAlive") {
                 sendResponse({"alive": true});
@@ -139,16 +139,16 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 bg.domainname = domainname;
                 if (logging) console.log("bg clicked: sending response", bg);
                 sendResponse(bg);
-                if (database.clearmasterpw) {
-                    masterpw = "";
-                    if (logging) console.log("bg clear masterpw", isMasterPw(masterpw));
+                if (database.clearsuperpw) {
+                    superpw = "";
+                    if (logging) console.log("bg clear superpw", isMasterPw(superpw));
                 }
             } else if (request.onload) {
                 onContentPageload(request, sender, sendResponse);
                 persistMetadata(sendResponse);
             }
             database = clone(databaseDefault);
-            if (logging) console.log(Date.now(), "bg addListener returning", isMasterPw(masterpw));
+            if (logging) console.log(Date.now(), "bg addListener returning", isMasterPw(superpw));
         };
     });
     return true;
@@ -198,7 +198,7 @@ async function getMetadata(request, _sender, sendResponse) {
         domainname = getdomainname(activetabUrl);
         if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
         if (logging) console.log("bg sending metadata", pwcount, bg, db);
-        sendResponse({"masterpw": masterpw || "", "bg": bg, "database": db});
+        sendResponse({"superpw": superpw || "", "bg": bg, "database": db});
     };
 }
 function onContentPageload(request, sender, sendResponse) {
@@ -229,7 +229,7 @@ function onContentPageload(request, sender, sendResponse) {
         }    
     };
     let domainname = getdomainname(activetab.url);
-    if (logging) console.log("domainname, masterpw, database, bg", domainname, isMasterPw(masterpw), database, bg);
+    if (logging) console.log("domainname, superpw, database, bg", domainname, isMasterPw(superpw), database, bg);
     let sitename = database.domains[domainname];
     if (logging) console.log("bg |sitename|, settings, database", sitename, database.sites[sitename], database);
     if (sitename) {
@@ -240,7 +240,7 @@ function onContentPageload(request, sender, sendResponse) {
     bg.settings.domainname = domainname;
     bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
     let readyForClick = false;
-    if (masterpw && bg.settings.sitename && bg.settings.username) {
+    if (superpw && bg.settings.sitename && bg.settings.username) {
         readyForClick = true;
     }
     let sitepass = "";
@@ -260,7 +260,7 @@ function onContentPageload(request, sender, sendResponse) {
     sendResponse({ "cmd": "fillfields", 
                    "u": bg.settings.username || "", 
                    "p": sitepass || "", 
-                   "clearmasterpw": database.clearmasterpw,
+                   "clearsuperpw": database.clearsuperpw,
                    "hideSitepw": database.hideSitepw,
                    "readyForClick": readyForClick,
                    "keepAlive": keepAlive });
@@ -268,11 +268,11 @@ function onContentPageload(request, sender, sendResponse) {
 async function persistMetadata(sendResponse) {
     // localStorage[name] = JSON.stringify(value);
     if (logging) console.log("bg persistMetadata", bg, database);
-    masterpw = bg.masterpw;
+    superpw = bg.superpw;
     try {
-        sessionStorage.setItem("masterpw", masterpw);
+        sessionStorage.setItem("superpw", superpw);
     } catch {
-        chrome.storage.session.set({"masterpw": masterpw});
+        chrome.storage.session.set({"superpw": superpw});
     }
     let db = database;
     let found = await getRootFolder(sendResponse);
@@ -450,7 +450,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
             }
             if (title === commonSettingsTitle) {
                 let common = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
-                newdb.clearmasterpw = common.clearmasterpw;
+                newdb.clearsuperpw = common.clearsuperpw;
                 newdb.hidesitepw = common.hidesitepw;
             } else {
                 let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
@@ -549,7 +549,7 @@ function retrieved(callback) {
     }
     if (activetab) protocol = getprotocol(activetab.url);
     if (!bg.settings) bg.settings = settings; 
-    bg.masterpw = masterpw || "";
+    bg.superpw = superpw || "";
     if (logging) console.log(Date.now(), "bg leaving retrieived", bg, database);
     callback();
 }

@@ -7,7 +7,7 @@ of them store your passwords in encrypted form, either on your
 machine or in the cloud.
 
 SitePassword is different. Instead of
-storing your passwords, it calculates them from a single master password
+storing your passwords, it calculates them from a single super password
 and your nickname and user name
 for the site. That means you can usually get your password if
 you remember those three things. (Some web pages require additional
@@ -24,7 +24,7 @@ After you install the Chrome extension and visit a page with a
 login form, you'll see that the password field tells you to
 *Click SitePassword*. When you click on the SitePassword
 icon, you'll see a form with the domain name field filled in.
-Enter your master password, an easy to remember nickname for the
+Enter your super password, an easy to remember nickname for the
 site, and your user name for the site. You will see your site
 password being calculated as you type. 
 
@@ -35,9 +35,9 @@ with that has the extension installed, you'll see your user name filled in and
 instructions to *Click here for password*. Click, and your
 password gets filled in. 
 
-You will have to enter your master password each time you start your 
+You will have to enter your super password each time you start your 
 browser.  That's because SitePassword never stores your
-master password; it only remembers it for the duration of your
+super password; it only remembers it for the duration of your
 browser session. If your settings aren't there when you think they
 should be, reloading the page with the login form will solve the
 problem.  
@@ -51,22 +51,22 @@ in the *SitePasswordData* folder with the domain name you wish
 to forget.
 
 
-[Your Master Password](#masterpassword)
+[Your Master Password](#superpassword)
 ---------------------------------------
 
-You should choose a strong master password, one with upper and
+You should choose a strong super password, one with upper and
 lower case letters, numbers, and special characters. The stronger
 the better. The reason is simple. A bad guy who knows one site
 password and can guess your nickname and user name for that site
-can start guessing master passwords. You want to make that job has
+can start guessing super passwords. You want to make that job has
 hard as you can.
 
-SitePassword doesn't prevent you from using a weak master password,
+SitePassword doesn't prevent you from using a weak super password,
 but it does warn you. There is a strength indicator directly below
-the master password field. It uses a meter, words, and color to
-let you know how strong your master password is.
+the super password field. It uses a meter, words, and color to
+let you know how strong your super password is.
 
-SitePassword cannot retrieve your master password. You should make
+SitePassword cannot retrieve your super password. You should make
 sure it's something you won't easily forget. You might even want
 to write it down and keep the copy in a secure place.
 
@@ -74,7 +74,7 @@ to write it down and keep the copy in a secure place.
 [Your Site Passwords](#site)
 --------------------------
 
-You only need to open SitePassword to enter your master password, to 
+You only need to open SitePassword to enter your super password, to 
 set up a new site, or when SitePassword can't find the password field.  Most 
 of the time, you can just click on the login 
 form's password field.  You'll know which to do because the password field will 
@@ -87,7 +87,7 @@ In that case, open SitePassword and copy your site password to the clipboard.
 
 SitePassword could generate a weak site password just by chance.  To 
 let you know that has happened, it uses the same colors that 
-appear in the master password 
+appear in the super password 
 strength meter to tell you how strong your site password is. 
 For example, if your site password is orange, then it is weak. 
 In that case, just choose a different nickname for the site.

@@ -1,6 +1,6 @@
 'use strict';
 import { webpage } from "./bg.js";
-import { characters, generate, isMasterPw, normalize, stringXorArray, xorStrings } from "./generate.js";
+import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 const testMode = false;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
@@ -61,15 +61,15 @@ window.onload = function () {
     });
 }
 function init() {
-    get("masterpw").value = bg.masterpw || "";
+    get("superpw").value = bg.superpw || "";
     get("sitename").value = bg.settings.sitename || "";
     get("siteun").value = bg.settings.username || "";
     fill();
     let protocol = activetab.url.split(":")[0];
     if (logging) console.log("popup testing for http", protocol);
     message("http", protocol !== "https");
-    if (get("masterpw").value) {
-        setMasterpwMeter(get("masterpw").value);
+    if (get("superpw").value) {
+        setSuperpwMeter(get("superpw").value);
     }
     defaultfocus();
     ask2generate();
@@ -97,7 +97,7 @@ function getsettings() {
             bg.settings.sitename = "";
             showsettings();
     }
-        get("masterpw").value = response.masterpw || "";
+        get("superpw").value = response.superpw || "";
         init();
         if (logging) console.log("popup got metadata", bg, database);
         if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
@@ -130,7 +130,7 @@ function eventSetup() {
         } 
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg.settings) {
-            bg.masterpw = get("masterpw").value || "";
+            bg.superpw = get("superpw").value || "";
             bg.settings.sitename = get("sitename").value;
             bg.settings.username = get("siteun").value;
             if (bg.settings.sitename) {
@@ -144,10 +144,10 @@ function eventSetup() {
            chrome.runtime.sendMessage({
                 "cmd": "siteData",
                 "sitename": sitename,
-                "clearmasterpw": get("clearmasterpw").checked,
+                "clearsuperpw": get("clearsuperpw").checked,
                 "hidesitepw": get("hidesitepw").checked,
                 "bg": bg,
-                "clearmasterpw": database.clearmasterpw,
+                "clearsuperpw": database.clearsuperpw,
                 "hideSitepw": database.hideSitepw
             });
         }
@@ -170,26 +170,26 @@ function eventSetup() {
             ask2generate();
         });
     }
-    const $masterpw = get("masterpw");
-    get("masterpw").onkeyup = function () {
-        bg.masterpw = get("masterpw").value || "";
+    const $superpw = get("superpw");
+    get("superpw").onkeyup = function () {
+        bg.superpw = get("superpw").value || "";
         ask2generate();
-        setMasterpwMeter($masterpw.value);
+        setSuperpwMeter($superpw.value);
     }
-    get("masterpw").onblur = function () {
-        if (logging) console.log("popup masterpw onblur");
-        handleblur("masterpw", "masterpw");
+    get("superpw").onblur = function () {
+        if (logging) console.log("popup superpw onblur");
+        handleblur("superpw", "superpw");
         changePlaceholder();
 }
-    get("masterpwshow").onclick = function() {
-        get("masterpw").type = "text";
-        get("masterpwhide").style.display = "block";
-        get("masterpwshow").style.display = "none";
+    get("superpwshow").onclick = function() {
+        get("superpw").type = "text";
+        get("superpwhide").style.display = "block";
+        get("superpwshow").style.display = "none";
     }
-    get("masterpwhide").onclick = function() {
-        get("masterpw").type = "password";
-        get("masterpwhide").style.display = "none";
-        get("masterpwshow").style.display = "block";
+    get("superpwhide").onclick = function() {
+        get("superpw").type = "password";
+        get("superpwhide").style.display = "none";
+        get("superpwshow").style.display = "block";
     }
     get("sitename").onfocus = function () {
         let set = new Set();
@@ -218,13 +218,13 @@ function eventSetup() {
             phishing = true;
             msgon("phishing");
             hidesettings();
-            get("masterpw").disabled = true;
+            get("superpw").disabled = true;
             get("siteun").disabled = true;
             get("sitepw").value = "";
         } else {
             phishing = false;
             msgoff("phishing");
-            get("masterpw").disabled = false;
+            get("superpw").disabled = false;
             get("siteun").disabled = false
             handleblur("sitename", "sitename");
             changePlaceholder();
@@ -318,8 +318,8 @@ function eventSetup() {
             defaultfocus();
         }
     }
-    get("clearmasterpw").onclick = function () {
-        database.clearmasterpw = get("clearmasterpw").checked;
+    get("clearsuperpw").onclick = function () {
+        database.clearsuperpw = get("clearsuperpw").checked;
     }
     get("hidesitepw").onclick = function () {
         database.hidesitepw = get("hidesitepw").checked;
@@ -398,7 +398,7 @@ function eventSetup() {
     }
     get("warningbutton").onclick = function () {
         phishing = false;
-        get("masterpw").disabled = false;
+        get("superpw").disabled = false;
         get("siteun").disabled = false;
         get("sitename").disabled = false;
         msgoff("phishing");
@@ -432,24 +432,24 @@ function hidesitepw() {
         get("sitepw").type = "text";
     }
 }
-function setMasterpwMeter(pw) {
-    const $masterpw = get("masterpw");
+function setSuperpwMeter(pw) {
+    const $superpw = get("superpw");
     const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
     const $meter = get("password-strength-meter");
     const $meterText = get("password-strength-text");
     const report = zxcvbn(pw);
     $meter.value = report.score;
     $meterText.innerText = strengthText[report.score];
-    $masterpw.style.color = strengthColor[report.score];
-    $masterpw.title = strengthText[report.score] + " Master Password";
+    $superpw.style.color = strengthColor[report.score];
+    $superpw.title = strengthText[report.score] + " Super Password";
 }
 
 function handlekeyup(element, field) {
     handleblur(element, field);
 }
 function handleblur(element, field) {
-    if (element === "masterpw") {
-        bg.masterpw = get(element).value;
+    if (element === "superpw") {
+        bg.superpw = get(element).value;
     } else {
         bg.settings[field] = get(element).value;
     }
@@ -473,7 +473,7 @@ function handleclick(which) {
 }
 function changePlaceholder() {
     let u = get("siteun").value
-    if (get("masterpw").value && get("sitename").value && u) {
+    if (get("superpw").value && get("sitename").value && u) {
         if (logging) console.log("popup sending fill fields", u);
         chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
     }
@@ -484,14 +484,7 @@ function setfocus(element) {
 function defaultfocus() {
     if (!get("siteun").value) setfocus(get("siteun"));
     if (!get("sitename").value) setfocus(get("sitename"));
-    if (!get("masterpw").value) setfocus(get("masterpw"));
-}
-function clearmasterpw() {
-    if (get("clearmasterpw").checked) {
-        bg.masterpw = "";
-        get("masterpw").value = bg.masterpw || "";
-        get("sitepw").value = "";
-    }
+    if (!get("superpw").value) setfocus(get("superpw"));
 }
 function ask2generate() {
     var computed = "";
@@ -504,7 +497,7 @@ function ask2generate() {
             msgoff("nopw");
         } else {
             computed = "";
-            if (get("masterpw").value) {
+            if (get("superpw").value) {
                 msgon("nopw");
             }
         }
@@ -526,10 +519,10 @@ function fill() {
         bg.settings.sitename = getlowertrim("sitename");
         bg.settings.username = getlowertrim("siteun");
     }
-    get("masterpw").value = bg.masterpw || "";
-    if (logging) console.log("popup fill with", bg.settings.domainname, isMasterPw(bg.masterpw), bg.settings.sitename, bg.settings.username);
+    get("superpw").value = bg.superpw || "";
+    if (logging) console.log("popup fill with", bg.settings.domainname, isSuperPw(bg.superpw), bg.settings.sitename, bg.settings.username);
     get("providesitepw").checked = bg.settings.providesitepw;
-    if (get("masterpw").value && get("sitename").value && get("siteun").value) {
+    if (get("superpw").value && get("sitename").value && get("siteun").value) {
         get("providesitepw").disabled = false;
     } else {
         get("providesitepw").disabled = true;
@@ -537,14 +530,14 @@ function fill() {
     if (logging) console.log("sitename username disabled", get("sitename").value, get("siteun").value, get("providesitepw").disabled);
     if (get("providesitepw").checked && get("sitename").value && get("siteun").value) {
         get("sitepw").readOnly = false;
-        get("sitepw").placeholder = "Enter your master password";
-        get("masterpw").focus();
+        get("sitepw").placeholder = "Enter your super password";
+        get("superpw").focus();
     } else {
         get("sitepw").readOnly = true;
         get("sitepw").placeholder = "Generated site password";
         defaultfocus();
     }
-    get("clearmasterpw").checked = database.clearmasterpw;
+    get("clearsuperpw").checked = database.clearsuperpw;
     get("hidesitepw").checked =  database.hidesitepw;
     hidesitepw();
     get("pwlength").value = bg.settings.pwlength;
@@ -561,7 +554,7 @@ function showsettings() {
     get("settingssave").style.display = "inline";
     get("settings").style.display = "block";
     //get("domainname").value = bg.settings.domainname;
-    get("masterpw").value = bg.masterpw || "";
+    get("superpw").value = bg.superpw || "";
     fill();
     pwoptions(["lower", "upper", "number", "special"]);
 }
@@ -752,7 +745,7 @@ function clearallmessages() {
 function instructionSetup() {
     get("overviewinfo").onclick = function () { sectionClick("overview"); };
     get("basicinfo").onclick = function () { sectionClick("basic") };
-    get("masterinfo").onclick = function () { sectionClick("master"); };
+    get("superinfo").onclick = function () { sectionClick("super"); };
     get("siteinfo").onclick = function () { sectionClick("site"); };
     get("clipboardinfo").onclick = function () { sectionClick("clipboard"); };
     get("acceptableinfo").onclick = function () { sectionClick("acceptable"); };
