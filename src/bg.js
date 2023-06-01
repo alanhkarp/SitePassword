@@ -132,6 +132,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 }
                 if (logging) console.log("bg calculated sitepw", bg, database, p, isMasterPw(masterpw));
                 sendResponse(p);
+            } else if (request.cmd === "keepAlive") {
+                sendResponse({"alive": true});
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
