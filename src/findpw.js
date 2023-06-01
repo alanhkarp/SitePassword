@@ -130,13 +130,6 @@ function startup(sendPageInfo) {
             return true;
         });
     }
-    // Firefox doesn't preserve sessionStorage across restarts of
-    // the service worker.  Sending periodic message to it does
-    // not keep it alive on Chrome, but I'm hoping it does on Firefox.
-    setInterval(() => {
-        // Only send message if tab is active
-        chrome.runtime.sendMessage({"cmd": "keepAlive"});
-    }, 10000);
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
     cpi = countpwid();
     if (sendPageInfo) sendpageinfo(cpi, false, true);
@@ -209,6 +202,15 @@ function sendpageinfo(cpi, clicked, onload) {
         let mutations = mutationObserver.takeRecords();
         fillfield(cpi.idfield, userid);
         setPlaceholder(userid, response.p);
+        if (response.keepAlive) {   
+            // Firefox doesn't preserve sessionStorage across restarts of
+            // the service worker.  Sending periodic message to it does
+            // not keep it alive on Chrome, but I'm hoping it does on Firefox.
+            setInterval(() => {
+                // Only send message if tab is active
+                chrome.runtime.sendMessage({"cmd": "keepAlive"});
+            }, 10000);
+        }
         if (userid) fillfield(cpi.pwfields[0], "");
         let myMutations = mutationObserver.takeRecords();
         if (logging) console.log("findpw sendpageinfo my mutations", myMutations);

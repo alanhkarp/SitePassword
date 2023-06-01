@@ -250,11 +250,20 @@ function onContentPageload(request, sender, sendResponse) {
         sitepass = p;
     }
     if (logging) console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
+    let keepAlive;
+    try {
+        chrome.storage.session.get();
+        keepAlive = false;
+    } catch {
+        keepAlive = true;
+    }
     sendResponse({ "cmd": "fillfields", 
-                   "u": bg.settings.username || "", "p": sitepass, 
+                   "u": bg.settings.username || "", 
+                   "p": sitepass || "", 
                    "clearmasterpw": database.clearmasterpw,
                    "hideSitepw": database.hideSitepw,
-                   "readyForClick": readyForClick });
+                   "readyForClick": readyForClick,
+                   "keepAlive": keepAlive });
 }
 async function persistMetadata(sendResponse) {
     // localStorage[name] = JSON.stringify(value);
