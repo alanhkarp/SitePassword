@@ -1,5 +1,5 @@
 'use strict';
-import { generate, isMasterPw, normalize,  string2array, array2string, stringXorArray } from "./generate.js";
+import { generate, isSuperPw, normalize,  string2array, array2string, stringXorArray } from "./generate.js";
 const testMode = false;
 const commonSettingsTitle = "CommonSettings";
 let logging = testMode;
@@ -105,7 +105,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         function remainder(superpw) {
             superpw = superpw || ""; // Need to set global value
             bg.superpw = superpw;
-            if (logging) console.log("bg got ssp", isMasterPw(superpw));
+            if (logging) console.log("bg got ssp", isSuperPw(superpw));
             if (request.cmd === "getMetadata") {
                 getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "resetIcon") {
@@ -130,7 +130,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                     bg.superpw = "";
                     persistMetadata(sendResponse);
                 }
-                if (logging) console.log("bg calculated sitepw", bg, database, p, isMasterPw(superpw));
+                if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
                 sendResponse(p);
             } else if (request.cmd === "keepAlive") {
                 sendResponse({"alive": true});
@@ -141,14 +141,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 sendResponse(bg);
                 if (database.clearsuperpw) {
                     superpw = "";
-                    if (logging) console.log("bg clear superpw", isMasterPw(superpw));
+                    if (logging) console.log("bg clear superpw", isSuperPw(superpw));
                 }
             } else if (request.onload) {
                 onContentPageload(request, sender, sendResponse);
                 persistMetadata(sendResponse);
             }
             database = clone(databaseDefault);
-            if (logging) console.log(Date.now(), "bg addListener returning", isMasterPw(superpw));
+            if (logging) console.log(Date.now(), "bg addListener returning", isSuperPw(superpw));
         };
     });
     return true;
@@ -229,7 +229,7 @@ function onContentPageload(request, sender, sendResponse) {
         }    
     };
     let domainname = getdomainname(activetab.url);
-    if (logging) console.log("domainname, superpw, database, bg", domainname, isMasterPw(superpw), database, bg);
+    if (logging) console.log("domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
     let sitename = database.domains[domainname];
     if (logging) console.log("bg |sitename|, settings, database", sitename, database.sites[sitename], database);
     if (sitename) {

@@ -51,7 +51,7 @@ in the *SitePasswordData* folder with the domain name you wish
 to forget.
 
 
-[Your Master Password](#superpassword)
+[Your Super Password](#superpassword)
 ---------------------------------------
 
 You should choose a strong super password, one with upper and

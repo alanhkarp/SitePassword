@@ -48,19 +48,19 @@
             />
           </div>
           <div class="form-row">
-            <label for="masterpw" class="sr-only">Master password:</label>
+            <label for="superpw" class="sr-only">Super password:</label>
             <input
-              id="masterpw"
+              id="superpw"
               class="fixed"
               type="password"
               autocomplete="off"
               value=""
-              placeholder="A strong master password"
+              placeholder="A strong super password"
             />
-            <div id="masterpwhide" class="icon inner-icon-1 nodisplay" title="Hide Master Password">
+            <div id="superpwhide" class="icon inner-icon-1 nodisplay" title="Hide Super Password">
               <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5c-6.307 0-9.367 5.683-9.91 6.808a.435.435 0 0 0 0 .384C2.632 13.317 5.692 19 12 19s9.367-5.683 9.91-6.808a.435.435 0 0 0 0-.384C21.368 10.683 18.308 5 12 5z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
             </div>
-            <div id="masterpwshow" class="icon inner-icon-1" title="Show Master Password">
+            <div id="superpwshow" class="icon inner-icon-1" title="Show Super Password">
               <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 6.362A9.707 9.707 0 0 1 12 5c6.307 0 9.367 5.683 9.91 6.808.06.123.06.261 0 .385-.352.728-1.756 3.362-4.41 5.131M14 18.8a9.93 9.93 0 0 1-2 .2c-6.307 0-9.367-5.683-9.91-6.808a.44.44 0 0 1 0-.386c.219-.452.84-1.632 1.91-2.885m6 .843A3 3 0 0 1 14.236 14M3 3l18 18"/></svg>
             </div>
           </div>
@@ -230,8 +230,8 @@
             <hr />
             <div>
               <div class="setting-row">
-                <input id="clearmasterpw" type="checkbox" />
-                <span>Clear master password on use.</span>
+                <input id="clearsuperpw" type="checkbox" />
+                <span>Clear super password on use.</span>
               </div>
               <div class="setting-row">
                 <input id="hidesitepw" type="checkbox" />
@@ -335,7 +335,7 @@
                       </p>
                       <p>
                           SitePassword is different. Instead of
-                          storing your passwords, it calculates them from a single master password
+                          storing your passwords, it calculates them from a single super password
                           and your nickname and user name
                           for the account. That means you can usually get your password if
                           you remember those three things. (Some web pages require additional
@@ -378,7 +378,7 @@
                           login form, you'll see that the password field tells you to
                           <em>Click SitePassword</em>. When you click on the SitePassword
                           icon, you'll see a form with the domain name field filled in.
-                          Enter your master password, an easy to remember nickname for the
+                          Enter your super password, an easy to remember nickname for the
                           account and your user name for the account. You will see your site
                           password being calculated as you type. 
                       </p>
@@ -391,54 +391,54 @@
                           password gets filled in. 
                       </p>    
                       <p>
-                          You will have to enter your master password each time you start your 
+                          You will have to enter your super password each time you start your 
                           browser.  That's because SitePassword never stores your
-                          master password; it only remembers it for the duration of your
+                          super password; it only remembers it for the duration of your
                           browser session. If your settings aren't there when you think they
                           should be, reloading the page with the login form will solve the
                           problem.  
                       </p>
                   </div>
               </section>
-              <section id="masterinfo">
-                  <svg id="openmaster" class="accordian" style="display: block;" width="24px" height="24px"
+              <section id="superinfo">
+                  <svg id="opensuper" class="accordian" style="display: block;" width="24px" height="24px"
                       viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
                       <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                           stroke-width="2" />
                       <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="m9 11 3 3 3-3" />
                   </svg>
-                  <svg id="closemaster" class="accordian" style="display: none;" width="24px" height="24px"
+                  <svg id="closesuper" class="accordian" style="display: none;" width="24px" height="24px"
                       viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
                       <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                           stroke-width="2" />
                       <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="m9 13 3-3 3 3" />
                   </svg>
-                  <h3>Your Master Password</h3>
-                  <div id="masterdiv" style="display:none">
+                  <h3>Your Super Password</h3>
+                  <div id="superdiv" style="display:none">
                       <p>
-                        You should choose a strong master password, one with upper and
+                        You should choose a strong super password, one with upper and
                         lower case letters, numbers, and special characters. The stronger
                         the better. The reason is simple. A bad guy who knows one site
                         password and can guess your nickname and user name for that account
-                        can start guessing master passwords. You want to make that job has
+                        can start guessing super passwords. You want to make that job has
                         hard as you can.
                       </p>
                       <p>
-                        You can protect yourself further by using different master passwords 
+                        You can protect yourself further by using different super passwords 
                         for different kinds of accounts.  You could have one that you use for 
                         banking, another for subscriptions, and a third for sites you find 
                         sketchy.
                       </p>
                       <p>
-                        SitePassword doesn't prevent you from using a weak master password,
+                        SitePassword doesn't prevent you from using a weak super password,
                         but it does warn you. There is a strength indicator directly below
-                        the master password field. It uses a meter, words, and color to
-                        let you know how strong your master password is.
+                        the super password field. It uses a meter, words, and color to
+                        let you know how strong your super password is.
                       </p>
                       <p>
-                        SitePassword cannot retrieve your master password. You should make
+                        SitePassword cannot retrieve your super password. You should make
                         sure it's something you won't easily forget. You might even want
                         to write it down and keep the copy in a secure place.
                       </p>
@@ -462,7 +462,7 @@
                   <h3>Your Site Passwords</h3>
                   <div id="sitediv" style="display: none;">
                       <p>
-                          You only need to open SitePassword to enter your master password, to 
+                          You only need to open SitePassword to enter your super password, to 
                           set up a new site, or when you have to paste your site password.  Most 
                           of the time, you can just click on the login 
                           form's password field.  You'll know which to do because the password field will 
@@ -476,7 +476,7 @@
                       <p>
                         SitePassword could generate a weak site password just by chance.  
                         To let you know that has happened, it uses the same colors that 
-                        appear in the master password 
+                        appear in the super password 
                         strength meter to tell you how strong your site password is.    
                         For example, if your site password is orange, then it is weak. In 
                         that case, just choose a different nickname for the account.

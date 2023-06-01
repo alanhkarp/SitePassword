@@ -18,9 +18,9 @@ export function generate(bg) {
     }
     return p;
 }
-export function isMasterPw(superpw) {
-    if (superpw) return "MasterPW";
-    else return "No MasterPW";
+export function isSuperPw(superpw) {
+    if (superpw) return "SuperPW";
+    else return "No SuperPW";
 }
 function compute(s, settings) {
     s = Utf8Encode(s);
