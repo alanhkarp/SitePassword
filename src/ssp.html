@@ -23,8 +23,8 @@
         <div id="main" class="serif">
           <div class="form-row">
             <span style="flex:1"></span>
-            <img id="logo" class="logo" src="icon128.png"/>
-            <img id="logopw" class="logo" src="icon128pw.png" style="display: none;">
+              <img id="logo" class="logo" src="icon128.png"/>
+              <img id="logopw" class="logo" src="icon128pw.png" style="display: none;">
             <span style="flex: 1"></span>
             <button 
               id="title"
@@ -33,10 +33,10 @@
               SitePassword.info
             </button>
             <span style="flex:1"></span>
-            <img id="logo" class="logo" style="visibility: hidden;" src="ssplogo.png"/>
+              <img id="logo" class="logo" style="visibility: hidden;" src="ssplogo.png"/>
             <span style="flex:1"></span>
-            </div>
-        <div class="form-row">
+          </div>
+          <div class="form-row">
             <label for="domainname" class="sr-only">Domain name:</label>
             <input
               id="domainname"
@@ -228,71 +228,85 @@
               <span>Provide your own site password.</span> 
             </div>
             <hr />
-            <div>
+            <div id="defaultsettings" class="boxed" />
+              <center>
               <div class="setting-row">
-                <input id="clearsuperpw" type="checkbox" />
-                <span>Clear super password on use.</span>
+                <span>Site password is</span>
+                <input id="pwlength" type="text" value="12" size="2" />
+                <span>characters long</span>
+              </div>
+              </center>
+              <div class="setting-row">
+                <input id="startwithletter" type="checkbox" checked="checked" />
+                <span>Starts with letter</span>
               </div>
               <div class="setting-row">
-                <input id="hidesitepw" type="checkbox" />
-                <span>Hide site password by default.</span>
+                <input id="allowlowercheckbox" type="checkbox" checked="checked" />
+                <span id="allowlower" style="display: none;">Allows lowercase letters</span>
+                <span id="requirelower" style="display: inline;">
+                  Requires at least
+                  <input id="minlower" type="text" value="1" size="2" />
+                  lowercase letter(s)
+                </span>
               </div>
-              <hr />
+              <div class="setting-row">
+                <input id="allowuppercheckbox" type="checkbox" checked="checked" />
+                <span id="allowupper" style="display: none;">Allows uppercase letters</span>
+                <span id="requireupper" style="display: inline;">
+                  Requires at least
+                  <input id="minupper" type="text" value="1" size="2" />
+                  uppercase letter(s)
+                </span>
+              </div>
+              <div class="setting-row">
+                <input id="allownumbercheckbox" type="checkbox" checked="checked" />
+                <span id="allownumber" style="display: none;">Allows numbers</span>
+                <span id="requirenumber" style="display: inline;">
+                  Requires at least
+                  <input id="minnumber" type="text" value="1" size="2" />
+                  number(s)
+                </span>
+              </div>
+              <div class="setting-row">
+                <input id="allowspecialcheckbox" type="checkbox" />
+                <span id="allowspecial" style="display: inline;">Allows special characters</span>
+                <span id="requirespecial" style="display: none;">
+                  Requires at least
+                  <input id="minspecial" type="text" value="1" size="2" />
+                  of
+                  <input 
+                    id="specials" 
+                    title="Enter up to 12 special characters"
+                    class="fixed" 
+                    type="text" 
+                    value="$/!=@?._-" 
+                    size="12" />
+                </span>
+              </div>
+              <div>
+                <div class="setting-row">
+                  <input id="clearsuperpw" type="checkbox" />
+                  <span>Clear super password on use</span>
+                </div>
+                <div class="setting-row">
+                  <input id="hidesitepw" type="checkbox" />
+                  <span>Hide site password by default</span>
+                </div>
+              </div>
+                <div class="form-row">
+                  <button id="makedefault"
+                    type="button"
+                    style="display: inline; margin-left: 40px; margin-right: 40px;"
+                    target="_blank"
+                    title="Make the settings in the box your default"
+                    >
+                    Save as Default 
+                  </button>                  
+                </div>
             </div>
-            <div class="setting-row">
-              <span>Password is</span>
-              <input id="pwlength" type="text" value="12" size="2" />
-              <span>characters long</span>
-            </div>
-            <div class="setting-row">
-              <input id="startwithletter" type="checkbox" checked="checked" />
-              <span>Starts with letter</span>
-            </div>
-            <div class="setting-row">
-              <input id="allowlowercheckbox" type="checkbox" checked="checked" />
-              <span id="allowlower" style="display: none;">Allows lowercase letters</span>
-              <span id="requirelower" style="display: inline;">
-                Requires at least
-                <input id="minlower" type="text" value="1" size="2" />
-                lowercase letter(s)
-              </span>
-            </div>
-            <div class="setting-row">
-              <input id="allowuppercheckbox" type="checkbox" checked="checked" />
-              <span id="allowupper" style="display: none;">Allows uppercase letters</span>
-              <span id="requireupper" style="display: inline;">
-                Requires at least
-                <input id="minupper" type="text" value="1" size="2" />
-                uppercase letter(s)
-              </span>
-            </div>
-            <div class="setting-row">
-              <input id="allownumbercheckbox" type="checkbox" checked="checked" />
-              <span id="allownumber" style="display: none;">Allows numbers</span>
-              <span id="requirenumber" style="display: inline;">
-                Requires at least
-                <input id="minnumber" type="text" value="1" size="2" />
-                number(s)
-              </span>
-            </div>
-            <div class="setting-row">
-              <input id="allowspecialcheckbox" type="checkbox" />
-              <span id="allowspecial" style="display: inline;">Allows special characters</span>
-              <span id="requirespecial" style="display: none;">
-                Requires at least
-                <input id="minspecial" type="text" value="1" size="2" />
-                of
-                <input 
-                  id="specials" 
-                  title="Enter up to 12 special characters"
-                  class="fixed" 
-                  type="text" 
-                  value="$/!=@?._-" 
-                  size="12" />
-              </span>
-            </div>
-            <hr />
-            <div class="form-row">
+          </div>
+          <hr />
+          <div class="form-row">
               <button id="sitedatagetbutton" 
                 type="button" 
                 style="display: inline" 

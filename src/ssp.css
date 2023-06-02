@@ -163,6 +163,10 @@
     padding: 6px;
     height: 16px;
   }
+  .boxed {
+    border: 1px solid black;
+    margin: 1px;
+  }
   .setting-row {
     margin: 0.5ex 0;
     height: 1.5em;
