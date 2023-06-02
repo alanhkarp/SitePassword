@@ -1,7 +1,7 @@
 [Overview](#overview)
 ---------------------
 
-It's too hard for you to remember a strong password for every site
+It's too hard for you to remember a different strong password for every site
 you use. Password managers take care of this problem for you. Most
 of them store your passwords in encrypted form, either on your
 machine or in the cloud.
@@ -46,7 +46,7 @@ There may be a time when you want to forget the settings for a
 particular domain name. Maybe you cancelled your account at the
 site and want to use the site name for another one. Or, maybe
 you inadverently accepted a phishing site. You can forget the
-settings by opening the Bookmark Manager, and deleting the enty
+settings by opening the Bookmark Manager, and deleting the entry
 in the *SitePasswordData* folder with the domain name you wish
 to forget.
 
@@ -146,8 +146,9 @@ site password field will put your site password on the clipboard.
 
 Leaving your site password on the clipboard for any length of time 
 can be dangerous.  SitePassword will alert you to this danger by 
-changing its icon when you use the clipboard icon.  SitePassword can't 
-tell if you pasted something else to the clipboard.  However, you can reset 
+changing its icon when you use the clipboard icon.  SitePassword will 
+change the icon back if you copy something to the clipboard on the 
+assumption that you didn't just copy your site password.  You can also reset 
 the warning by using the SitePassword *Clear Clipboard* button. 
 
 [Phishing](#phishing)
