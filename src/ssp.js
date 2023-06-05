@@ -384,6 +384,29 @@ function eventSetup() {
             .substring(0, 12);  // limit to 12 specials
         bg.settings.specials = specials.value;
         handlekeyup("specials");
+    }    
+
+    get("makedefault").onclick = function () {
+        let newDefaults = {
+            sitename: "",
+            username: "",
+            providesitepw: false,
+            xor: new Array(12).fill(0),
+            domainname: "",
+            pwdomainname: "",
+            pwlength: get("pwlength").value,
+            startwithletter: get("startwithletter").checked,
+            allowlower: get("allowlowercheckbox").checked,
+            allowupper: get("allowuppercheckbox").checked,
+            allownumber: get("allownumbercheckbox").checked,
+            allowspecial: get("allowspecialcheckbox").checked,
+            minlower: get("minlower").value,
+            minupper: get("minupper").value,
+            minnumber: get("minnumber").value,
+            minspecial: get("minspecial").value,
+            specials: get("specials").value,
+        }
+        chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults})
     }
     get("sitedatagetbutton").onclick = sitedataHTML;
     get("maininfo").onclick = function () {
@@ -527,7 +550,7 @@ function fill() {
     } else {
         get("providesitepw").disabled = true;
     }
-    if (logging) console.log("sitename username disabled", get("sitename").value, get("siteun").value, get("providesitepw").disabled);
+    if (logging) console.log("popup sitename username disabled", get("sitename").value, get("siteun").value, get("providesitepw").disabled);
     if (get("providesitepw").checked && get("sitename").value && get("siteun").value) {
         get("sitepw").readOnly = false;
         get("sitepw").placeholder = "Enter your super password";

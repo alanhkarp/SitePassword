@@ -26,7 +26,7 @@ export const config = {
     miniter: 100,
     maxiter: 1000
 };
-export const defaultSettings = {
+let defaultSettings = {
     sitename: "",
     username: "",
     providesitepw: false,
@@ -45,6 +45,7 @@ export const defaultSettings = {
     minspecial: 1,
     specials: config.specials,
 };
+let newDefaultSettings;
 
 let bkmksId;
 let bkmksSafari = {};
@@ -134,6 +135,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 sendResponse(p);
             } else if (request.cmd === "keepAlive") {
                 sendResponse({"alive": true});
+            } else if (request.cmd === "newDefaults") {
+                if (logging) console.log("bg got new default settings", request.newDefaults);
+                newDefaultSettings = request.newDefaults;
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
@@ -323,6 +327,7 @@ async function persistMetadata(sendResponse) {
     let common = clone(db);
     delete common.domains;
     delete common.sites;
+    common.defaultSettings = newDefaultSettings || defaultSettings;
     // No merge for now
     if (commonSettings.length === 0) {
         let url = "ssp://" + JSON.stringify(common);
@@ -400,6 +405,49 @@ async function persistMetadata(sendResponse) {
         }
     }
 }
+async function retrieveMetadata(sendResponse, callback) {
+    database = clone(databaseDefault); // Start with an empty database
+    bg = {}; // and settings
+    if (logging) console.log("bg find SSP bookmark folder");
+    let folders = await getRootFolder(sendResponse);
+    if (folders.length === 1) {
+        if (logging) console.log("bg found bookmarks folder: ", folders[0]);
+        // An earlier version mistakenly put bookmarks in sync storage.
+        // They aren't needed, so get rid of them.  However, leaving 
+        // them protects against the case where a browser (Safari) 
+        // starts supporting the bookmarks API, but users haven't
+        // updated the browser on all their machines.
+        //chrome.storage.sync.clear();
+        parseBkmk(folders[0].id, callback, sendResponse);
+    } else if (folders.length === 0) {
+        // findpw.js sends the SiteData message twice, once for document.onload
+        // and once for window.onload.  The latter can arrive while the bookmark
+        // folder is being created, resulting in two of them.  My solution is to
+        // use a flag to make sure I only create it once.
+        if (createBookmarksFolder) {
+            if (logging) console.log("Creating SSP bookmark folder");
+            createBookmarksFolder = false;
+            let bkmk = - 1;
+            try {
+                // If there's no bookmarks folder, but there are entries in sync storage,
+                // then copy those entries to bookmarks and clear sync storage.  This will
+                // happen when the browser newly implements the bookmarks API.
+                bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
+                if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                let values = await chrome.storage.sync.get();
+                for (let title in values) {
+                    chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
+                }
+                // Leaving the entries in sync storage protects against the case where a browser (Safari) 
+                // starts supporting the bookmarks API, but users haven't updated the browser on all their machines.
+                //chrome.storage.sync.clear();
+            } catch {
+                // Nothing to do here
+            }
+            parseBkmk(bkmk.id, callback, sendResponse);
+        }
+    }
+}
 async function parseBkmk(rootFolderId, callback, sendResponse) {
     if (logging) console.log("bg parsing bookmark");
     try {
@@ -444,6 +492,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 let common = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
                 newdb.clearsuperpw = common.clearsuperpw;
                 newdb.hidesitepw = common.hidesitepw;
+                defaultSettings = newDefaultSettings || common.defaultSettings || defaultSettings;
             } else {
                 let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
                 if ('string' !== typeof settings.specials) {
@@ -459,50 +508,8 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         retrieved(callback);
     }
 }
-async function retrieveMetadata(sendResponse, callback) {
-    database = clone(databaseDefault); // Start with an empty database
-    bg = {}; // and settings
-    if (logging) console.log("bg find SSP bookmark folder");
-    let folders = await getRootFolder(sendResponse);
-    if (folders.length === 1) {
-        if (logging) console.log("Found bookmarks folder: ", folders[0]);
-        // An earlier version mistakenly put bookmarks in sync storage.
-        // They aren't needed, so get rid of them.  However, leaving 
-        // them protects against the case where a browser (Safari) 
-        // starts supporting the bookmarks API, but users haven't
-        // updated the browser on all their machines.
-        //chrome.storage.sync.clear();
-        parseBkmk(folders[0].id, callback, sendResponse);
-    } else if (folders.length === 0) {
-        // findpw.js sends the SiteData message twice, once for document.onload
-        // and once for window.onload.  The latter can arrive while the bookmark
-        // folder is being created, resulting in two of them.  My solution is to
-        // use a flag to make sure I only create it once.
-        if (createBookmarksFolder) {
-            if (logging) console.log("Creating SSP bookmark folder");
-            createBookmarksFolder = false;
-            let bkmk = - 1;
-            try {
-                // If there's no bookmarks folder, but there are entries in sync storage,
-                // then copy those entries to bookmarks and clear sync storage.  This will
-                // happen when the browser newly implements the bookmarks API.
-                bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
-                if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
-                let values = await chrome.storage.sync.get();
-                for (let title in values) {
-                    chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
-                }
-                // Leaving the entries in sync storage protects against the case where a browser (Safari) 
-                // starts supporting the bookmarks API, but users haven't updated the browser on all their machines.
-                //chrome.storage.sync.clear();
-            } catch {
-                // Nothing to do here
-            }
-            parseBkmk(bkmk.id, callback, sendResponse);
-        }
-    }
-}
 async function getRootFolder(sendResponse) {
+    if (logging) console.log("bg getRootFolder", sitedataBookmark);
     // bookmarks.search finds any bookmark with a title containing the
     // search string, but I need to find one with an exact match.  I
     // also only want to include those in the bookmarks bar.
@@ -517,6 +524,7 @@ async function getRootFolder(sendResponse) {
             console.log("bg found multiple", sitedataBookmark, "folders", folders);
             sendResponse("multiple");
         } 
+        if (logging) console.log("bg getRootFolder returning", folders);
         return folders;
     } catch {
         return [bkmksSafari];
