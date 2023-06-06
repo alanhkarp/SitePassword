@@ -52,14 +52,6 @@ setInterval(() => {
         startup(true);
     }
 }, 2000);
-// Some pages change CSS to make the password field visible after clicking the Sign In button
-document.body.onclick = function () {
-    if (logging) console.log("findpw click on body");
-    setTimeout(() => {
-        if (logging) console.log("findpw body.onclick");
-        startup(true);
-    }, 500);
-};
 // Some sites change the page contents based on the fragment
 window.addEventListener("hashchange", (_href) => {
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from hash change listener");
@@ -89,8 +81,16 @@ function startup(sendPageInfo) {
     // Don't do anything if this is a SitePasswordWeb page
     if (document.getElementById("SitePasswordWebMarker")) return;
     // The code in this function used to be called once, but now it's called several times.
-    // There is no reason to declare new mutation observers and listeners on evert call.
+    // There is no reason to declare new mutation observers and listeners on every call.
     if (!mutationObserver) {
+        // Some pages change CSS to make the password field visible after clicking the Sign In button
+        document.body.onclick = function () {
+            if (logging) console.log("findpw click on body");
+            setTimeout(() => {
+                if (logging) console.log("findpw body.onclick");
+                startup(true);
+            }, 500);
+        };
         mutationObserver = new MutationObserver(handleMutations);
         mutationObserver.observe(document.body, observerOptions);
         chrome.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
@@ -203,10 +203,13 @@ function sendpageinfo(cpi, clicked, onload) {
         fillfield(cpi.idfield, userid);
         setPlaceholder(userid, response.p);
         // Firefox doesn't preserve sessionStorage across restarts of
-        // the service worker.  Sending periodic messages to it does
-        // not keep it alive on Chrome, but it does on Firefox.
-        setInterval(() => {
-            chrome.runtime.sendMessage({"cmd": "keepAlive"});
+        // the service worker.  Sending periodic messages keeps it
+        // alive, but there's no reason to send them if I'm using
+        // storage.session.
+        let keepAlive = setInterval(() => {
+            chrome.runtime.sendMessage({"cmd": "keepAlive"}, (keepAlive) => {
+                if (!keepAlive.keepAlive) clearInterval(keepAlive);
+            });
         }, 10000);
          if (userid) fillfield(cpi.pwfields[0], "");
         let myMutations = mutationObserver.takeRecords();

@@ -134,7 +134,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
                 sendResponse(p);
             } else if (request.cmd === "keepAlive") {
-                sendResponse({"alive": true});
+                if (chrome.storage.session) {
+                    sendResponse({"keepAlive": false});
+                } else {
+                    sendResponse({"keepAlive": true});
+                }
             } else if (request.cmd === "newDefaults") {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
                 newDefaultSettings = request.newDefaults;

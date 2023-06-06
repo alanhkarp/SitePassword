@@ -21,7 +21,7 @@
             "matches": ["https://*/*", "http://*/*"],
             "run_at": "document_idle",
             "js": [
-                "findpw.js"
+                "findpw.js" 
             ],
             "all_frames": true
         }
