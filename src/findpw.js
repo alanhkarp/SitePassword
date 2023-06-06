@@ -207,8 +207,8 @@ function sendpageinfo(cpi, clicked, onload) {
         // alive, but there's no reason to send them if I'm using
         // storage.session.
         let keepAlive = setInterval(() => {
-            chrome.runtime.sendMessage({"cmd": "keepAlive"}, (keepAlive) => {
-                if (!keepAlive.keepAlive) clearInterval(keepAlive);
+            chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
+                if (!alive.keepAlive) clearInterval(keepAlive);
             });
         }, 10000);
          if (userid) fillfield(cpi.pwfields[0], "");

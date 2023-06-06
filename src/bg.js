@@ -45,7 +45,6 @@ let defaultSettings = {
     minspecial: 1,
     specials: config.specials,
 };
-let newDefaultSettings;
 
 let bkmksId;
 let bkmksSafari = {};
@@ -141,7 +140,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 }
             } else if (request.cmd === "newDefaults") {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
-                newDefaultSettings = request.newDefaults;
+                defaultSettings = request.newDefaults;
+                persistMetadata(sendResponse);
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
@@ -331,7 +331,7 @@ async function persistMetadata(sendResponse) {
     let common = clone(db);
     delete common.domains;
     delete common.sites;
-    common.defaultSettings = newDefaultSettings || defaultSettings;
+    common.defaultSettings = defaultSettings;
     // No merge for now
     if (commonSettings.length === 0) {
         let url = "ssp://" + JSON.stringify(common);
@@ -496,7 +496,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 let common = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
                 newdb.clearsuperpw = common.clearsuperpw;
                 newdb.hidesitepw = common.hidesitepw;
-                defaultSettings = newDefaultSettings || common.defaultSettings || defaultSettings;
+                defaultSettings = common.defaultSettings || defaultSettings;
             } else {
                 let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
                 if ('string' !== typeof settings.specials) {

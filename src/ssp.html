@@ -123,18 +123,7 @@
               <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 6.362A9.707 9.707 0 0 1 12 5c6.307 0 9.367 5.683 9.91 6.808.06.123.06.261 0 .385-.352.728-1.756 3.362-4.41 5.131M14 18.8a9.93 9.93 0 0 1-2 .2c-6.307 0-9.367-5.683-9.91-6.808a.44.44 0 0 1 0-.386c.219-.452.84-1.632 1.91-2.885m6 .843A3 3 0 0 1 14.236 14M3 3l18 18"/></svg>
             </div>
           </div>
-          <div class="setting-row" 
-          id="providesitepwdiv"
-          title="You must fill in the SitePassword form before you can provide your own site password.">
-          <input id="providesitepw" 
-                    type="checkbox"
-                    disabled
-                    aria-disabled="true"
-                    title="Check to type your own site password.  You must fill in the SitePassword form first." 
-          />
-          <span>Provide your own site password.</span> 
-        </div>
-        <div class="form-row">
+          <div class="form-row">
             <div id="nopw" class="warning nodisplay" title="You may need to enable some characters, increase the pasword length, or reduce the number of special characters you're asking for.">
               <span id="nopwtext">
                 Site Password can't compute a password with these settings. You
@@ -226,14 +215,36 @@
             </div>
           </div>
           <div id="settings" class="nodisplay">
-            <div id="defaultsettings" class="boxed" />
-              <center>
+            <hr />
+            <div class="setting-row" 
+              id="providesitepwdiv"
+              title="You must fill in the SitePassword form before you can provide your own site password.">
+              <input id="providesitepw" 
+                      type="checkbox"
+                      disabled
+                      aria-disabled="true"
+                      title="Check to type your own site password.  You must fill in the SitePassword form first." 
+              />
+              <span>Provide your own site password.</span> 
+            </div>
+            <hr />
+            <div class="setting-row">
+              <input id="clearsuperpw" type="checkbox" />
+              <span>Clear super password on use</span>
+            </div>
+            <div class="setting-row">
+              <input id="hidesitepw" type="checkbox" />
+              <span>Hide site password by default</span>
+            </div>
+            <hr />
+            <div id="defaultsettings">
               <div class="setting-row">
-                <span>Site password is</span>
-                <input id="pwlength" type="text" value="12" size="2" />
-                <span>characters long</span>
+                <center>
+                  <span>Site password is</span>
+                  <input id="pwlength" type="text" value="12" size="2" />
+                  <span>characters long</span>
+                </center>
               </div>
-              </center>
               <div class="setting-row">
                 <input id="startwithletter" type="checkbox" checked="checked" />
                 <span>Starts with letter</span>
@@ -281,43 +292,33 @@
                     size="12" />
                 </span>
               </div>
-              <div>
-                <div class="setting-row">
-                  <input id="clearsuperpw" type="checkbox" />
-                  <span>Clear super password on use</span>
-                </div>
-                <div class="setting-row">
-                  <input id="hidesitepw" type="checkbox" />
-                  <span>Hide site password by default</span>
-                </div>
-              </div>
-                <div class="form-row">
-                  <button id="makedefault"
-                    type="button"
-                    style="display: inline; margin-left: 40px; margin-right: 40px;"
-                    target="_blank"
-                    title="Make the settings in the box your default"
-                    >
-                    Save as Default 
-                  </button>                  
-                </div>
-            </div>
-            <div class="form-row">
-                <button id="sitedatagetbutton" 
-                  type="button" 
-                  style="display: inline" 
-                  target="_blank" 
-                  title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
-                  Download Site Data
-                </button>
-                <a id="data" 
-                   href="data:application/octet-stream," 
-                   target="_blank" 
-                   style="display: none" 
-                   download="SiteData.html">SiteData.html</a>
+              <div class="form-row">
+                <button id="makedefault"
+                  type="button"
+                  style="display: inline; margin-left: 40px; margin-right: 40px;"
+                  target="_blank"
+                  title="Make the settings in the box your default"
+                  >
+                  Save as Default 
+                </button>                  
               </div>
             </div>
-            </div>
+            <hr />
+          </div>
+          <div class="form-row">
+            <button id="sitedatagetbutton" 
+              type="button" 
+              style="display: inline" 
+              target="_blank" 
+              title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
+              Download Site Data
+            </button>
+            <a id="data" 
+                href="data:application/octet-stream," 
+                target="_blank" 
+                style="display: none" 
+                download="SiteData.html">SiteData.html</a>
+          </div>
         </div>
         <div class="instructionpanelext" id="instructionpanel" style="display:none">
           <div id="sections">
@@ -858,7 +859,7 @@
               </section>
           </div>
       </div>
-        </div>
+    </div>
   </div>
 </body>
 </html>

@@ -147,8 +147,6 @@ function eventSetup() {
                 "clearsuperpw": get("clearsuperpw").checked,
                 "hidesitepw": get("hidesitepw").checked,
                 "bg": bg,
-                "clearsuperpw": database.clearsuperpw,
-                "hideSitepw": database.hideSitepw
             });
         }
     }
