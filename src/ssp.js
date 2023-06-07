@@ -430,6 +430,7 @@ function eventSetup() {
         bg.settings.sitename = get("sitename").value;
         database.domains[get("domainname").value] = bg.settings.sitename;
         get("siteun").value = bg.settings.username;
+        showsettings();
         ask2generate();
     }
     get("cancelwarning").onclick = function () {
