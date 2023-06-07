@@ -16,849 +16,846 @@
 </head>
 <body id="root">
   <noscript>JavaScript must be enabled to use this tool.</noscript>
-    <div id="leftgutter" class="column"></div>
-    <div id="content" class="column">
-      <div id="mainpanel">
-        <div id="main" class="serif">
-          <div class="form-row">
-            <span style="flex:1"></span>
-              <img id="logo" class="logo" src="icon128.png"/>
-              <img id="logopw" class="logo" src="icon128pw.png" style="display: none;">
-            <span style="flex: 1"></span>
-            <button 
-              id="title"
-              onclick="window.location='https://sitepassword.info'"
-              title="Use https://sitepassword.info when you can't use the extension.">
-              SitePassword.info
-            </button>
-            <span style="flex:1"></span>
-              <img id="logo" class="logo" style="visibility: hidden;" src="ssplogo.png"/>
-            <span style="flex:1"></span>
+  <div id="leftgutter" class="column"></div>
+  <div id="content" class="column">
+    <div id="mainpanel">
+      <div id="main" class="serif">
+        <div class="form-row">
+          <span style="flex:1"></span>
+            <img id="logo" class="logo" src="icon128.png"/>
+            <img id="logopw" class="logo" src="icon128pw.png" style="display: none;">
+          <span style="flex: 1"></span>
+          <button 
+            id="title"
+            onclick="window.location='https://sitepassword.info'"
+            title="Use https://sitepassword.info when you can't use the extension.">
+            SitePassword.info
+          </button>
+          <span style="flex:1"></span>
+            <img id="logo" class="logo" style="visibility: hidden;" src="ssplogo.png"/>
+          <span style="flex:1"></span>
+        </div>
+        <div class="form-row">
+          <label for="domainname" class="sr-only">Domain name:</label>
+          <input
+            id="domainname"
+            class="fixed"
+            readonly="readonly"
+            type="text"
+            value=""
+            placeholder="Domain name"
+          />
+        </div>
+        <div class="form-row">
+          <label for="superpw" class="sr-only">Super password:</label>
+          <input
+            id="superpw"
+            class="fixed"
+            type="password"
+            autocomplete="off"
+            value=""
+            placeholder="A strong super password"
+          />
+          <div id="superpwhide" class="icon inner-icon-1 nodisplay" title="Hide Super Password">
+            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5c-6.307 0-9.367 5.683-9.91 6.808a.435.435 0 0 0 0 .384C2.632 13.317 5.692 19 12 19s9.367-5.683 9.91-6.808a.435.435 0 0 0 0-.384C21.368 10.683 18.308 5 12 5z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
           </div>
-          <div class="form-row">
-            <label for="domainname" class="sr-only">Domain name:</label>
-            <input
-              id="domainname"
-              class="fixed"
-              readonly="readonly"
-              type="text"
-              value=""
-              placeholder="Domain name"
-            />
-          </div>
-          <div class="form-row">
-            <label for="superpw" class="sr-only">Super password:</label>
-            <input
-              id="superpw"
-              class="fixed"
-              type="password"
-              autocomplete="off"
-              value=""
-              placeholder="A strong super password"
-            />
-            <div id="superpwhide" class="icon inner-icon-1 nodisplay" title="Hide Super Password">
-              <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5c-6.307 0-9.367 5.683-9.91 6.808a.435.435 0 0 0 0 .384C2.632 13.317 5.692 19 12 19s9.367-5.683 9.91-6.808a.435.435 0 0 0 0-.384C21.368 10.683 18.308 5 12 5z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-            </div>
-            <div id="superpwshow" class="icon inner-icon-1" title="Show Super Password">
-              <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 6.362A9.707 9.707 0 0 1 12 5c6.307 0 9.367 5.683 9.91 6.808.06.123.06.261 0 .385-.352.728-1.756 3.362-4.41 5.131M14 18.8a9.93 9.93 0 0 1-2 .2c-6.307 0-9.367-5.683-9.91-6.808a.44.44 0 0 1 0-.386c.219-.452.84-1.632 1.91-2.885m6 .843A3 3 0 0 1 14.236 14M3 3l18 18"/></svg>
-            </div>
-          </div>
-          <div class="form-row">
-            <div style="flex: 1;"></div>
-            <meter max="4" id="password-strength-meter"></meter>
-            <span id="password-strength-text">Too Weak</span>
-            <div style="flex: 1;"></div>
-          </div>
-          <div class="form-row">
-            <label for="sitename" class="sr-only">Nickname:</label>
-            <input
-              id="sitename"
-              list="sitenames"
-              class="sans"
-              type="text"
-              autocomplete="off"
-              title="A unique nickname you associate with this account.  For example, use the same nickname for www.example.com and login.example.com."
-              value=""
-              placeholder="A unique nickname for this account"
-            />
-            <datalist id="sitenames"></datalist>
-          </div>
-          <div class="form-row">
-            <label for="siteun" class="sr-only">User name:</label>
-            <input
-              id="siteun"
-              list="siteuns"
-              class="sans"
-              type="text"
-              title="Your user-id for this account"
-              autocomplete="off"
-              value=""
-              placeholder="Your user-id for this account"
-            />
-            <datalist id="siteuns"></datalist>
-            <div id="useridcopy" class="icon inner-icon-1" title="Copy username to clipboard">
-              <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M8 5v0a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v0M8 5v0a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v0"/></svg>
-            </div>
-          </div>
-          <div class="form-row">
-            <label for="sitepw" class="sr-only">Site password:</label>
-            <input
-              id="sitepw"
-              class="fixed"
-              readonly="readonly"
-              type="text"
-              title="Your password for this account"
-              autocomplete="off"
-              value=""
-              placeholder="Generated site password"
-            />
-            <div id="sitepwcopy" class="icon inner-icon-1" title="Copy to Clipboard">
-              <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M8 5v0a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v0M8 5v0a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v0"/></svg>
-            </div>
-            <div id="sitepwhide" class="icon inner-icon-2" title="Hide Site Password">
-              <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5c-6.307 0-9.367 5.683-9.91 6.808a.435.435 0 0 0 0 .384C2.632 13.317 5.692 19 12 19s9.367-5.683 9.91-6.808a.435.435 0 0 0 0-.384C21.368 10.683 18.308 5 12 5z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-            </div>
-            <div id="sitepwshow" class="icon inner-icon-2 nodisplay" title="Show Site Password">
-              <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 6.362A9.707 9.707 0 0 1 12 5c6.307 0 9.367 5.683 9.91 6.808.06.123.06.261 0 .385-.352.728-1.756 3.362-4.41 5.131M14 18.8a9.93 9.93 0 0 1-2 .2c-6.307 0-9.367-5.683-9.91-6.808a.44.44 0 0 1 0-.386c.219-.452.84-1.632 1.91-2.885m6 .843A3 3 0 0 1 14.236 14M3 3l18 18"/></svg>
-            </div>
-          </div>
-          <div class="form-row">
-            <div id="nopw" class="warning nodisplay" title="You may need to enable some characters, increase the pasword length, or reduce the number of special characters you're asking for.">
-              <span id="nopwtext">
-                Site Password can't compute a password with these settings. You
-                either need to enable some characters, increase the pasword length,
-                or reduce the number of special characters you're asking for.  If 
-                that doesn't work, try another nickname for the site.
-              </span>
-            </div>
-          </div>
-          <div class="form-row">
-            <div id="multiple" class="warning nodisplay">
-              <span id="multipletext">
-                There is more than one password field
-                on this page. Click the Copy icon in the site password field to put it 
-                on the clipboard.  <b> When you are done pasting your 
-                password, come back here and click the Clear Clipboard button.</b>
-              </span>
-            </div>
-          </div>
-          <div class="form-row">
-            <div id="zero" class="warning nodisplay">
-              <span id="zerotext">
-                Site Password did not find any password fields
-                on this page. Try reloading the page.  If that doesn't work, click the 
-                Copy icon in the site password field to put
-                it on the clipboard.
-              </span>
-            </div>
-          </div>
-          <div class="form-row">
-            <div id="http" class="warning nodisplay">
-              <span id="httptext">
-                The connection to this page is not secure.  Are you sure you want to enter your password?
-              </span>
-            </div>
-          </div>
-          <div class="form-row">
-            <div id="phishing" class="warning nodisplay">
-              <span id="phishingtext1"></span>
-              <br/><br/>
-              <span id="phishingtext2" class="phishing"></span>
-              <br/><br/>
-              <span id="phishingtext3"></span>
-              <br/><br/>
-              <span id="phishingtext4" class="phishing"></span>
-              <br/><br/>
-              <span id="phishingtext5"></span>
-              <br/><br/>
-              <button
-                id="cancelwarning"
-                type="button"
-                style="background-color: #00ff00; margin: auto; color: black; width:100%"
-                title="I don't recognize this domain name. Take me away from this web page.">
-                Get me to safety!
-              </button>
-              <p></p>
-              <button
-                id="warningbutton"
-                type="button"
-                style="background-color: #ff0000; margin: auto; color:white; width:100%"
-                title="This page is for the same account. Use the same settings for it.">
-                <b>This page is for the same account.</b>
-              </button>
-              <p></p>
-              <button
-                id="nicknamebutton"
-                type="button"
-                style="background-color: #000FF0; margin: auto; color:white; width:100%"
-                title="This page is for a different account.  I'll select a new nickname.">
-                <b>Pick a new nickname.</b>
-              </button>
-              <p></p>
-            </div>
-          </div>
-          <div class="form-row">
-            <div id="settingsshow" style="display: block; margin-top: 6px;" title="Open Settings">
-              <svg class="icon" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
-            </div>
-            <div id="settingssave" style="display: none; margin-top: 6px;" title="Close Settings">
-              <svg class="icon" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.994 6.994 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.992 6.992 0 0 1-1.819 1.052L14 21z"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 12 2 2 4-4"/></svg>
-            </div>
-            <span style="flex: 1"></span>
-            <div id="clearclipboard" style="display:block;" title = "In case a site password is on the clipboard">
-              <button>Clear Clipboard</button>
-            </div> 
-            <span style="flex: 1"></span>
-            <div id="maininfo" class="icon" title="Instructions">
-              <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v-3m0-3v0"/></svg>
-            </div>
-          </div>
-          <div id="settings" class="nodisplay">
-            <hr />
-            <div class="setting-row" 
-              id="providesitepwdiv"
-              title="You must fill in the SitePassword form before you can provide your own site password.">
-              <input id="providesitepw" 
-                      type="checkbox"
-                      disabled
-                      aria-disabled="true"
-                      title="Check to type your own site password.  You must fill in the SitePassword form first." 
-              />
-              <span>Provide your own site password.</span> 
-            </div>
-            <hr />
-            <div class="setting-row">
-              <input id="clearsuperpw" type="checkbox" />
-              <span>Clear super password on use</span>
-            </div>
-            <div class="setting-row">
-              <input id="hidesitepw" type="checkbox" />
-              <span>Hide site password by default</span>
-            </div>
-            <hr />
-            <div id="defaultsettings">
-              <div class="setting-row">
-                <center>
-                  <span>Site password is</span>
-                  <input id="pwlength" type="text" value="12" size="2" />
-                  <span>characters long</span>
-                </center>
-              </div>
-              <div class="setting-row">
-                <input id="startwithletter" type="checkbox" checked="checked" />
-                <span>Starts with letter</span>
-              </div>
-              <div class="setting-row">
-                <input id="allowlowercheckbox" type="checkbox" checked="checked" />
-                <span id="allowlower" style="display: none;">Allows lowercase letters</span>
-                <span id="requirelower" style="display: inline;">
-                  Requires at least
-                  <input id="minlower" type="text" value="1" size="2" />
-                  lowercase letter(s)
-                </span>
-              </div>
-              <div class="setting-row">
-                <input id="allowuppercheckbox" type="checkbox" checked="checked" />
-                <span id="allowupper" style="display: none;">Allows uppercase letters</span>
-                <span id="requireupper" style="display: inline;">
-                  Requires at least
-                  <input id="minupper" type="text" value="1" size="2" />
-                  uppercase letter(s)
-                </span>
-              </div>
-              <div class="setting-row">
-                <input id="allownumbercheckbox" type="checkbox" checked="checked" />
-                <span id="allownumber" style="display: none;">Allows numbers</span>
-                <span id="requirenumber" style="display: inline;">
-                  Requires at least
-                  <input id="minnumber" type="text" value="1" size="2" />
-                  number(s)
-                </span>
-              </div>
-              <div class="setting-row">
-                <input id="allowspecialcheckbox" type="checkbox" />
-                <span id="allowspecial" style="display: inline;">Allows special characters</span>
-                <span id="requirespecial" style="display: none;">
-                  Requires at least
-                  <input id="minspecial" type="text" value="1" size="2" />
-                  of
-                  <input 
-                    id="specials" 
-                    title="Enter up to 12 special characters"
-                    class="fixed" 
-                    type="text" 
-                    value="$/!=@?._-" 
-                    size="12" />
-                </span>
-              </div>
-              <div class="form-row">
-                <button id="makedefault"
-                  type="button"
-                  style="display: inline; margin-left: 40px; margin-right: 40px;"
-                  target="_blank"
-                  title="Make the settings in the box your default"
-                  >
-                  Save as Default 
-                </button>                  
-              </div>
-            </div>
-            <hr />
-          </div>
-          <div class="form-row">
-            <button id="sitedatagetbutton" 
-              type="button" 
-              style="display: inline" 
-              target="_blank" 
-              title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
-              Download Site Data
-            </button>
-            <a id="data" 
-                href="data:application/octet-stream," 
-                target="_blank" 
-                style="display: none" 
-                download="SiteData.html">SiteData.html</a>
+          <div id="superpwshow" class="icon inner-icon-1" title="Show Super Password">
+            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 6.362A9.707 9.707 0 0 1 12 5c6.307 0 9.367 5.683 9.91 6.808.06.123.06.261 0 .385-.352.728-1.756 3.362-4.41 5.131M14 18.8a9.93 9.93 0 0 1-2 .2c-6.307 0-9.367-5.683-9.91-6.808a.44.44 0 0 1 0-.386c.219-.452.84-1.632 1.91-2.885m6 .843A3 3 0 0 1 14.236 14M3 3l18 18"/></svg>
           </div>
         </div>
-        <div class="instructionpanelext" id="instructionpanel" style="display:none">
-          <div id="sections">
-              <section id="overviewinfo">
-                  <svg id="openoverview" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closeoverview" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>Overview</h3>
-                  <div id="overviewdiv" style="display: none">
-                      <p>
-                          It's too hard for you to remember a strong password for every account
-                          you use. Password managers take care of this problem for you. Most
-                          of them store your passwords in encrypted form, either on your
-                          machine or in the cloud.
-                      </p>
-                      <p>
-                          SitePassword is different. Instead of
-                          storing your passwords, it calculates them from a single super password
-                          and your nickname and user name
-                          for the account. That means you can usually get your password if
-                          you remember those three things. (Some web pages require additional
-                          settings.) SitePassword automatically saves your settings, so
-                          you don't have to remember them.
-                      </p>
-                      <p>
-                          The
-                          <svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg"
-                              fill="none">
-                              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round"
-                                  stroke-linejoin="round" stroke-width="2" />
-                              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M12 15v-3m0-3v0" />
-                          </svg>
-                          icon on the SitePassword window opens these
-                          instructions.
-                      </p>
-                  </div>
-              </section>
-              <section id="basicinfo">
-                  <svg id="openbasic" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closebasic" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>Using the Extension</h3>
-                  <div id="basicdiv" style="display: none">
-                      <p>
-                          After you install the Chrome extension and visit a page with a
-                          login form, you'll see that the password field tells you to
-                          <em>Click SitePassword</em>. When you click on the SitePassword
-                          icon, you'll see a form with the domain name field filled in.
-                          Enter your super password, an easy to remember nickname for the
-                          account and your user name for the account. You will see your site
-                          password being calculated as you type. 
-                      </p>
-                      <p>
-                          Mouse over to the login form's password field, which now should tell you to
-                          <em>Click here for password</em>. Click, and your password gets
-                          filled in. When you return to the page on any machine that you synchronize with
-                          and has the extenstion installed, you'll see your user name filled in and
-                          instructions to <em>Click here for password</em>. Click, and your
-                          password gets filled in. 
-                      </p>    
-                      <p>
-                          You will have to enter your super password each time you start your 
-                          browser.  That's because SitePassword never stores your
-                          super password; it only remembers it for the duration of your
-                          browser session. If your settings aren't there when you think they
-                          should be, reloading the page with the login form will solve the
-                          problem.  
-                      </p>
-                  </div>
-              </section>
-              <section id="superinfo">
-                  <svg id="opensuper" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closesuper" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>Your Super Password</h3>
-                  <div id="superdiv" style="display:none">
-                      <p>
-                        You should choose a strong super password, one with upper and
-                        lower case letters, numbers, and special characters. The stronger
-                        the better. The reason is simple. A bad guy who knows one site
-                        password and can guess your nickname and user name for that account
-                        can start guessing super passwords. You want to make that job has
-                        hard as you can.
-                      </p>
-                      <p>
-                        You can protect yourself further by using different super passwords 
-                        for different kinds of accounts.  You could have one that you use for 
-                        banking, another for subscriptions, and a third for sites you find 
-                        sketchy.
-                      </p>
-                      <p>
-                        SitePassword doesn't prevent you from using a weak super password,
-                        but it does warn you. There is a strength indicator directly below
-                        the super password field. It uses a meter, words, and color to
-                        let you know how strong your super password is.
-                      </p>
-                      <p>
-                        SitePassword cannot retrieve your super password. You should make
-                        sure it's something you won't easily forget. You might even want
-                        to write it down and keep the copy in a secure place.
-                      </p>
-                  </div>
-              </section>
-              <section id="siteinfo">
-                  <svg id="opensite" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closesite" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>Your Site Passwords</h3>
-                  <div id="sitediv" style="display: none;">
-                      <p>
-                          You only need to open SitePassword to enter your super password, to 
-                          set up a new site, or when you have to paste your site password.  Most 
-                          of the time, you can just click on the login 
-                          form's password field.  You'll know which to do because the password field will 
-                          say either <em>Click SitePassword</em> or <em>Click here for password</em>.  If 
-                          the password field says neither, just click on the password field and see if 
-                          your password was filled in. If it wasn't, you should see an alert telling 
-                          you to open SitePassword. If neither of those happens, SitePassword could 
-                          not find the password field. In that case, open SitePassword and copy your 
-                          site password to the clipboard.
-                      </p>
-                      <p>
-                        SitePassword could generate a weak site password just by chance.  
-                        To let you know that has happened, it uses the same colors that 
-                        appear in the super password 
-                        strength meter to tell you how strong your site password is.    
-                        For example, if your site password is orange, then it is weak. In 
-                        that case, just choose a different nickname for the account.
-                      </p>
-                      <p>
-                        When the generated password can't be used, say if you've been given one that
-                        you're not allowed to change, SitePassword can remember a password 
-                        you provide.  It is stored in your settings encrypted with the computed
-                        password for the site as a key.  That means you must fill in the form before entering 
-                        your password. After you fill in the form, open the settings by clicking
-                        <svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
-                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
-                          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
-                        </svg>
-                        and click the <em>Provide your own site password</em> 
-                        check box.  You can then enter your password into the site password field.                         
-                      </p>
-                      <p>
-                          You can also get your passwords without the extension. Go to
-                          <a href="https://sitepassword.info">SitePassword.info</a> and fill
-                          in the form.  
-                      </p>
-                  </div>
-              </section>
-              <section id="acceptableinfo">
-                <svg id="openacceptable" class="accordian" style="display: block;" width="24px" height="24px"
+        <div class="form-row">
+          <div style="flex: 1;"></div>
+          <meter max="4" id="password-strength-meter"></meter>
+          <span id="password-strength-text">Too Weak</span>
+          <div style="flex: 1;"></div>
+        </div>
+        <div class="form-row">
+          <label for="sitename" class="sr-only">Nickname:</label>
+          <input
+            id="sitename"
+            list="sitenames"
+            class="sans"
+            type="text"
+            autocomplete="off"
+            title="A unique nickname you associate with this account.  For example, use the same nickname for www.example.com and login.example.com."
+            value=""
+            placeholder="A unique nickname for this account"
+          />
+          <datalist id="sitenames"></datalist>
+        </div>
+        <div class="form-row">
+          <label for="siteun" class="sr-only">User name:</label>
+          <input
+            id="siteun"
+            list="siteuns"
+            class="sans"
+            type="text"
+            title="Your user-id for this account"
+            autocomplete="off"
+            value=""
+            placeholder="Your user-id for this account"
+          />
+          <datalist id="siteuns"></datalist>
+          <div id="useridcopy" class="icon inner-icon-1" title="Copy username to clipboard">
+            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M8 5v0a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v0M8 5v0a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v0"/></svg>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="sitepw" class="sr-only">Site password:</label>
+          <input
+            id="sitepw"
+            class="fixed"
+            readonly="readonly"
+            type="text"
+            title="Your password for this account"
+            autocomplete="off"
+            value=""
+            placeholder="Generated site password"
+          />
+          <div id="sitepwcopy" class="icon inner-icon-1" title="Copy to Clipboard">
+            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M8 5v0a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v0M8 5v0a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v0"/></svg>
+          </div>
+          <div id="sitepwhide" class="icon inner-icon-2" title="Hide Site Password">
+            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5c-6.307 0-9.367 5.683-9.91 6.808a.435.435 0 0 0 0 .384C2.632 13.317 5.692 19 12 19s9.367-5.683 9.91-6.808a.435.435 0 0 0 0-.384C21.368 10.683 18.308 5 12 5z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          </div>
+          <div id="sitepwshow" class="icon inner-icon-2 nodisplay" title="Show Site Password">
+            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 6.362A9.707 9.707 0 0 1 12 5c6.307 0 9.367 5.683 9.91 6.808.06.123.06.261 0 .385-.352.728-1.756 3.362-4.41 5.131M14 18.8a9.93 9.93 0 0 1-2 .2c-6.307 0-9.367-5.683-9.91-6.808a.44.44 0 0 1 0-.386c.219-.452.84-1.632 1.91-2.885m6 .843A3 3 0 0 1 14.236 14M3 3l18 18"/></svg>
+          </div>
+        </div>
+        <div class="form-row">
+          <div id="nopw" class="warning nodisplay" title="You may need to enable some characters, increase the pasword length, or reduce the number of special characters you're asking for.">
+            <span id="nopwtext">
+              Site Password can't compute a password with these settings. You
+              either need to enable some characters, increase the pasword length,
+              or reduce the number of special characters you're asking for.  If 
+              that doesn't work, try another nickname for the site.
+            </span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div id="multiple" class="warning nodisplay">
+            <span id="multipletext">
+              There is more than one password field
+              on this page. Click the Copy icon in the site password field to put it 
+              on the clipboard.  <b> When you are done pasting your 
+              password, come back here and click the Clear Clipboard button.</b>
+            </span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div id="zero" class="warning nodisplay">
+            <span id="zerotext">
+              Site Password did not find any password fields
+              on this page. Try reloading the page.  If that doesn't work, click the 
+              Copy icon in the site password field to put
+              it on the clipboard.
+            </span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div id="http" class="warning nodisplay">
+            <span id="httptext">
+              The connection to this page is not secure.  Are you sure you want to enter your password?
+            </span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div id="phishing" class="warning nodisplay">
+            <span id="phishingtext1"></span>
+            <br/><br/>
+            <span id="phishingtext2" class="phishing"></span>
+            <br/><br/>
+            <span id="phishingtext3"></span>
+            <br/><br/>
+            <span id="phishingtext4" class="phishing"></span>
+            <br/><br/>
+            <span id="phishingtext5"></span>
+            <br/><br/>
+            <button
+              id="cancelwarning"
+              type="button"
+              style="background-color: #00ff00; margin: auto; color: black; width:100%"
+              title="I don't recognize this domain name. Take me away from this web page.">
+              Get me to safety!
+            </button>
+            <p></p>
+            <button
+              id="warningbutton"
+              type="button"
+              style="background-color: #ff0000; margin: auto; color:white; width:100%"
+              title="This page is for the same account. Use the same settings for it.">
+              <b>This page is for the same account.</b>
+            </button>
+            <p></p>
+            <button
+              id="nicknamebutton"
+              type="button"
+              style="background-color: #000FF0; margin: auto; color:white; width:100%"
+              title="This page is for a different account.  I'll select a new nickname.">
+              <b>Pick a new nickname.</b>
+            </button>
+            <p></p>
+          </div>
+        </div>
+        <div class="form-row">
+          <div id="settingsshow" style="display: block; margin-top: 6px;" title="Open Settings">
+            <svg class="icon" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
+          </div>
+          <div id="settingssave" style="display: none; margin-top: 6px;" title="Close Settings">
+            <svg class="icon" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.994 6.994 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.992 6.992 0 0 1-1.819 1.052L14 21z"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <span style="flex: 1"></span>
+          <div id="clearclipboard" style="display:block;" title = "In case a site password is on the clipboard">
+            <button>Clear Clipboard</button>
+          </div> 
+          <span style="flex: 1"></span>
+          <div id="maininfo" class="icon" title="Instructions">
+            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v-3m0-3v0"/></svg>
+          </div>
+        </div>
+        <div id="settings" class="nodisplay">
+          <div class="setting-row" 
+            id="providesitepwdiv"
+            title="You must fill in the SitePassword form before you can provide your own site password.">
+            <input id="providesitepw" 
+                    type="checkbox"
+                    disabled
+                    aria-disabled="true"
+                    title="Check to type your own site password.  You must fill in the SitePassword form first." 
+            />
+            <span>Provide your own site password.</span> 
+          </div>
+          <div class="setting-row">
+            <input id="clearsuperpw" type="checkbox" />
+            <span>Clear super password on use</span>
+          </div>
+          <div class="setting-row">
+            <input id="hidesitepw" type="checkbox" />
+            <span>Hide site password by default</span>
+          </div>
+          <div id="defaultsettings" class="boxed">
+            <div class="setting-row">
+              <center>
+                <span>Site password is</span>
+                <input id="pwlength" type="text" value="12" size="2" />
+                <span>characters long</span>
+              </center>
+            </div>
+            <div class="setting-row">
+              <input id="startwithletter" type="checkbox" checked="checked" />
+              <span>Starts with letter</span>
+            </div>
+            <div class="setting-row">
+              <input id="allowlowercheckbox" type="checkbox" checked="checked" />
+              <span id="allowlower" style="display: none;">Allows lowercase letters</span>
+              <span id="requirelower" style="display: inline;">
+                Requires at least
+                <input id="minlower" type="text" value="1" size="2" />
+                lowercase letter(s)
+              </span>
+            </div>
+            <div class="setting-row">
+              <input id="allowuppercheckbox" type="checkbox" checked="checked" />
+              <span id="allowupper" style="display: none;">Allows uppercase letters</span>
+              <span id="requireupper" style="display: inline;">
+                Requires at least
+                <input id="minupper" type="text" value="1" size="2" />
+                uppercase letter(s)
+              </span>
+            </div>
+            <div class="setting-row">
+              <input id="allownumbercheckbox" type="checkbox" checked="checked" />
+              <span id="allownumber" style="display: none;">Allows numbers</span>
+              <span id="requirenumber" style="display: inline;">
+                Requires at least
+                <input id="minnumber" type="text" value="1" size="2" />
+                number(s)
+              </span>
+            </div>
+            <div class="setting-row">
+              <input id="allowspecialcheckbox" type="checkbox" />
+              <span id="allowspecial" style="display: inline;">Allows special characters</span>
+              <span id="requirespecial" style="display: none;">
+                Requires at least
+                <input id="minspecial" type="text" value="1" size="2" />
+                of
+                <input 
+                  id="specials" 
+                  title="Enter up to 12 special characters"
+                  class="fixed" 
+                  type="text" 
+                  value="$/!=@?._-" 
+                  size="12" />
+              </span>
+            </div>
+            <div class="form-row">
+              <button id="makedefault"
+                type="button"
+                style="display: inline; margin-left: 40px; margin-right: 40px;"
+                target="_blank"
+                title="Make the settings in the box your default"
+                >
+                Save as Default 
+              </button>                  
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <button id="sitedatagetbutton" 
+            type="button" 
+            style="display: inline" 
+            target="_blank" 
+            title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
+            Download Site Data
+          </button>
+          <a id="data" 
+              href="data:application/octet-stream," 
+              target="_blank" 
+              style="display: none" 
+              download="SiteData.html">SiteData.html</a>
+        </div>
+      </div>
+      <div class="instructionpanelext" id="instructionpanel" style="display:none">
+        <div id="sections">
+            <section id="overviewinfo">
+                <svg id="openoverview" class="accordian" style="display: block;" width="24px" height="24px"
                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
                     <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                         stroke-width="2" />
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="m9 11 3 3 3-3" />
                 </svg>
-                <svg id="closeacceptable" class="accordian" style="display: none;" width="24px" height="24px"
+                <svg id="closeoverview" class="accordian" style="display: none;" width="24px" height="24px"
                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
                     <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                         stroke-width="2" />
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="m9 13 3-3 3 3" />
                 </svg>
-                <h3>Computing an Acceptable Password</h3>
-                <div id="acceptablediv" style="display: none;">
+                <h3>Overview</h3>
+                <div id="overviewdiv" style="display: none">
                     <p>
-                        Some web sites have strict password rules, how long it must be,
-                        if it must contain upper case or lower case letters, numbers, or
-                        special characters, including restrictions on which special
-                        characters are allowed. If you run into a site that doesn't
-                        accept the calculated password, click 
+                        It's too hard for you to remember a strong password for every account
+                        you use. Password managers take care of this problem for you. Most
+                        of them store your passwords in encrypted form, either on your
+                        machine or in the cloud.
+                    </p>
+                    <p>
+                        SitePassword is different. Instead of
+                        storing your passwords, it calculates them from a single super password
+                        and your nickname and user name
+                        for the account. That means you can usually get your password if
+                        you remember those three things. (Some web pages require additional
+                        settings.) SitePassword automatically saves your settings, so
+                        you don't have to remember them.
+                    </p>
+                    <p>
+                        The
                         <svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg"
                             fill="none">
+                            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round"
+                                stroke-linejoin="round" stroke-width="2" />
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
-                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                                d="M12 15v-3m0-3v0" />
                         </svg>
-                        and change the appropriate menu entries. SitePassword
-                        was tested on hundreds of web sites to make sure it can always
-                        compute a valid password.
-                </div>
-            </section>
-            <section id="changeinfo">
-                  <svg id="openchange" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closechange" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>Changing a Site Password</h3>
-                  <div id="changediv" style="display: none;">
-                      <p>
-                          Some sites make you change your password periodically. SitePassword
-                          makes that easy. Just change your nickname for the account. For example,
-                          if your current nickname is <em>MyBank1</em>, and they make you change
-                          your password, you could change the nickname to
-                          <em>MyBank2</em>. Your new site password will be completely different
-                          from the old one.
-                      </p>
-                  </div>
-              </section>
-              <section id="clipboardinfo">
-                  <svg id="openclipboard" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closeclipboard" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>Using the Clipboard</h3>
-                  <div id="clipboarddiv" style="display: none;">
-                      <p>
-                          There are two times when you will use the clipboard.  Although SitePassword 
-                          finds the password field on a large number of web sites, 
-                          there are likely some where it won't.  Your first clue that happened
-                          is that you don't see either <em>Click here for password</em> or
-                          <em>Click SitePassword</em> in the password field.  You'll know for 
-                          sure that happened if neither of them shows up as a tooltip after 
-                          holding your mouse over the login form's password field for a couple of
-                          seconds.  In that case, click on the SitePassword icon and copy 
-                          your site password to the clipboard
-                      </p>
-                      <p>
-                          The other time you'll use the clipboard is on pages that have more than 
-                          one password field, such as those for
-                          creating an account or changing your password. In those cases, you
-                          may see instructions to <em>Paste your password here</em>.
-                          Clicking on the SitePassword icon and then the clipboard icon in the
-                          site password field will put your site password on the clipboard.
-                      </p>
-                      <p>
-                          Leaving your site password on the clipboard for any length of time 
-                          can be dangerous.  SitePassword will alert you to this danger by 
-                          changing its icon when you use the clipboard icon.  SitePassword can't 
-                          tell if you pasted something else to the clipboard.  However, you can reset 
-                          the warning by using the SitePassword <em>Clear Clipboard</em> button. 
-                      </p>
-                  </div>
-              </section>
-              <section id="phishinginfo">
-                  <svg id="openphishing" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closephishing" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>Phishing</h3>
-                  <div id="phishingdiv" style="display: none;">
-                      <p>
-                          SitePassword includes an antiphishing feature. If you try to use
-                          the same nickname for another domain name, you will get a big,
-                          scary warning. It's telling you that you may be at a site
-                          spoofing the one you think you are at. 
-                      </p>
-                      <p> 
-                          Unfortunately, you will
-                          also see this warning when you are not being tricked. Many
-                          websites have several different login pages for the same account. 
-                          So, when you see the warning, check the domain name in the warning message
-                          to make sure it's a login page for the account you think it is.
-                      </p>
-                  </div>
-              </section>
-              <section id="syncinfo">
-                  <svg id="opensync" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closesync" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>Synchronizing across Your Machines</h3>
-                  <div id="syncdiv" style="display:none">
-                      <p>
-                          If you go to the same login page on a different machine that you
-                          synchronize bookmarks with, you'll see your user name
-                          for the account filled in for you. That's because the extension
-                          stores your settings in a bookmark folder called
-                          <em>SitePasswordData</em>. The extension uses the bookmark named 
-                          CommonSettings for its own use. The
-                          bookmarks with domain names for titles can be used on the 
-                          <a href="https://sitepassword.info">SitePassword.info</a> page.
-                      </p>
-                  </div>
-                  <div id="syncSafaridiv" style="display:none">
-                    <p>
-                        If you go to the same login page on a different machine that 
-                        you synchronize with, 
-                        you'll see your user name for the account filled in for you. 
-                        That's because SitePassword uses the browser to synchronize
-                        your settings.  
+                        icon on the SitePassword window opens these
+                        instructions.
                     </p>
                 </div>
             </section>
-              <section id="extensioninfo">
-                  <svg id="openextension" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closeextension" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>The Extension and the Web Page</h3>
-                  <div id="extensiondiv" style="display: none;">
-                      <p>
-                          There will be times when you are on a device that doesn't have 
-                          SitePassword installed, such as at a friend's house or on your mobile 
-                          device.  You can still get your passwords by going to 
-                          <a href="https://sitepassword.info">sitepassword.info</a> or 
-                          <a href="https://github.com/alanhkarp/SitePasswordWeb">the page on Github</a>.  
-                          If you have synched your bookmarks to the device you are 
-                          using, you can get your settings for the site by clicking on the appropriate bookmark to open 
-                          <a href="https://sitepassword.info">sitepassword.info</a> 
-                          or you can paste the appropriate bookmark into the form if the page is already open.
-                      </p>
-                      <p>
-                          See the instructions on the <a href="https://sitepassword.info">sitepassword.info</a> 
-                          web page for more information.
-                      </p>
-                  </div>
-                  <div id="extensionSafaridiv" style="display: none;">
+            <section id="basicinfo">
+                <svg id="openbasic" class="accordian" style="display: block;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 11 3 3 3-3" />
+                </svg>
+                <svg id="closebasic" class="accordian" style="display: none;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 13 3-3 3 3" />
+                </svg>
+                <h3>Using the Extension</h3>
+                <div id="basicdiv" style="display: none">
+                    <p>
+                        After you install the Chrome extension and visit a page with a
+                        login form, you'll see that the password field tells you to
+                        <em>Click SitePassword</em>. When you click on the SitePassword
+                        icon, you'll see a form with the domain name field filled in.
+                        Enter your super password, an easy to remember nickname for the
+                        account and your user name for the account. You will see your site
+                        password being calculated as you type. 
+                    </p>
+                    <p>
+                        Mouse over to the login form's password field, which now should tell you to
+                        <em>Click here for password</em>. Click, and your password gets
+                        filled in. When you return to the page on any machine that you synchronize with
+                        and has the extenstion installed, you'll see your user name filled in and
+                        instructions to <em>Click here for password</em>. Click, and your
+                        password gets filled in. 
+                    </p>    
+                    <p>
+                        You will have to enter your super password each time you start your 
+                        browser.  That's because SitePassword never stores your
+                        super password; it only remembers it for the duration of your
+                        browser session. If your settings aren't there when you think they
+                        should be, reloading the page with the login form will solve the
+                        problem.  
+                    </p>
+                </div>
+            </section>
+            <section id="superinfo">
+                <svg id="opensuper" class="accordian" style="display: block;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 11 3 3 3-3" />
+                </svg>
+                <svg id="closesuper" class="accordian" style="display: none;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 13 3-3 3 3" />
+                </svg>
+                <h3>Your Super Password</h3>
+                <div id="superdiv" style="display:none">
+                    <p>
+                      You should choose a strong super password, one with upper and
+                      lower case letters, numbers, and special characters. The stronger
+                      the better. The reason is simple. A bad guy who knows one site
+                      password and can guess your nickname and user name for that account
+                      can start guessing super passwords. You want to make that job has
+                      hard as you can.
+                    </p>
+                    <p>
+                      You can protect yourself further by using different super passwords 
+                      for different kinds of accounts.  You could have one that you use for 
+                      banking, another for subscriptions, and a third for sites you find 
+                      sketchy.
+                    </p>
+                    <p>
+                      SitePassword doesn't prevent you from using a weak super password,
+                      but it does warn you. There is a strength indicator directly below
+                      the super password field. It uses a meter, words, and color to
+                      let you know how strong your super password is.
+                    </p>
+                    <p>
+                      SitePassword cannot retrieve your super password. You should make
+                      sure it's something you won't easily forget. You might even want
+                      to write it down and keep the copy in a secure place.
+                    </p>
+                </div>
+            </section>
+            <section id="siteinfo">
+                <svg id="opensite" class="accordian" style="display: block;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 11 3 3 3-3" />
+                </svg>
+                <svg id="closesite" class="accordian" style="display: none;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 13 3-3 3 3" />
+                </svg>
+                <h3>Your Site Passwords</h3>
+                <div id="sitediv" style="display: none;">
+                    <p>
+                        You only need to open SitePassword to enter your super password, to 
+                        set up a new site, or when you have to paste your site password.  Most 
+                        of the time, you can just click on the login 
+                        form's password field.  You'll know which to do because the password field will 
+                        say either <em>Click SitePassword</em> or <em>Click here for password</em>.  If 
+                        the password field says neither, just click on the password field and see if 
+                        your password was filled in. If it wasn't, you should see an alert telling 
+                        you to open SitePassword. If neither of those happens, SitePassword could 
+                        not find the password field. In that case, open SitePassword and copy your 
+                        site password to the clipboard.
+                    </p>
+                    <p>
+                      SitePassword could generate a weak site password just by chance.  
+                      To let you know that has happened, it uses the same colors that 
+                      appear in the super password 
+                      strength meter to tell you how strong your site password is.    
+                      For example, if your site password is orange, then it is weak. In 
+                      that case, just choose a different nickname for the account.
+                    </p>
+                    <p>
+                      When the generated password can't be used, say if you've been given one that
+                      you're not allowed to change, SitePassword can remember a password 
+                      you provide.  It is stored in your settings encrypted with the computed
+                      password for the site as a key.  That means you must fill in the form before entering 
+                      your password. After you fill in the form, open the settings by clicking
+                      <svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                      </svg>
+                      and click the <em>Provide your own site password</em> 
+                      check box.  You can then enter your password into the site password field.                         
+                    </p>
+                    <p>
+                        You can also get your passwords without the extension. Go to
+                        <a href="https://sitepassword.info">SitePassword.info</a> and fill
+                        in the form.  
+                    </p>
+                </div>
+            </section>
+            <section id="acceptableinfo">
+              <svg id="openacceptable" class="accordian" style="display: block;" width="24px" height="24px"
+                  viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2" />
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="m9 11 3 3 3-3" />
+              </svg>
+              <svg id="closeacceptable" class="accordian" style="display: none;" width="24px" height="24px"
+                  viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2" />
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="m9 13 3-3 3 3" />
+              </svg>
+              <h3>Computing an Acceptable Password</h3>
+              <div id="acceptablediv" style="display: none;">
+                  <p>
+                      Some web sites have strict password rules, how long it must be,
+                      if it must contain upper case or lower case letters, numbers, or
+                      special characters, including restrictions on which special
+                      characters are allowed. If you run into a site that doesn't
+                      accept the calculated password, click 
+                      <svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg"
+                          fill="none">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
+                          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                      </svg>
+                      and change the appropriate menu entries. SitePassword
+                      was tested on hundreds of web sites to make sure it can always
+                      compute a valid password.
+              </div>
+          </section>
+          <section id="changeinfo">
+                <svg id="openchange" class="accordian" style="display: block;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 11 3 3 3-3" />
+                </svg>
+                <svg id="closechange" class="accordian" style="display: none;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 13 3-3 3 3" />
+                </svg>
+                <h3>Changing a Site Password</h3>
+                <div id="changediv" style="display: none;">
+                    <p>
+                        Some sites make you change your password periodically. SitePassword
+                        makes that easy. Just change your nickname for the account. For example,
+                        if your current nickname is <em>MyBank1</em>, and they make you change
+                        your password, you could change the nickname to
+                        <em>MyBank2</em>. Your new site password will be completely different
+                        from the old one.
+                    </p>
+                </div>
+            </section>
+            <section id="clipboardinfo">
+                <svg id="openclipboard" class="accordian" style="display: block;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 11 3 3 3-3" />
+                </svg>
+                <svg id="closeclipboard" class="accordian" style="display: none;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 13 3-3 3 3" />
+                </svg>
+                <h3>Using the Clipboard</h3>
+                <div id="clipboarddiv" style="display: none;">
+                    <p>
+                        There are two times when you will use the clipboard.  Although SitePassword 
+                        finds the password field on a large number of web sites, 
+                        there are likely some where it won't.  Your first clue that happened
+                        is that you don't see either <em>Click here for password</em> or
+                        <em>Click SitePassword</em> in the password field.  You'll know for 
+                        sure that happened if neither of them shows up as a tooltip after 
+                        holding your mouse over the login form's password field for a couple of
+                        seconds.  In that case, click on the SitePassword icon and copy 
+                        your site password to the clipboard
+                    </p>
+                    <p>
+                        The other time you'll use the clipboard is on pages that have more than 
+                        one password field, such as those for
+                        creating an account or changing your password. In those cases, you
+                        may see instructions to <em>Paste your password here</em>.
+                        Clicking on the SitePassword icon and then the clipboard icon in the
+                        site password field will put your site password on the clipboard.
+                    </p>
+                    <p>
+                        Leaving your site password on the clipboard for any length of time 
+                        can be dangerous.  SitePassword will alert you to this danger by 
+                        changing its icon when you use the clipboard icon.  SitePassword can't 
+                        tell if you pasted something else to the clipboard.  However, you can reset 
+                        the warning by using the SitePassword <em>Clear Clipboard</em> button. 
+                    </p>
+                </div>
+            </section>
+            <section id="phishinginfo">
+                <svg id="openphishing" class="accordian" style="display: block;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 11 3 3 3-3" />
+                </svg>
+                <svg id="closephishing" class="accordian" style="display: none;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 13 3-3 3 3" />
+                </svg>
+                <h3>Phishing</h3>
+                <div id="phishingdiv" style="display: none;">
+                    <p>
+                        SitePassword includes an antiphishing feature. If you try to use
+                        the same nickname for another domain name, you will get a big,
+                        scary warning. It's telling you that you may be at a site
+                        spoofing the one you think you are at. 
+                    </p>
+                    <p> 
+                        Unfortunately, you will
+                        also see this warning when you are not being tricked. Many
+                        websites have several different login pages for the same account. 
+                        So, when you see the warning, check the domain name in the warning message
+                        to make sure it's a login page for the account you think it is.
+                    </p>
+                </div>
+            </section>
+            <section id="syncinfo">
+                <svg id="opensync" class="accordian" style="display: block;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 11 3 3 3-3" />
+                </svg>
+                <svg id="closesync" class="accordian" style="display: none;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 13 3-3 3 3" />
+                </svg>
+                <h3>Synchronizing across Your Machines</h3>
+                <div id="syncdiv" style="display:none">
+                    <p>
+                        If you go to the same login page on a different machine that you
+                        synchronize bookmarks with, you'll see your user name
+                        for the account filled in for you. That's because the extension
+                        stores your settings in a bookmark folder called
+                        <em>SitePasswordData</em>. The extension uses the bookmark named 
+                        CommonSettings for its own use. The
+                        bookmarks with domain names for titles can be used on the 
+                        <a href="https://sitepassword.info">SitePassword.info</a> page.
+                    </p>
+                </div>
+                <div id="syncSafaridiv" style="display:none">
+                  <p>
+                      If you go to the same login page on a different machine that 
+                      you synchronize with, 
+                      you'll see your user name for the account filled in for you. 
+                      That's because SitePassword uses the browser to synchronize
+                      your settings.  
+                  </p>
+              </div>
+          </section>
+            <section id="extensioninfo">
+                <svg id="openextension" class="accordian" style="display: block;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 11 3 3 3-3" />
+                </svg>
+                <svg id="closeextension" class="accordian" style="display: none;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 13 3-3 3 3" />
+                </svg>
+                <h3>The Extension and the Web Page</h3>
+                <div id="extensiondiv" style="display: none;">
                     <p>
                         There will be times when you are on a device that doesn't have 
                         SitePassword installed, such as at a friend's house or on your mobile 
                         device.  You can still get your passwords by going to 
                         <a href="https://sitepassword.info">sitepassword.info</a> or 
                         <a href="https://github.com/alanhkarp/SitePasswordWeb">the page on Github</a>.  
+                        If you have synched your bookmarks to the device you are 
+                        using, you can get your settings for the site by clicking on the appropriate bookmark to open 
+                        <a href="https://sitepassword.info">sitepassword.info</a> 
+                        or you can paste the appropriate bookmark into the form if the page is already open.
                     </p>
                     <p>
                         See the instructions on the <a href="https://sitepassword.info">sitepassword.info</a> 
                         web page for more information.
                     </p>
                 </div>
+                <div id="extensionSafaridiv" style="display: none;">
+                  <p>
+                      There will be times when you are on a device that doesn't have 
+                      SitePassword installed, such as at a friend's house or on your mobile 
+                      device.  You can still get your passwords by going to 
+                      <a href="https://sitepassword.info">sitepassword.info</a> or 
+                      <a href="https://github.com/alanhkarp/SitePasswordWeb">the page on Github</a>.  
+                  </p>
+                  <p>
+                      See the instructions on the <a href="https://sitepassword.info">sitepassword.info</a> 
+                      web page for more information.
+                  </p>
+              </div>
+          </section>
+            <section id="downloadinfo">
+                <svg id="opendownload" class="accordian" style="display: block;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 11 3 3 3-3" />
+                </svg>
+                <svg id="closedownload" class="accordian" style="display: none;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 13 3-3 3 3" />
+                </svg>
+                <h3>Downloading Your Settings</h3>
+                <div id="downloaddiv" style="display: none;">
+                    <p>
+                        There is a <em>Download Site Data</em> button at the bottom of
+                        the popup window after you click
+                        <svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg"
+                            fill="none">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
+                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                        </svg>.
+                        Clicking this button lets you save your settings in a file you
+                        can reference if you need to look them up.  All settings created on machines  
+                        you synchronize with are included.
+                    </p>
+                </div>
             </section>
-              <section id="downloadinfo">
-                  <svg id="opendownload" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closedownload" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>Downloading Your Settings</h3>
-                  <div id="downloaddiv" style="display: none;">
-                      <p>
-                          There is a <em>Download Site Data</em> button at the bottom of
-                          the popup window after you click
-                          <svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg"
-                              fill="none">
-                              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
-                              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
-                          </svg>.
-                          Clicking this button lets you save your settings in a file you
-                          can reference if you need to look them up.  All settings created on machines  
-                          you synchronize with are included.
-                      </p>
-                  </div>
-              </section>
-              <section id="sharedinfo">
-                  <svg id="openshared" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closeshared" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>Shared Machines</h3>
-                  <div id="shareddiv" style="display: none">
-                      <p>
-                          Many households have one machine shared by everybody. It's likely
-                          that everyone uses the same user name and password for certain
-                          accounts, such as streaming services. It's also likely that those
-                          people use their individual user names and passwords for other
-                          accounts, such as social media.
-                      </p>
-                      <p>
-                          SitePassword accomodates those uses with a feature provided by
-                          your browser called <em>profiles</em>. Each profile gets its own
-                          bookmarks. Simply create one profile for the
-                          shared account and one for each individual.
-                      </p>
-                  </div>
-              </section>
-              <section id="sourceinfo">
-                  <svg id="opensource" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closesource" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>Source Code</h3>
-                  <div id="sourcediv" style="display: none">
-                      <p>
-                          If you are worried that SitePassword might go away, you can
-                          download the source code for the extension from the
-                          <a href="https://github.com/alanhkarp/SitePassword">
-                              SitePassword</a>
-                          project and that of the web page version from the
-                          <a href="https://github.com/alanhkarp/SitePasswordWeb">
-                              SitePasswordWeb</a>
-                          project. (For historical reasons, these are separate projects with
-                          a lot of duplicated code.)
-                      </p>
-                  </div>
-              </section>
-              <section id="paymentinfo">
-                  <svg id="openpayment" class="accordian" style="display: block;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 11 3 3 3-3" />
-                  </svg>
-                  <svg id="closepayment" class="accordian" style="display: none;" width="24px" height="24px"
-                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                          stroke-width="2" />
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="m9 13 3-3 3 3" />
-                  </svg>
-                  <h3>Voluntary Payment</h3>
-                  <div id="paymentdiv" style="display: none">
-                      <p>
-                        If you like SitePassword, please make a contribution to the
-                        <a href="https://giving.umd.edu/giving/fund.php?name=nancy-lee-hurtt-70-maryland-promise-scholarship">
-                          Nancy Lee Hurtt '70 Maryland Promise Scholarship
-                        </a>
-                        or your favorite charity.
-                      </p>
-                  </div>
-              </section>
-          </div>
+            <section id="sharedinfo">
+                <svg id="openshared" class="accordian" style="display: block;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 11 3 3 3-3" />
+                </svg>
+                <svg id="closeshared" class="accordian" style="display: none;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 13 3-3 3 3" />
+                </svg>
+                <h3>Shared Machines</h3>
+                <div id="shareddiv" style="display: none">
+                    <p>
+                        Many households have one machine shared by everybody. It's likely
+                        that everyone uses the same user name and password for certain
+                        accounts, such as streaming services. It's also likely that those
+                        people use their individual user names and passwords for other
+                        accounts, such as social media.
+                    </p>
+                    <p>
+                        SitePassword accomodates those uses with a feature provided by
+                        your browser called <em>profiles</em>. Each profile gets its own
+                        bookmarks. Simply create one profile for the
+                        shared account and one for each individual.
+                    </p>
+                </div>
+            </section>
+            <section id="sourceinfo">
+                <svg id="opensource" class="accordian" style="display: block;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 11 3 3 3-3" />
+                </svg>
+                <svg id="closesource" class="accordian" style="display: none;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 13 3-3 3 3" />
+                </svg>
+                <h3>Source Code</h3>
+                <div id="sourcediv" style="display: none">
+                    <p>
+                        If you are worried that SitePassword might go away, you can
+                        download the source code for the extension from the
+                        <a href="https://github.com/alanhkarp/SitePassword">
+                            SitePassword</a>
+                        project and that of the web page version from the
+                        <a href="https://github.com/alanhkarp/SitePasswordWeb">
+                            SitePasswordWeb</a>
+                        project. (For historical reasons, these are separate projects with
+                        a lot of duplicated code.)
+                    </p>
+                </div>
+            </section>
+            <section id="paymentinfo">
+                <svg id="openpayment" class="accordian" style="display: block;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 11 3 3 3-3" />
+                </svg>
+                <svg id="closepayment" class="accordian" style="display: none;" width="24px" height="24px"
+                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" />
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m9 13 3-3 3 3" />
+                </svg>
+                <h3>Voluntary Payment</h3>
+                <div id="paymentdiv" style="display: none">
+                    <p>
+                      If you like SitePassword, please make a contribution to the
+                      <a href="https://giving.umd.edu/giving/fund.php?name=nancy-lee-hurtt-70-maryland-promise-scholarship">
+                        Nancy Lee Hurtt '70 Maryland Promise Scholarship
+                      </a>
+                      or your favorite charity.
+                    </p>
+                </div>
+            </section>
+        </div>
       </div>
     </div>
+  </div>
 </body>
 </html>
 <!--
