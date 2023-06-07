@@ -123,9 +123,11 @@ function eventSetup() {
     }
     get("mainpanel").onmouseleave = function () {
         if (logging) console.log(Date.now(), "popup window.mouseleave", phishing, bg);
-        if (isphishing(get("sitename").value)) { // Don't persist phishing sites
+        // Don't persist phishing sites if user mouses out of popup. Can't use
+        // isphising() because the new bookmark hasn't been created yet when the 
+        // user clicks the same account button.
+        if (get("siteun").disabled || !(get("sitename").value && get("siteun").value)) { 
             autoclose = false;
-            hidesettings();
             return;
         } 
         // window.onblur fires before I even have a chance to see the window, much less focus it
