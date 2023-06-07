@@ -268,6 +268,10 @@ function onContentPageload(request, sender, sendResponse) {
 async function persistMetadata(sendResponse) {
     // localStorage[name] = JSON.stringify(value);
     if (logging) console.log("bg persistMetadata", bg, database);
+    // There appears to be a race condition.  Every once in a while
+    // bg.settings is not defined when I get here.  I have no idea
+    // why.  I think it makes sense to just exit in this case.
+    if (!bg.settings) return;
     superpw = bg.superpw;
     try {
         sessionStorage.setItem("superpw", superpw);
