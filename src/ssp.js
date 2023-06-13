@@ -126,7 +126,8 @@ function eventSetup() {
         // Don't persist phishing sites if user mouses out of popup. Can't use
         // isphising() because the new bookmark hasn't been created yet when the 
         // user clicks the same account button.
-        if (get("siteun").disabled || !(get("sitename").value && get("siteun").value)) { 
+        get("superpw").focus();
+        if (get("phishing").style.display === "block") { 
             autoclose = false;
             return;
         } 
