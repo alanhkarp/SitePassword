@@ -171,8 +171,11 @@ function eventSetup() {
             ask2generate();
         });
     }
-    get("domainname3dots").onclick = function () {
-        menus("domainname");
+    get("domainname3dots").onmouseover = function () {
+        menuOn("domainname");
+    }
+    get("domainname3dots").onmouseleave = function () {
+        menuOff("domainname");
     }
     const $superpw = get("superpw");
     get("superpw").onkeyup = function () {
@@ -185,19 +188,12 @@ function eventSetup() {
         handleblur("superpw", "superpw");
         changePlaceholder();
     }
-    get("superpw3dots").onclick = function () {
-        menus("superpw");
+    get("superpw3dots").onmouseover = function () {
+        menuOn("superpw");
     }
-// get("superpwshow").onclick = function() {
-    //     get("superpw").type = "text";
-    //     get("superpwhide").style.display = "block";
-    //     get("superpwshow").style.display = "none";
-    // }
-    // get("superpwhide").onclick = function() {
-    //     get("superpw").type = "password";
-    //     get("superpwhide").style.display = "none";
-    //     get("superpwshow").style.display = "block";
-    // }
+    get("superpw3dots").onmouseleave = function() {
+        menuOff("superpw");
+    }
     get("sitename").onfocus = function () {
         let set = new Set();
         Object.keys(database.sites).forEach((sitename) => {
@@ -238,8 +234,11 @@ function eventSetup() {
         }
         clearDatalist("sitenames");
     }
-    get("sitename3dots").onclick = function () {
-        menus("sitename");
+    get("sitename3dots").onmouseover = function () {
+        menuOn("sitename");
+    }
+    get("sitename3dots").onmouseleave = function () {
+        menuOff("sitename");
     }
     get("siteun").onfocus = function () {
         let set = new Set();
@@ -257,18 +256,13 @@ function eventSetup() {
         clearDatalist("siteuns");
         changePlaceholder();
     }
-    get("siteun3dots").onclick = function () {
-        menus("siteun");
+    get("siteun3dots").onmouseover = function () {
+        menuOn("siteun");
     }
-    // get("useridcopy").onclick = function () {
-    //     let userid = get("siteun").value || "";
-    //     navigator.clipboard.writeText(userid).then(() => {
-    //         if (logging) console.log("findpw wrote to clipboard", userid);
-    //     }).catch((e) => {
-    //         if (logging) console.log("findpw clipboard write failed", e);
-    //     });
-    // };
-    get("sitepw").onblur = function () {
+    get("siteun3dots").onmouseleave = function () {
+        menuOff("siteun");
+    }
+   get("sitepw").onblur = function () {
         if (get("sitepw").readOnly || !get("sitepw").value) return;
         let provided = get("sitepw").value;
         let computed = ask2generate(bg);
@@ -278,37 +272,14 @@ function eventSetup() {
     get("sitepw").onkeyup = function () {
         get("sitepw").onblur();
     }
-    // get("sitepwcopy").onclick = function () {
-    //     let sitepass = get("sitepw").value;
-    //     navigator.clipboard.writeText(sitepass).then(() => {
-    //         if (logging) console.log("findpw wrote to clipboard", sitepass);
-    //         chrome.action.setTitle({title: "A site password may be on the clipboard."});
-    //         get("logopw").title = "A site password may be on the clipboard."
-    //         get("logo").style.display = "none";
-    //         get("logopw").style.display = "block";
-    //         chrome.action.setIcon({"path": "icon128pw.png"});
-    //         chrome.storage.local.set({"onClipboard": true})
-    //     }).catch((e) => {
-    //         if (logging) console.log("findpw clipboard write failed", e);
-    //     });
-    // };
-    // get("sitepw").oncopy = get("sitepwcopy").onclick
-    // get("sitepwhide").onclick = function() {
-    //     get("sitepw").type = "password";
-    //     get("sitepwhide").style.display = "none";
-    //     get("sitepwshow").style.display = "block";
-    // }
-    // get("sitepwshow").onclick = function() {
-    //     get("sitepw").type = "text";
-    //     get("sitepwhide").style.display = "block";
-    //     get("sitepwshow").style.display = "none";
-    // }
-    get("sitepw3dots").onclick = function () {
-        menus("sitepw");
+    get("sitepw3dots").onmouseover = function () {
+        menuOn("sitepw");
+    }
+    get("sitepw3dots").onmouseleave = function () {
+        menuOff("sitepw");
     }
     // Generic code for menus
-    function menus(which) {
-        let elements = ["domainname", "superpw", "sitename", "siteun", "sitepw"];
+    function menuOn(which) {
         get("domainname").style.backgroundColor = "lightgray";
         get("superpw").style.backgroundColor = "lightgray";
         get("sitename").style.backgroundColor = "lightgray";
@@ -316,8 +287,15 @@ function eventSetup() {
         get("sitepw").style.backgroundColor = "lightgray";
         let element = get(which);
         element.style.backgroundColor = "white";
-        let popup = document.getElementById(which + "menulist");
-        popup.style.visibility = "visible";
+        get(which + "menu").style.display = "block";
+    }
+    function menuOff(which) {
+        get("domainname").style.backgroundColor = "white";
+        get("superpw").style.backgroundColor = "white";
+        get("sitename").style.backgroundColor = "white";
+        get("siteun").style.backgroundColor = "white";
+        get("sitepw").style.backgroundColor = "white";
+        get(which + "menu").style.display = "none";
     }
     get("settingsshow").onclick = showsettings;
     get("clearclipboard").onclick = function() {
