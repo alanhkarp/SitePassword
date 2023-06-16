@@ -31,13 +31,13 @@ function compute(s, settings) {
     }
     // let ok = false;
     let sitePassword;
+    let chars = characters(settings);
     while (iter < config.maxiter) {
         h = core_sha256(h, 16 * chrsz);
         let hswap = Array(h.length);
         for (let i = 0; i < h.length; i++) {
             hswap[i] = swap32(h[i]);
         }
-        let chars = characters(settings);
         sitePassword = binl2b64(hswap, chars).substring(0, settings.pwlength);
         if (verify(sitePassword, settings)) break;
         iter++;
