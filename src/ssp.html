@@ -45,6 +45,14 @@
             value=""
             placeholder="Domain name"
           />
+          <div id="domainname3dots" class="icon inner-icon-1">
+            <img id="domain3dotsimg" src="3dots_icon.png" alt="3 dots" width="20" height="20" style="top:10px">
+            <div class="popup hide" id="domainnamemenu">
+              <span class="popuptext" id="domainnamemenulist">
+                Line 1 <br /> Line 2
+              </span>
+            </div> 
+          </div>
         </div>
         <div class="form-row">
           <label for="superpw" class="sr-only">Super password:</label>
@@ -56,11 +64,13 @@
             value=""
             placeholder="A strong super password"
           />
-          <div id="superpwhide" class="icon inner-icon-1 nodisplay" title="Hide Super Password">
-            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5c-6.307 0-9.367 5.683-9.91 6.808a.435.435 0 0 0 0 .384C2.632 13.317 5.692 19 12 19s9.367-5.683 9.91-6.808a.435.435 0 0 0 0-.384C21.368 10.683 18.308 5 12 5z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-          </div>
-          <div id="superpwshow" class="icon inner-icon-1" title="Show Super Password">
-            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 6.362A9.707 9.707 0 0 1 12 5c6.307 0 9.367 5.683 9.91 6.808.06.123.06.261 0 .385-.352.728-1.756 3.362-4.41 5.131M14 18.8a9.93 9.93 0 0 1-2 .2c-6.307 0-9.367-5.683-9.91-6.808a.44.44 0 0 1 0-.386c.219-.452.84-1.632 1.91-2.885m6 .843A3 3 0 0 1 14.236 14M3 3l18 18"/></svg>
+          <div id="superpw3dots" class="icon inner-icon-1">
+            <img id="superpw3dotsimg" src="3dots_icon.png" alt="3 dots" width="20" height="20" style="top:10px">
+            <div class="popup" id="superpwmenu">
+              <span class="popuptext" id="superpwmenulist">
+                Line 1 <br /> Line 2
+              </span>
+            </div> 
           </div>
         </div>
         <div class="form-row">
@@ -81,6 +91,14 @@
             value=""
             placeholder="A unique nickname for this account"
           />
+          <div id="sitename3dots" class="icon inner-icon-1">
+            <img id="sitename3dotsimg" src="3dots_icon.png" alt="3 dots" width="20" height="20" style="top:10px">
+            <div class="popup" id="sitenamemenu">
+              <span class="popuptext" id="sitenamemenulist">
+                Line 1 <br /> Line 2
+              </span>
+            </div> 
+          </div>
           <datalist id="sitenames"></datalist>
         </div>
         <div class="form-row">
@@ -95,10 +113,15 @@
             value=""
             placeholder="Your user-id for this account"
           />
-          <datalist id="siteuns"></datalist>
-          <div id="useridcopy" class="icon inner-icon-1" title="Copy username to clipboard">
-            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M8 5v0a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v0M8 5v0a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v0"/></svg>
+          <div id="siteun3dots" class="icon inner-icon-1">
+            <img id="siteun3dotsimg" src="3dots_icon.png" alt="3 dots" width="20" height="20" style="top:10px">
+            <div class="popup" id="siteunmenu">
+              <span class="popuptext" id="siteunmenulist">
+                Line 1 <br /> Line 2 <br /> Line 3 <br /> Line 4
+              </span>
+            </div> 
           </div>
+          <datalist id="siteuns"></datalist>
         </div>
         <div class="form-row">
           <label for="sitepw" class="sr-only">Site password:</label>
@@ -112,14 +135,13 @@
             value=""
             placeholder="Generated site password"
           />
-          <div id="sitepwcopy" class="icon inner-icon-1" title="Copy to Clipboard">
-            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M8 5v0a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v0M8 5v0a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v0"/></svg>
-          </div>
-          <div id="sitepwhide" class="icon inner-icon-2" title="Hide Site Password">
-            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5c-6.307 0-9.367 5.683-9.91 6.808a.435.435 0 0 0 0 .384C2.632 13.317 5.692 19 12 19s9.367-5.683 9.91-6.808a.435.435 0 0 0 0-.384C21.368 10.683 18.308 5 12 5z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-          </div>
-          <div id="sitepwshow" class="icon inner-icon-2 nodisplay" title="Show Site Password">
-            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 6.362A9.707 9.707 0 0 1 12 5c6.307 0 9.367 5.683 9.91 6.808.06.123.06.261 0 .385-.352.728-1.756 3.362-4.41 5.131M14 18.8a9.93 9.93 0 0 1-2 .2c-6.307 0-9.367-5.683-9.91-6.808a.44.44 0 0 1 0-.386c.219-.452.84-1.632 1.91-2.885m6 .843A3 3 0 0 1 14.236 14M3 3l18 18"/></svg>
+          <div id="sitepw3dots" class="icon inner-icon-1">
+            <img id="sitepw3dotsimg" src="3dots_icon.png" alt="3 dots" width="20" height="20" style="top:10px">
+            <div class="popup" id="sitepwmenu">
+              <span class="popuptext" id="sitepwmenulist">
+                Line 1 <br /> Line 2
+              </span>
+            </div> 
           </div>
         </div>
         <div class="form-row">
@@ -299,20 +321,20 @@
               </button>                  
             </div>
           </div>
-        </div>
-        <div class="form-row">
-          <button id="sitedatagetbutton" 
-            type="button" 
-            style="display: inline" 
-            target="_blank" 
-            title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
-            Download Site Data
-          </button>
-          <a id="data" 
-              href="data:application/octet-stream," 
+          <div class="form-row">
+            <button id="sitedatagetbutton" 
+              type="button" 
+              style="display: inline" 
               target="_blank" 
-              style="display: none" 
-              download="SiteData.html">SiteData.html</a>
+              title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
+              Download Site Data
+            </button>
+            <a id="data" 
+                href="data:application/octet-stream," 
+                target="_blank" 
+                style="display: none" 
+                download="SiteData.html">SiteData.html</a>
+          </div>
         </div>
       </div>
       <div class="instructionpanelext" id="instructionpanel" style="display:none">
