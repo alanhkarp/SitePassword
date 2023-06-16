@@ -195,17 +195,26 @@ function eventSetup() {
         changePlaceholder();
     }
     get("superpw3dots").onmouseover = function () {
+        if (get("superpw").value) {
+            get("superpwshow").style.color = "black";
+            get("superpwhide").style.color = "black";
+        } else {
+            get("superpwshow").style.color = "gray";
+            get("superpwhide").style.color = "gray";
+        }
         menuOn("superpw");
     }
     get("superpw3dots").onmouseleave = function () {
         menuOff("superpw");
     }
     get("superpwshow").onclick = function() {
+        if (!get("superpw").value) return;
         get("superpw").type = "text";
         get("superpwhide").style.display = "block";
         get("superpwshow").style.display = "none";
     }
     get("superpwhide").onclick = function() {
+        if (!get("superpw").value) return;
         get("superpw").type = "password";
         get("superpwhide").style.display = "none";
         get("superpwshow").style.display = "block";
@@ -251,6 +260,12 @@ function eventSetup() {
         clearDatalist("sitenames");
     }
     get("sitename3dots").onmouseover = function () {
+        let sitename = get("sitename").value;
+        if (sitename) {
+            get("sitenameforget").style.color = "black";
+        } else {
+            get("sitenameforget").style.color = "gray";
+        }
         menuOn("sitename");
     }
     get("sitename3dots").onmouseleave = function () {
@@ -273,6 +288,12 @@ function eventSetup() {
         changePlaceholder();
     }
     get("siteun3dots").onmouseover = function () {
+        let username = get("siteun").value;
+        if (username) {
+            get("siteunforget").style.color = "black";
+        } else {
+            get("siteunforget").style.color = "gray";
+        }
         menuOn("siteun");
     }
     get("siteun3dots").onmouseleave = function () {
@@ -289,17 +310,29 @@ function eventSetup() {
         get("sitepw").onblur();
     }
     get("sitepw3dots").onmouseover = function () {
+        let sitepw = get("sitepw").value;
+        if (sitepw) {
+            get("sitepwcopy").style.color = "black";
+            get("sitepwshow").style.color = "black";
+            get("sitepwhide").style.color = "black";
+        } else {
+            get("sitepwcopy").style.color = "gray";
+            get("sitepwshow").style.color = "gray";
+            get("sitepwhide").style.color = "gray";
+        }
         menuOn("sitepw");
     }
     get("sitepw3dots").onmouseleave = function () {
         menuOff("sitepw");
     }
     get("sitepwshow").onclick = function() {
+        if (!get("sitepw").value) return;
         get("sitepw").type = "text";
         get("sitepwhide").style.display = "block";
         get("sitepwshow").style.display = "none";
     }
     get("sitepwhide").onclick = function() {
+        if (!get("sitepw").value) return;
         get("sitepw").type = "password";
         get("sitepwhide").style.display = "none";
         get("sitepwshow").style.display = "block";
