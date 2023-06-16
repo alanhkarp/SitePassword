@@ -173,7 +173,7 @@ function eventSetup() {
     }
     get("domainname3dots").onmouseover = function () {
         let domainname = get("domainname").value;
-        if (domainname && database[domainname]) {
+        if (domainname && database.domains[domainname]) {
             get("domainnamemenuforget").style.color = "black";
         } else {
             get("domainnamemenuforget").style.color = "lightgray";
