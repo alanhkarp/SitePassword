@@ -176,7 +176,7 @@ function eventSetup() {
         if (domainname && database.domains[domainname]) {
             get("domainnamemenuforget").style.color = "black";
         } else {
-            get("domainnamemenuforget").style.color = "lightgray";
+            get("domainnamemenuforget").style.color = "gray";
         }
         menuOn("domainname");
     }
