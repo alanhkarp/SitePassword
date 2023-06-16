@@ -172,6 +172,12 @@ function eventSetup() {
         });
     }
     get("domainname3dots").onmouseover = function () {
+        let domainname = get("domainname").value;
+        if (domainname && database[domainname]) {
+            get("domainnamemenuforget").style.color = "black";
+        } else {
+            get("domainnamemenuforget").style.color = "lightgray";
+        }
         menuOn("domainname");
     }
     get("domainname3dots").onmouseleave = function () {
@@ -191,8 +197,18 @@ function eventSetup() {
     get("superpw3dots").onmouseover = function () {
         menuOn("superpw");
     }
-    get("superpw3dots").onmouseleave = function() {
+    get("superpw3dots").onmouseleave = function () {
         menuOff("superpw");
+    }
+    get("superpwshow").onclick = function() {
+        get("superpw").type = "text";
+        get("superpwhide").style.display = "block";
+        get("superpwshow").style.display = "none";
+    }
+    get("superpwhide").onclick = function() {
+        get("superpw").type = "password";
+        get("superpwhide").style.display = "none";
+        get("superpwshow").style.display = "block";
     }
     get("sitename").onfocus = function () {
         let set = new Set();
@@ -277,6 +293,30 @@ function eventSetup() {
     }
     get("sitepw3dots").onmouseleave = function () {
         menuOff("sitepw");
+    }
+    get("sitepwshow").onclick = function() {
+        get("sitepw").type = "text";
+        get("sitepwhide").style.display = "block";
+        get("sitepwshow").style.display = "none";
+    }
+    get("sitepwhide").onclick = function() {
+        get("sitepw").type = "password";
+        get("sitepwhide").style.display = "none";
+        get("sitepwshow").style.display = "block";
+    }
+    get("sitepwcopy").onclick = function() {
+        let sitepw = get("sitepw").value;
+        navigator.clipboard.writeText(sitepw).then(() => {
+            if (logging) console.log("findpw wrote to clipboard", sitepw);
+            chrome.action.setTitle({title: "A site password may be on the clipboard."});
+            get("logopw").title = "A site password may be on the clipboard."
+            get("logo").style.display = "none";
+            get("logopw").style.display = "block";
+            chrome.action.setIcon({"path": "icon128pw.png"});
+            chrome.storage.local.set({"onClipboard": true})
+        }).catch((e) => {
+            if (logging) console.log("findpw clipboard write failed", e);
+        });
     }
     // Generic code for menus
     function menuOn(which) {
