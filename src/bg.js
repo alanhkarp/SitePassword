@@ -111,7 +111,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             } else if (request.cmd === "resetIcon") {
                 chrome.storage.local.set({"onClipboard": false});
                 chrome.action.setTitle({title: "Site Password"});
-                chrome.action.setIcon({"path": "icon128.png"});        
+                chrome.action.setIcon({"path": "icon128.png"});
+                sendResponse("reset");        
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);
                 // Update time stamp if settings changed
@@ -412,6 +413,7 @@ async function persistMetadata(sendResponse) {
             }
         }
     }
+    sendResponse("persisted");
 }
 async function retrieveMetadata(sendResponse, callback) {
     database = clone(databaseDefault); // Start with an empty database
