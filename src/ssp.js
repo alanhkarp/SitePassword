@@ -171,6 +171,9 @@ function eventSetup() {
             ask2generate();
         });
     }
+    get("domainname").onfocus = function () {
+        get("superpw").focus();
+    }
     const $superpw = get("superpw");
     get("superpw").onkeyup = function () {
         bg.superpw = get("superpw").value || "";
