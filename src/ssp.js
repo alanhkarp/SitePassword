@@ -367,6 +367,7 @@ function eventSetup() {
     }
     function menuOff(which, e) {
         if ( e.type === "mouseenter") return;
+        get(which + "menu").style.opacity = 0.1;
         menuTimer = setTimeout(() => {
             get(which + "menu").style.display = "none";
             get("domainname").style.backgroundColor = "white";
@@ -374,7 +375,6 @@ function eventSetup() {
             get("sitename").style.backgroundColor = "white";
             get("siteun").style.backgroundColor = "white";
             get("sitepw").style.backgroundColor = "white";
-            get(which + "menu").style.opacity = 0.1;
             }, 750);
     }
     get("settingsshow").onclick = showsettings;
