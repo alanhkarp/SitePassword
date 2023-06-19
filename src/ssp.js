@@ -171,17 +171,17 @@ function eventSetup() {
             ask2generate();
         });
     }
-    get("domainname3dots").onmouseover = function () {
+    get("domainname3dots").onmouseover = function (e) {
         let domainname = get("domainname").value;
         if (domainname && database.domains[domainname]) {
             get("domainnamemenuforget").style.color = "black";
         } else {
             get("domainnamemenuforget").style.color = "gray";
         }
-        menuOn("domainname");
+        menuOn("domainname", e);
     }
-    get("domainname3dots").onmouseleave = function () {
-        menuOff("domainname");
+    get("domainname3dots").onmouseleave = function (e) {
+        menuOff("domainname", e);
     }
     const $superpw = get("superpw");
     get("superpw").onkeyup = function () {
@@ -194,7 +194,7 @@ function eventSetup() {
         handleblur("superpw", "superpw");
         changePlaceholder();
     }
-    get("superpw3dots").onmouseover = function () {
+    get("superpw3dots").onmouseover = function (e) {
         if (get("superpw").value) {
             get("superpwshow").style.color = "black";
             get("superpwhide").style.color = "black";
@@ -202,10 +202,10 @@ function eventSetup() {
             get("superpwshow").style.color = "gray";
             get("superpwhide").style.color = "gray";
         }
-        menuOn("superpw");
+        menuOn("superpw", e);
     }
-    get("superpw3dots").onmouseleave = function () {
-        menuOff("superpw");
+    get("superpw3dots").onmouseleave = function (e) {
+        menuOff("superpw", e);
     }
     get("superpwshow").onclick = function() {
         if (!get("superpw").value) return;
@@ -259,17 +259,17 @@ function eventSetup() {
         }
         clearDatalist("sitenames");
     }
-    get("sitename3dots").onmouseover = function () {
+    get("sitename3dots").onmouseover = function (e) {
         let sitename = get("sitename").value;
         if (sitename) {
             get("sitenameforget").style.color = "black";
         } else {
             get("sitenameforget").style.color = "gray";
         }
-        menuOn("sitename");
+        menuOn("sitename", e);
     }
-    get("sitename3dots").onmouseleave = function () {
-        menuOff("sitename");
+    get("sitename3dots").onmouseleave = function (e) {
+        menuOff("sitename", e);
     }
     get("siteun").onfocus = function () {
         let set = new Set();
@@ -287,17 +287,17 @@ function eventSetup() {
         clearDatalist("siteuns");
         changePlaceholder();
     }
-    get("siteun3dots").onmouseover = function () {
+    get("siteun3dots").onmouseover = function (e) {
         let username = get("siteun").value;
         if (username) {
             get("siteunforget").style.color = "black";
         } else {
             get("siteunforget").style.color = "gray";
         }
-        menuOn("siteun");
+        menuOn("siteun", e);
     }
-    get("siteun3dots").onmouseleave = function () {
-        menuOff("siteun");
+    get("siteun3dots").onmouseleave = function (e) {
+        menuOff("siteun", e);
     }
    get("sitepw").onblur = function () {
         if (get("sitepw").readOnly || !get("sitepw").value) return;
@@ -309,7 +309,7 @@ function eventSetup() {
     get("sitepw").onkeyup = function () {
         get("sitepw").onblur();
     }
-    get("sitepw3dots").onmouseover = function () {
+    get("sitepw3dots").onmouseover = function (e) {
         let sitepw = get("sitepw").value;
         if (sitepw) {
             get("sitepwcopy").style.color = "black";
@@ -320,10 +320,10 @@ function eventSetup() {
             get("sitepwshow").style.color = "gray";
             get("sitepwhide").style.color = "gray";
         }
-        menuOn("sitepw");
+        menuOn("sitepw", e);
     }
-    get("sitepw3dots").onmouseleave = function () {
-        menuOff("sitepw");
+    get("sitepw3dots").onmouseleave = function (e) {
+        menuOff("sitepw", e);
     }
     get("sitepwshow").onclick = function() {
         if (!get("sitepw").value) return;
@@ -352,23 +352,30 @@ function eventSetup() {
         });
     }
     // Generic code for menus
-    function menuOn(which) {
+    let menuTimer;
+    function menuOn(which, e) {
+        if ( e.type === "mouseleave") return;
+        clearTimeout(menuTimer);
         get("domainname").style.backgroundColor = "lightgray";
         get("superpw").style.backgroundColor = "lightgray";
         get("sitename").style.backgroundColor = "lightgray";
         get("siteun").style.backgroundColor = "lightgray";
         get("sitepw").style.backgroundColor = "lightgray";
-        let element = get(which);
-        element.style.backgroundColor = "white";
+        get(which).style.backgroundColor = "white";
+        get(which + "menu").style.opacity = 1.0;
         get(which + "menu").style.display = "block";
     }
-    function menuOff(which) {
-        get("domainname").style.backgroundColor = "white";
-        get("superpw").style.backgroundColor = "white";
-        get("sitename").style.backgroundColor = "white";
-        get("siteun").style.backgroundColor = "white";
-        get("sitepw").style.backgroundColor = "white";
-        get(which + "menu").style.display = "none";
+    function menuOff(which, e) {
+        if ( e.type === "mouseenter") return;
+        menuTimer = setTimeout(() => {
+            get(which + "menu").style.display = "none";
+            get("domainname").style.backgroundColor = "white";
+            get("superpw").style.backgroundColor = "white";
+            get("sitename").style.backgroundColor = "white";
+            get("siteun").style.backgroundColor = "white";
+            get("sitepw").style.backgroundColor = "white";
+            get(which + "menu").style.opacity = 0.1;
+            }, 750);
     }
     get("settingsshow").onclick = showsettings;
     get("clearclipboard").onclick = function() {

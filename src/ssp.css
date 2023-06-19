@@ -54,6 +54,7 @@
     bottom: -30px;
     left: -50px;
     margin-left: -80px;
+    transition: opacity 2s;
   }
   #root {
     display: block;
