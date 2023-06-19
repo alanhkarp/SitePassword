@@ -291,10 +291,21 @@ function eventSetup() {
         let username = get("siteun").value;
         if (username) {
             get("siteunforget").style.color = "black";
+            get("siteuncopy").style.color = "black";
         } else {
             get("siteunforget").style.color = "gray";
+            get("siteuncopy").style.color = "gray";
         }
         menuOn("siteun", e);
+    }
+    get("siteuncopy").onclick = function(e) {
+        let sitepw = get("siteun").value;
+        navigator.clipboard.writeText(sitepw).then(() => {
+            if (logging) console.log("findpw wrote to clipboard", sitepw);
+        }).catch((e) => {
+            if (logging) console.log("findpw clipboard write failed", e);
+        });
+        menuOff("siteun", e);
     }
     get("siteun3dots").onmouseleave = function (e) {
         menuOff("siteun", e);
@@ -350,6 +361,7 @@ function eventSetup() {
         }).catch((e) => {
             if (logging) console.log("findpw clipboard write failed", e);
         });
+        menuOff("sitepw", e);
     }
     // Generic code for menus
     let menuTimer;
@@ -375,7 +387,7 @@ function eventSetup() {
             get("sitename").style.backgroundColor = "white";
             get("siteun").style.backgroundColor = "white";
             get("sitepw").style.backgroundColor = "white";
-            }, 750);
+            }, 250);
     }
     get("settingsshow").onclick = showsettings;
     get("clearclipboard").onclick = function() {
