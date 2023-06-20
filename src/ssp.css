@@ -186,6 +186,10 @@
     margin: 0.5ex 0;
     height: 1.5em;
   }
+  .settings {
+    font-weight: bold;
+    font-size: 10pt;
+  }
   .icon {
     flex: none;
     margin: auto 0;
