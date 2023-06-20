@@ -183,6 +183,12 @@ function eventSetup() {
         }
         menuOn("domainname", e);
     }
+    let title = "The domain name is associated with the settings for this account.  ";
+    title += "It is also the name of a bookmark in the SitePasswordData bookmaark folder.  ";
+    title += "That's the bookmark you can use to get your settings when you're on a machine ";
+    title += "that doesn't have the SitePassword extension installed.  You can forget this domain name ";
+    title += "and all settings associated with it by clicking Forget or by deleting the bookmark";
+    get("domainnamemenuhelp").title = title;
     get("domainname3dots").onmouseleave = function (e) {
         menuOff("domainname", e);
     }
