@@ -271,9 +271,9 @@ function eventSetup() {
     get("sitename3dots").onmouseover = function (e) {
         let sitename = get("sitename").value;
         if (sitename) {
-            get("sitenameforget").style.color = "black";
+            get("sitenamemenuforget").style.color = "black";
         } else {
-            get("sitenameforget").style.color = "gray";
+            get("sitenamemenuforget").style.color = "gray";
         }
         menuOn("sitename", e);
     }
@@ -302,15 +302,15 @@ function eventSetup() {
     get("siteun3dots").onmouseover = function (e) {
         let username = get("siteun").value;
         if (username) {
-            get("siteunforget").style.color = "black";
-            get("siteuncopy").style.color = "black";
+            get("siteunmenuforget").style.color = "black";
+            get("siteunmenucopy").style.color = "black";
         } else {
-            get("siteunforget").style.color = "gray";
-            get("siteuncopy").style.color = "gray";
+            get("siteunmenuforget").style.color = "gray";
+            get("siteunmenucopy").style.color = "gray";
         }
         menuOn("siteun", e);
     }
-    get("siteuncopy").onclick = function(e) {
+    get("siteunmenucopy").onclick = function(e) {
         let sitepw = get("siteun").value;
         navigator.clipboard.writeText(sitepw).then(() => {
             if (logging) console.log("findpw wrote to clipboard", sitepw);
@@ -338,32 +338,32 @@ function eventSetup() {
     get("sitepw3dots").onmouseover = function (e) {
         let sitepw = get("sitepw").value;
         if (sitepw) {
-            get("sitepwcopy").style.color = "black";
-            get("sitepwshow").style.color = "black";
-            get("sitepwhide").style.color = "black";
+            get("sitepwmenucopy").style.color = "black";
+            get("sitepwmenushow").style.color = "black";
+            get("sitepwmenuhide").style.color = "black";
         } else {
-            get("sitepwcopy").style.color = "gray";
-            get("sitepwshow").style.color = "gray";
-            get("sitepwhide").style.color = "gray";
+            get("sitepwmenucopy").style.color = "gray";
+            get("sitepwmenushow").style.color = "gray";
+            get("sitepwmenuhide").style.color = "gray";
         }
         menuOn("sitepw", e);
     }
     get("sitepw3dots").onmouseleave = function (e) {
         menuOff("sitepw", e);
     }
-    get("sitepwshow").onclick = function() {
+    get("sitepwmenushow").onclick = function() {
         if (!get("sitepw").value) return;
         get("sitepw").type = "text";
-        get("sitepwhide").style.display = "block";
-        get("sitepwshow").style.display = "none";
+        get("sitepwmenuhide").style.display = "block";
+        get("sitepwmenushow").style.display = "none";
     }
-    get("sitepwhide").onclick = function() {
+    get("sitepwmenuhide").onclick = function() {
         if (!get("sitepw").value) return;
         get("sitepw").type = "password";
-        get("sitepwhide").style.display = "none";
-        get("sitepwshow").style.display = "block";
+        get("sitepwmenuhide").style.display = "none";
+        get("sitepwmenushow").style.display = "block";
     }
-    get("sitepwcopy").onclick = function(e) {
+    get("sitepwmenucopy").onclick = function(e) {
         let sitepw = get("sitepw").value;
         navigator.clipboard.writeText(sitepw).then(() => {
             if (logging) console.log("findpw wrote to clipboard", sitepw);
