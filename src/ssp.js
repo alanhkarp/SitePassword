@@ -171,6 +171,9 @@ function eventSetup() {
             ask2generate();
         });
     }
+    get("domainname").onfocus = function () {
+        dotsOn("domainname");
+    }
     get("domainname3dots").onmouseover = function (e) {
         let domainname = get("domainname").value;
         if (domainname && database.domains[domainname]) {
@@ -194,30 +197,33 @@ function eventSetup() {
         handleblur("superpw", "superpw");
         changePlaceholder();
     }
+    get("superpw").onfocus = function () {
+        dotsOn("superpw");
+    }
     get("superpw3dots").onmouseover = function (e) {
         if (get("superpw").value) {
-            get("superpwshow").style.color = "black";
-            get("superpwhide").style.color = "black";
+            get("superpwmenushow").style.color = "black";
+            get("superpwmenuhide").style.color = "black";
         } else {
-            get("superpwshow").style.color = "gray";
-            get("superpwhide").style.color = "gray";
+            get("superpwmenushow").style.color = "gray";
+            get("superpwmenuhide").style.color = "gray";
         }
         menuOn("superpw", e);
     }
     get("superpw3dots").onmouseleave = function (e) {
         menuOff("superpw", e);
     }
-    get("superpwshow").onclick = function() {
+    get("superpwmenushow").onclick = function() {
         if (!get("superpw").value) return;
         get("superpw").type = "text";
-        get("superpwhide").style.display = "block";
-        get("superpwshow").style.display = "none";
+        get("superpwmenuhide").style.display = "block";
+        get("superpwmenushow").style.display = "none";
     }
-    get("superpwhide").onclick = function() {
+    get("superpwmenuhide").onclick = function() {
         if (!get("superpw").value) return;
         get("superpw").type = "password";
-        get("superpwhide").style.display = "none";
-        get("superpwshow").style.display = "block";
+        get("superpwmenuhide").style.display = "none";
+        get("superpwmenushow").style.display = "block";
     }
     get("sitename").onfocus = function () {
         let set = new Set();
@@ -259,6 +265,9 @@ function eventSetup() {
         }
         clearDatalist("sitenames");
     }
+    get("sitename").onfocus = function () {
+        dotsOn("sitename");
+    }
     get("sitename3dots").onmouseover = function (e) {
         let sitename = get("sitename").value;
         if (sitename) {
@@ -286,6 +295,9 @@ function eventSetup() {
         handleblur("siteun", "username");
         clearDatalist("siteuns");
         changePlaceholder();
+    }
+    get("siteun").onfocus = function () {
+        dotsOn("siteun");
     }
     get("siteun3dots").onmouseover = function (e) {
         let username = get("siteun").value;
@@ -320,6 +332,9 @@ function eventSetup() {
     get("sitepw").onkeyup = function () {
         get("sitepw").onblur();
     }
+    get("sitepw").onfocus = function () {
+        dotsOn("sitepw");
+    }
     get("sitepw3dots").onmouseover = function (e) {
         let sitepw = get("sitepw").value;
         if (sitepw) {
@@ -348,7 +363,7 @@ function eventSetup() {
         get("sitepwhide").style.display = "none";
         get("sitepwshow").style.display = "block";
     }
-    get("sitepwcopy").onclick = function() {
+    get("sitepwcopy").onclick = function(e) {
         let sitepw = get("sitepw").value;
         navigator.clipboard.writeText(sitepw).then(() => {
             if (logging) console.log("findpw wrote to clipboard", sitepw);
@@ -382,12 +397,20 @@ function eventSetup() {
         get(which + "menu").style.opacity = 0.1;
         menuTimer = setTimeout(() => {
             get(which + "menu").style.display = "none";
-            get("domainname").style.backgroundColor = "white";
+            get("domainname").style.backgroundColor = "#eeeeee";
             get("superpw").style.backgroundColor = "white";
             get("sitename").style.backgroundColor = "white";
             get("siteun").style.backgroundColor = "white";
             get("sitepw").style.backgroundColor = "white";
             }, 250);
+    }
+    function dotsOn(which) {
+        get("domainname3dots").style.display = "none";
+        get("superpw3dots").style.display = "none";
+        get("sitename3dots").style.display = "none";
+        get("siteun3dots").style.display = "none";
+        get("sitepw3dots").style.display = "none";
+        get(which + "3dots").style.display = "block";
     }
     get("settingsshow").onclick = showsettings;
     get("clearclipboard").onclick = function() {
