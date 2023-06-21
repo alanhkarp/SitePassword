@@ -183,18 +183,11 @@ function eventSetup() {
         }
         menuOn("domainname", e);
     }
-    let title = "The domain name is associated with the settings for this account.  ";
-    title += "It is also the name of a bookmark in the SitePasswordData bookmaark folder.  ";
-    title += "That's the bookmark you can use to get your settings when you're on a machine ";
-    title += "that doesn't have the SitePassword extension installed.  You can forget this domain name ";
-    title += "and all settings associated with it by clicking Forget or by deleting the bookmark.  ";
-    title += "You may have more than one domain name for a given account because some web sites ";
-    title += "use more than one domain name for the same login page.  You'll get the same password ";
-    title += "for all of the domain names as long as they are all associated with the same nickname."
-    get("domainnamemenuhelp").title = title;
-    get("domainname3dots").onmouseleave = function (e) {
-        menuOff("domainname", e);
-    }
+    get("domainnamemenuhelp").onclick = function (e) {
+        get("domainnamemenu").style.display = "none";
+        get("domainnamehelptext").style.display = "block";
+        e.stopPropagation();
+    };
     const $superpw = get("superpw");
     get("superpw").onkeyup = function () {
         bg.superpw = get("superpw").value || "";
@@ -231,12 +224,15 @@ function eventSetup() {
         get("superpwmenuhide").style.display = "none";
         get("superpwmenushow").style.display = "block";
     }
-    title = "You should choose a strong super password, one with lots of characters that contain ";
-    title += "upper and lower case letters, numbers, and special characters.  Just make sure ";
-    title += "it's something you won't forget.  SitePassword can't help you if you do."
-    get("superpwmenuhelp").title = title;
     get("superpw3dots").onmouseleave = function (e) {
         menuOff("superpw", e);
+    }
+    get("superpwmenuhelp").onclick = function (e) {
+        get("superpwmenu").style.display = "none";
+        get("superpwhelptext").style.display = "block";
+    }
+    get("superpwhelptextclose").onclick = function (e) {
+        get("superpwhelptext").style.display = "none";
     }
     get("sitename").onfocus = function () {
         let set = new Set();
@@ -290,16 +286,15 @@ function eventSetup() {
         }
         menuOn("sitename", e);
     }
-    title = "Your nickname is the way you refer to this account.  It should be easy to remember, ";
-    title += "such as 'amazon' for amazon.com, but it doesn't have to be that simple.  If the site ";
-    title += "makes you change your password every so often, you can just change the account's nickname, ";
-    title += "Mybank1 to Mybank2 for example.  Your new password will be completely different from your ";
-    title += "your old one.  SitePassword will make sure to update all the domain names associated with ";
-    title += "this account.  Your additional settings, such as the site password length and whether your ";
-    title += "site password contains special characters are associated with this nickname."
-    get("sitenamemenuhelp").title = title;
     get("sitename3dots").onmouseleave = function (e) {
         menuOff("sitename", e);
+    }
+    get("sitenamemenuhelp").onclick = function (e) {
+        get("sitenamemenu").style.display = "none";
+        get("sitenamehelptext").style.display = "block";
+    }
+    get("sitenamehelptextclose").onclick = function (e) {
+        get("sitenamehelptext").style.display = "none";
     }
     get("siteun").onfocus = function () {
         let set = new Set();
@@ -342,6 +337,13 @@ function eventSetup() {
     }
     get("siteun3dots").onmouseleave = function (e) {
         menuOff("siteun", e);
+    }
+    get("siteunmenuhelp").onclick = function (e) {
+        get("siteunmenu").style.display = "none";
+        get("siteunhelptext").style.display = "block";
+    }
+    get("siteunhelptextclose").onclick = function (e) {
+        get("siteunhelptext").style.display = "none";
     }
    get("sitepw").onblur = function () {
         if (get("sitepw").readOnly || !get("sitepw").value) return;
@@ -399,7 +401,14 @@ function eventSetup() {
         });
         menuOff("sitepw", e);
     }
-    // Generic code for menus
+    get("sitepwmenuhelp").onclick = function (e) {
+        get("sitepwmenu").style.display = "none";
+        get("sitepwmhelptext").style.display = "block";
+    }
+    get("sitepwmhelptextclose").onclick = function (e) {
+        get("sitepwmhelptext").style.display = "none";
+    }
+   // Generic code for menus
     let menuTimer;
     function menuOn(which, e) {
         if ( e.type === "mouseleave") return;

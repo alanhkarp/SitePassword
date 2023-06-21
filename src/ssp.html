@@ -55,10 +55,23 @@
                 Forget
               </div>
               <div
-                id="domainnamemenuhelp">
-                Help
+                id="domainnamemenuhelp"
+                title="Learn more about how SitePassword uses the domain name.">
+                <p>Help</p>
               </div>
             </div> 
+          </div>
+          <div id="domainnamehelptext" class="helptext nodisplay">
+            <p>
+              The domain name is associated with the settings for this account.
+              It is also the name of a bookmark in the SitePasswordData bookmaark folder.
+              That's the bookmark you can use to get your settings when you're on a machine
+              that doesn't have the SitePassword extension installed.  You can forget this domain name
+              and all settings associated with it by clicking Forget or by deleting the bookmark.
+              You may have more than one domain name for a given account because some web sites
+              use more than one domain name for the same login page.  You'll get the same password
+              for all of the domain names as long as they are all associated with the same nickname.
+            </p>
           </div>
         </div>
         <div class="form-row">
@@ -92,6 +105,15 @@
               </div>
             </div> 
           </div>
+          <div id="superpwhelptext" class="helptext nodisplay">
+            <center>Super Password Help</center>
+            <p>
+              You should choose a strong super password, one with lots of characters that contain
+              upper and lower case letters, numbers, and special characters.  Just make sure
+              it's something you won't forget.  SitePassword can't help you if you do.
+            </p>
+            <center id="superpwhelptextclose">Close</center>
+          </div>
         </div>
         <div class="form-row">
           <div style="flex: 1;"></div>
@@ -122,13 +144,26 @@
               </div>
               <div
                 id="sitenamemenuhelp"
-                title="Find out more about how your nickname for a site is used to construct your site password.">
+                title="Find out more about how your nickname for a site is used to compute your site password.">
                 Help
               </div>
             </div> 
           </div>
           <datalist id="sitenames"></datalist>
-        </div>
+          <div id="sitenamehelptext" class="helptext nodisplay">
+            <center>Nickname Help</center>
+            <p>
+              Your nickname is the way you refer to this account.  It should be easy to remember,
+              such as 'amazon' for amazon.com, but it doesn't have to be that simple.  If the site
+              makes you change your password every so often, you can just change the account's nickname,
+              Mybank1 to Mybank2 for example.  Your new password will be completely different from your
+              your old one.  SitePassword will make sure to update all the domain names associated with
+              this account.  Your additional settings, such as the site password length and whether your
+              site password contains special characters are associated with this nickname.                
+            </p>
+            <center id="sitenamehelptextclose">Close</center>
+          </div>
+      </div>
         <div class="form-row">
           <label for="siteun" class="sr-only">User name:</label>
           <input
@@ -164,6 +199,32 @@
             </div> 
           </div>
           <datalist id="siteuns"></datalist>
+          <div id="siteunhelptext" class="helptext nodisplay">
+            <center>User Name Help</center>
+            <p>
+              SitePassword will attempt to fill in the userid field of a login form.  If you
+              don't see it, one of a few things happened.  
+              <ol>
+                <li>You never provided your settings for this domain name.</li>
+                <ol>
+                  <li>This is the first time you've used SitePassword for this account.</li>
+                  <li>This is a different domain name for logging into the same account.</li>
+                  <li>You are at a fake site that is trying to steal your password.</li>
+                </ol>
+                <li>SitePassword couldn't find the password field.</li>
+                <li>SitePassword incorrectly guessed the location of the userid field.</li>
+              </ol>
+            </p>
+            <p>
+            </p>
+            <p>
+              Your username is used to compute your site password.  That means you
+              will get different passwords if you have different user names for This
+              website.
+            </p>
+            </p>
+            <center id="siteunhelptextclose">Close</center>
+          </div>
         </div>
         <div class="form-row">
           <label for="sitepw" class="sr-only">Site password:</label>
@@ -203,6 +264,19 @@
               </div>
             </div> 
           </div>
+          <div id="sitepwmhelptext" class="helptext nodisplay">
+            <center>Site Password Help</center>
+            <p>
+              SitePassword uses your super password, nickname for the site, and 
+              your user name for the site along with the additional settings to 
+              calculate this password for the website.  If the password field on 
+              the login form doesn't say <em>Click here for password</em>, you 
+              can use the Copy option on the menu that shows up when you mouse 
+              over the 3 dots in this field to put this password on the clipboard.
+            </p>
+            <center id="sitepwmhelptextclose">Close</center>
+          </div>
+        </div>
         </div>
         <div class="form-row">
           <div id="nopw" class="warning nodisplay" title="You may need to enable some characters, increase the pasword length, or reduce the number of special characters you're asking for.">

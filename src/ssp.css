@@ -56,6 +56,17 @@
     margin-left: -80px;
     transition: opacity 2s;
   }
+  .helptext {
+    position: absolute;
+    width: 20em;
+    height: auto;
+    left: 0;
+    top: 5px;
+    margin: 5px;
+    border: black solid 5px;
+    background-color: white;
+    z-index: 1;
+  }
   #root {
     display: block;
     margin: 0;
