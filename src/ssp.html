@@ -164,121 +164,120 @@
             <center id="sitenamehelptextclose">Close</center>
           </div>
       </div>
-        <div class="form-row">
-          <label for="siteun" class="sr-only">User name:</label>
-          <input
-            id="siteun"
-            list="siteuns"
-            class="sans"
-            type="text"
-            title="Your user-id for this account"
-            autocomplete="off"
-            value=""
-            placeholder="Your user-id for this account"
-          />
-          <div id="siteun3dots" class="icon inner-icon-1 nodisplay">
-            <img id="siteun3dotsimg" src="3dots_icon.png" alt="3 dots" width="20" height="20" style="top:10px">
-            <div id="siteunmenu" class="nodisplay boxed menu">
-              <div 
-                id="siteunmenuforget"
-                display="block"
-                title="For get all settings that use this user ID.">
-                Forget
-              </div>
-              <div
-                id="siteunmenucopy"
-                display="block"
-                title="Copy your user name to the clipboard.">
-                Copy
-              </div>
-              <div
-                id="siteunmenuhelp"
-                title="Find out more about how SitePassword uses your user name for this account.">
-                Help
-              </div>
-            </div> 
-          </div>
-          <datalist id="siteuns"></datalist>
-          <div id="siteunhelptext" class="helptext nodisplay">
-            <center>User Name Help</center>
-            <p>
-              SitePassword will attempt to fill in the userid field of a login form.  If you
-              don't see it, one of a few things happened.  
+      <div class="form-row">
+        <label for="siteun" class="sr-only">User name:</label>
+        <input
+          id="siteun"
+          list="siteuns"
+          class="sans"
+          type="text"
+          title="Your user-id for this account"
+          autocomplete="off"
+          value=""
+          placeholder="Your user-id for this account"
+        />
+        <div id="siteun3dots" class="icon inner-icon-1 nodisplay">
+          <img id="siteun3dotsimg" src="3dots_icon.png" alt="3 dots" width="20" height="20" style="top:10px">
+          <div id="siteunmenu" class="nodisplay boxed menu">
+            <div 
+              id="siteunmenuforget"
+              display="block"
+              title="For get all settings that use this user ID.">
+              Forget
+            </div>
+            <div
+              id="siteunmenucopy"
+              display="block"
+              title="Copy your user name to the clipboard.">
+              Copy
+            </div>
+            <div
+              id="siteunmenuhelp"
+              title="Find out more about how SitePassword uses your user name for this account.">
+              Help
+            </div>
+          </div> 
+        </div>
+        <datalist id="siteuns"></datalist>
+        <div id="siteunhelptext" class="helptext nodisplay">
+          <center>User Name Help</center>
+          <p>
+            SitePassword will attempt to fill in the userid field of a login form.  If you
+            don't see it, one of a few things happened.  
+            <ol>
+              <li>You never provided your settings for this domain name.</li>
               <ol>
-                <li>You never provided your settings for this domain name.</li>
-                <ol>
-                  <li>This is the first time you've used SitePassword for this account.</li>
-                  <li>This is a different domain name for logging into the same account.</li>
-                  <li>You are at a fake site that is trying to steal your password.</li>
-                </ol>
-                <li>SitePassword couldn't find the password field.</li>
-                <li>SitePassword incorrectly guessed the location of the userid field.</li>
+                <li>This is the first time you've used SitePassword for this account.</li>
+                <li>This is a different domain name for logging into the same account.</li>
+                <li>You are at a fake site that is trying to steal your password.</li>
               </ol>
-            </p>
-            <p>
-            </p>
-            <p>
-              Your username is used to compute your site password.  That means you
-              will get different passwords if you have different user names for This
-              website.
-            </p>
-            </p>
-            <center id="siteunhelptextclose">Close</center>
-          </div>
+              <li>SitePassword couldn't find the password field.</li>
+              <li>SitePassword incorrectly guessed the location of the userid field.</li>
+            </ol>
+          </p>
+          <p>
+          </p>
+          <p>
+            Your username is used to compute your site password.  That means you
+            will get different passwords if you have different user names for This
+            website.
+          </p>
+          </p>
+          <center id="siteunhelptextclose">Close</center>
         </div>
-        <div class="form-row">
-          <label for="sitepw" class="sr-only">Site password:</label>
-          <input
-            id="sitepw"
-            class="fixed"
-            readonly="readonly"
-            type="text"
-            title="Your password for this account"
-            autocomplete="off"
-            value=""
-            placeholder="Generated site password"
-          />
-          <div id="sitepw3dots" class="icon inner-icon-1 nodisplay">
-            <img id="sitepw3dotsimg" src="3dots_icon.png" alt="3 dots" width="20" height="20" style="top:10px">
-            <div id="sitepwmenu" class="nodisplay boxed menu">
-              <div 
-                id="sitepwmenucopy"
-                title="Copy your site password to the clipboard">
-                Copy
-              </div>
-              <div 
-                id="sitepwmenushow"
-                class="nodisplay"
-                title="Show your site password">
-                Show
-              </div>
-              <div
-                id="sitepwmenuhide"
-                title="Hide your site password">
-                  Hide
-              </div>   
-              <div
-                id="sitepwmenuhelp"
-                title="Find out more about how SitePassword calculates your site password.">
-                Help
-              </div>
-            </div> 
-          </div>
-          <div id="sitepwmhelptext" class="helptext nodisplay">
-            <center>Site Password Help</center>
-            <p>
-              SitePassword uses your super password, nickname for the site, and 
-              your user name for the site along with the additional settings to 
-              calculate this password for the website.  If the password field on 
-              the login form doesn't say <em>Click here for password</em>, you 
-              can use the Copy option on the menu that shows up when you mouse 
-              over the 3 dots in this field to put this password on the clipboard.
-            </p>
-            <center id="sitepwmhelptextclose">Close</center>
-          </div>
+      </div>
+      <div class="form-row">
+        <label for="sitepw" class="sr-only">Site password:</label>
+        <input
+          id="sitepw"
+          class="fixed"
+          readonly="readonly"
+          type="text"
+          title="Your password for this account"
+          autocomplete="off"
+          value=""
+          placeholder="Generated site password"
+        />
+        <div id="sitepw3dots" class="icon inner-icon-1 nodisplay">
+          <img id="sitepw3dotsimg" src="3dots_icon.png" alt="3 dots" width="20" height="20" style="top:10px">
+          <div id="sitepwmenu" class="nodisplay boxed menu">
+            <div 
+              id="sitepwmenucopy"
+              title="Copy your site password to the clipboard">
+              Copy
+            </div>
+            <div 
+              id="sitepwmenushow"
+              class="nodisplay"
+              title="Show your site password">
+              Show
+            </div>
+            <div
+              id="sitepwmenuhide"
+              title="Hide your site password">
+                Hide
+            </div>   
+            <div
+              id="sitepwmenuhelp"
+              title="Find out more about how SitePassword calculates your site password.">
+              Help
+            </div>
+          </div> 
         </div>
+        <div id="sitepwmhelptext" class="helptext nodisplay">
+          <center>Site Password Help</center>
+          <p>
+            SitePassword uses your super password, nickname for the site, and 
+            your user name for the site along with the additional settings to 
+            calculate this password for the website.  If the password field on 
+            the login form doesn't say <em>Click here for password</em>, you 
+            can use the Copy option on the menu that shows up when you mouse 
+            over the 3 dots in this field to put this password on the clipboard.
+          </p>
+          <center id="sitepwmhelptextclose">Close</center>
         </div>
-        <div class="form-row">
+      </div>
+      <div class="form-row">
           <div id="nopw" class="warning nodisplay" title="You may need to enable some characters, increase the pasword length, or reduce the number of special characters you're asking for.">
             <span id="nopwtext">
               Site Password can't compute a password with these settings. You
