@@ -416,9 +416,13 @@ function eventSetup() {
     get("maininfo").onclick = function () {
         let $instructions = get("instructionpanel");
         if ($instructions.style.display == "none") {
+            get("root").style.width = "auto";
+            get("settings").style.display = "block";
             $instructions.style = "display:block";
             autoclose = false;
         } else {
+            get("root").style.width = "auto";
+            get("settings").style.display = "none";
             $instructions.style = "display:none";
             autoclose = true;
         }
