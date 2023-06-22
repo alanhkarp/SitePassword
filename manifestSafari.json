@@ -3,7 +3,7 @@
     "name": "Site Password",
     "short_name": "Site Password for Safari",
     "description": "Don't remember your passwords. Don't store them.  Calculate them!",
-    "version": "1.4.1",
+    "version": "1.4.2",
     "background": {
         "page": "./bg.html"
     },
