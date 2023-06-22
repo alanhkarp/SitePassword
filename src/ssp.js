@@ -188,6 +188,8 @@ function eventSetup() {
         get("domainnamehelptext").style.display = "block";
         e.stopPropagation();
     };
+        get("superpw").focus();
+    }
     const $superpw = get("superpw");
     get("superpw").onkeyup = function () {
         bg.superpw = get("superpw").value || "";
@@ -564,9 +566,13 @@ function eventSetup() {
     get("maininfo").onclick = function () {
         let $instructions = get("instructionpanel");
         if ($instructions.style.display == "none") {
+            get("root").style.width = "auto";
+            get("settings").style.display = "block";
             $instructions.style = "display:block";
             autoclose = false;
         } else {
+            get("root").style.width = "auto";
+            get("settings").style.display = "none";
             $instructions.style = "display:none";
             autoclose = true;
         }
