@@ -228,11 +228,14 @@ function eventSetup() {
         menuOff("superpw", e);
     }
     get("superpwmenuhelp").onclick = function (e) {
-        get("superpwmenu").style.display = "none";
-        get("superpwhelptext").style.display = "block";
+        helpItemOn("superpw");
+        get("superpw").focus();
     }
     get("superpwhelptextclose").onclick = function (e) {
-        get("superpwhelptext").style.display = "none";
+        helpItemOff("superpw");
+    }
+    get("superpw").onblur = function (e) {
+        helpItemOff("superpw");
     }
     get("sitename").onfocus = function () {
         let set = new Set();
@@ -442,6 +445,17 @@ function eventSetup() {
         get("sitepw3dots").style.display = "none";
         get(which + "3dots").style.display = "block";
     }
+    function helpItemOn(which) {
+        get("settings").style.display = "block";
+        get(which + "menu").style.display = "none";
+        get(which + "helptext").style.display = "block";
+        autoclose = false;
+    }
+    function helpItemOff(which) {
+        get("settings").style.display = "none";
+        get(which + "helptext").style.display = "none";
+        autoclose = true;
+    }
     get("settingsshow").onclick = showsettings;
     get("clearclipboard").onclick = function() {
         if (logging) console.log("popup clear clipboard");
@@ -564,12 +578,10 @@ function eventSetup() {
     get("maininfo").onclick = function () {
         let $instructions = get("instructionpanel");
         if ($instructions.style.display == "none") {
-            get("root").style.width = "auto";
             get("settings").style.display = "block";
             $instructions.style = "display:block";
             autoclose = false;
         } else {
-            get("root").style.width = "auto";
             get("settings").style.display = "none";
             $instructions.style = "display:none";
             autoclose = true;

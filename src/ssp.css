@@ -68,6 +68,7 @@
     z-index: 1;
   }
   #root {
+    width: auto;
     display: block;
     margin: 0;
     transition: opacity 2s;
