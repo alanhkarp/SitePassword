@@ -188,8 +188,6 @@ function eventSetup() {
         get("domainnamehelptext").style.display = "block";
         e.stopPropagation();
     };
-        get("superpw").focus();
-    }
     const $superpw = get("superpw");
     get("superpw").onkeyup = function () {
         bg.superpw = get("superpw").value || "";
