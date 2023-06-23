@@ -183,11 +183,21 @@ function eventSetup() {
         }
         menuOn("domainname", e);
     }
+    get("domainname3dots").onmouseleave = function (e) {
+        menuOff("domainname", e);
+    }
+    get("domainnamemenuforget").onclick = function (e) {
+        // TODO
+    }
     get("domainnamemenuhelp").onclick = function (e) {
-        get("domainnamemenu").style.display = "none";
-        get("domainnamehelptext").style.display = "block";
-        e.stopPropagation();
-    };
+        helpItemOn("domainname");
+    }
+    get("domainnamehelptextclose").onclick = function (e) {
+        helpItemOff("domainname");
+    }
+    get("domainname").onblur = function () {
+        helpItemOff("domainname");
+    }
     const $superpw = get("superpw");
     get("superpw").onkeyup = function () {
         bg.superpw = get("superpw").value || "";
@@ -229,7 +239,6 @@ function eventSetup() {
     }
     get("superpwmenuhelp").onclick = function (e) {
         helpItemOn("superpw");
-        get("superpw").focus();
     }
     get("superpwhelptextclose").onclick = function (e) {
         helpItemOff("superpw");
@@ -293,11 +302,13 @@ function eventSetup() {
         menuOff("sitename", e);
     }
     get("sitenamemenuhelp").onclick = function (e) {
-        get("sitenamemenu").style.display = "none";
-        get("sitenamehelptext").style.display = "block";
+        helpItemOn("sitename");
     }
     get("sitenamehelptextclose").onclick = function (e) {
-        get("sitenamehelptext").style.display = "none";
+        helpItemOff("sitename");
+    }
+    get("sitename").onblur = function (e) {
+        helpItemOff("sitename");
     }
     get("siteun").onfocus = function () {
         let set = new Set();
@@ -446,9 +457,9 @@ function eventSetup() {
         get(which + "3dots").style.display = "block";
     }
     function helpItemOn(which) {
-        get("settings").style.display = "block";
         get(which + "menu").style.display = "none";
         get(which + "helptext").style.display = "block";
+        get(which).focus();
         autoclose = false;
     }
     function helpItemOff(which) {
