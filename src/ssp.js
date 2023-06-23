@@ -446,7 +446,7 @@ function eventSetup() {
             get("sitename").style.backgroundColor = "white";
             get("siteun").style.backgroundColor = "white";
             get("sitepw").style.backgroundColor = "white";
-            }, 250);
+        }, 250);
     }
     function dotsOn(which) {
         get("domainname3dots").style.display = "none";
@@ -463,7 +463,6 @@ function eventSetup() {
         autoclose = false;
     }
     function helpItemOff(which) {
-        get("settings").style.display = "none";
         get(which + "helptext").style.display = "none";
         autoclose = true;
     }
@@ -589,11 +588,11 @@ function eventSetup() {
     get("maininfo").onclick = function () {
         let $instructions = get("instructionpanel");
         if ($instructions.style.display == "none") {
-            get("settings").style.display = "block";
+            showsettings();
             $instructions.style = "display:block";
             autoclose = false;
         } else {
-            get("settings").style.display = "none";
+            hidesettings();
             $instructions.style = "display:none";
             autoclose = true;
         }
