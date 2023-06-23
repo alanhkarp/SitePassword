@@ -126,7 +126,7 @@ function eventSetup() {
         // Don't persist phishing sites if user mouses out of popup. Can't use
         // isphising() because the new bookmark hasn't been created yet when the 
         // user clicks the same account button.
-        get("superpw").focus();
+        //get("superpw").focus();
         if (get("phishing").style.display === "block") { 
             autoclose = false;
             return;
@@ -243,9 +243,6 @@ function eventSetup() {
     get("superpwhelptextclose").onclick = function (e) {
         helpItemOff("superpw");
     }
-    get("superpw").onblur = function (e) {
-        helpItemOff("superpw");
-    }
     get("sitename").onfocus = function () {
         let set = new Set();
         Object.keys(database.sites).forEach((sitename) => {
@@ -253,6 +250,7 @@ function eventSetup() {
         })
         let list = [... set].sort();
         setupdatalist(this, list);
+        dotsOn("sitename");
     }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
@@ -286,9 +284,6 @@ function eventSetup() {
         }
         clearDatalist("sitenames");
     }
-    get("sitename").onfocus = function () {
-        dotsOn("sitename");
-    }
     get("sitename3dots").onmouseover = function (e) {
         let sitename = get("sitename").value;
         if (sitename) {
@@ -307,9 +302,6 @@ function eventSetup() {
     get("sitenamehelptextclose").onclick = function (e) {
         helpItemOff("sitename");
     }
-    get("sitename").onblur = function (e) {
-        helpItemOff("sitename");
-    }
     get("siteun").onfocus = function () {
         let set = new Set();
         Object.keys(database.sites).forEach((sitename) => {
@@ -317,6 +309,7 @@ function eventSetup() {
         })
         let list = [... set].sort();
         setupdatalist(this, list);
+        dotsOn("siteun");
     }
     get("siteun").onkeyup = function () {
         handlekeyup("siteun", "username");
@@ -325,9 +318,6 @@ function eventSetup() {
         handleblur("siteun", "username");
         clearDatalist("siteuns");
         changePlaceholder();
-    }
-    get("siteun").onfocus = function () {
-        dotsOn("siteun");
     }
     get("siteun3dots").onmouseover = function (e) {
         let username = get("siteun").value;
@@ -359,7 +349,7 @@ function eventSetup() {
     get("siteunhelptextclose").onclick = function (e) {
         get("siteunhelptext").style.display = "none";
     }
-   get("sitepw").onblur = function () {
+    get("sitepw").onblur = function () {
         if (get("sitepw").readOnly || !get("sitepw").value) return;
         let provided = get("sitepw").value;
         let computed = ask2generate(bg);
@@ -417,10 +407,10 @@ function eventSetup() {
     }
     get("sitepwmenuhelp").onclick = function (e) {
         get("sitepwmenu").style.display = "none";
-        get("sitepwmhelptext").style.display = "block";
+        get("sitepwhelptext").style.display = "block";
     }
-    get("sitepwmhelptextclose").onclick = function (e) {
-        get("sitepwmhelptext").style.display = "none";
+    get("sitepwhelptextclose").onclick = function (e) {
+        get("sitepwhelptext").style.display = "none";
     }
    // Generic code for menus
     let menuTimer;
@@ -459,7 +449,6 @@ function eventSetup() {
     function helpItemOn(which) {
         get(which + "menu").style.display = "none";
         get(which + "helptext").style.display = "block";
-        get(which).focus();
         autoclose = false;
     }
     function helpItemOff(which) {
