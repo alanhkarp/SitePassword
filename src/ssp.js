@@ -761,7 +761,7 @@ function showsettings() {
     get("settingsshow").style.display = "none";
     get("settingssave").style.display = "inline";
     get("settings").style.display = "block";
-    //get("domainname").value = bg.settings.domainname;
+    get("main").style.height = "590px";
     get("superpw").value = bg.superpw || "";
     fill();
     pwoptions(["lower", "upper", "number", "special"]);
@@ -770,6 +770,7 @@ function hidesettings() {
     get("settingsshow").style.display = "inline";
     get("settingssave").style.display = "none";
     get("settings").style.display = "none";
+    get("main").style.height = "300px";
 }
 function pwoptions(options) {
     for (var x in options) {

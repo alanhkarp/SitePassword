@@ -90,6 +90,11 @@
     width: 22em;
     background-color: #8CF;
   }
+  .sticky {
+    top: 0;
+    position: -webkit-sticky;
+    position: sticky;
+  }
   #bookmarks {
     cursor: default;
   }
