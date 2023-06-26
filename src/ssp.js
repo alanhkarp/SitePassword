@@ -198,6 +198,7 @@ function eventSetup() {
                             get("sitename").value = "";
                             get("siteun").value = "";
                             getsettings();
+                            chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": "", "p": "", "readyForClick": false });
                         });                       
                         return;
                     }

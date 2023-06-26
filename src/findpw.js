@@ -101,6 +101,7 @@ function startup(sendPageInfo) {
                 case "fillfields":
                     userid = request.u;
                     fillfield(cpi.idfield, userid);
+                    fillfield(cpi.pwfields[0], request.p);
                     setPlaceholder(userid);
                     sendResponse();
                     break;
@@ -149,7 +150,7 @@ function handleMutations(mutations) {
 }
 function fillfield(field, text) {
     // Don't change if there is a value to avoid mutationObserver cycling
-    if (field && text && field.value !== text) {
+    if (field && typeof text === "string" && field.value !== text) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
         field.value = text.trim();
         fixfield(field, text.trim());
