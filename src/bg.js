@@ -80,7 +80,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
     if (details.reason === "install") {
         chrome.windows.create({
             url: "./gettingStarted.html",
-            type:"popup",
+            type:"normal",
             height:800,
             width:800
         })
