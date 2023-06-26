@@ -96,7 +96,7 @@ function getsettings() {
         if (!bg.settings.sitename) {
             bg.settings.sitename = "";
             showsettings();
-    }
+        }
         get("superpw").value = response.superpw || "";
         init();
         if (logging) console.log("popup got metadata", bg, database);
@@ -187,7 +187,23 @@ function eventSetup() {
         menuOff("domainname", e);
     }
     get("domainnamemenuforget").onclick = function (e) {
-        // TODO
+        let toforget = get("domainname").value;
+        delete database.domains[toforget];
+        chrome.runtime.sendMessage({"cmd": "rootFolder"}, (rootFolderId) => {
+            chrome.bookmarks.getChildren(rootFolderId, (allchildren) => {
+                for (let i = 0; i < allchildren.length; i++) {
+                    if (allchildren[i].title === toforget) {
+                        chrome.bookmarks.remove(allchildren[i].id, () => {
+                            if (logging) console.log("popup removed bookmark for", toforget);
+                            get("sitename").value = "";
+                            get("siteun").value = "";
+                            getsettings();
+                        });                       
+                        return;
+                    }
+                }
+            });
+        });
     }
     get("domainnamemenuhelp").onclick = function (e) {
         helpItemOn("domainname");

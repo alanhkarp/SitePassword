@@ -1,6 +1,6 @@
 'use strict';
 import { generate, isSuperPw, normalize,  string2array, array2string, stringXorArray } from "./generate.js";
-const testMode = false;
+const testMode = true;
 const commonSettingsTitle = "CommonSettings";
 let logging = testMode;
 // State I want to keep around that doesn't appear in the file system
@@ -14,7 +14,8 @@ var activetab;
 const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
 var database = clone(databaseDefault);
 var domainname = "";
-var protocol = "";
+var protocol;
+var rootFolder = "foo";
 var pwcount = 0;
 var createBookmarksFolder = true;
 export const webpage = "https://sitepassword.info/index.html";
@@ -88,7 +89,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
 });
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (logging) console.log(Date.now(), "bg got message request, sender", request, sender);
+    if (logging) console.log("bg got message request, sender", request, sender);
     // Start with a new database in case something changed while the service worker stayed open
     database = clone(databaseDefault);
     bg = {};
@@ -143,6 +144,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
                 defaultSettings = request.newDefaults;
                 persistMetadata(sendResponse);
+            } else if (request.cmd === "rootFolder") {
+                sendResponse(rootFolder.id);
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
@@ -157,7 +160,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 persistMetadata(sendResponse);
             }
             database = clone(databaseDefault);
-            if (logging) console.log(Date.now(), "bg addListener returning", isSuperPw(superpw));
+            if (logging) console.log("bg addListener returning", isSuperPw(superpw));
         };
     });
     return true;
@@ -258,7 +261,7 @@ function onContentPageload(request, sender, sendResponse) {
         p = stringXorArray(p, bg.settings.xor);
         sitepass = p;
     }
-    if (logging) console.log(Date.now(), "bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
+    if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
     sendResponse({ "cmd": "fillfields", 
                    "u": bg.settings.username || "", 
                    "p": sitepass || "", 
@@ -282,7 +285,7 @@ async function persistMetadata(sendResponse) {
     let db = database;
     let found = await getRootFolder(sendResponse);
     if (found.length > 1) return;
-    let rootFolder = found[0];
+    rootFolder = found[0];
     let sitename = normalize(bg.settings.sitename);
     if (sitename) {
         let oldsitename = db.domains[bg.settings.domainname];
@@ -560,7 +563,7 @@ function retrieved(callback) {
     if (activetab) protocol = getprotocol(activetab.url);
     if (!bg.settings) bg.settings = settings; 
     bg.superpw = superpw || "";
-    if (logging) console.log(Date.now(), "bg leaving retrieived", bg, database);
+    if (logging) console.log("bg leaving retrieived", bg, database);
     callback();
 }
 function bgsettings(domainname) {
