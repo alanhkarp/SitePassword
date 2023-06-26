@@ -761,7 +761,7 @@ function showsettings() {
     get("settingsshow").style.display = "none";
     get("settingssave").style.display = "inline";
     get("settings").style.display = "block";
-    get("main").style.height = "590px";
+    get("main").style.height = "580px";
     get("superpw").value = bg.superpw || "";
     fill();
     pwoptions(["lower", "upper", "number", "special"]);
