@@ -932,7 +932,7 @@ function message(msgname, turnon) {
         if (ison) get(msg.name).style.display = "none";
         ison = ison || msg.ison;
     }
-    if (turnon) resizeMain();
+    resizeMain();
 }
 function resizeMain() {
     let base = (get("settings").style.display === "block") ? 580 : 300;
