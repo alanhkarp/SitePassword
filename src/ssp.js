@@ -54,7 +54,7 @@ window.onload = function () {
         get("domainname").value = domainname;
         get("sitepw").value = "";
         if (logging) console.log("popup got tab", domainname, activetab);
-        if (logging) console.log(Date.now(), "popup getting metadata");
+        if (logging) console.log("popup getting metadata");
         instructionSetup();
         getsettings();
         eventSetup();
@@ -594,12 +594,12 @@ function eventSetup() {
     get("maininfo").onclick = function () {
         let $instructions = get("instructionpanel");
         if ($instructions.style.display == "none") {
-            showsettings();
             $instructions.style = "display:block";
+            resizeMain();
             autoclose = false;
         } else {
-            hidesettings();
             $instructions.style = "display:none";
+            resizeMain();
             autoclose = true;
         }
     }
@@ -761,7 +761,7 @@ function showsettings() {
     get("settingsshow").style.display = "none";
     get("settingssave").style.display = "inline";
     get("settings").style.display = "block";
-    get("main").style.height = "580px";
+    resizeMain();
     get("superpw").value = bg.superpw || "";
     fill();
     pwoptions(["lower", "upper", "number", "special"]);
@@ -770,7 +770,7 @@ function hidesettings() {
     get("settingsshow").style.display = "inline";
     get("settingssave").style.display = "none";
     get("settings").style.display = "none";
-    get("main").style.height = "300px";
+    resizeMain();
 }
 function pwoptions(options) {
     for (var x in options) {
@@ -931,6 +931,18 @@ function message(msgname, turnon) {
         get(msg.name).style.display = msg.ison ? "block" : "none";
         if (ison) get(msg.name).style.display = "none";
         ison = ison || msg.ison;
+    }
+    if (turnon) resizeMain();
+}
+function resizeMain() {
+    let base = (get("settings").style.display === "block") ? 580 : 300;
+    get("main").style.height = base + "px";
+    for (let i = 0; i < messages.length; i++) {
+        if (get(messages[i].name).style.display == "block") {
+            let delta = get(messages[i].name).getBoundingClientRect().height;
+            get("main").style.height = base + delta + "px";
+            console.log("---> popup msgname, delta, main height", messages[i].name, delta, get("main").style.height) 
+        }
     }
 }
 function clearDatalist(listid) {
