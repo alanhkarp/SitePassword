@@ -187,7 +187,9 @@ function eventSetup() {
         menuOff("domainname", e);
     }
     get("domainnamemenuforget").onclick = function (e) {
-        let toforget = get("domainname").value;
+        forgetDomainname(get("domainname").value);
+    }
+    function forgetDomainname(toforget) {
         delete database.domains[toforget];
         chrome.runtime.sendMessage({"cmd": "rootFolder"}, (rootFolderId) => {
             chrome.bookmarks.getChildren(rootFolderId, (allchildren) => {
