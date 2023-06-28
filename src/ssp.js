@@ -315,6 +315,15 @@ function eventSetup() {
     get("sitename3dots").onmouseleave = function (e) {
         menuOff("sitename", e);
     }
+    get("sitenamemenuforget").onclick = function (e) {
+        let toforget = normalize(get("sitename").value);
+        for (let domain in database.domains) {
+            if (normalize(database.domains[domain]) === toforget) {
+                forgetDomainname(domain);
+            }
+        }
+        delete database.sites[toforget];
+    }
     get("sitenamemenuhelp").onclick = function (e) {
         helpItemOn("sitename");
     }
@@ -943,7 +952,6 @@ function resizeMain() {
         if (get(messages[i].name).style.display == "block") {
             let delta = get(messages[i].name).getBoundingClientRect().height;
             get("main").style.height = base + delta + "px";
-            console.log("---> popup msgname, delta, main height", messages[i].name, delta, get("main").style.height) 
         }
     }
 }
