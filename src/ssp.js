@@ -358,6 +358,15 @@ function eventSetup() {
         }
         menuOn("siteun", e);
     }
+    get("siteunmenuforget").onclick = function (e) {
+        let toforget = normalize(get("siteun").value);
+        for (let domain in database.domains) {
+            let sitename = database.domains[domain];
+            if (normalize(database.sites[sitename].username) === toforget) {
+                forgetDomainname(domain);
+            }
+        }
+    }
     get("siteunmenucopy").onclick = function(e) {
         let sitepw = get("siteun").value;
         navigator.clipboard.writeText(sitepw).then(() => {
