@@ -931,8 +931,8 @@ function clone(object) {
 // Messages in priority order high to low
 var messages = [
     { name: "phishing", ison: false, transient: false },
-    { name: "http", ison: false, transient: false },
     { name: "nopw", ison: false, transient: false },
+    { name: "http", ison: false, transient: false },
     { name: "zero", ison: false, transient: false },
     { name: "multiple", ison: false, transient: false }
 ];
@@ -955,12 +955,12 @@ function message(msgname, turnon) {
     resizeMain();
 }
 function resizeMain() {
-    let base = (get("settings").style.display === "block") ? 580 : 300;
-    get("main").style.height = base + "px";
+    get("main").style.height = "300px";
+    get("settings").style.height = "330px";
     for (let i = 0; i < messages.length; i++) {
         if (get(messages[i].name).style.display == "block") {
             let delta = get(messages[i].name).getBoundingClientRect().height;
-            get("main").style.height = base + delta + "px";
+            get("main").style.height = 300 + delta + "px";
         }
     }
 }

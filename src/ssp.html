@@ -19,7 +19,7 @@
   <div id="leftgutter" class="column"></div>
   <div id="content" class="column">
     <div id="mainpanel" style="display: flex">
-      <div id="main" class="serif sticky" style="flex: auto">
+      <div id="main" class="serif sticky main" style="flex: auto">
         <div class="form-row">
           <span style="flex:1"></span>
             <img id="logo" class="logo" src="icon128.png"/>
@@ -130,83 +130,83 @@
             </div> 
           </div>
           <datalist id="sitenames"></datalist>
-      </div>
-      <div class="form-row">
-        <label for="siteun" class="sr-only">User name:</label>
-        <input
-          id="siteun"
-          list="siteuns"
-          class="sans"
-          type="text"
-          title="Your user-id for this account"
-          autocomplete="off"
-          value=""
-          placeholder="Your user-id for this account"
-        />
-        <div id="siteun3dots" class="icon inner-icon-1 nodisplay">
-          <img id="siteun3dotsimg" src="3dots_icon.png" alt="3 dots" width="20" height="20" style="top:10px">
-          <div id="siteunmenu" class="nodisplay boxed menu">
-            <div 
-              id="siteunmenuforget"
-              display="block"
-              title="For get all settings that use this user ID.">
-              Forget
-            </div>
-            <div
-              id="siteunmenucopy"
-              display="block"
-              title="Copy your user name to the clipboard.">
-              Copy
-            </div>
-            <div
-              id="siteunmenuhelp"
-              title="Find out more about how SitePassword uses your user name for this account.">
-              Help
-            </div>
-          </div> 
         </div>
-        <datalist id="siteuns"></datalist>
-      </div>
-      <div class="form-row">
-        <label for="sitepw" class="sr-only">Site password:</label>
-        <input
-          id="sitepw"
-          class="fixed"
-          readonly="readonly"
-          type="text"
-          title="Your password for this account"
-          autocomplete="off"
-          value=""
-          placeholder="Generated site password"
-        />
-        <div id="sitepw3dots" class="icon inner-icon-1 nodisplay">
-          <img id="sitepw3dotsimg" src="3dots_icon.png" alt="3 dots" width="20" height="20" style="top:10px">
-          <div id="sitepwmenu" class="nodisplay boxed menu">
-            <div 
-              id="sitepwmenucopy"
-              title="Copy your site password to the clipboard">
-              Copy
-            </div>
-            <div 
-              id="sitepwmenushow"
-              class="nodisplay"
-              title="Show your site password">
-              Show
-            </div>
-            <div
-              id="sitepwmenuhide"
-              title="Hide your site password">
-                Hide
-            </div>   
-            <div
-              id="sitepwmenuhelp"
-              title="Find out more about how SitePassword calculates your site password.">
-              Help
-            </div>
-          </div> 
+        <div class="form-row">
+          <label for="siteun" class="sr-only">User name:</label>
+          <input
+            id="siteun"
+            list="siteuns"
+            class="sans"
+            type="text"
+            title="Your user-id for this account"
+            autocomplete="off"
+            value=""
+            placeholder="Your user-id for this account"
+          />
+          <div id="siteun3dots" class="icon inner-icon-1 nodisplay">
+            <img id="siteun3dotsimg" src="3dots_icon.png" alt="3 dots" width="20" height="20" style="top:10px">
+            <div id="siteunmenu" class="nodisplay boxed menu">
+              <div 
+                id="siteunmenuforget"
+                display="block"
+                title="For get all settings that use this user ID.">
+                Forget
+              </div>
+              <div
+                id="siteunmenucopy"
+                display="block"
+                title="Copy your user name to the clipboard.">
+                Copy
+              </div>
+              <div
+                id="siteunmenuhelp"
+                title="Find out more about how SitePassword uses your user name for this account.">
+                Help
+              </div>
+            </div> 
+          </div>
+          <datalist id="siteuns"></datalist>
         </div>
-      </div>
-      <div class="form-row">
+        <div class="form-row">
+          <label for="sitepw" class="sr-only">Site password:</label>
+          <input
+            id="sitepw"
+            class="fixed"
+            readonly="readonly"
+            type="text"
+            title="Your password for this account"
+            autocomplete="off"
+            value=""
+            placeholder="Generated site password"
+          />
+          <div id="sitepw3dots" class="icon inner-icon-1 nodisplay">
+            <img id="sitepw3dotsimg" src="3dots_icon.png" alt="3 dots" width="20" height="20" style="top:10px">
+            <div id="sitepwmenu" class="nodisplay boxed menu">
+              <div 
+                id="sitepwmenucopy"
+                title="Copy your site password to the clipboard">
+                Copy
+              </div>
+              <div 
+                id="sitepwmenushow"
+                class="nodisplay"
+                title="Show your site password">
+                Show
+              </div>
+              <div
+                id="sitepwmenuhide"
+                title="Hide your site password">
+                  Hide
+              </div>   
+              <div
+                id="sitepwmenuhelp"
+                title="Find out more about how SitePassword calculates your site password.">
+                Help
+              </div>
+            </div> 
+          </div>
+        </div>
+        <div class="form-row">
           <div id="nopw" class="warning nodisplay" title="You may need to enable some characters, increase the pasword length, or reduce the number of special characters you're asking for.">
             <span id="nopwtext">
               Site Password can't compute a password with these settings. You
@@ -215,70 +215,70 @@
               that doesn't work, try another nickname for the site.
             </span>
           </div>
-        </div>
-        <div class="form-row">
-          <div id="multiple" class="warning nodisplay">
-            <span id="multipletext">
-              There is more than one password field
-              on this page. Click the Copy icon in the site password field to put it 
-              on the clipboard.  <b> When you are done pasting your 
-              password, come back here and click the Clear Clipboard button.</b>
-            </span>
+          <div class="form-row">
+            <div id="multiple" class="warning nodisplay">
+              <span id="multipletext">
+                There is more than one password field
+                on this page. Click the Copy icon in the site password field to put it 
+                on the clipboard.  <b> When you are done pasting your 
+                password, come back here and click the Clear Clipboard button.</b>
+              </span>
+            </div>
           </div>
-        </div>
-        <div class="form-row">
-          <div id="zero" class="warning nodisplay">
-            <span id="zerotext">
-              Site Password did not find any password fields
-              on this page. Try reloading the page.  If that doesn't work, click the 
-              Copy icon in the site password field to put
-              it on the clipboard.
-            </span>
+          <div class="form-row">
+            <div id="zero" class="warning nodisplay">
+              <span id="zerotext">
+                Site Password did not find any password fields
+                on this page. Try reloading the page.  If that doesn't work, click the 
+                Copy icon in the site password field to put
+                it on the clipboard.
+              </span>
+            </div>
           </div>
-        </div>
-        <div class="form-row">
-          <div id="http" class="warning nodisplay">
-            <span id="httptext">
-              The connection to this page is not secure.  Are you sure you want to enter your password?
-            </span>
+          <div class="form-row">
+            <div id="http" class="warning nodisplay">
+              <span id="httptext">
+                The connection to this page is not secure.  Are you sure you want to enter your password?
+              </span>
+            </div>
           </div>
-        </div>
-        <div class="form-row">
-          <div id="phishing" class="warning nodisplay">
-            <span id="phishingtext1"></span>
-            <br/><br/>
-            <span id="phishingtext2" class="phishing"></span>
-            <br/><br/>
-            <span id="phishingtext3"></span>
-            <br/><br/>
-            <span id="phishingtext4" class="phishing"></span>
-            <br/><br/>
-            <span id="phishingtext5"></span>
-            <br/><br/>
-            <button
-              id="cancelwarning"
-              type="button"
-              style="background-color: #00ff00; margin: auto; color: black; width:100%"
-              title="I don't recognize this domain name. Take me away from this web page.">
-              Get me to safety!
-            </button>
-            <p></p>
-            <button
-              id="warningbutton"
-              type="button"
-              style="background-color: #ff0000; margin: auto; color:white; width:100%"
-              title="This page is for the same account. Use the same settings for it.">
-              <b>This page is for the same account.</b>
-            </button>
-            <p></p>
-            <button
-              id="nicknamebutton"
-              type="button"
-              style="background-color: #000FF0; margin: auto; color:white; width:100%"
-              title="This page is for a different account.  I'll select a new nickname.">
-              <b>Pick a new nickname.</b>
-            </button>
-            <p></p>
+          <div class="form-row">
+            <div id="phishing" class="warning nodisplay">
+              <span id="phishingtext1"></span>
+              <br/><br/>
+              <span id="phishingtext2" class="phishing"></span>
+              <br/><br/>
+              <span id="phishingtext3"></span>
+              <br/><br/>
+              <span id="phishingtext4" class="phishing"></span>
+              <br/><br/>
+              <span id="phishingtext5"></span>
+              <br/><br/>
+              <button
+                id="cancelwarning"
+                type="button"
+                style="background-color: #00ff00; margin: auto; color: black; width:100%"
+                title="I don't recognize this domain name. Take me away from this web page.">
+                Get me to safety!
+              </button>
+              <p></p>
+              <button
+                id="warningbutton"
+                type="button"
+                style="background-color: #ff0000; margin: auto; color:white; width:100%"
+                title="This page is for the same account. Use the same settings for it.">
+                <b>This page is for the same account.</b>
+              </button>
+              <p></p>
+              <button
+                id="nicknamebutton"
+                type="button"
+                style="background-color: #000FF0; margin: auto; color:white; width:100%"
+                title="This page is for a different account.  I'll select a new nickname.">
+                <b>Pick a new nickname.</b>
+              </button>
+              <p></p>
+            </div>
           </div>
         </div>
         <div class="form-row">
@@ -295,108 +295,6 @@
           <span style="flex: 1"></span>
           <div id="maininfo" class="icon" title="Instructions">
             <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v-3m0-3v0"/></svg>
-          </div>
-        </div>
-        <div id="settings" class="nodisplay">
-          <div class="setting-row" 
-            id="providesitepwdiv"
-            title="You must fill in the SitePassword form before you can provide your own site password.">
-            <input id="providesitepw" 
-                    type="checkbox"
-                    disabled
-                    aria-disabled="true"
-                    title="Check to type your own site password.  You must fill in the SitePassword form first." 
-            />
-            <span class="settings">Provide your own site password.</span> 
-          </div>
-          <div class="setting-row">
-            <input id="clearsuperpw" type="checkbox" />
-            <span class="settings">Clear super password on use</span>
-          </div>
-          <div class="setting-row">
-            <input id="hidesitepw" type="checkbox" />
-            <span class="settings">Hide site password by default</span>
-          </div>
-          <div id="defaultsettings" class="boxed">
-            <div class="setting-row">
-              <center>
-                <span class="settings">Site password is</span>
-                <input id="pwlength" type="text" value="12" size="2" />
-                <span class="settings">characters long</span>
-              </center>
-            </div>
-            <div class="setting-row">
-              <input id="startwithletter" type="checkbox" checked="checked" />
-              <span class="settings">Starts with letter</span>
-            </div>
-            <div class="setting-row">
-              <input id="allowlowercheckbox" type="checkbox" checked="checked" />
-              <span id="allowlower" class="settings" style="display: none;">Allows lowercase letters</span>
-              <span id="requirelower" class="settings" style="display: inline;">
-                Requires at least
-                <input id="minlower" type="text" value="1" size="2" />
-                lowercase letter(s)
-              </span>
-            </div>
-            <div class="setting-row">
-              <input id="allowuppercheckbox" type="checkbox" checked="checked" />
-              <span id="allowupper" class="settings" style="display: none;">Allows uppercase letters</span>
-              <span id="requireupper" class="settings" style="display: inline;">
-                Requires at least
-                <input id="minupper"" type="text" value="1" size="2" />
-                uppercase letter(s)
-              </span>
-            </div>
-            <div class="setting-row">
-              <input id="allownumbercheckbox" type="checkbox" checked="checked" />
-              <span id="allownumber" class="settings" style="display: none;">Allows numbers</span>
-              <span id="requirenumber" class="settings" style="display: inline;">
-                Requires at least
-                <input id="minnumber" type="text" value="1" size="2" />
-                number(s)
-              </span>
-            </div>
-            <div class="setting-row">
-              <input id="allowspecialcheckbox" type="checkbox" />
-              <span id="allowspecial" class="settings" style="display: inline;">Allows special characters</span>
-              <span id="requirespecial" class="settings" style="display: none;">
-                Requires at least
-                <input id="minspecial" type="text" value="1" size="2" />
-                of
-                <input 
-                  id="specials" 
-                  title="Enter up to 12 special characters"
-                  class="fixed" 
-                  type="text"
-                  style="font-size: .8em;" 
-                  value="$/!=@?._-" 
-                  size="12" />
-              </span>
-            </div>
-            <div class="form-row">
-              <button id="makedefault"
-                type="button"
-                style="display: inline; margin-left: 40px; margin-right: 40px;"
-                target="_blank"
-                title="Make the settings in the box your default"
-                >
-                Save as Default 
-              </button>                  
-            </div>
-          </div>
-          <div class="form-row">
-            <button id="sitedatagetbutton" 
-              type="button" 
-              style="display: inline" 
-              target="_blank" 
-              title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
-              Download Site Data
-            </button>
-            <a id="data" 
-                href="data:application/octet-stream," 
-                target="_blank" 
-                style="display: none" 
-                download="SiteData.html">SiteData.html</a>
           </div>
         </div>
       </div>
@@ -493,6 +391,109 @@
           over the 3 dots in this field to put this password on the clipboard.
         </p>
         <center id="sitepwhelptextclose">Close</center>
+      </div>
+      <div id="settings" class="serif sticky main" style="display: none; flex: auto">
+        <h1>Additional Settings</h1>
+        <div class="setting-row" 
+          id="providesitepwdiv"
+          title="You must fill in the SitePassword form before you can provide your own site password.">
+          <input id="providesitepw" 
+                  type="checkbox"
+                  disabled
+                  aria-disabled="true"
+                  title="Check to type your own site password.  You must fill in the SitePassword form first." 
+          />
+          <span class="settings">Provide your own site password.</span> 
+        </div>
+        <div class="setting-row">
+          <input id="clearsuperpw" type="checkbox" />
+          <span class="settings">Clear super password on use</span>
+        </div>
+        <div class="setting-row">
+          <input id="hidesitepw" type="checkbox" />
+          <span class="settings">Hide site password by default</span>
+        </div>
+        <div id="defaultsettings" class="boxed">
+          <div class="setting-row">
+            <center>
+              <span class="settings">Site password is</span>
+              <input id="pwlength" type="text" value="12" size="2" />
+              <span class="settings">characters long</span>
+            </center>
+          </div>
+          <div class="setting-row">
+            <input id="startwithletter" type="checkbox" checked="checked" />
+            <span class="settings">Starts with letter</span>
+          </div>
+          <div class="setting-row">
+            <input id="allowlowercheckbox" type="checkbox" checked="checked" />
+            <span id="allowlower" class="settings" style="display: none;">Allows lowercase letters</span>
+            <span id="requirelower" class="settings" style="display: inline;">
+              Requires at least
+              <input id="minlower" type="text" value="1" size="2" />
+              lowercase letter(s)
+            </span>
+          </div>
+          <div class="setting-row">
+            <input id="allowuppercheckbox" type="checkbox" checked="checked" />
+            <span id="allowupper" class="settings" style="display: none;">Allows uppercase letters</span>
+            <span id="requireupper" class="settings" style="display: inline;">
+              Requires at least
+              <input id="minupper"" type="text" value="1" size="2" />
+              uppercase letter(s)
+            </span>
+          </div>
+          <div class="setting-row">
+            <input id="allownumbercheckbox" type="checkbox" checked="checked" />
+            <span id="allownumber" class="settings" style="display: none;">Allows numbers</span>
+            <span id="requirenumber" class="settings" style="display: inline;">
+              Requires at least
+              <input id="minnumber" type="text" value="1" size="2" />
+              number(s)
+            </span>
+          </div>
+          <div class="setting-row">
+            <input id="allowspecialcheckbox" type="checkbox" />
+            <span id="allowspecial" class="settings" style="display: inline;">Allows special characters</span>
+            <span id="requirespecial" class="settings" style="display: none;">
+              Requires at least
+              <input id="minspecial" type="text" value="1" size="2" />
+              of
+              <input 
+                id="specials" 
+                title="Enter up to 12 special characters"
+                class="fixed" 
+                type="text"
+                style="font-size: .8em;" 
+                value="$/!=@?._-" 
+                size="12" />
+            </span>
+          </div>
+          <div class="form-row">
+            <button id="makedefault"
+              type="button"
+              style="display: inline; margin-left: 40px; margin-right: 40px;"
+              target="_blank"
+              title="Make the settings in the box your default"
+              >
+              Save as Default 
+            </button>                  
+          </div>
+        </div>
+        <div class="form-row">
+          <button id="sitedatagetbutton" 
+            type="button" 
+            style="display: inline" 
+            target="_blank" 
+            title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
+            Download Site Data
+          </button>
+          <a id="data" 
+              href="data:application/octet-stream," 
+              target="_blank" 
+              style="display: none" 
+              download="SiteData.html">SiteData.html</a>
+        </div>
       </div>
       <div id="instructionpanel" class="instructionpanelext" style="display:none; flex: 1">
         <div id="sections">

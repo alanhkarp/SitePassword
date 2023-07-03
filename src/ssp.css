@@ -82,7 +82,12 @@
     padding-left: 1em;
     width: 500px;
   }
-  #main {
+  .settings {
+    flex: 0 0 auto;
+    font-weight: bold;
+    font-size: 10pt;
+  }
+.main {
     margin: 1ex;
     border: 2pt solid #47A;
     border-radius: 6pt;
@@ -196,10 +201,6 @@
   .setting-row {
     margin: 0.5ex 0;
     height: 1.5em;
-  }
-  .settings {
-    font-weight: bold;
-    font-size: 10pt;
   }
   .icon {
     flex: none;
