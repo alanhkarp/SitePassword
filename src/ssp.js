@@ -462,12 +462,6 @@ function eventSetup() {
     function menuOn(which, e) {
         if ( e.type === "mouseleave") return;
         clearTimeout(menuTimer);
-        get("domainname").style.backgroundColor = "lightgray";
-        get("superpw").style.backgroundColor = "lightgray";
-        get("sitename").style.backgroundColor = "lightgray";
-        get("siteun").style.backgroundColor = "lightgray";
-        get("sitepw").style.backgroundColor = "lightgray";
-        get(which).style.backgroundColor = "white";
         get(which + "menu").style.opacity = 1.0;
         get(which + "menu").style.display = "block";
     }
@@ -477,10 +471,6 @@ function eventSetup() {
         menuTimer = setTimeout(() => {
             get(which + "menu").style.display = "none";
             get("domainname").style.backgroundColor = "#eeeeee";
-            get("superpw").style.backgroundColor = "white";
-            get("sitename").style.backgroundColor = "white";
-            get("siteun").style.backgroundColor = "white";
-            get("sitepw").style.backgroundColor = "white";
         }, 250);
     }
     function dotsOn(which) {
