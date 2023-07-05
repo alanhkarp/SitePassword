@@ -42,8 +42,8 @@
     word-wrap: break-word;
   }
   .menu {
-    width: 60px;
-    border: black solid;
+    position: absolute;
+    width: 38px;
     background-color: white;
     color: black;
     text-align: center;
@@ -51,9 +51,8 @@
     padding: 8px 0;
     position: absolute;
     z-index: 1;
-    bottom: -30px;
-    left: -50px;
-    margin-left: -80px;
+    bottom: -36px;
+    left: -10px;
     transition: opacity 2s;
   }
   .helptext {

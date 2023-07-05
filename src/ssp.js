@@ -179,8 +179,11 @@ function eventSetup() {
             ask2generate();
         });
     }
-    get("domainname").onfocus = function () {
+    get("domainname").onmouseover = function () {
         dotsOn("domainname");
+    }
+    get("domainname").onmouseleave = function () {
+       if (!document.activeElement === get("domainmame")) get("superpw3dots").style.display = "none";
     }
     get("domainname3dots").onmouseover = function (e) {
         let domainname = get("domainname").value;
@@ -236,8 +239,11 @@ function eventSetup() {
         handleblur("superpw", "superpw");
         changePlaceholder();
     }
-    get("superpw").onfocus = function () {
+    get("superpw").onmouseover = function () {
         dotsOn("superpw");
+    }
+    get("superpw").onmouseleave = function () {
+       if (!document.activeElement === get("superpw")) get("superpw3dots").style.display = "none";
     }
     get("superpw3dots").onmouseover = function (e) {
         if (get("superpw").value) {
@@ -270,7 +276,7 @@ function eventSetup() {
     get("superpwhelptextclose").onclick = function (e) {
         helpItemOff("superpw");
     }
-    get("sitename").onfocus = function () {
+    get("sitename").onmouseover = function () {
         let set = new Set();
         Object.keys(database.sites).forEach((sitename) => {
             set.add(database.sites[normalize(sitename)].sitename);
@@ -278,6 +284,9 @@ function eventSetup() {
         let list = [... set].sort();
         setupdatalist(this, list);
         dotsOn("sitename");
+    }
+    get("sitename").onmouseleave = function () {
+        if (!document.activeElement === get("sitename")) get("sitename3dots").style.display = "none";
     }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
@@ -338,7 +347,7 @@ function eventSetup() {
     get("sitenamehelptextclose").onclick = function (e) {
         helpItemOff("sitename");
     }
-    get("siteun").onfocus = function () {
+    get("siteun").onmouseover = function () {
         let set = new Set();
         Object.keys(database.sites).forEach((sitename) => {
             set.add(database.sites[normalize(sitename)].username);
@@ -346,6 +355,9 @@ function eventSetup() {
         let list = [... set].sort();
         setupdatalist(this, list);
         dotsOn("siteun");
+    }
+    get("siteun").onmouseleave = function () {
+        if (!document.activeElement === get("siteun")) get("siteun3dots").style.display = "none";
     }
     get("siteun").onkeyup = function () {
         handlekeyup("siteun", "username");
@@ -404,8 +416,11 @@ function eventSetup() {
     get("sitepw").onkeyup = function () {
         get("sitepw").onblur();
     }
-    get("sitepw").onfocus = function () {
+    get("sitepw").onmouseover = function () {
         dotsOn("sitepw");
+    }
+    get("sitepw").onmouseleave = function () {
+        if (!document.activeElement === get("sitepw")) get("sitepw3dots").style.display = "none";
     }
     get("sitepw3dots").onmouseover = function (e) {
         let sitepw = get("sitepw").value;
@@ -460,7 +475,6 @@ function eventSetup() {
    // Generic code for menus
     let menuTimer;
     function menuOn(which, e) {
-        if ( e.type === "mouseleave") return;
         clearTimeout(menuTimer);
         get(which + "menu").style.opacity = 1.0;
         get(which + "menu").style.display = "block";
@@ -470,7 +484,6 @@ function eventSetup() {
         get(which + "menu").style.opacity = 0.1;
         menuTimer = setTimeout(() => {
             get(which + "menu").style.display = "none";
-            get("domainname").style.backgroundColor = "#eeeeee";
         }, 250);
     }
     function dotsOn(which) {
