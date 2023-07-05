@@ -8,6 +8,7 @@ var activetab;
 var domainname;
 var mainPanelTimer;
 var autoclose = true;
+var baseHeight = 0;
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 var defaultTitle = "SitePassword";
 
@@ -40,6 +41,13 @@ if (logging) console.log("popup starting");
 
 window.onload = function () {
     if (logging) console.log("popup getting active tab");
+    // Get sizes of main panel and settings panel.
+    baseHeight = get("mainpanel").getBoundingClientRect().bottom - 10;
+    get("settings").style.display = "block";
+    let settingsHeight = get("settings").getBoundingClientRect().bottom - 10;
+    console.log("popup baseHeight", baseHeight, "settingsHeight", settingsHeight);
+    get("settings").style.height = settingsHeight + "px";
+    get("settings").style.display = "none";
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         activetab = tabs[0];
         if (logging) console.log("popup tab", activetab);
@@ -955,8 +963,7 @@ function message(msgname, turnon) {
     resizeMain();
 }
 function resizeMain() {
-    get("main").style.height = "340px";
-    get("settings").style.height = "365px";
+    get("main").style.height = baseHeight + "px";
     for (let i = 0; i < messages.length; i++) {
         if (get(messages[i].name).style.display == "block") {
             let delta = get(messages[i].name).getBoundingClientRect().height;
