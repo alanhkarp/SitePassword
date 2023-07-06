@@ -400,11 +400,10 @@ function eventSetup() {
         menuOff("siteun", e);
     }
     get("siteunmenuhelp").onclick = function (e) {
-        get("siteunmenu").style.display = "none";
-        get("siteunhelptext").style.display = "block";
+        helpItemOn("siteun");
     }
     get("siteunhelptextclose").onclick = function (e) {
-        get("siteunhelptext").style.display = "none";
+        helpItemOff("siteun");
     }
     get("sitepw").onblur = function () {
         if (get("sitepw").readOnly || !get("sitepw").value) return;
@@ -466,42 +465,10 @@ function eventSetup() {
         menuOff("sitepw", e);
     }
     get("sitepwmenuhelp").onclick = function (e) {
-        get("sitepwmenu").style.display = "none";
-        get("sitepwhelptext").style.display = "block";
+        helpItemOn("sitepw");
     }
     get("sitepwhelptextclose").onclick = function (e) {
-        get("sitepwhelptext").style.display = "none";
-    }
-   // Generic code for menus
-    let menuTimer;
-    function menuOn(which, e) {
-        clearTimeout(menuTimer);
-        get(which + "menu").style.opacity = 1.0;
-        get(which + "menu").style.display = "block";
-    }
-    function menuOff(which, e) {
-        if ( e.type === "mouseenter") return;
-        get(which + "menu").style.opacity = 0.1;
-        menuTimer = setTimeout(() => {
-            get(which + "menu").style.display = "none";
-        }, 250);
-    }
-    function dotsOn(which) {
-        get("domainname3dots").style.display = "none";
-        get("superpw3dots").style.display = "none";
-        get("sitename3dots").style.display = "none";
-        get("siteun3dots").style.display = "none";
-        get("sitepw3dots").style.display = "none";
-        get(which + "3dots").style.display = "block";
-    }
-    function helpItemOn(which) {
-        get(which + "menu").style.display = "none";
-        get(which + "helptext").style.display = "block";
-        autoclose = false;
-    }
-    function helpItemOff(which) {
-        get(which + "helptext").style.display = "none";
-        autoclose = true;
+        helpItemOff("sitepw");
     }
     get("settingsshow").onclick = showsettings;
     get("clearclipboard").onclick = function() {
@@ -626,6 +593,8 @@ function eventSetup() {
         let $instructions = get("instructionpanel");
         if ($instructions.style.display == "none") {
             $instructions.style = "display:block";
+            hidesettings();
+            helpAllOff();
             resizeMain();
             autoclose = false;
         } else {
@@ -663,6 +632,47 @@ function eventSetup() {
         msgoff("phishing");
     }
 }
+   // Generic code for menus
+   let menuTimer;
+   function menuOn(which, e) {
+       clearTimeout(menuTimer);
+       get(which + "menu").style.opacity = 1.0;
+       get(which + "menu").style.display = "block";
+   }
+   function menuOff(which, e) {
+       if ( e.type === "mouseenter") return;
+       get(which + "menu").style.opacity = 0.1;
+       menuTimer = setTimeout(() => {
+           get(which + "menu").style.display = "none";
+       }, 250);
+   }
+   function dotsOn(which) {
+       get("domainname3dots").style.display = "none";
+       get("superpw3dots").style.display = "none";
+       get("sitename3dots").style.display = "none";
+       get("siteun3dots").style.display = "none";
+       get("sitepw3dots").style.display = "none";
+       get(which + "3dots").style.display = "block";
+   }
+   function helpItemOn(which) {
+       helpAllOff();
+       get(which + "menu").style.display = "none";
+       get(which + "helptext").style.display = "block";
+       get("instructionpanel").style.display = "none";
+       hidesettings();
+       autoclose = false;
+   }
+   function helpItemOff(which) {
+       get(which + "helptext").style.display = "none";
+       autoclose = true;
+   }
+   function helpAllOff() {
+       helpItemOff("domainname");
+       helpItemOff("superpw");
+       helpItemOff("sitename");
+       helpItemOff("siteun");
+       helpItemOff("sitepw");
+   }
 function hidesitepw() {
     if (logging) console.log("popup checking hidesitepw", get("hidesitepw").checked, database.hidesitepw);
     if (get("hidesitepw").checked || database.hidesitepw) {
@@ -792,6 +802,8 @@ function showsettings() {
     get("settingsshow").style.display = "none";
     get("settingssave").style.display = "inline";
     get("settings").style.display = "block";
+    helpAllOff();
+    get("instructionpanel").style.display = "none";
     resizeMain();
     get("superpw").value = bg.superpw || "";
     fill();
