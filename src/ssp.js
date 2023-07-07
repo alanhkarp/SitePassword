@@ -1,7 +1,7 @@
 'use strict';
 import { webpage } from "./bg.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = true;
+const testMode = false;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -982,7 +982,7 @@ function resizeMain() {
     for (let i = 0; i < messages.length; i++) {
         if (get(messages[i].name).style.display == "block") {
             let delta = get(messages[i].name).getBoundingClientRect().height;
-            get("main").style.height = 340 + 20 + delta + "px";
+            get("main").style.height = 340 + 25 + delta + "px";
         }
     }
 }
