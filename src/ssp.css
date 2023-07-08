@@ -141,14 +141,14 @@
     overflow: clip;
   }
   .sr-only {
-    border: 0;
-    clip: rect(0 0 0 0);
-    height: 1px;
-    margin: -1px;
-    overflow: hidden !important;
-    padding: 0;
+    border: 2px;
     position: absolute;
-    width: 1px;
+    left: 10px;
+    top: 2px;
+    background-color: white;
+    color: rgb(136, 204, 255, 100%);
+    padding-left: 5px;
+    padding-right: 5px;
   }
   h1, h4 {
     margin: 1ex;
