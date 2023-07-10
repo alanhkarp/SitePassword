@@ -1,7 +1,7 @@
 'use strict';
 import { webpage } from "./bg.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = true;
+const testMode = false;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -637,7 +637,7 @@ function eventSetup() {
    function menuOn(which, e) {
        clearTimeout(menuTimer);
        get(which + "menu").style.opacity = 1.0;
-       get(which + "menu").style.display = "block";
+       get(which + "menu").style.display = "flex";
    }
    function menuOff(which, e) {
        if ( e.type === "mouseenter") return;
