@@ -1,7 +1,7 @@
 'use strict';
 import { webpage } from "./bg.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = false;
+const testMode = true;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
