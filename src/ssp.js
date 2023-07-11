@@ -172,14 +172,15 @@ function eventSetup() {
     get("domainname").onkeyup = function () {
         get("sitename").value = "";
     }
-    get("domainname").onblur = function () {
+    get("domainname").onblur = function (e) {
         get("sitename").value = "";
         getsettings(() => {
             fill();
             ask2generate();
         });
+        menuOff("domainname", e);
     }
-    get("domainname3dots").onmouseover = function (e) {
+    get("domainname").onfocus = function (e) {
         let domainname = get("domainname").value;
         if (domainname && database.domains[domainname]) {
             get("domainnamemenuforget").style.color = "black";
@@ -187,10 +188,6 @@ function eventSetup() {
             get("domainnamemenuforget").style.color = "gray";
         }
         menuOn("domainname", e);
-    }
-    get("domainname").onmouseover = get("domainname3dots").onmouseover;
-    get("domainname3dots").onmouseout = function (e) {
-        menuOff("domainname", e);
     }
     get("domainnamemenuforget").onclick = function (e) {
         forgetDomainname(get("domainname").value);
@@ -234,10 +231,7 @@ function eventSetup() {
         handleblur("superpw", "superpw");
         changePlaceholder();
     }
-    get("superpw").onmouseout = function () {
-       //if (!document.activeElement === get("superpw")) get("superpw3dots").style.visibility = "hidden";
-    }
-    get("superpw3dots").onmouseover = function (e) {
+    get("superpw").onfocus = function (e) {
         if (get("superpw").value) {
             get("superpwmenushow").style.color = "black";
             get("superpwmenuhide").style.color = "black";
@@ -247,7 +241,6 @@ function eventSetup() {
         }
         menuOn("superpw", e);
     }
-    get("superpw").onmouseover = get("superpw3dots").onmouseover;
     get("superpwmenushow").onclick = function() {
         if (!get("superpw").value) return;
         get("superpw").type = "text";
@@ -259,9 +252,6 @@ function eventSetup() {
         get("superpw").type = "password";
         get("superpwmenuhide").style.display = "none";
         get("superpwmenushow").style.display = "block";
-    }
-    get("superpw3dots").onmouseout = function (e) {
-        menuOff("superpw", e);
     }
     get("superpwmenuhelp").onclick = function (e) {
         helpItemOn("superpw");
@@ -276,10 +266,6 @@ function eventSetup() {
         })
         let list = [... set].sort();
         setupdatalist(this, list);
-        get("sitename3dots").onmouseover(e);
-    }
-    get("sitename").onmouseout = function () {
-        //if (!document.activeElement === get("sitename")) get("sitename3dots").style.visibility = "hidden";
     }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
@@ -312,8 +298,9 @@ function eventSetup() {
             changePlaceholder();
         }
         clearDatalist("sitenames");
+        menuOff("sitename");
     }
-    get("sitename3dots").onmouseover = function (e) {
+    get("sitename").onfocus = function (e) {
         let sitename = get("sitename").value;
         if (sitename) {
             get("sitenamemenuforget").style.color = "black";
@@ -321,9 +308,6 @@ function eventSetup() {
             get("sitenamemenuforget").style.color = "gray";
         }
         menuOn("sitename", e);
-    }
-    get("sitename3dots").onmouseout = function (e) {
-        menuOff("sitename", e);
     }
     get("sitenamemenuforget").onclick = function (e) {
         let toforget = normalize(get("sitename").value);
@@ -347,10 +331,6 @@ function eventSetup() {
         })
         let list = [... set].sort();
         setupdatalist(this, list);
-        get("siteun3dots").onmouseover(e);
-    }
-    get("siteun").onmouseout = function () {
-        //if (!document.activeElement === get("siteun")) get("siteun3dots").style.visibility = "hidden";
     }
     get("siteun").onkeyup = function () {
         handlekeyup("siteun", "username");
@@ -359,8 +339,9 @@ function eventSetup() {
         handleblur("siteun", "username");
         clearDatalist("siteuns");
         changePlaceholder();
+        menuOff("siteun");
     }
-    get("siteun3dots").onmouseover = function (e) {
+    get("siteun").onfocus = function (e) {
         let username = get("siteun").value;
         if (username) {
             get("siteunmenuforget").style.color = "black";
@@ -404,6 +385,7 @@ function eventSetup() {
         let computed = ask2generate(bg);
         bg.settings.xor = xorStrings(provided, computed);
         get("sitepw").value = provided;
+        menuOff("sitepw");
     }
     get("sitepw").onkeyup = function () {
         get("sitepw").onblur();
@@ -411,7 +393,7 @@ function eventSetup() {
     get("sitepw").onmouseout = function () {
         //if (!document.activeElement === get("sitepw")) get("sitepw3dots").style.visibility = "hidden";
     }
-    get("sitepw3dots").onmouseover = function (e) {
+    get("sitepw").onfocus = function (e) {
         let sitepw = get("sitepw").value;
         if (sitepw) {
             get("sitepwmenucopy").style.color = "black";
@@ -423,10 +405,6 @@ function eventSetup() {
             get("sitepwmenuhide").style.color = "gray";
         }
         menuOn("sitepw", e);
-    }
-    get("sitepw").onmouseover = get("sitepw3dots").onmouseover;
-    get("sitepw3dots").onmouseout = function (e) {
-        menuOff("sitepw", e);
     }
     get("sitepwmenushow").onclick = function() {
         if (!get("sitepw").value) return;
