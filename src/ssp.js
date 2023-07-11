@@ -1,7 +1,7 @@
 'use strict';
 import { webpage } from "./bg.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = false;
+const testMode = true;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -181,9 +181,6 @@ function eventSetup() {
     }
     get("domainname").onmouseover = function () {
         dotsOn("domainname");
-    }
-    get("domainname").onmouseleave = function () {
-       if (!document.activeElement === get("domainmame")) get("superpw3dots").style.display = "none";
     }
     get("domainname3dots").onmouseover = function (e) {
         let domainname = get("domainname").value;
