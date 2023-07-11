@@ -179,9 +179,6 @@ function eventSetup() {
             ask2generate();
         });
     }
-    get("domainname").onmouseover = function () {
-        dotsOn("domainname");
-    }
     get("domainname3dots").onmouseover = function (e) {
         let domainname = get("domainname").value;
         if (domainname && database.domains[domainname]) {
@@ -191,6 +188,7 @@ function eventSetup() {
         }
         menuOn("domainname", e);
     }
+    get("domainname").onmouseover = get("domainname3dots").onmouseover;
     get("domainname3dots").onmouseleave = function (e) {
         menuOff("domainname", e);
     }
@@ -236,11 +234,8 @@ function eventSetup() {
         handleblur("superpw", "superpw");
         changePlaceholder();
     }
-    get("superpw").onmouseover = function () {
-        dotsOn("superpw");
-    }
     get("superpw").onmouseleave = function () {
-       if (!document.activeElement === get("superpw")) get("superpw3dots").style.display = "none";
+       //if (!document.activeElement === get("superpw")) get("superpw3dots").style.visibility = "hidden";
     }
     get("superpw3dots").onmouseover = function (e) {
         if (get("superpw").value) {
@@ -252,6 +247,7 @@ function eventSetup() {
         }
         menuOn("superpw", e);
     }
+    get("superpw").onmouseover = get("superpw3dots").onmouseover;
     get("superpwmenushow").onclick = function() {
         if (!get("superpw").value) return;
         get("superpw").type = "text";
@@ -273,17 +269,17 @@ function eventSetup() {
     get("superpwhelptextclose").onclick = function (e) {
         helpItemOff("superpw");
     }
-    get("sitename").onmouseover = function () {
+    get("sitename").onmouseover = function (e) {
         let set = new Set();
         Object.keys(database.sites).forEach((sitename) => {
             set.add(database.sites[normalize(sitename)].sitename);
         })
         let list = [... set].sort();
         setupdatalist(this, list);
-        dotsOn("sitename");
+        get("sitename3dots").onmouseover(e);
     }
     get("sitename").onmouseleave = function () {
-        if (!document.activeElement === get("sitename")) get("sitename3dots").style.display = "none";
+        //if (!document.activeElement === get("sitename")) get("sitename3dots").style.visibility = "hidden";
     }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
@@ -344,17 +340,17 @@ function eventSetup() {
     get("sitenamehelptextclose").onclick = function (e) {
         helpItemOff("sitename");
     }
-    get("siteun").onmouseover = function () {
+    get("siteun").onmouseover = function (e) {
         let set = new Set();
         Object.keys(database.sites).forEach((sitename) => {
             set.add(database.sites[normalize(sitename)].username);
         })
         let list = [... set].sort();
         setupdatalist(this, list);
-        dotsOn("siteun");
+        get("siteun3dots").onmouseover(e);
     }
     get("siteun").onmouseleave = function () {
-        if (!document.activeElement === get("siteun")) get("siteun3dots").style.display = "none";
+        //if (!document.activeElement === get("siteun")) get("siteun3dots").style.visibility = "hidden";
     }
     get("siteun").onkeyup = function () {
         handlekeyup("siteun", "username");
@@ -412,11 +408,8 @@ function eventSetup() {
     get("sitepw").onkeyup = function () {
         get("sitepw").onblur();
     }
-    get("sitepw").onmouseover = function () {
-        dotsOn("sitepw");
-    }
     get("sitepw").onmouseleave = function () {
-        if (!document.activeElement === get("sitepw")) get("sitepw3dots").style.display = "none";
+        //if (!document.activeElement === get("sitepw")) get("sitepw3dots").style.visibility = "hidden";
     }
     get("sitepw3dots").onmouseover = function (e) {
         let sitepw = get("sitepw").value;
@@ -431,6 +424,7 @@ function eventSetup() {
         }
         menuOn("sitepw", e);
     }
+    get("sitepw").onmouseover = get("sitepw3dots").onmouseover;
     get("sitepw3dots").onmouseleave = function (e) {
         menuOff("sitepw", e);
     }
@@ -632,6 +626,7 @@ function eventSetup() {
    // Generic code for menus
    let menuTimer;
    function menuOn(which, e) {
+        dotsOn(which);
        clearTimeout(menuTimer);
        get(which + "menu").style.opacity = 1.0;
        get(which + "menu").style.display = "flex";
