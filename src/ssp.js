@@ -120,7 +120,7 @@ function eventSetup() {
     // is a race between message delivery and the next user click.  Fortunately, messages
     // are delivered in just a couple of ms, so there's no problem.  Just be aware that
     // this race is the source of any problems related to loss of the message sent here.
-    get("root").onmouseleave = function (event) {
+    get("root").onmouseout = function (event) {
         // If I close the window immediately, then messages in flight get lost
         if (autoclose && !document.elementFromPoint(event.pageX, event.pageY)) {
             if (!testMode) get("root").style.opacity = 0.1;
@@ -129,7 +129,7 @@ function eventSetup() {
             }, 750);
         }
     }
-    get("mainpanel").onmouseleave = function () {
+    get("mainpanel").onmouseout = function () {
         if (logging) console.log(Date.now(), "popup window.mouseleave", phishing, bg);
         // Don't persist phishing sites if user mouses out of popup. Can't use
         // isphising() because the new bookmark hasn't been created yet when the 
@@ -189,7 +189,7 @@ function eventSetup() {
         menuOn("domainname", e);
     }
     get("domainname").onmouseover = get("domainname3dots").onmouseover;
-    get("domainname3dots").onmouseleave = function (e) {
+    get("domainname3dots").onmouseout = function (e) {
         menuOff("domainname", e);
     }
     get("domainnamemenuforget").onclick = function (e) {
@@ -234,7 +234,7 @@ function eventSetup() {
         handleblur("superpw", "superpw");
         changePlaceholder();
     }
-    get("superpw").onmouseleave = function () {
+    get("superpw").onmouseout = function () {
        //if (!document.activeElement === get("superpw")) get("superpw3dots").style.visibility = "hidden";
     }
     get("superpw3dots").onmouseover = function (e) {
@@ -260,7 +260,7 @@ function eventSetup() {
         get("superpwmenuhide").style.display = "none";
         get("superpwmenushow").style.display = "block";
     }
-    get("superpw3dots").onmouseleave = function (e) {
+    get("superpw3dots").onmouseout = function (e) {
         menuOff("superpw", e);
     }
     get("superpwmenuhelp").onclick = function (e) {
@@ -278,7 +278,7 @@ function eventSetup() {
         setupdatalist(this, list);
         get("sitename3dots").onmouseover(e);
     }
-    get("sitename").onmouseleave = function () {
+    get("sitename").onmouseout = function () {
         //if (!document.activeElement === get("sitename")) get("sitename3dots").style.visibility = "hidden";
     }
     get("sitename").onkeyup = function () {
@@ -322,7 +322,7 @@ function eventSetup() {
         }
         menuOn("sitename", e);
     }
-    get("sitename3dots").onmouseleave = function (e) {
+    get("sitename3dots").onmouseout = function (e) {
         menuOff("sitename", e);
     }
     get("sitenamemenuforget").onclick = function (e) {
@@ -349,7 +349,7 @@ function eventSetup() {
         setupdatalist(this, list);
         get("siteun3dots").onmouseover(e);
     }
-    get("siteun").onmouseleave = function () {
+    get("siteun").onmouseout = function () {
         //if (!document.activeElement === get("siteun")) get("siteun3dots").style.visibility = "hidden";
     }
     get("siteun").onkeyup = function () {
@@ -389,7 +389,7 @@ function eventSetup() {
         });
         menuOff("siteun", e);
     }
-    get("siteun3dots").onmouseleave = function (e) {
+    get("siteun3dots").onmouseout = function (e) {
         menuOff("siteun", e);
     }
     get("siteunmenuhelp").onclick = function (e) {
@@ -408,7 +408,7 @@ function eventSetup() {
     get("sitepw").onkeyup = function () {
         get("sitepw").onblur();
     }
-    get("sitepw").onmouseleave = function () {
+    get("sitepw").onmouseout = function () {
         //if (!document.activeElement === get("sitepw")) get("sitepw3dots").style.visibility = "hidden";
     }
     get("sitepw3dots").onmouseover = function (e) {
@@ -425,7 +425,7 @@ function eventSetup() {
         menuOn("sitepw", e);
     }
     get("sitepw").onmouseover = get("sitepw3dots").onmouseover;
-    get("sitepw3dots").onmouseleave = function (e) {
+    get("sitepw3dots").onmouseout = function (e) {
         menuOff("sitepw", e);
     }
     get("sitepwmenushow").onclick = function() {
@@ -496,7 +496,7 @@ function eventSetup() {
         database.hidesitepw = get("hidesitepw").checked;
         hidesitepw();
     }
-    get("pwlength").onmouseleave = function () {
+    get("pwlength").onmouseout = function () {
         handleblur("pwlength", "pwlength");
     }
     get("pwlength").onblur = function () {
@@ -518,25 +518,25 @@ function eventSetup() {
     get("allowspecialcheckbox").onclick = function () {
         handleclick("special");
     }
-    get("minlower").onmouseleave = function () {
+    get("minlower").onmouseout = function () {
         handleblur("minlower", "minlower");
     }
     get("minlower").onblur = function () {
         handleblur("minlower", "minlower");
     }
-    get("minupper").onmouseleave = function () {
+    get("minupper").onmouseout = function () {
         handleblur("minupper", "minupper");
     }
     get("minupper").onblur = function () {
         handleblur("minupper", "minupper");
     }
-    get("minnumber").onmouseleave = function () {
+    get("minnumber").onmouseout = function () {
         handleblur("minnumber", "minnumber");
     }
     get("minnumber").onblur = function () {
         handleblur("minnumber", "minnumber");
     }
-    get("minspecial").onmouseleave = function () {
+    get("minspecial").onmouseout = function () {
         handleblur("minspecial", "minspecial");
     }
     get("minspecial").onblur = function () {
