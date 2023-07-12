@@ -216,12 +216,12 @@
   .inner-icon-1 {
     position: absolute;
     right: 0;
-    top: 4px;
+    top: 3px;
   }
   .inner-icon-2 {
     position: absolute;
     right: 2em;
-    top: 4px;
+    top: 3px;
   }
   #sitepwcopy:active {
     color: #aa0;
