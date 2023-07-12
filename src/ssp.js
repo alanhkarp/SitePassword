@@ -462,7 +462,7 @@ function eventSetup() {
             get("sitepw").placeholder = "Enter your site password";
         } else {
             get("sitepw").readOnly = true;
-            get("sitepw").placeholder = "Generated site password";
+            get("sitepw").placeholder = "Your site password";
             ask2generate();
             defaultfocus();
         }
@@ -753,7 +753,7 @@ function fill() {
         get("superpw").focus();
     } else {
         get("sitepw").readOnly = true;
-        get("sitepw").placeholder = "Generated site password";
+        get("sitepw").placeholder = "Your site password";
         defaultfocus();
     }
     get("clearsuperpw").checked = database.clearsuperpw;
