@@ -208,10 +208,16 @@
     flex: none;
     margin: auto 0;
     padding: 4px;
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
     background-color: transparent;
     cursor: pointer;
+  }
+  .menu-icon {
+    position: relative;
+    top: 2px;
+    width: 12pt;
+    height: 12pt;
   }
   .inner-icon-1 {
     position: absolute;

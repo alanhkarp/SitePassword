@@ -168,17 +168,17 @@ function eventSetup() {
     get("title").onclick = function () {
         window.open("https://sitepassword.info");
     }
-    // UI Event handlers
+    // Domain Name
     get("domainname").onkeyup = function () {
         get("sitename").value = "";
     }
     get("domainname").onblur = function (e) {
+        menuOff("domainname", e);
         get("sitename").value = "";
         getsettings(() => {
             fill();
             ask2generate();
         });
-        menuOff("domainname", e);
     }
     get("domainname").onfocus = function (e) {
         let domainname = get("domainname").value;
@@ -217,9 +217,7 @@ function eventSetup() {
     get("domainnamehelptextclose").onclick = function (e) {
         helpItemOff("domainname");
     }
-    get("domainname").onblur = function () {
-        helpItemOff("domainname");
-    }
+    // Super Password
     const $superpw = get("superpw");
     get("superpw").onkeyup = function () {
         bg.superpw = get("superpw").value || "";
@@ -231,27 +229,32 @@ function eventSetup() {
         handleblur("superpw", "superpw");
         changePlaceholder();
     }
-    get("superpw").onfocus = function (e) {
+    get("superpwshowoptions").onclick = function (e) {
         if (get("superpw").value) {
-            get("superpwmenushow").style.color = "black";
-            get("superpwmenuhide").style.color = "black";
+            get("superpwmenushow").style.opacity = "1";
+            get("superpwmenuhide").style.opacity = "1";
         } else {
-            get("superpwmenushow").style.color = "gray";
-            get("superpwmenuhide").style.color = "gray";
+            get("superpwmenushow").style.opacity = "0.5";
+            get("superpwmenuhide").style.opacity = "0.5";
         }
-        menuOn("superpw", e);
+        toggleOptions("superpw");
+        menuOn("superpw", e);      
+    }
+    get("superpwhideoptions").onclick = function (e) {
+        toggleOptions("superpw");
+        menuOff("superpw", e);
     }
     get("superpwmenushow").onclick = function() {
         if (!get("superpw").value) return;
         get("superpw").type = "text";
-        get("superpwmenuhide").style.display = "block";
-        get("superpwmenushow").style.display = "none";
+        get("superpwmenuhide").classList.toggle("nodisplay");
+        get("superpwmenushow").classList.toggle("nodisplay")    ;
     }
     get("superpwmenuhide").onclick = function() {
         if (!get("superpw").value) return;
         get("superpw").type = "password";
-        get("superpwmenuhide").style.display = "none";
-        get("superpwmenushow").style.display = "block";
+        get("superpwmenuhide").classList.toggle("nodisplay");
+        get("superpwmenushow").classList.toggle("nodisplay")    ;
     }
     get("superpwmenuhelp").onclick = function (e) {
         helpItemOn("superpw");
@@ -259,6 +262,7 @@ function eventSetup() {
     get("superpwhelptextclose").onclick = function (e) {
         helpItemOff("superpw");
     }
+    // Site Name
     get("sitename").onmouseover = function (e) {
         let set = new Set();
         Object.keys(database.sites).forEach((sitename) => {
@@ -298,16 +302,20 @@ function eventSetup() {
             changePlaceholder();
         }
         clearDatalist("sitenames");
-        menuOff("sitename", e);
     }
-    get("sitename").onfocus = function (e) {
+    get("sitenameshowoptions").onclick = function (e) {
         let sitename = get("sitename").value;
         if (sitename) {
-            get("sitenamemenuforget").style.color = "black";
+            get("sitenamemenuforget").style.opacity = "1";
         } else {
-            get("sitenamemenuforget").style.color = "gray";
+            get("sitenamemenuforget").style.opacity = "0.5";
         }
+        toggleOptions("sitename");
         menuOn("sitename", e);
+    }
+    get("sitenamehideoptions").onclick = function (e) {
+        toggleOptions("sitename");
+        menuOff("sitename", e);
     }
     get("sitenamemenuforget").onclick = function (e) {
         let toforget = normalize(get("sitename").value);
@@ -324,6 +332,7 @@ function eventSetup() {
     get("sitenamehelptextclose").onclick = function (e) {
         helpItemOff("sitename");
     }
+    // Site Username
     get("siteun").onmouseover = function (e) {
         let set = new Set();
         Object.keys(database.sites).forEach((sitename) => {
@@ -339,18 +348,22 @@ function eventSetup() {
         handleblur("siteun", "username");
         clearDatalist("siteuns");
         changePlaceholder();
-        menuOff("siteun", e);
     }
-    get("siteun").onfocus = function (e) {
+    get("siteunshowoptions").onclick = function (e) {
         let username = get("siteun").value;
         if (username) {
-            get("siteunmenuforget").style.color = "black";
-            get("siteunmenucopy").style.color = "black";
+            get("siteunmenuforget").style.opacity = "1";
+            get("siteunmenucopy").style.opacity = "1";
         } else {
-            get("siteunmenuforget").style.color = "gray";
-            get("siteunmenucopy").style.color = "gray";
+            get("siteunmenuforget").style.opacity = "0.5";
+            get("siteunmenucopy").style.opacity = "0.5";
         }
+        toggleOptions("siteun");
         menuOn("siteun", e);
+    }
+    get("siteunhideoptions").onclick = function (e) {
+        toggleOptions("siteun");
+        menuOff("siteun", e);
     }
     get("siteunmenuforget").onclick = function (e) {
         let toforget = normalize(get("siteun").value);
@@ -370,53 +383,48 @@ function eventSetup() {
         });
         menuOff("siteun", e);
     }
-    get("siteun3dots").onmouseout = function (e) {
-        menuOff("siteun", e);
-    }
     get("siteunmenuhelp").onclick = function (e) {
         helpItemOn("siteun");
     }
     get("siteunhelptextclose").onclick = function (e) {
         helpItemOff("siteun");
     }
+    // Site Password
     get("sitepw").onblur = function (e) {
+        menuOff("sitepw", e);
         if (get("sitepw").readOnly || !get("sitepw").value) return;
         let provided = get("sitepw").value;
         let computed = ask2generate(bg);
         bg.settings.xor = xorStrings(provided, computed);
         get("sitepw").value = provided;
-        menuOff("sitepw", e);
     }
     get("sitepw").onkeyup = function () {
         get("sitepw").onblur();
     }
-    get("sitepw").onmouseout = function () {
-        //if (!document.activeElement === get("sitepw")) get("sitepw3dots").style.visibility = "hidden";
-    }
     get("sitepw").onfocus = function (e) {
         let sitepw = get("sitepw").value;
         if (sitepw) {
-            get("sitepwmenucopy").style.color = "black";
-            get("sitepwmenushow").style.color = "black";
-            get("sitepwmenuhide").style.color = "black";
+            get("sitepwmenucopy").style.opacity = "1";
+            get("sitepwmenushow").style.opacity = "1";
+            get("sitepwmenuhide").style.opacity = "1";
         } else {
-            get("sitepwmenucopy").style.color = "gray";
-            get("sitepwmenushow").style.color = "gray";
-            get("sitepwmenuhide").style.color = "gray";
+            get("sitepwmenucopy").style.opacity = "0.5";
+            get("sitepwmenushow").style.opacity = "0.5";
+            get("sitepwmenuhide").style.opacity = "0.5";
         }
         menuOn("sitepw", e);
     }
     get("sitepwmenushow").onclick = function() {
         if (!get("sitepw").value) return;
         get("sitepw").type = "text";
-        get("sitepwmenuhide").style.display = "block";
-        get("sitepwmenushow").style.display = "none";
+        get("sitepwmenuhide").classList.toggle("nodisplay");
+        get("sitepwmenushow").classList.toggle("nodisplay");
     }
     get("sitepwmenuhide").onclick = function() {
         if (!get("sitepw").value) return;
         get("sitepw").type = "password";
-        get("sitepwmenuhide").style.display = "none";
-        get("sitepwmenushow").style.display = "block";
+        get("sitepwmenuhide").classList.toggle("nodisplay");
+        get("sitepwmenushow").classList.toggle("nodisplay");
     }
     get("sitepwmenucopy").onclick = function(e) {
         let sitepw = get("sitepw").value;
@@ -601,48 +609,42 @@ function eventSetup() {
         msgoff("phishing");
     }
 }
-   // Generic code for menus
-   let menuTimer;
-   function menuOn(which, e) {
-        dotsOn(which);
-        clearTimeout(menuTimer);
-        get(which + "menu").style.opacity = 1.0;
-        get(which + "menu").style.display = "flex";
-   }
-   function menuOff(which, e) {
-       if ( e.type === "mouseenter") return;
-       get(which + "menu").style.opacity = 0.1;
-       menuTimer = setTimeout(() => {
-           get(which + "menu").style.display = "none";
-       }, 250);
-   }
-   function dotsOn(which) {
-       get("domainname3dots").style.display = "none";
-       get("superpw3dots").style.display = "none";
-       get("sitename3dots").style.display = "none";
-       get("siteun3dots").style.display = "none";
-       get("sitepw3dots").style.display = "none";
-       get(which + "3dots").style.display = "block";
-   }
-   function helpItemOn(which) {
-       helpAllOff();
-       get(which + "menu").style.display = "none";
-       get(which + "helptext").style.display = "block";
-       get("instructionpanel").style.display = "none";
-       hidesettings();
-       autoclose = false;
-   }
-   function helpItemOff(which) {
-       get(which + "helptext").style.display = "none";
-       autoclose = true;
-   }
-   function helpAllOff() {
-       helpItemOff("domainname");
-       helpItemOff("superpw");
-       helpItemOff("sitename");
-       helpItemOff("siteun");
-       helpItemOff("sitepw");
-   }
+// Generic code for menus
+let menuTimer;
+function menuOn(which, e) {
+    clearTimeout(menuTimer);
+    get(which + "menu").style.opacity = 1.0;
+    get(which + "menu").style.display = "flex";
+}
+function menuOff(which, e) {
+    if ( e.type === "mouseenter") return;
+    get(which + "menu").style.opacity = 0.1;
+    menuTimer = setTimeout(() => {
+        get(which + "menu").style.display = "none";
+    }, 250);
+}
+function helpItemOn(which) {
+    helpAllOff();
+    get(which + "helptext").style.display = "block";
+    get("instructionpanel").style.display = "none";
+    hidesettings();
+    autoclose = false;
+}
+function helpItemOff(which) {
+    get(which + "helptext").style.display = "none";
+    autoclose = true;
+}
+function helpAllOff() {
+    helpItemOff("domainname");
+    helpItemOff("superpw");
+    helpItemOff("sitename");
+    helpItemOff("siteun");
+    helpItemOff("sitepw");
+}
+function toggleOptions(which) {
+    get(which + "showoptions").classList.toggle("nodisplay");
+    get(which + "hideoptions").classList.toggle("nodisplay");   
+}
 function hidesitepw() {
     if (logging) console.log("popup checking hidesitepw", get("hidesitepw").checked, database.hidesitepw);
     if (get("hidesitepw").checked || database.hidesitepw) {
