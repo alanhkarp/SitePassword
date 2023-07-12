@@ -270,7 +270,7 @@ function eventSetup() {
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
     }
-    get("sitename").onblur = function () {
+    get("sitename").onblur = function (e) {
         let d = isphishing(bg.settings.sitename)
         if (d) {
             let warnElement1 = get("phishingtext1");
@@ -298,7 +298,7 @@ function eventSetup() {
             changePlaceholder();
         }
         clearDatalist("sitenames");
-        menuOff("sitename");
+        menuOff("sitename", e);
     }
     get("sitename").onfocus = function (e) {
         let sitename = get("sitename").value;
@@ -335,11 +335,11 @@ function eventSetup() {
     get("siteun").onkeyup = function () {
         handlekeyup("siteun", "username");
     }
-    get("siteun").onblur = function () {
+    get("siteun").onblur = function (e) {
         handleblur("siteun", "username");
         clearDatalist("siteuns");
         changePlaceholder();
-        menuOff("siteun");
+        menuOff("siteun", e);
     }
     get("siteun").onfocus = function (e) {
         let username = get("siteun").value;
@@ -379,13 +379,13 @@ function eventSetup() {
     get("siteunhelptextclose").onclick = function (e) {
         helpItemOff("siteun");
     }
-    get("sitepw").onblur = function () {
+    get("sitepw").onblur = function (e) {
         if (get("sitepw").readOnly || !get("sitepw").value) return;
         let provided = get("sitepw").value;
         let computed = ask2generate(bg);
         bg.settings.xor = xorStrings(provided, computed);
         get("sitepw").value = provided;
-        menuOff("sitepw");
+        menuOff("sitepw", e);
     }
     get("sitepw").onkeyup = function () {
         get("sitepw").onblur();
@@ -605,9 +605,9 @@ function eventSetup() {
    let menuTimer;
    function menuOn(which, e) {
         dotsOn(which);
-       clearTimeout(menuTimer);
-       get(which + "menu").style.opacity = 1.0;
-       get(which + "menu").style.display = "flex";
+        clearTimeout(menuTimer);
+        get(which + "menu").style.opacity = 1.0;
+        get(which + "menu").style.display = "flex";
    }
    function menuOff(which, e) {
        if ( e.type === "mouseenter") return;

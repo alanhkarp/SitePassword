@@ -49,12 +49,10 @@
   }
  .menu {
     display: flex;
-    top: -43px;
-    left: -50px;
     height: 15px;
     position: relative;
     width: 50px;
-    background-color: white;
+    background-color: transparent;
     color: black;
     border-radius: 6px;
     padding: 8px 0;
