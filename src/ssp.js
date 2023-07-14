@@ -223,6 +223,7 @@ function eventSetup() {
         bg.superpw = get("superpw").value || "";
         ask2generate();
         setSuperpwMeter($superpw.value);
+        handleblur("superpw", "superpw");
     }
     get("superpw").onblur = function () {
         if (logging) console.log("popup superpw onblur");
@@ -677,8 +678,10 @@ function handleblur(element, field) {
     bg.settings.characters = characters(bg.settings, database);
     if (get("sitepw").value && get("sitename").value && get("siteun").value) {
         get("providesitepw").disabled = false;
+        get("providesitepwlabel").style.opacity = 1.0;
     } else {
         get("providesitepw").disabled = true;
+        get("providesitepwlabel").style.opacity = 0.5;
     }
     ask2generate();
 }
@@ -745,11 +748,13 @@ function fill() {
     get("providesitepw").checked = bg.settings.providesitepw;
     if (get("superpw").value && get("sitename").value && get("siteun").value) {
         get("providesitepw").disabled = false;
+        get("providesitepwlabel").style.opacity = 1.0;
     } else {
         get("providesitepw").disabled = true;
+        get("providesitepwlabel").style.opacity = 0.5;
     }
     if (logging) console.log("popup sitename username disabled", get("sitename").value, get("siteun").value, get("providesitepw").disabled);
-    if (get("providesitepw").checked && get("sitename").value && get("siteun").value) {
+    if (get("providesitepw").checked && get("superpw").value && get("sitename").value && get("siteun").value) {
         get("sitepw").readOnly = false;
         get("sitepw").placeholder = "Enter your super password";
         get("superpw").focus();
