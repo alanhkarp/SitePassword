@@ -675,7 +675,7 @@ function handleblur(element, field) {
         bg.settings[field] = get(element).value;
     }
     bg.settings.characters = characters(bg.settings, database);
-    if (get("providesitepw").value && get("sitename").value && get("siteun").value) {
+    if (get("sitepw").value && get("sitename").value && get("siteun").value) {
         get("providesitepw").disabled = false;
     } else {
         get("providesitepw").disabled = true;

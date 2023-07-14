@@ -23,77 +23,105 @@
         <div class="setting-row" 
           id="providesitepwdiv"
           title="You must fill in the SitePassword form before you can provide your own site password.">
-          <input id="providesitepw" 
-                  type="checkbox"
-                  disabled
-                  aria-disabled="true"
-                  title="Check to type your own site password.  You must fill in the SitePassword form first." 
-          />
-          <span class="settings">Provide your own site password.</span> 
+          <label for="providesitepw" class="checkbox-label">
+            <input id="providesitepw" 
+                    class="checkbox-input"
+                    type="checkbox"
+                    disabled
+                    aria-disabled="true"
+                    title="Check to type your own site password.  You must fill in the SitePassword form first." 
+            />
+            <span class="checkbox-custom"></span>
+            <span class="settings">Provide your own site password.</span> 
+          </label>
         </div>
         <div class="setting-row">
-          <input id="clearsuperpw" type="checkbox" />
-          <span class="settings">Clear super password on use</span>
+          <label for="clearsuperpw" class="checkbox-label">
+            <input id="clearsuperpw" type="checkbox" class="checkbox-input"/>
+            <span class="checkbox-custom"></span>
+            <span class="settings">Clear super password on use</span>
+          </label>
         </div>
         <div class="setting-row">
-          <input id="hidesitepw" type="checkbox" />
-          <span class="settings">Hide site password by default</span>
+          <label for="hidesitepw" class="checkbox-label">
+            <input id="hidesitepw" type="checkbox" class="checkbox-input"/>
+            <span class="checkbox-custom"></span>
+            <span class="settings">Hide site password by default</span>
+          </label>
         </div>
         <div id="defaultsettings" class="boxed">
           <div class="setting-row">
             <center>
               <span class="settings">Site password is</span>
-              <input id="pwlength" type="text" value="12" size="2" />
+              <input id="pwlength" type="text" value="12" size="2" font-size=0.8em" />
               <span class="settings">characters long</span>
             </center>
+          </div>          
+          <div class="setting-row">
+            <label for="startwithletter" class="checkbox-label">
+              <input id="startwithletter" type="checkbox" class="checkbox-input" checked="checked" />
+              <span class="checkbox-custom"></span>
+              <span class="settings">Starts with letter</span>
+            </label>
           </div>
           <div class="setting-row">
-            <input id="startwithletter" type="checkbox" checked="checked" />
-            <span class="settings">Starts with letter</span>
+            <label for="allowlowercheckbox" class="checkbox-label">
+              <input id="allowlowercheckbox" type="checkbox" class="checkbox-input" checked="checked"/>
+              <span class="checkbox-custom"></span>
+                <span id="allowlower" class="settings" style="display: none;">Allows lowercase letters</span>
+                  <span id="requirelower" class="settings" style="display: inline;">
+                    Requires at least
+                    <input id="minlower" type="text" value="1" size="2" style="font-size: 0.8em;" />
+                    lowercase letter(s)
+                  </span>
+                </span>
+            </label>
           </div>
           <div class="setting-row">
-            <input id="allowlowercheckbox" type="checkbox" checked="checked" class="checkbox"/>
-            <span id="allowlower" class="settings" style="display: none;">Allows lowercase letters</span>
-            <span id="requirelower" class="settings" style="display: inline;">
-              Requires at least
-              <input id="minlower" type="text" value="1" size="2" />
-              lowercase letter(s)
-            </span>
+            <label for="allowuppercheckbox" class="checkbox-label">
+              <input id="allowuppercheckbox" type="checkbox" class="checkbox-input" checked="checked" />
+              <span class="checkbox-custom"></span>
+              <span id="allowupper" class="settings" style="display: none;">Allows uppercase letters</span>
+              <span id="requireupper" class="settings" style="display: inline;">
+                Requires at least
+                <input id="minupper"" type="text" value="1" size="2" style="font-size: 0.8em;" />
+                uppercase letter(s)
+              </span>
+            </label>
           </div>
           <div class="setting-row">
-            <input id="allowuppercheckbox" type="checkbox" checked="checked" />
-            <span id="allowupper" class="settings" style="display: none;">Allows uppercase letters</span>
-            <span id="requireupper" class="settings" style="display: inline;">
-              Requires at least
-              <input id="minupper"" type="text" value="1" size="2" />
-              uppercase letter(s)
-            </span>
+            <label for="allownumbercheckbox" class="checkbox-label" />
+              <input id="allownumbercheckbox" type="checkbox" class="checkbox-input" checked="checked" />
+              <span class="checkbox-custom"></span>
+              <span id="allownumber" class="settings" style="display: none;">Allows numbers</span>
+              <span id="requirenumber" class="settings" style="display: inline;">
+                Requires at least
+                <input id="minnumber"" type="text" value="1" size="2" style="font-size: 0.8em;" />
+                number(s)
+              </span>
+            </label>
           </div>
           <div class="setting-row">
-            <input id="allownumbercheckbox" type="checkbox" checked="checked" />
-            <span id="allownumber" class="settings" style="display: none;">Allows numbers</span>
-            <span id="requirenumber" class="settings" style="display: inline;">
-              Requires at least
-              <input id="minnumber" type="text" value="1" size="2" />
-              number(s)
-            </span>
-          </div>
-          <div class="setting-row">
-            <input id="allowspecialcheckbox" type="checkbox" />
-            <span id="allowspecial" class="settings" style="display: inline;">Allows special characters</span>
-            <span id="requirespecial" class="settings" style="display: none;">
-              Requires at least
-              <input id="minspecial" type="text" value="1" size="2" />
-              of
-              <input 
-                id="specials" 
-                title="Enter up to 12 special characters"
-                class="fixed" 
-                type="text"
-                style="font-size: .8em;" 
-                value="$/!=@?._-" 
-                size="12" />
-            </span>
+            <label for="allowspecialcheckbox" class="checkbox-label">
+              <input id="allowspecialcheckbox" type="checkbox" class="checkbox-input" />
+              <span class="checkbox-custom"></span>
+              <span id="allowspecial" class="settings" style="display: inline;">
+                Allows special characters
+              </span>
+              <span id="requirespecial" class="settings" style="display: none;">
+                Requires at least
+                <input id="minspecial" type="text" value="1" size="2" style="font-size: 0.8em" />
+                of
+                <input 
+                  id="specials" 
+                  title="Enter up to 12 special characters"
+                  class="fixed" 
+                  type="text"
+                  style="font-size: .8em;" 
+                  value="$/!=@?._-" 
+                  size="12" />
+              </span>
+            </label>
           </div>
           <div class="form-row">
             <button id="makedefault"

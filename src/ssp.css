@@ -87,7 +87,7 @@
   .settings {
     flex: 0 0 auto;
     font-weight: bold;
-    font-size: 10pt;
+    font-size: 9pt;
   }
   .main {
     margin: 1ex;
@@ -182,7 +182,55 @@
     border: 1pt solid #FFF;
   }
   button:enabled:active {
-    background-color: #58B;
+    background-color: red;
+  }
+  .checkbox-label {
+    display: inline-block;
+    position: relative;
+    padding-left: 25px;
+    margin-right: 15px;
+    cursor: pointer;
+  }
+  
+  .checkbox-input {
+    position: absolute;
+    opacity: 0;
+  }
+  
+  .checkbox-custom {
+    position: absolute;
+    top: 1px;
+    left: 4px;
+    height: 12px;
+    width: 12px;
+    background-color: #fff;
+    border: 1px solid #007bff;
+  }
+  
+  .checkbox-custom::after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
+  
+  .checkbox-input:checked ~ .checkbox-custom::after {
+    display: none;
+    left: 7px;
+    top: 3px;
+    width: 6px;
+    height: 12px;
+    border: solid #007bff;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+  }
+  
+  .checkbox-input:checked ~ .checkbox-custom {
+    background-color: rgb(136, 204, 255, 100%);
+  }
+  .checkbox-input:disabled ~ .checkbox-custom {
+    background-color: #ccc;
+    border-color: black;
+    cursor: not-allowed;
   }
   .form-row {
     display: flex;
