@@ -178,7 +178,7 @@ function eventSetup() {
             ask2generate();
         });
     }
-    get("domainnamemenu").onmouseout = function (e) {
+    get("domainnamemenu").onmouseleave = function (e) {
         menuOff("domainname", e);
     }
     get("domainname3bluedots").onclick = function (e) {
@@ -231,7 +231,7 @@ function eventSetup() {
         handleblur("superpw", "superpw");
         changePlaceholder();
     }
-    get("superpwmenu").onmouseout = function (e) {
+    get("superpwmenu").onmouseleave = function (e) {
         menuOff("superpw", e);
     }
     get("superpw3bluedots").onclick = function (e) {
@@ -312,7 +312,7 @@ function eventSetup() {
         }
          menuOn("sitename", e);
     }
-    get("sitenamemenu").onmouseout = function (e) {
+    get("sitenamemenu").onmouseleave = function (e) {
         menuOff("sitename", e);
     }
     get("sitenamemenuforget").onclick = function (e) {
@@ -347,7 +347,7 @@ function eventSetup() {
         clearDatalist("siteuns");
         changePlaceholder();
     }
-    get("siteunmenu").onmouseout = function (e) {
+    get("siteunmenu").onmouseleave = function (e) {
         menuOff("siteun", e);
     }
     get("siteun3bluedots").onclick = function (e) {
@@ -397,7 +397,7 @@ function eventSetup() {
     get("sitepw").onkeyup = function () {
         get("sitepw").onblur();
     }
-    get("sitepwmenu").onmouseout = function (e) {
+    get("sitepwmenu").onmouseleave = function (e) {
         menuOff("sitepw", e);
     }
     get("sitepw3bluedots").onclick = function (e) {
