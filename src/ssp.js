@@ -1013,6 +1013,7 @@ function instructionSetup() {
         } 
     };
     function sectionClick(id) {
+        closeAllInstructions();
         const element = get(id + "div");
         if (element.style.display === "none") {
             element.style.display = "block";
@@ -1022,6 +1023,25 @@ function instructionSetup() {
             element.style.display = "none";
             get("open" + id).style.display = "block";
             get("close" + id).style.display = "none";
+        }
+    }
+    function closeAllInstructions() {
+        get("overviewdiv").style.display = "none";
+        get("basicdiv").style.display = "none";
+        get("superdiv").style.display = "none";
+        get("sitediv").style.display = "none";
+        get("clipboarddiv").style.display = "none";
+        get("acceptablediv").style.display = "none";
+        get("changediv").style.display = "none";
+        get("phishingdiv").style.display = "none";
+        get("downloaddiv").style.display = "none";
+        get("shareddiv").style.display = "none";
+        get("extensiondiv").style.display = "none";
+        if (chrome.bookmarks) {            
+            get("syncdiv").style.display = "none";
+        } else {
+            get("safaridiv").style.display = "none";
+            get("safaridiv").style.display = "none";
         }
     }
 }

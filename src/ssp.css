@@ -298,16 +298,17 @@
   }
   .warning {
     padding : 1ex;
-    border : 4pt solid red;
+    border : 2pt solid red;
+    border-radius: 8px;
     background-color : white;
     width: 92%;
     margin: 10px 0;
-  /*
-    margin: 1ex;
-    padding : 1ex;
-    background-color : #C00;
-    color: #FFF;
-  */  
+  }
+  .warningtext {
+    position: relative;
+    font-size: 12pt;
+    font-weight: bold;
+    top: -9px;
   }
   .nodisplay {
     display: none;
