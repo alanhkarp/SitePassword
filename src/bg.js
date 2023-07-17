@@ -1,6 +1,6 @@
 'use strict';
 import { generate, isSuperPw, normalize,  string2array, array2string, stringXorArray } from "./generate.js";
-const testMode = false;
+const testMode = true;
 const commonSettingsTitle = "CommonSettings";
 let logging = testMode;
 // State I want to keep around that doesn't appear in the file system
