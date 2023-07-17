@@ -434,8 +434,17 @@ function eventSetup() {
     get("sitepwhelptextclose").onclick = function (e) {
         helpItemOff("sitepw");
     }
-    get("settingsshow").onclick = showsettings;
-    get("clearclipboard").onclick = function() {
+    get("sitepwmenushow").onclick = function () {
+        get("sitepw").type = "text";
+        get("sitepwmenushow").classList.toggle("nodisplay");
+        get("sitepwmenuhide").classList.toggle("nodisplay")    ;
+    };
+    get("sitepwmenuhide").onclick = function () {
+        get("sitepw").type = "password";
+        get("sitepwmenushow").classList.toggle("nodisplay");
+        get("sitepwmenuhide").classList.toggle("nodisplay");
+    }
+     get("clearclipboard").onclick = function() {
         if (logging) console.log("popup clear clipboard");
         navigator.clipboard.writeText("");
         chrome.action.setTitle({title: defaultTitle});
