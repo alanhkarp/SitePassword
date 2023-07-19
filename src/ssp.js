@@ -1014,9 +1014,9 @@ function instructionSetup() {
         } 
     };
     function sectionClick(id) {
-        closeAllInstructions();
         const element = get(id + "div");
         if (element.style.display === "none") {
+            closeAllInstructions();
             element.style.display = "block";
             get("open" + id).style.display = "none";
             get("close" + id).style.display = "block";
