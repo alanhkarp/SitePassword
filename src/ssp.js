@@ -190,6 +190,7 @@ function eventSetup() {
         }
         menuOn("domainname", e);
     }
+    get("domainname3bluedots").onclick = get("domainname3bluedots").onmouseover;
     get("domainnamemenuforget").onclick = function (e) {
         forgetDomainname(get("domainname").value);
     }
@@ -244,6 +245,7 @@ function eventSetup() {
         }
         menuOn("superpw", e);      
     }
+    get("superpw3bluedots").onclick = get("superpw3bluedots").onmouseover;
     get("superpwmenushow").onclick = function(e) {
         if (!get("superpw").value) return;
         get("superpw").type = "text";
@@ -312,6 +314,7 @@ function eventSetup() {
         }
          menuOn("sitename", e);
     }
+    get("sitename3bluedots").onclick = get("sitename3bluedots").onmouseover;
     get("sitenamemenu").onmouseleave = function (e) {
         menuOff("sitename", e);
     }
@@ -361,6 +364,7 @@ function eventSetup() {
         }
          menuOn("siteun", e);
     }
+    get("siteun3bluedots").onclick = get("siteun3bluedots").onmouseover;
     get("siteunmenuforget").onclick = function (e) {
         let toforget = normalize(get("siteun").value);
         for (let domain in database.domains) {
@@ -413,6 +417,7 @@ function eventSetup() {
         }
         menuOn("sitepw", e);
     }
+    get("sitepw3bluedots").onclick = get("sitepw3bluedots").onmouseover;
     get("sitepwmenucopy").onclick = function(e) {
         let sitepw = get("sitepw").value;
         navigator.clipboard.writeText(sitepw).then(() => {
