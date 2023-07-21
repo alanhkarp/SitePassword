@@ -431,7 +431,7 @@ async function retrieveMetadata(sendResponse, callback) {
         // starts supporting the bookmarks API, but users haven't
         // updated the browser on all their machines.
         //chrome.storage.sync.clear();
-        parseBkmk(folders[0].id, callback, sendResponse);
+        await parseBkmk(folders[0].id, callback, sendResponse);
     } else if (folders.length === 0) {
         // findpw.js sends the SiteData message twice, once for document.onload
         // and once for window.onload.  The latter can arrive while the bookmark
@@ -470,6 +470,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         cleanbkmks(Object.values(bkmksSafari));
     }
     function cleanbkmks(children) {
+        if (logging) console.log("bg cleaning bookmarks", children);
         let seenTitles = {};
         let newdb = clone(databaseDefault);
         for (let i = 0; i < children.length; i++) {
