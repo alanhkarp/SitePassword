@@ -8,7 +8,6 @@ let sitedataBookmark = "SitePasswordData";
 if (testMode) {
     sitedataBookmark = "SitePasswordDataTest"; //"SitePasswordDataTest";
 }
-var bg = {};
 var superpw = "";
 var activetab;
 const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
@@ -46,6 +45,8 @@ let defaultSettings = {
     minspecial: 1,
     specials: config.specials,
 };
+let bgDefault = {superpw: "", settings: defaultSettings};
+var bg = clone(bgDefault);
 
 let bkmksId;
 let bkmksSafari = {};
@@ -92,7 +93,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (logging) console.log("bg got message request, sender", request, sender);
     // Start with a new database in case something changed while the service worker stayed open
     database = clone(databaseDefault);
-    bg = {};
+    bg = clone(bgDefault);
     retrieveMetadata(sendResponse, () => {
         if (logging) console.log("bg listener back from retrieveMetadata", database);
         try {
@@ -420,7 +421,7 @@ async function persistMetadata(sendResponse) {
 }
 async function retrieveMetadata(sendResponse, callback) {
     database = clone(databaseDefault); // Start with an empty database
-    bg = {}; // and settings
+    bg = clone(bgDefault); // and settings
     if (logging) console.log("bg find SSP bookmark folder");
     let folders = await getRootFolder(sendResponse);
     if (folders.length === 1) {
