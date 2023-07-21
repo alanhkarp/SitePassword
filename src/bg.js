@@ -464,7 +464,7 @@ async function retrieveMetadata(sendResponse, callback) {
 async function parseBkmk(rootFolderId, callback, sendResponse) {
     if (logging) console.log("bg parsing bookmark");
     try {
-        chrome.bookmarks.getChildren(rootFolderId, cleanbkmks);
+        chrome.bookmarks.getChildren(rootFolderId, (children) => {cleanbkmks(children)});
         if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
     } catch {
         cleanbkmks(Object.values(bkmksSafari));
