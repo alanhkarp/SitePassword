@@ -18,7 +18,7 @@
   <noscript>JavaScript must be enabled to use this tool.</noscript>
   <div id="content" class="column">
     <div id="mainpanel" style="display: flex">
-      <div id="settings" class="serif sticky main" style="display: none; flex: auto">
+      <div id="settings" class="serif sticky main" style="display: none; flex: auto; width: 27em">
         <h1>Additional Settings</h1>
         <div class="setting-row" 
           id="providesitepwdiv"
@@ -53,7 +53,7 @@
           <div class="setting-row">
             <center>
               <span class="settings">Site password is</span>
-              <input id="pwlength" type="text" value="12" size="2" style="font-size: 0.8em;" />
+              <input id="pwlength" type="text" value="12" size="2" class="settings-input" />
               <span class="settings">characters long</span>
             </center>
           </div>          
@@ -71,7 +71,7 @@
                 <span id="allowlower" class="settings" style="display: none;">Allows lowercase letters</span>
                   <span id="requirelower" class="settings" style="display: inline;">
                     Requires at least
-                    <input id="minlower" type="text" value="1" size="2" style="font-size: 0.8em;" />
+                    <input id="minlower" type="text" value="1" size="2" class="settings-input" />
                     lowercase letter(s)
                   </span>
                 </span>
@@ -84,7 +84,7 @@
               <span id="allowupper" class="settings" style="display: none;">Allows uppercase letters</span>
               <span id="requireupper" class="settings" style="display: inline;">
                 Requires at least
-                <input id="minupper"" type="text" value="1" size="2" style="font-size: 0.8em;" />
+                <input id="minupper"" type="text" value="1" size="2" class="settings-input"" />
                 uppercase letter(s)
               </span>
             </label>
@@ -96,7 +96,7 @@
               <span id="allownumber" class="settings" style="display: none;">Allows numbers</span>
               <span id="requirenumber" class="settings" style="display: inline;">
                 Requires at least
-                <input id="minnumber"" type="text" value="1" size="2" style="font-size: 0.8em;" />
+                <input id="minnumber"" type="text" value="1" size="2" class="settings-input" />
                 number(s)
               </span>
             </label>
@@ -110,14 +110,14 @@
               </span>
               <span id="requirespecial" class="settings" style="display: none;">
                 Requires at least
-                <input id="minspecial" type="text" value="1" size="2" style="font-size: 0.8em" />
+                <input id="minspecial" type="text" value="1" size="2" class="settings-input" />
                 of
                 <input 
                   id="specials" 
                   title="Enter up to 12 special characters"
                   class="fixed" 
                   type="text"
-                  style="font-size: .8em;" 
+                  class="settings-input" 
                   value="$/!=@?._-" 
                   size="12" />
               </span>

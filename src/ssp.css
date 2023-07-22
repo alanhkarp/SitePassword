@@ -91,7 +91,10 @@
   .settings {
     flex: 0 0 auto;
     font-weight: bold;
-    font-size: 9pt;
+    font-size: 11pt;
+  }
+  .settings-input {
+    font-size: 10pt;
   }
   .main {
     margin: 1ex;
