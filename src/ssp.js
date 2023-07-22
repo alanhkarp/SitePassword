@@ -449,7 +449,8 @@ function eventSetup() {
         get("sitepwmenushow").classList.toggle("nodisplay");
         get("sitepwmenuhide").classList.toggle("nodisplay");
     }
-     get("clearclipboard").onclick = function() {
+    get("settingsshow").onclick = showsettings;
+    get("clearclipboard").onclick = function() {
         if (logging) console.log("popup clear clipboard");
         navigator.clipboard.writeText("");
         chrome.action.setTitle({title: defaultTitle});
