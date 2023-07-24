@@ -993,10 +993,11 @@ function instructionSetup() {
     get("basicinfo").onclick = function () { sectionClick("basic") };
     get("superinfo").onclick = function () { sectionClick("super"); };
     get("siteinfo").onclick = function () { sectionClick("site"); };
-    get("clipboardinfo").onclick = function () { sectionClick("clipboard"); };
     get("acceptableinfo").onclick = function () { sectionClick("acceptable"); };
     get("changeinfo").onclick = function () { sectionClick("change"); };
+    get("clipboardinfo").onclick = function () { sectionClick("clipboard"); };
     get("phishinginfo").onclick = function () { sectionClick("phishing"); };
+    get("extensioninfo").onclick = function () { sectionClick("extension"); };
     get("downloadinfo").onclick = function () { sectionClick("download"); };
     get("sharedinfo").onclick = function () { sectionClick("shared"); };
     get("sourceinfo").onclick = function () { sectionClick("source"); };
@@ -1032,23 +1033,30 @@ function instructionSetup() {
             get("close" + id).style.display = "none";
         }
     }
+    function closeInstructionSection(id) {
+        const element = get(id + "div");
+        element.style.display = "none";
+        get("open" + id).style.display = "block";
+        get("close" + id).style.display = "none";
+    }
     function closeAllInstructions() {
-        get("overviewdiv").style.display = "none";
-        get("basicdiv").style.display = "none";
-        get("superdiv").style.display = "none";
-        get("sitediv").style.display = "none";
-        get("clipboarddiv").style.display = "none";
-        get("acceptablediv").style.display = "none";
-        get("changediv").style.display = "none";
-        get("phishingdiv").style.display = "none";
-        get("downloaddiv").style.display = "none";
-        get("shareddiv").style.display = "none";
-        get("extensiondiv").style.display = "none";
-        if (chrome.bookmarks) {            
-            get("syncdiv").style.display = "none";
+        closeInstructionSection("overview");
+        closeInstructionSection("basic");
+        closeInstructionSection("super");
+        closeInstructionSection("site");
+        closeInstructionSection("clipboard");
+        closeInstructionSection("acceptable");
+        closeInstructionSection("change");
+        closeInstructionSection("phishing");
+        closeInstructionSection("extension");
+        closeInstructionSection("download");
+        closeInstructionSection("shared");
+        closeInstructionSection("source");
+        closeInstructionSection("payment");
+        if (chrome.bookmarks) {  
+            closeInstructionSection("sync");          
         } else {
-            get("safaridiv").style.display = "none";
-            get("safaridiv").style.display = "none";
+            closeInstructionSection("syncSafari");
         }
     }
 }
