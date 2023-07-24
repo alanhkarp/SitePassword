@@ -97,9 +97,7 @@
     font-size: 10pt;
   }
   .main {
-    margin: 1ex;
-    border: 2pt solid #47A;
-    border-radius: 6pt;
+    border: 4pt solid rgb(136, 204, 255, 100%);
     padding: 0 1ex 0.5ex;
     width: 22em;
     background-color: rgb(136, 204, 255, 0%);
