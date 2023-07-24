@@ -1,7 +1,7 @@
 'use strict';
 import { webpage } from "./bg.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = false;
+const testMode = true;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -87,7 +87,6 @@ function setupdatalist(element, list) {
     list.forEach((data) => {
         let option = document.createElement("option");
         option.value = data;
-        option.innerText = data;
         datalist.appendChild(option);
     });
 }
@@ -139,13 +138,13 @@ function eventSetup() {
             return;
         } 
         // window.onblur fires before I even have a chance to see the window, much less focus it
-        if (bg.settings) {
+        if (bg && bg.settings) {
             bg.superpw = get("superpw").value || "";
             bg.settings.sitename = get("sitename").value;
             bg.settings.username = get("siteun").value;
             if (bg.settings.sitename) {
-                database.sites[bg.settings.sitename] = clone(bg.settings);
-                database.domains[bg.settings.domainname] = bg.settings.sitename;
+                database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
+                database.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
             }
             let sitename = get("sitename").value;
             changePlaceholder();
@@ -192,26 +191,9 @@ function eventSetup() {
     }
     get("domainname3bluedots").onclick = get("domainname3bluedots").onmouseover;
     get("domainnamemenuforget").onclick = function (e) {
-        forgetDomainname(get("domainname").value);
-    }
-    function forgetDomainname(toforget) {
-        delete database.domains[toforget];
-        chrome.runtime.sendMessage({"cmd": "rootFolder"}, (rootFolderId) => {
-            chrome.bookmarks.getChildren(rootFolderId, (allchildren) => {
-                for (let i = 0; i < allchildren.length; i++) {
-                    if (allchildren[i].title === toforget) {
-                        chrome.bookmarks.remove(allchildren[i].id, () => {
-                            if (logging) console.log("popup removed bookmark for", toforget);
-                            get("sitename").value = "";
-                            get("siteun").value = "";
-                            getsettings();
-                            chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": " ", "p": " ", "readyForClick": false });
-                        });                       
-                        return;
-                    }
-                }
-            });
-        });
+        msgon("forget");
+        let toforget = normalize(get("domainname").value);
+        addForgetItem(toforget);
     }
     get("domainnamemenuhelp").onclick = function (e) {
         helpItemOn("domainname");
@@ -265,7 +247,7 @@ function eventSetup() {
         helpItemOff("superpw");
     }
     // Site Name
-    get("sitename").onmouseover = function (e) {
+    get("sitename").onfocus = function (e) {
         let set = new Set();
         Object.keys(database.sites).forEach((sitename) => {
             set.add(database.sites[normalize(sitename)].sitename);
@@ -319,13 +301,14 @@ function eventSetup() {
         menuOff("sitename", e);
     }
     get("sitenamemenuforget").onclick = function (e) {
+        msgon("forget");
         let toforget = normalize(get("sitename").value);
+        let $list = get("toforgetlist");
         for (let domain in database.domains) {
             if (normalize(database.domains[domain]) === toforget) {
-                forgetDomainname(domain);
+                addForgetItem(domain);
             }
         }
-        delete database.sites[toforget];
     }
     get("sitenamemenuhelp").onclick = function (e) {
         helpItemOn("sitename");
@@ -334,7 +317,7 @@ function eventSetup() {
         helpItemOff("sitename");
     }
     // Site Username
-    get("siteun").onmouseover = function (e) {
+    get("siteun").onfocus = function (e) {
         let set = new Set();
         Object.keys(database.sites).forEach((sitename) => {
             set.add(database.sites[normalize(sitename)].username);
@@ -366,11 +349,13 @@ function eventSetup() {
     }
     get("siteun3bluedots").onclick = get("siteun3bluedots").onmouseover;
     get("siteunmenuforget").onclick = function (e) {
+        msgon("forget");
         let toforget = normalize(get("siteun").value);
+        let $list = get("toforgetlist");
         for (let domain in database.domains) {
             let sitename = database.domains[domain];
             if (normalize(database.sites[sitename].username) === toforget) {
-                forgetDomainname(domain);
+                addForgetItem(domain);
             }
         }
     }
@@ -610,6 +595,24 @@ function eventSetup() {
         showsettings();
         msgoff("phishing");
     }
+    get("forgetbutton").onclick = function () {
+        let children = get("toforgetlist").children;
+        for (let child of children) {
+            forgetDomainname(child.innerText);
+        }
+        get("cancelbutton").click();
+    }
+    get("cancelbutton").onclick = function () {
+        while ( get("toforgetlist").firstChild ) {
+            get("toforgetlist").removeChild(get("toforgetlist").firstChild);
+        }
+        msgoff("forget");
+        resizeMain();
+    }
+}
+function endForget() {
+    msgoff("forget");
+    resizeMain();
 }
 // Generic code for menus
 function menuOn(which, e) {
@@ -816,7 +819,6 @@ function pwoptions(options) {
 }
 function sitedataHTML() {
     var domainnames = database.domains
-    var sitenames = database.sites;
     var sorted = Object.keys(domainnames).sort(function (x, y) {
         if (x.toLowerCase() < y.toLowerCase()) return -1;
         if (x.toLowerCase() == y.toLowerCase()) return 0;
@@ -910,6 +912,31 @@ function isphishing(sitename) {
     });
     return phishing;
 }
+function addForgetItem(domainname) {
+    let $list = get("toforgetlist");
+    let $item = document.createElement("li");
+    $item.innerText = domainname;
+    $list.appendChild($item);
+}
+function forgetDomainname(toforget) {
+    delete database.domains[toforget];
+    chrome.runtime.sendMessage({"cmd": "rootFolder"}, (rootFolderId) => {
+        chrome.bookmarks.getChildren(rootFolderId, (allchildren) => {
+            for (let i = 0; i < allchildren.length; i++) {
+                if (allchildren[i].title === toforget) {
+                    chrome.bookmarks.remove(allchildren[i].id, () => {
+                        if (logging) console.log("popup removed bookmark for", toforget);
+                        get("sitename").value = "";
+                        get("siteun").value = "";
+                        getsettings();
+                        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": " ", "p": " ", "readyForClick": false });
+                    });                       
+                    return;
+                }
+            }
+        });
+    });
+}
 function specialclick() {
     var minspecial = get("minspecial");
     var specials = get("specials");
@@ -937,6 +964,7 @@ function clone(object) {
 }
 // Messages in priority order high to low
 var messages = [
+    { name: "forget", ison: false, transient: false },
     { name: "phishing", ison: false, transient: false },
     { name: "nopw", ison: false, transient: false },
     { name: "http", ison: false, transient: false },

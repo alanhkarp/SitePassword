@@ -754,7 +754,7 @@
             </p> 
             <ol>
               <li>You never provided your settings for this domain name.</li>
-              <ol>
+              <ul>
                 <li>This is the first time you've used SitePassword for this account.</li>
                 <li>This is a different domain name for logging into the same account.</li>
                 <li>You are at a fake site that is trying to steal your password.</li>
@@ -820,7 +820,7 @@
           <div id="domainnamemenu" class="nodisplay menu inner-icon-1">
             <div 
               id="domainnamemenuforget"
-              title="Forget all settings for this domain name.">
+              title="Click to enable forgetting the settings associated with this domain name.">
               <img src="forget.png" class="icon menu-icon">
             </div>
             <div
@@ -896,7 +896,7 @@
           <div id="sitenamemenu" class="nodisplay menu inner-icon-1">
             <div 
               id="sitenamemenuforget"
-              title="Forget all settings that use this nickname.">
+              title="Click to enable forgetting all domain names associated with this nickname.">
               <img src="forget.png" class="icon menu-icon">
             </div>
             <div
@@ -930,7 +930,7 @@
             <div 
               id="siteunmenuforget"
               display="block"
-              title="For get all settings that use this user ID.">
+              title="Click to enable forgetting all domain names associated with this userid.">
               <img src="forget.png" class="icon menu-icon">
             </div>
             <div
@@ -990,6 +990,38 @@
           </div> 
         </div>
         <div class="form-row">
+          <div id="forget" class="warning nodisplay" title="Click the Forget button to delete the settings for the listed domain names.">
+            <span id="forgettext">
+                <img src="warning.png" class="icon warning-icon" style="visibility: hidden">
+              <center>
+                <span class="warningtext">Forget Enabled</span>
+              </center>
+              <p>
+                Click the <b>Forget</b> button to delete the settings for the listed domain names.
+                Click <b>Cancel</b> if you changed your mind.
+              </p>
+              <div>
+                <button
+                  id="forgetbutton"
+                  type="button"
+                  style="background-color: #ff0000; color:white; width:100%"
+                  title="Click to delete the settings for the listed domain names.">
+                  <b>Forget</b>
+                </button>
+                <button
+                  id="cancelbutton"
+                  type="button"
+                  style="background-color: #00ff00; color: black; width:100%"
+                  title="Click to cancel forgetting the settings for the listed domain names.">
+                  <b>Cancel</b>
+                </button>
+                <p>
+                  Domain names to forget:
+                </p>
+                <ul id="toforgetlist"></ul>
+              </div>
+            </span>
+          </div>
           <div id="nopw" class="warning nodisplay" title="You may need to enable some characters, increase the pasword length, or reduce the number of special characters you're asking for.">
             <span id="nopwtext">
               <img src="warning.png" class="icon warning-icon"> 
