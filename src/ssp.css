@@ -102,6 +102,11 @@
     width: 22em;
     background-color: rgb(136, 204, 255, 0%);
   }
+  .side-panel {
+    margin-right: 2px;
+    flex: auto; 
+    width: 27em; 
+  }
   .sticky {
     top: 0;
     position: -webkit-sticky;
@@ -250,9 +255,8 @@
     height: 16px;
   }
   .boxed {
-    border: 3px solid #47A;
+    border: 3px solid rgb(136, 204, 255, 100%);
     border-radius: 8px;
-    margin: 2px;
   }
   .setting-row {
     margin: 1.2ex 0;
