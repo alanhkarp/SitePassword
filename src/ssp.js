@@ -1,7 +1,7 @@
 'use strict';
 import { webpage } from "./bg.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = true;
+const testMode = false;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -194,6 +194,7 @@ function eventSetup() {
         msgon("forget");
         let toforget = normalize(get("domainname").value);
         addForgetItem(toforget);
+        resizeMain();
     }
     get("domainnamemenuhelp").onclick = function (e) {
         helpItemOn("domainname");
@@ -609,10 +610,6 @@ function eventSetup() {
         msgoff("forget");
         resizeMain();
     }
-}
-function endForget() {
-    msgoff("forget");
-    resizeMain();
 }
 // Generic code for menus
 function menuOn(which, e) {
