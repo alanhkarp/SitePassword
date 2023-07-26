@@ -1016,8 +1016,8 @@ function clearallmessages() {
 function instructionSetup() {
     get("overviewinfo").onclick = function () { sectionClick("overview"); };
     get("basicinfo").onclick = function () { sectionClick("basic") };
-    get("superinfo").onclick = function () { sectionClick("super"); };
-    get("siteinfo").onclick = function () { sectionClick("site"); };
+    get("superpwinfo").onclick = function () { sectionClick("superpw"); };
+    get("sitenameinfo").onclick = function () { sectionClick("sitename"); };
     get("acceptableinfo").onclick = function () { sectionClick("acceptable"); };
     get("changeinfo").onclick = function () { sectionClick("change"); };
     get("clipboardinfo").onclick = function () { sectionClick("clipboard"); };
@@ -1067,8 +1067,8 @@ function instructionSetup() {
     function closeAllInstructions() {
         closeInstructionSection("overview");
         closeInstructionSection("basic");
-        closeInstructionSection("super");
-        closeInstructionSection("site");
+        closeInstructionSection("superpw");
+        closeInstructionSection("sitename");
         closeInstructionSection("clipboard");
         closeInstructionSection("acceptable");
         closeInstructionSection("change");
