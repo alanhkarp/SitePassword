@@ -242,7 +242,11 @@ function eventSetup() {
         get("superpwmenushow").classList.toggle("nodisplay")    ;
     }
     get("superpwmenuhelp").onclick = function (e) {
-        helpItemOn("superpw");
+        //helpItemOn("superpw");
+        helpAllOff();
+        hidesettings();
+        get("instructionpanel").style.display = "block";
+        get("superpwdiv").click();
     }
     get("superpwhelptextclose").onclick = function (e) {
         helpItemOff("superpw");
