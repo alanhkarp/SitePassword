@@ -242,14 +242,14 @@ function eventSetup() {
         get("superpwmenushow").classList.toggle("nodisplay")    ;
     }
     get("superpwmenuhelp").onclick = function (e) {
-        //helpItemOn("superpw");
-        helpAllOff();
-        hidesettings();
-        get("instructionpanel").style.display = "block";
-        get("superpwdiv").click();
+        helpItemOn("superpw");
     }
     get("superpwhelptextclose").onclick = function (e) {
         helpItemOff("superpw");
+    }
+    get("superpwhelptextmore").onclick = function (e) {
+        helpItemOff("superpw");
+        sectionClick("superpw");
     }
     // Site Name
     get("sitename").onfocus = function (e) {
@@ -1049,44 +1049,45 @@ function instructionSetup() {
             sectionClick("extensionSafari");
         } 
     };
-    function sectionClick(id) {
-        const element = get(id + "div");
-        if (element.style.display === "none") {
-            closeAllInstructions();
-            element.style.display = "block";
-            get("open" + id).style.display = "none";
-            get("close" + id).style.display = "block";
-        } else {
-            element.style.display = "none";
-            get("open" + id).style.display = "block";
-            get("close" + id).style.display = "none";
-        }
-    }
-    function closeInstructionSection(id) {
-        const element = get(id + "div");
+}
+function sectionClick(which) {
+    const element = get(which + "div");
+    if (element.style.display === "none") {
+        closeAllInstructions();
+        get("instructionpanel").style.display = "block";
+        element.style.display = "block";
+        get("open" + which).style.display = "none";
+        get("close" + which).style.display = "block";
+    } else {
         element.style.display = "none";
-        get("open" + id).style.display = "block";
-        get("close" + id).style.display = "none";
+        get("open" + which).style.display = "block";
+        get("close" + which).style.display = "none";
     }
-    function closeAllInstructions() {
-        closeInstructionSection("overview");
-        closeInstructionSection("basic");
-        closeInstructionSection("superpw");
-        closeInstructionSection("sitename");
-        closeInstructionSection("clipboard");
-        closeInstructionSection("acceptable");
-        closeInstructionSection("change");
-        closeInstructionSection("phishing");
-        closeInstructionSection("extension");
-        closeInstructionSection("download");
-        closeInstructionSection("shared");
-        closeInstructionSection("source");
-        closeInstructionSection("payment");
-        if (chrome.bookmarks) {  
-            closeInstructionSection("sync");          
-        } else {
-            closeInstructionSection("syncSafari");
-        }
+}
+function closeInstructionSection(which) {
+    const element = get(which + "div");
+    element.style.display = "none";
+    get("open" + which).style.display = "block";
+    get("close" + which).style.display = "none";
+}
+function closeAllInstructions() {
+    closeInstructionSection("overview");
+    closeInstructionSection("basic");
+    closeInstructionSection("superpw");
+    closeInstructionSection("sitename");
+    closeInstructionSection("clipboard");
+    closeInstructionSection("acceptable");
+    closeInstructionSection("change");
+    closeInstructionSection("phishing");
+    closeInstructionSection("extension");
+    closeInstructionSection("download");
+    closeInstructionSection("shared");
+    closeInstructionSection("source");
+    closeInstructionSection("payment");
+    if (chrome.bookmarks) {  
+        closeInstructionSection("sync");          
+    } else {
+        closeInstructionSection("syncSafari");
     }
 }
 /* 
