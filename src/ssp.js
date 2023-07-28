@@ -202,6 +202,10 @@ function eventSetup() {
     get("domainnamehelptextclose").onclick = function (e) {
         helpItemOff("domainname");
     }
+    get("domainnamehelptextmore").onclick = function (e) {
+        helpItemOff("domainname");
+        sectionClick("domainname");
+    }
     // Super Password
     const $superpw = get("superpw");
     get("superpw").onkeyup = function (e) {
@@ -321,6 +325,10 @@ function eventSetup() {
     get("sitenamehelptextclose").onclick = function (e) {
         helpItemOff("sitename");
     }
+    get("sitenamehelptextmore").onclick = function (e) {
+        helpItemOff("sitename");
+        sectionClick("sitename");
+    }
     // Site Username
     get("siteun").onfocus = function (e) {
         let set = new Set();
@@ -379,6 +387,10 @@ function eventSetup() {
     get("siteunhelptextclose").onclick = function (e) {
         helpItemOff("siteun");
     }
+    get("siteunhelptextmore").onclick = function (e) {
+        helpItemOff("siteun");
+        sectionClick("siteun");
+    }
     // Site Password
     get("sitepw").onblur = function (e) {
         menuOff("sitepw", e);
@@ -428,6 +440,10 @@ function eventSetup() {
     }
     get("sitepwhelptextclose").onclick = function (e) {
         helpItemOff("sitepw");
+    }
+    get("sitepwhelptextmore").onclick = function (e) {
+        helpItemOff("sitepw");
+        sectionClick("sitepw");
     }
     get("sitepwmenushow").onclick = function () {
         get("sitepw").type = "text";
@@ -613,6 +629,10 @@ function eventSetup() {
         }
         msgoff("forget");
         resizeMain();
+    }
+    get("sharedref").onclick = function (e) {
+        e.stopPropagation();
+        sectionClick("shared");
     }
 }
 // Generic code for menus
@@ -1020,8 +1040,11 @@ function clearallmessages() {
 function instructionSetup() {
     get("overviewinfo").onclick = function () { sectionClick("overview"); };
     get("basicinfo").onclick = function () { sectionClick("basic") };
+    get("domainnameinfo").onclick = function () { sectionClick("domainname"); };
     get("superpwinfo").onclick = function () { sectionClick("superpw"); };
     get("sitenameinfo").onclick = function () { sectionClick("sitename"); };
+    get("siteuninfo").onclick = function () { sectionClick("siteun"); };
+    get("sitepwinfo").onclick = function () { sectionClick("sitepw"); };
     get("acceptableinfo").onclick = function () { sectionClick("acceptable"); };
     get("changeinfo").onclick = function () { sectionClick("change"); };
     get("clipboardinfo").onclick = function () { sectionClick("clipboard"); };
@@ -1073,8 +1096,11 @@ function closeInstructionSection(which) {
 function closeAllInstructions() {
     closeInstructionSection("overview");
     closeInstructionSection("basic");
+    closeInstructionSection("domainname");
     closeInstructionSection("superpw");
     closeInstructionSection("sitename");
+    closeInstructionSection("siteun");
+    closeInstructionSection("sitepw");
     closeInstructionSection("clipboard");
     closeInstructionSection("acceptable");
     closeInstructionSection("change");
