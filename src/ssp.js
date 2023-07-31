@@ -202,6 +202,10 @@ function eventSetup() {
     get("domainnamehelptextclose").onclick = function (e) {
         helpItemOff("domainname");
     }
+    get("domainnamehelptextmore").onclick = function (e) {
+        helpItemOff("domainname");
+        sectionClick("domainname");
+    }
     // Super Password
     const $superpw = get("superpw");
     get("superpw").onkeyup = function (e) {
@@ -246,6 +250,10 @@ function eventSetup() {
     }
     get("superpwhelptextclose").onclick = function (e) {
         helpItemOff("superpw");
+    }
+    get("superpwhelptextmore").onclick = function (e) {
+        helpItemOff("superpw");
+        sectionClick("superpw");
     }
     // Site Name
     get("sitename").onfocus = function (e) {
@@ -317,6 +325,10 @@ function eventSetup() {
     get("sitenamehelptextclose").onclick = function (e) {
         helpItemOff("sitename");
     }
+    get("sitenamehelptextmore").onclick = function (e) {
+        helpItemOff("sitename");
+        sectionClick("sitename");
+    }
     // Site Username
     get("siteun").onfocus = function (e) {
         let set = new Set();
@@ -375,6 +387,10 @@ function eventSetup() {
     get("siteunhelptextclose").onclick = function (e) {
         helpItemOff("siteun");
     }
+    get("siteunhelptextmore").onclick = function (e) {
+        helpItemOff("siteun");
+        sectionClick("siteun");
+    }
     // Site Password
     get("sitepw").onblur = function (e) {
         menuOff("sitepw", e);
@@ -424,6 +440,10 @@ function eventSetup() {
     }
     get("sitepwhelptextclose").onclick = function (e) {
         helpItemOff("sitepw");
+    }
+    get("sitepwhelptextmore").onclick = function (e) {
+        helpItemOff("sitepw");
+        sectionClick("sitepw");
     }
     get("sitepwmenushow").onclick = function () {
         get("sitepw").type = "text";
@@ -609,6 +629,10 @@ function eventSetup() {
         }
         msgoff("forget");
         resizeMain();
+    }
+    get("sharedref").onclick = function (e) {
+        e.stopPropagation();
+        sectionClick("shared");
     }
 }
 // Generic code for menus
@@ -1016,8 +1040,11 @@ function clearallmessages() {
 function instructionSetup() {
     get("overviewinfo").onclick = function () { sectionClick("overview"); };
     get("basicinfo").onclick = function () { sectionClick("basic") };
+    get("domainnameinfo").onclick = function () { sectionClick("domainname"); };
     get("superpwinfo").onclick = function () { sectionClick("superpw"); };
     get("sitenameinfo").onclick = function () { sectionClick("sitename"); };
+    get("siteuninfo").onclick = function () { sectionClick("siteun"); };
+    get("sitepwinfo").onclick = function () { sectionClick("sitepw"); };
     get("acceptableinfo").onclick = function () { sectionClick("acceptable"); };
     get("changeinfo").onclick = function () { sectionClick("change"); };
     get("clipboardinfo").onclick = function () { sectionClick("clipboard"); };
@@ -1045,44 +1072,48 @@ function instructionSetup() {
             sectionClick("extensionSafari");
         } 
     };
-    function sectionClick(id) {
-        const element = get(id + "div");
-        if (element.style.display === "none") {
-            closeAllInstructions();
-            element.style.display = "block";
-            get("open" + id).style.display = "none";
-            get("close" + id).style.display = "block";
-        } else {
-            element.style.display = "none";
-            get("open" + id).style.display = "block";
-            get("close" + id).style.display = "none";
-        }
-    }
-    function closeInstructionSection(id) {
-        const element = get(id + "div");
+}
+function sectionClick(which) {
+    const element = get(which + "div");
+    if (element.style.display === "none") {
+        closeAllInstructions();
+        get("instructionpanel").style.display = "block";
+        element.style.display = "block";
+        get("open" + which).style.display = "none";
+        get("close" + which).style.display = "block";
+    } else {
         element.style.display = "none";
-        get("open" + id).style.display = "block";
-        get("close" + id).style.display = "none";
+        get("open" + which).style.display = "block";
+        get("close" + which).style.display = "none";
     }
-    function closeAllInstructions() {
-        closeInstructionSection("overview");
-        closeInstructionSection("basic");
-        closeInstructionSection("superpw");
-        closeInstructionSection("sitename");
-        closeInstructionSection("clipboard");
-        closeInstructionSection("acceptable");
-        closeInstructionSection("change");
-        closeInstructionSection("phishing");
-        closeInstructionSection("extension");
-        closeInstructionSection("download");
-        closeInstructionSection("shared");
-        closeInstructionSection("source");
-        closeInstructionSection("payment");
-        if (chrome.bookmarks) {  
-            closeInstructionSection("sync");          
-        } else {
-            closeInstructionSection("syncSafari");
-        }
+}
+function closeInstructionSection(which) {
+    const element = get(which + "div");
+    element.style.display = "none";
+    get("open" + which).style.display = "block";
+    get("close" + which).style.display = "none";
+}
+function closeAllInstructions() {
+    closeInstructionSection("overview");
+    closeInstructionSection("basic");
+    closeInstructionSection("domainname");
+    closeInstructionSection("superpw");
+    closeInstructionSection("sitename");
+    closeInstructionSection("siteun");
+    closeInstructionSection("sitepw");
+    closeInstructionSection("clipboard");
+    closeInstructionSection("acceptable");
+    closeInstructionSection("change");
+    closeInstructionSection("phishing");
+    closeInstructionSection("extension");
+    closeInstructionSection("download");
+    closeInstructionSection("shared");
+    closeInstructionSection("source");
+    closeInstructionSection("payment");
+    if (chrome.bookmarks) {  
+        closeInstructionSection("sync");          
+    } else {
+        closeInstructionSection("syncSafari");
     }
 }
 /* 
