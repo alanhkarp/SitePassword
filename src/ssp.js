@@ -48,6 +48,7 @@ window.onload = function () {
     console.log("popup baseHeight", baseHeight, "settingsHeight", settingsHeight);
     get("settings").style.height = settingsHeight + "px";
     get("settings").style.display = "none";
+    get("main").style = "border-left: none";
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         activetab = tabs[0];
         if (logging) console.log("popup tab", activetab);
@@ -577,13 +578,15 @@ function eventSetup() {
     get("maininfo").onclick = function () {
         let $instructions = get("instructionpanel");
         if ($instructions.style.display == "none") {
-            $instructions.style = "display:block";
+            showInstructions();
             hidesettings();
             helpAllOff();
             resizeMain();
             autoclose = false;
+            get("main").style = "border-left: none";
         } else {
-            $instructions.style = "display:none";
+            hideInstructions();
+            get("main").style = "border-left: 1px solid black";
             resizeMain();
             autoclose = true;
         }
@@ -662,11 +665,13 @@ function dotsAllOn() {
 function helpItemOn(which) {
     helpAllOff();
     get(which + "helptext").style.display = "block";
-    get("instructionpanel").style.display = "none";
+    hideInstructions();
     hidesettings();
+    get("main").style = "border-left: 1px solid black";
     autoclose = false;
 }
 function helpItemOff(which) {
+    get("main").style = "border-left: 1px solid black";
     get(which + "helptext").style.display = "none";
     autoclose = true;
 }
@@ -684,6 +689,14 @@ function hidesitepw() {
     } else {
         get("sitepw").type = "text";
     }
+}
+function showInstructions() {
+    get("instructionpanel").style.display = "block";
+    get("main").style = "border-left: none";
+}
+function hideInstructions() {
+    get("instructionpanel").style.display = "none";
+    get("main").style = "border-left: 1px solid black";
 }
 function setSuperpwMeter(pw) {
     const $superpw = get("superpw");
@@ -811,16 +824,18 @@ function showsettings() {
     get("settingssave").style.display = "inline";
     get("settings").style.display = "block";
     helpAllOff();
-    get("instructionpanel").style.display = "none";
+    hideInstructions();
     resizeMain();
     get("superpw").value = bg.superpw || "";
     fill();
     pwoptions(["lower", "upper", "number", "special"]);
+    get("main").style = "border-left: 1px solid black";
 }
 function hidesettings() {
     get("settingsshow").style.display = "inline";
     get("settingssave").style.display = "none";
     get("settings").style.display = "none";
+    get("main").style = "border-left: none";
     resizeMain();
 }
 function pwoptions(options) {
@@ -1077,7 +1092,7 @@ function sectionClick(which) {
     const element = get(which + "div");
     if (element.style.display === "none") {
         closeAllInstructions();
-        get("instructionpanel").style.display = "block";
+        showInstructions();
         element.style.display = "block";
         get("open" + which).style.display = "none";
         get("close" + which).style.display = "block";
