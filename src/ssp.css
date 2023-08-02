@@ -1,351 +1,354 @@
+body {
+  font-family: 'Roboto', sans-serif;
+}
 .serif {
-  /*
-    font-family: "New York", Cambria, "Lucida Serif", Lucida, serif;
-  */
-    font-family: serif;
-  }
-  .sans {
-  /*
-    font-family: "Helvetica Neue", Calibri, "Lucida Sans Unicode", sans-serif;
-  */
-    font-family: sans-serif;
-  }
-  .fixed {
-  /*
-    font-family: Menlo, Consolas, "Lucida Console", monospace;
-  */
-    font-family: monospace;
-  }
-  .pw {
-    color: white;
-    background-color: #cc0000;
-    font-size: 12pt;   
-  }
-  .pwdiv {
-    position: relative;
-    top: 5pt;
-    width: 35pt;
-  }  
-  .column {
-    flex: 1;
-  }
-  .logo {
-    height: 25px;
-    width: 25px;
-    position: relative;
-    top: 10px;
-  }
-  .phishing {
-    font-family: monospace; 
-    font-size: 10pt;
-    width: 20pt;
-    word-wrap: break-word;
-  }
-  .dots {
-    position: relative;
-    left: 14px;
-    top: 9px;
-    width: 6px;
-    height: 14px;
-    z-index: 1;
-    visibility: visible;
-    opacity: 0.7;
-  }
- .menu {
-    display: flex;
-    height: 15px;
-    position: relative;
-    width: 50px;
-    background-color: transparent;
-    color: black;
-    border-radius: 6px;
-    padding: 8px 0;
-    z-index: 1;
-  }
-  .helptext {
-    width: 250px; 
-    display: none; 
-    flex: 0 0 auto;
-  }
-  #root {
-    width: auto;
-    display: block;
-    margin: 0;
-    transition: opacity 2s;
-  }
-  #content {
-    display: flex;
-    flex-flow: row wrap;
-  }
-  #mainpanel {
-    flex: 0 0 auto;
-  }
-  #instructionpanel {
-    flex: 0 0 auto;
-    padding-left: 1em;
-    border-right: 1px solid black;
-    margin-right: -1px;
-  }
-  #instructionpaneltext {
-    padding-left: 1em;
-    width: 500px;
-  }
-  .settings {
-    flex: 0 0 auto;
-    font-weight: bold;
-    font-size: 11pt;
-  }
-  .settings-input {
-    font-size: 10pt;
-  }
-  .main {
-    padding: 1ex 2ex 1.5ex;
-    width: 22em;
-    background-color: rgb(136, 204, 255, 0%);
-  }
-  .side-panel {
-    margin-right: 2px;
-    flex: auto; 
-    width: 27em; 
-  }
-  .sticky {
-    top: 0;
-    position: -webkit-sticky;
-    position: sticky;
-  }
-  #bookmarks {
-    cursor: default;
-  }
-  #sections {
-    margin: 1ex 0;
-    width: 22em;
-  }
-  #superpw {
-    padding-right: 3em;
-  }
-  #resetbutton {
-  /*
-    background-color: #060;
-  */
-    background-color: #FF0;
-    color: #000;
-  }
-  #trustbutton {
-    background-color: #0C0;
-  /*
-    color: #000;
-  */
-  }
-  #sitepw {
-    padding-right: 5em;
-  }
-  #pwfail {
-    display: none;
-  }
-  #failedpw {
-    flex: auto;
-    border: 0;
-    border-radius: 4pt;
-    margin: 6px 0;
-    padding: 6px;
-    background-color : #C00;
-    color: #FFF;
-    font-size: 10pt;
-    height: 16px;
-    overflow: clip;
-  }
-  .sr-only {
-    border: 2px;
-    position: absolute;
-    left: 10px;
-    top: 2px;
-    background-color: white;
-    overflow: hidden !important;
-    color: rgb(36, 104, 155, 100%);
-    padding-left: 5px;
-    padding-right: 5px;
-  }
-  h1, h4 {
-    margin: 1ex;
-    text-align: center;
-  }
-  p {
-    margin: 1ex;
-  }
-  button {
-    flex: 1;
-    margin: 1ex 0ex;
-    border-radius: 6pt;
-    padding: 6px 6px;
-  }
-  button:disabled {
-    border: 1pt solid #666;
-    color: black;
-    background-color: rgb(136, 204, 255, 20%);
-    cursor: defaut;
-  }
-  button:enabled {
-    border: 1pt solid #000;
-    color: black;
-    background-color: rgb(136, 204, 255, 50%);
-    cursor: pointer;
-  }
-  button:enabled:hover {
-    border: 2pt solid black;
-    padding: 4.5px 4.5px;
-  }
-  button:enabled:active {
-    background-color: rgb(136, 204, 255, 100%);
-  }
-  .checkbox-label {
-    display: inline-block;
-    position: relative;
-    padding-left: 25px;
-    margin-right: 15px;
-    cursor: pointer;
-  }
-  
-  .checkbox-input {
-    position: absolute;
-    opacity: 0;
-  }
-  
-  .checkbox-custom {
-    position: absolute;
-    top: 1px;
-    left: 4px;
-    height: 12px;
-    width: 12px;
-    background-color: #fff;
-    border: 1px solid #007bff;
-  }
-  
-  .checkbox-custom::after {
-    content: "";
-    position: absolute;
-    display: none;
-  }
-  
-  .checkbox-input:checked ~ .checkbox-custom::after {
-    display: none;
-    left: 7px;
-    top: 3px;
-    width: 6px;
-    height: 12px;
-    border: solid #007bff;
-    border-width: 0 3px 3px 0;
-    transform: rotate(45deg);
-  }
-  
-  .checkbox-input:checked ~ .checkbox-custom {
-    background-color: rgb(136, 204, 255, 100%);
-  }
-  .checkbox-input:disabled ~ .checkbox-custom {
-    background-color: #ccc;
-    border-color: black;
-    cursor: not-allowed;
-  }
-  .form-row {
-    display: flex;
-    position: relative;
-  }
-  .form-row input {
-    flex: auto;
-    border: rgb(136, 204, 255) solid 1px;
-    border-radius: 4pt;
-    margin: 10px 0;
-    padding: 6px;
-    height: 16px;
-  }
-  .boxed {
-    border: 3px solid rgb(136, 204, 255, 100%);
-    border-radius: 8px;
-  }
-  .setting-row {
-    margin: 1.2ex 0;
-    height: 1.5em;
-  }
-  .icon {
-    flex: none;
-    margin: auto 0;
-    padding: 4px;
-    width: 24px;
-    height: 24px;
-    background-color: transparent;
-    cursor: pointer;
-  }
-  .menu-icon {
-    position: relative;
-    top: 2px;
-    width: 12pt;
-    height: 12pt;
-    background-color: white;
-  }
-  .inner-icon-1 {
-    position: absolute;
-    right: 0;
-    top: 3px;
-  }
-  .inner-icon-2 {
-    position: absolute;
-    right: 2em;
-    top: 3px;
-  }
-  #sitepwcopy:active {
-    color: #aa0;
-  }
-  #useridcopy:active {
-    color: #aa0;
-  }
-  #clearclipboard:active {
-    color: #aa0;
-  }
-  .accordian {
-    float: left;
-    padding-right: 1ex;
-    cursor: pointer;
-  }
-  .bad-input {
-    border: 2px solid #F00 !important;
-    padding: 4px !important;
-    color: #C00 !important;
-  }
-  .warning {
-    padding : 1ex;
-    border : 2pt solid red;
-    border-radius: 8px;
-    background-color : white;
-    width: 92%;
-    margin: 10px 0;
-  }
-  .warningtext {
-    position: relative;
-    font-size: 12pt;
-    font-weight: bold;
-    top: -9px;
-  }
-  .nodisplay {
-    display: none;
-  }
-  #meter {
-    /* Reset the default appearance */
-    -webkit-appearance: none;
-       -moz-appearance: none;
-            appearance: none;
-  
-    margin: 0 auto 1em;
-    width: 100%;
-    height: 0.5em;
-  
-    /* Applicable only to Firefox */
-    background: none;
-    background-color: rgba(0, 0, 0, 0.1);
-  }
-  meter::-webkit-meter-bar {
-    background: none;
-    background-color: rgba(0, 0, 0, 0.1);
-  }
-  /*  const strengthColor = { 0: "black", 1: "red", 2: "yellow", 3: "orange", 4: "green" }  */
+/*
+  font-family: "New York", Cambria, "Lucida Serif", Lucida, serif;
+*/
+  font-family: serif;
+}
+.sans {
+/*
+  font-family: "Helvetica Neue", Calibri, "Lucida Sans Unicode", sans-serif;
+*/
+  font-family: sans-serif;
+}
+.fixed {
+/*
+  font-family: Menlo, Consolas, "Lucida Console", monospace;
+*/
+  font-family: monospace;
+}
+.pw {
+  color: white;
+  background-color: #cc0000;
+  font-size: 12pt;   
+}
+.pwdiv {
+  position: relative;
+  top: 5pt;
+  width: 35pt;
+}  
+.column {
+  flex: 1;
+}
+.logo {
+  height: 25px;
+  width: 25px;
+  position: relative;
+  top: 10px;
+}
+.phishing {
+  font-family: monospace; 
+  font-size: 10pt;
+  width: 20pt;
+  word-wrap: break-word;
+}
+.dots {
+  position: relative;
+  left: 14px;
+  top: 9px;
+  width: 6px;
+  height: 14px;
+  z-index: 1;
+  visibility: visible;
+  opacity: 0.7;
+}
+.menu {
+  display: flex;
+  height: 15px;
+  position: relative;
+  width: 50px;
+  background-color: transparent;
+  color: black;
+  border-radius: 6px;
+  padding: 8px 0;
+  z-index: 1;
+}
+.helptext {
+  width: 250px; 
+  display: none; 
+  flex: 0 0 auto;
+}
+#root {
+  width: auto;
+  display: block;
+  margin: 0;
+  transition: opacity 2s;
+}
+#content {
+  display: flex;
+  flex-flow: row wrap;
+}
+#mainpanel {
+  flex: 0 0 auto;
+}
+#instructionpanel {
+  flex: 0 0 auto;
+  padding-left: 1em;
+  border-right: 1px solid black;
+  margin-right: -1px;
+}
+#instructionpaneltext {
+  padding-left: 1em;
+  width: 500px;
+}
+.settings {
+  flex: 0 0 auto;
+  font-weight: bold;
+  font-size: 11pt;
+}
+.settings-input {
+  font-size: 10pt;
+}
+.main {
+  padding: 1ex 2ex 1.5ex;
+  width: 22em;
+  background-color: rgb(136, 204, 255, 0%);
+}
+.side-panel {
+  margin-right: 2px;
+  flex: auto; 
+  width: 27em; 
+}
+.sticky {
+  top: 0;
+  position: -webkit-sticky;
+  position: sticky;
+}
+#bookmarks {
+  cursor: default;
+}
+#sections {
+  margin: 1ex 0;
+  width: 22em;
+}
+#superpw {
+  padding-right: 3em;
+}
+#resetbutton {
+/*
+  background-color: #060;
+*/
+  background-color: #FF0;
+  color: #000;
+}
+#trustbutton {
+  background-color: #0C0;
+/*
+  color: #000;
+*/
+}
+#sitepw {
+  padding-right: 5em;
+}
+#pwfail {
+  display: none;
+}
+#failedpw {
+  flex: auto;
+  border: 0;
+  border-radius: 4pt;
+  margin: 6px 0;
+  padding: 6px;
+  background-color : #C00;
+  color: #FFF;
+  font-size: 10pt;
+  height: 16px;
+  overflow: clip;
+}
+.sr-only {
+  border: 2px;
+  position: absolute;
+  left: 10px;
+  top: 2px;
+  background-color: white;
+  overflow: hidden !important;
+  color: rgb(36, 104, 155, 100%);
+  padding-left: 5px;
+  padding-right: 5px;
+}
+h1, h4 {
+  margin: 1ex;
+  text-align: center;
+}
+p {
+  margin: 1ex;
+}
+button {
+  flex: 1;
+  margin: 1ex 0ex;
+  border-radius: 6pt;
+  padding: 6px 6px;
+}
+button:disabled {
+  border: 1pt solid #666;
+  color: black;
+  background-color: rgb(136, 204, 255, 20%);
+  cursor: defaut;
+}
+button:enabled {
+  border: 1pt solid #000;
+  color: black;
+  background-color: rgb(136, 204, 255, 50%);
+  cursor: pointer;
+}
+button:enabled:hover {
+  border: 2pt solid black;
+  padding: 4.5px 4.5px;
+}
+button:enabled:active {
+  background-color: rgb(136, 204, 255, 100%);
+}
+.checkbox-label {
+  display: inline-block;
+  position: relative;
+  padding-left: 25px;
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+.checkbox-input {
+  position: absolute;
+  opacity: 0;
+}
+
+.checkbox-custom {
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  height: 12px;
+  width: 12px;
+  background-color: #fff;
+  border: 1px solid #007bff;
+}
+
+.checkbox-custom::after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-input:checked ~ .checkbox-custom::after {
+  display: none;
+  left: 7px;
+  top: 3px;
+  width: 6px;
+  height: 12px;
+  border: solid #007bff;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-input:checked ~ .checkbox-custom {
+  background-color: rgb(136, 204, 255, 100%);
+}
+.checkbox-input:disabled ~ .checkbox-custom {
+  background-color: #ccc;
+  border-color: black;
+  cursor: not-allowed;
+}
+.form-row {
+  display: flex;
+  position: relative;
+}
+.form-row input {
+  flex: auto;
+  border: rgb(136, 204, 255) solid 1px;
+  border-radius: 4pt;
+  margin: 10px 0;
+  padding: 6px;
+  height: 16px;
+}
+.boxed {
+  border: 3px solid rgb(136, 204, 255, 100%);
+  border-radius: 8px;
+}
+.setting-row {
+  margin: 1.2ex 0;
+  height: 1.5em;
+}
+.icon {
+  flex: none;
+  margin: auto 0;
+  padding: 4px;
+  width: 24px;
+  height: 24px;
+  background-color: transparent;
+  cursor: pointer;
+}
+.menu-icon {
+  position: relative;
+  top: 2px;
+  width: 12pt;
+  height: 12pt;
+  background-color: white;
+}
+.inner-icon-1 {
+  position: absolute;
+  right: 0;
+  top: 3px;
+}
+.inner-icon-2 {
+  position: absolute;
+  right: 2em;
+  top: 3px;
+}
+#sitepwcopy:active {
+  color: #aa0;
+}
+#useridcopy:active {
+  color: #aa0;
+}
+#clearclipboard:active {
+  color: #aa0;
+}
+.accordian {
+  float: left;
+  padding-right: 1ex;
+  cursor: pointer;
+}
+.bad-input {
+  border: 2px solid #F00 !important;
+  padding: 4px !important;
+  color: #C00 !important;
+}
+.warning {
+  padding : 1ex;
+  border : 2pt solid red;
+  border-radius: 8px;
+  background-color : white;
+  width: 92%;
+  margin: 10px 0;
+}
+.warningtext {
+  position: relative;
+  font-size: 12pt;
+  font-weight: bold;
+  top: -9px;
+}
+.nodisplay {
+  display: none;
+}
+#meter {
+  /* Reset the default appearance */
+  -webkit-appearance: none;
+      -moz-appearance: none;
+          appearance: none;
+
+  margin: 0 auto 1em;
+  width: 100%;
+  height: 0.5em;
+
+  /* Applicable only to Firefox */
+  background: none;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+meter::-webkit-meter-bar {
+  background: none;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+/*  const strengthColor = { 0: "black", 1: "red", 2: "yellow", 3: "orange", 4: "green" }  */
 /*  const strengthColor = { 0: "#bbb", 1: "#f06", 2: "#f90", 3: "#093", 4: "#036" }  */
 /* Webkit based browsers */
 meter[value="0"]::-webkit-meter-optimum-value { background: #bbb; }
