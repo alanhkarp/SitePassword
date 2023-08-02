@@ -191,10 +191,11 @@
     cursor: pointer;
   }
   button:enabled:hover {
-    border: 1pt solid #FFF;
+    border: 2pt solid black;
+    padding: 4.5px 4.5px;
   }
   button:enabled:active {
-    background-color: red;
+    background-color: rgb(136, 204, 255, 100%);
   }
   .checkbox-label {
     display: inline-block;
