@@ -86,12 +86,9 @@ body {
 #instructionpanel {
   flex: 0 0 auto;
   padding-left: 1em;
-  border-right: 1px solid black;
-  margin-right: -1px;
 }
 #instructionpaneltext {
   padding-left: 1em;
-  width: 500px;
 }
 .settings {
   flex: 0 0 auto;
@@ -103,8 +100,8 @@ body {
 }
 .main {
   padding: 1ex 2ex 1.5ex;
+  height: auto;
   width: 22em;
-  background-color: rgb(136, 204, 255, 0%);
 }
 .side-panel {
   margin-right: 2px;
@@ -261,8 +258,7 @@ button:enabled:active {
   height: 16px;
 }
 .boxed {
-  border: 3px solid rgb(136, 204, 255, 100%);
-  border-radius: 8px;
+  background-color: rgb(136, 204, 255, 30%);
 }
 .setting-row {
   margin: 1.2ex 0;

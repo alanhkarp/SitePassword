@@ -1,7 +1,7 @@
 'use strict';
 import { webpage } from "./bg.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = false;
+const testMode = true;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -48,7 +48,6 @@ window.onload = function () {
     console.log("popup baseHeight", baseHeight, "settingsHeight", settingsHeight);
     get("settings").style.height = settingsHeight + "px";
     get("settings").style.display = "none";
-    get("main").style = "border-left: none";
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         activetab = tabs[0];
         if (logging) console.log("popup tab", activetab);
@@ -196,7 +195,6 @@ function eventSetup() {
         msgon("forget");
         let toforget = normalize(get("domainname").value);
         addForgetItem(toforget);
-        resizeMain();
     }
     get("domainnamemenuhelp").onclick = function (e) {
         helpItemOn("domainname");
@@ -577,18 +575,14 @@ function eventSetup() {
     }
     get("sitedatagetbutton").onclick = sitedataHTML;
     get("maininfo").onclick = function () {
-        let $instructions = get("instructionpanel");
-        if ($instructions.style.display == "none") {
+        if (get("instructionpanel").style.display == "none") {
             showInstructions();
             hidesettings();
             helpAllOff();
-            resizeMain();
         } else {
             hideInstructions();
-            resizeMain();
         }
         autoclose = false;
-        get("main").style = "border-left: none";
     }
     get("warningbutton").onclick = function () {
         phishing = false;
@@ -630,7 +624,6 @@ function eventSetup() {
             get("toforgetlist").removeChild(get("toforgetlist").firstChild);
         }
         msgoff("forget");
-        resizeMain();
     }
     get("sharedref").onclick = function (e) {
         e.stopPropagation();
@@ -667,18 +660,21 @@ function dotsAllOn() {
     get("sitepw3bluedots").style.display = "block";
 }
 function helpItemOn(which) {
-    helpAllOff();
-    get(which + "helptext").style.display = "block";
-    hideInstructions();
-    hidesettings();
-    autoclose = false;
-    get("main").style = "border-left: 1px solid black";
+    if (get(which + "helptext").style.display === "none") {
+        helpAllOff();
+        get("helptext").style.display = "block";
+        get(which + "helptext").style.display = "block";
+        hideInstructions();
+        hidesettings();
+        autoclose = false;
+    } else {
+        helpItemOff(which);
+    }
 }
 function helpItemOff(which) {
-    get("main").style = "border-left: 1px solid black";
+    get("helptext").style.display = "none";
     get(which + "helptext").style.display = "none";
     autoclose = false;
-    get("main").style = "border-left: none";
 }
 function helpAllOff() {
     helpItemOff("domainname");
@@ -698,11 +694,9 @@ function hidesitepw() {
 function showInstructions() {
     helpAllOff();
     get("instructionpanel").style.display = "block";
-    get("main").style = "border-left: none";
 }
 function hideInstructions() {
     get("instructionpanel").style.display = "none";
-    get("main").style = "border-left: none";
 }
 function setSuperpwMeter(pw) {
     const $superpw = get("superpw");
@@ -831,18 +825,14 @@ function showsettings() {
     get("settings").style.display = "block";
     helpAllOff();
     hideInstructions();
-    resizeMain();
     get("superpw").value = bg.superpw || "";
     fill();
     pwoptions(["lower", "upper", "number", "special"]);
-    get("main").style = "border-left: 1px solid black";
 }
 function hidesettings() {
     get("settingsshow").style.display = "inline";
     get("settingssave").style.display = "none";
     get("settings").style.display = "none";
-    get("main").style = "border-left: none";
-    resizeMain();
 }
 function pwoptions(options) {
     for (var x in options) {
@@ -1028,16 +1018,6 @@ function message(msgname, turnon) {
         get(msg.name).style.display = msg.ison ? "block" : "none";
         if (ison) get(msg.name).style.display = "none";
         ison = ison || msg.ison;
-    }
-    resizeMain();
-}
-function resizeMain() {
-    get("main").style.height = baseHeight + "px";
-    for (let i = 0; i < messages.length; i++) {
-        if (get(messages[i].name).style.display == "block") {
-            let delta = get(messages[i].name).getBoundingClientRect().height;
-            get("main").style.height = 340 + 25 + delta + "px";
-        }
     }
 }
 function clearDatalist(listid) {
