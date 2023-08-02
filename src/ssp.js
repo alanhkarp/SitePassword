@@ -160,8 +160,9 @@ function eventSetup() {
             });
         }
     }
-    get("root").onmouseenter = function () {
-        get("root").style.opacity = 1;                
+    get("root").onmouseenter = function (e) {
+        get("root").style.opacity = 1; 
+        autoclose = true;               
         clearTimeout(mainPanelTimer);
     }
     get("title").onclick = function () {
@@ -582,12 +583,11 @@ function eventSetup() {
             hidesettings();
             helpAllOff();
             resizeMain();
-            autoclose = false;
         } else {
             hideInstructions();
             resizeMain();
-            autoclose = true;
         }
+        autoclose = false;
         get("main").style = "border-left: none";
     }
     get("warningbutton").onclick = function () {
@@ -672,7 +672,7 @@ function helpItemOn(which) {
 function helpItemOff(which) {
     get("main").style = "border-left: 1px solid black";
     get(which + "helptext").style.display = "none";
-    autoclose = true;
+    autoclose = false;
     get("main").style = "border-left: none";
 }
 function helpAllOff() {
