@@ -583,13 +583,12 @@ function eventSetup() {
             helpAllOff();
             resizeMain();
             autoclose = false;
-            get("main").style = "border-left: none";
         } else {
             hideInstructions();
-            get("main").style = "border-left: 1px solid black";
             resizeMain();
             autoclose = true;
         }
+        get("main").style = "border-left: none";
     }
     get("warningbutton").onclick = function () {
         phishing = false;
@@ -667,13 +666,14 @@ function helpItemOn(which) {
     get(which + "helptext").style.display = "block";
     hideInstructions();
     hidesettings();
-    get("main").style = "border-left: 1px solid black";
     autoclose = false;
+    get("main").style = "border-left: 1px solid black";
 }
 function helpItemOff(which) {
     get("main").style = "border-left: 1px solid black";
     get(which + "helptext").style.display = "none";
     autoclose = true;
+    get("main").style = "border-left: none";
 }
 function helpAllOff() {
     helpItemOff("domainname");
@@ -696,7 +696,7 @@ function showInstructions() {
 }
 function hideInstructions() {
     get("instructionpanel").style.display = "none";
-    get("main").style = "border-left: 1px solid black";
+    get("main").style = "border-left: none";
 }
 function setSuperpwMeter(pw) {
     const $superpw = get("superpw");
