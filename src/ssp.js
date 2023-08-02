@@ -636,6 +636,11 @@ function eventSetup() {
         e.stopPropagation();
         sectionClick("shared");
     }
+    get("sharedref2").onclick = function (e) {
+        e.stopPropagation();
+        showInstructions();
+        sectionClick("shared");
+    } 
 }
 // Generic code for menus
 function menuOn(which, e) {
@@ -691,6 +696,7 @@ function hidesitepw() {
     }
 }
 function showInstructions() {
+    helpAllOff();
     get("instructionpanel").style.display = "block";
     get("main").style = "border-left: none";
 }
