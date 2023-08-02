@@ -660,7 +660,7 @@ function dotsAllOn() {
     get("sitepw3bluedots").style.display = "block";
 }
 function helpItemOn(which) {
-    if (get(which + "helptext").style.display === "none") {
+    if (get("helptext").style.display === "none") {
         helpAllOff();
         get("helptext").style.display = "block";
         get(which + "helptext").style.display = "block";

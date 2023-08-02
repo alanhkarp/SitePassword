@@ -83,10 +83,6 @@ body {
 #mainpanel {
   flex: 0 0 auto;
 }
-#instructionpanel {
-  flex: 0 0 auto;
-  padding-left: 1em;
-}
 #instructionpaneltext {
   padding-left: 1em;
 }
