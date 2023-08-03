@@ -100,9 +100,12 @@ body {
   width: 22em;
 }
 .side-panel {
-  margin-right: 2px;
+  top: 5px;
+  margin-top: 8px;
+  margin-left: 10px;
   flex: auto; 
-  width: 27em; 
+  width: auto; 
+  font-size: 12pt;
 }
 .sticky {
   top: 0;
@@ -275,6 +278,9 @@ button:enabled:active {
   width: 12pt;
   height: 12pt;
   background-color: white;
+}
+.menu-icon.active {
+  background-color: opacity(0.5);
 }
 .inner-icon-1 {
   position: absolute;

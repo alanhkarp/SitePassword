@@ -660,10 +660,11 @@ function dotsAllOn() {
     get("sitepw3bluedots").style.display = "block";
 }
 function helpItemOn(which) {
-    if (get("helptext").style.display === "none") {
+    let $element = get(which + "helptext");
+    if (!$element.style.display || $element.style.display === "none") {
         helpAllOff();
         get("helptext").style.display = "block";
-        get(which + "helptext").style.display = "block";
+        $element.style.display = "block";
         hideInstructions();
         hidesettings();
         autoclose = false;
