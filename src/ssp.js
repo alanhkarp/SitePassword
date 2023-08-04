@@ -475,9 +475,11 @@ function eventSetup() {
             get("sitepw").readOnly = false;
             get("sitepw").value = "";
             get("sitepw").focus();
+            get("sitepw").style.backgroundColor = "white";
             get("sitepw").placeholder = "Enter your site password";
         } else {
             get("sitepw").readOnly = true;
+            get("sitepw").style.backgroundColor = "rgb(136, 204, 255, 20%)";
             get("sitepw").placeholder = "Your site password";
             ask2generate();
             defaultfocus();
