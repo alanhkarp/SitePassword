@@ -476,10 +476,18 @@ function eventSetup() {
             get("sitepw").value = "";
             get("sitepw").focus();
             get("sitepw").style.backgroundColor = "white";
+            get("sitepwmenushow").classList.remove("menu-icon-blue");
+            get("sitepwmenuhide").classList.remove("menu-icon-blue");
+            get("sitepwmenucopy").classList.remove("menu-icon-blue");
+            get("sitepwmenuhelp").classList.remove("menu-icon-blue");
             get("sitepw").placeholder = "Enter your site password";
         } else {
             get("sitepw").readOnly = true;
             get("sitepw").style.backgroundColor = "rgb(136, 204, 255, 20%)";
+            get("sitepwmenushow").classList.add("menu-icon-blue");
+            get("sitepwmenuhide").classList.add("menu-icon-blue");
+            get("sitepwmenucopy").classList.add("menu-icon-blue");
+            get("sitepwmenuhelp").classList.add("menu-icon-blue");
             get("sitepw").placeholder = "Your site password";
             ask2generate();
             defaultfocus();
