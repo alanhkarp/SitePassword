@@ -173,26 +173,24 @@ p {
   margin: 1ex;
 }
 button {
+  border: none;
   flex: 1;
   margin: 1ex 0ex;
   border-radius: 6pt;
   padding: 6px 6px;
 }
 button:disabled {
-  border: 1pt solid #666;
   color: black;
   background-color: rgb(136, 204, 255, 20%);
   cursor: defaut;
 }
 button:enabled {
-  border: 1pt solid #000;
   color: black;
   background-color: rgb(136, 204, 255, 50%);
   cursor: pointer;
 }
 button:enabled:hover {
-  border: 2pt solid black;
-  padding: 4.5px 4.5px;
+  background-color: rgb(136, 204, 255, 80%);
 }
 button:enabled:active {
   background-color: rgb(136, 204, 255, 100%);
