@@ -21,7 +21,7 @@
   <div id="content" class="column">
     <div id="mainpanel"  style="display: flex; background-color: rgb(136, 204, 255, 20%)">
       <div id="settings" class="serif sticky side-panel" style="display: none; width: 20em">
-        <h1>Additional Settings</h1>
+        <h1 style="text-align: left;">Additional Settings</h1>
         <div class="setting-row" id="providesitepwdiv"
           title="You must fill in the SitePassword form before you can provide your own site password.">
           <label for="providesitepw" class="checkbox-label">
@@ -47,11 +47,9 @@
         </div>
         <div id="defaultsettings" class="boxed" style="margin-right: 10px">
           <div class="setting-row">
-            <center>
-              <span class="settings">Site password is</span>
-              <input id="pwlength" type="text" value="12" size="2" class="settings-input" />
-              <span class="settings">characters long</span>
-            </center>
+            <span class="settings">Site password is</span>
+            <input id="pwlength" type="text" value="12" size="2" class="settings-input" />
+            <span class="settings">characters long</span>
           </div>
           <div class="setting-row">
             <label for="startwithletter" class="checkbox-label">
@@ -114,17 +112,19 @@
             </label>
           </div>
           <div class="form-row">
-            <button id="makedefault" type="button" style="display: inline; margin-left: 40px; margin-right: 40px;"
+            <button id="makedefault" type="button""
               target="_blank" title="Make the settings in the box your default">
               Save as Default
             </button>
+            <span style="flex:1"></span>
           </div>
         </div>
         <div class="form-row">
-          <button id="sitedatagetbutton" type="button" style="display: inline; margin: 1ex 2ex;" target="_blank"
+          <button id="sitedatagetbutton" type="button" style="display: inline;" target="_blank"
             title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
             Download Site Data
           </button>
+          <span style="flex:1"></span>
           <a id="data" href="data:application/octet-stream," target="_blank" style="display: none;"
             download="SiteData.html">SiteData.html</a>
         </div>
@@ -783,7 +783,7 @@
       <div id="helptext" class="serif sticky side-panel" style="display: none">
         <div id="domainnamehelptext" class="instructionpaneltext helptext">
           <br />
-          <center>Domain Name Help</center>
+          <b>Domain Name Help</b>
           <p>
             The domain name is associated with your settings for this account.
             It is also the name of a bookmark in the SitePasswordData bookmark folder.
@@ -804,7 +804,7 @@
         </div>
         <div id="superpwhelptext" class="instructionpaneltext helptext">
           <br />
-          <center>Super Password Help</center>
+          <b>Super Password Help</b>
           <p>
             You should choose a strong super password, one with lots of characters that contain
             upper and lower case letters, numbers, and special characters. Just make sure
@@ -823,7 +823,8 @@
           </div>
         </div>
         <div id="sitenamehelptext" class="instructionpaneltext helptext">
-          <center>Nickname Help</center>
+          <br />
+          <b>Nickname Help</b>
           <p>
             Your nickname is the way you refer to this account. It should be easy to remember,
             such as 'amazon' for amazon.com, but it doesn't have to be that simple.  You can 
@@ -843,7 +844,8 @@
           </div>
         </div>
         <div id="siteunhelptext" class="instructionpaneltext helptext">
-          <center>User Name Help</center>
+          <br />
+          <b>User Name Help</b>
           <p>
             Your user name is the name you use to log in to the site. It is
             associated with the nickname for the account and is used to 
@@ -865,7 +867,8 @@
           </div>
         </div>
         <div id="sitepwhelptext" class="instructionpaneltext helptext">
-          <center>Site Password Help</center>
+          <br />
+          <b>Site Password Help</b>
           <p>
             SitePassword uses your super password, nickname for the site, and
             your user name for the site along with the additional settings to

@@ -166,7 +166,8 @@ body {
   font-size: 10pt;
 }
 h1, h4 {
-  margin: 1ex;
+  margin-top: 1ex;
+  margin-left: 0;
   text-align: center;
 }
 p {
