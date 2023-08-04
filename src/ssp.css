@@ -257,7 +257,7 @@ button:enabled:active {
   height: 16px;
 }
 .boxed {
-  background-color: rgb(136, 204, 255, 30%);
+  background-color: rgb(136, 204, 255, 20%);
 }
 .setting-row {
   margin: 1.2ex 0;
