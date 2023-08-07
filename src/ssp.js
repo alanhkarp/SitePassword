@@ -1,7 +1,7 @@
 'use strict';
 import { webpage } from "./bg.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = false;
+const testMode = true;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -374,6 +374,7 @@ function eventSetup() {
     }
     get("siteunmenucopy").onclick = function(e) {
         let sitepw = get("siteun").value;
+        if (!sitepw) return;
         navigator.clipboard.writeText(sitepw).then(() => {
             if (logging) console.log("findpw wrote to clipboard", sitepw);
         }).catch((e) => {
@@ -422,6 +423,7 @@ function eventSetup() {
     get("sitepw3bluedots").onclick = get("sitepw3bluedots").onmouseover;
     get("sitepwmenucopy").onclick = function(e) {
         let sitepw = get("sitepw").value;
+        if (!sitepw) return;
         navigator.clipboard.writeText(sitepw).then(() => {
             if (logging) console.log("findpw wrote to clipboard", sitepw);
             chrome.action.setTitle({title: "A site password may be on the clipboard."});
