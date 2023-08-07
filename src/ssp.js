@@ -684,15 +684,14 @@ function helpItemOn(which) {
 }
 function helpItemOff(which) {
     get("helptext").style.display = "none";
-    get(which + "helptext").style.display = "none";
+    get(which).style.display = "none";
     autoclose = false;
 }
 function helpAllOff() {
-    helpItemOff("domainname");
-    helpItemOff("superpw");
-    helpItemOff("sitename");
-    helpItemOff("siteun");
-    helpItemOff("sitepw");
+    let helps = document.getElementsByName("help");
+    for (let help of helps) {
+        helpItemOff(help.id); 
+    } 
 }
 function hidesitepw() {
     if (logging) console.log("popup checking hidesitepw", get("hidesitepw").checked, database.hidesitepw);
