@@ -1105,26 +1105,10 @@ function closeInstructionSection(which) {
     get("close" + which).style.display = "none";
 }
 function closeAllInstructions() {
-    closeInstructionSection("overview");
-    closeInstructionSection("basic");
-    closeInstructionSection("domainname");
-    closeInstructionSection("superpw");
-    closeInstructionSection("sitename");
-    closeInstructionSection("siteun");
-    closeInstructionSection("sitepw");
-    closeInstructionSection("clipboard");
-    closeInstructionSection("acceptable");
-    closeInstructionSection("change");
-    closeInstructionSection("phishing");
-    closeInstructionSection("extension");
-    closeInstructionSection("download");
-    closeInstructionSection("shared");
-    closeInstructionSection("source");
-    closeInstructionSection("payment");
-    if (chrome.bookmarks) {  
-        closeInstructionSection("sync");          
-    } else {
-        closeInstructionSection("syncSafari");
+    let instructions = document.getElementsByName("instructions");
+    for (let instruction of instructions) {
+        let section = instruction.id.replace("info", "");
+        closeInstructionSection(section);
     }
 }
 /* 
