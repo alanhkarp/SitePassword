@@ -84,7 +84,7 @@ body {
   flex: 0 0 auto;
 }
 #instructionpaneltext {
-  padding-left: 1em;
+  padding-left: 3ex;
 }
 .settings {
   flex: 0 0 auto;
@@ -172,6 +172,9 @@ h1, h4 {
 }
 p {
   margin: 1ex;
+}
+input::placeholder {
+  font-family: 'Roboto', sans-serif;
 }
 button {
   border: none;
