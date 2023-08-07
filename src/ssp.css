@@ -97,7 +97,7 @@ body {
 .main {
   padding: 1ex 2ex 1.5ex;
   height: auto;
-  width: 22em;
+  width: 24em;
 }
 .side-panel {
   top: 5px;
@@ -328,7 +328,7 @@ button:enabled:active {
 .warningtext {
   position: relative;
   font-size: 12pt;
-  font-weight: bold;
+  font-weight: normal;
   top: -9px;
 }
 .nodisplay {

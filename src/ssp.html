@@ -1049,13 +1049,70 @@
           </div>
         </div>
         <div class="form-row">
+          <div id="phishing" class="warning nodisplay">
+            <img src="warning.png" class="icon warning-icon">
+            <span class="warningtext">Warning: Possible Phishing</span>
+            <span id="phishingtext1"></span>
+            <br /><br />
+            <span id="phishingtext2" class="phishing"></span>
+            <br /><br />
+            <span id="phishingtext3"></span>
+            <br /><br />
+            <span id="phishingtext4" class="phishing"></span>
+            <br /><br />
+            <span id="phishingtext5"></span>
+            <br /><br />
+            <button id="cancelwarning" type="button"
+              style="background-color: #00ff00; margin: auto; color: black; width:100%"
+              title="I don't recognize this domain name. Take me away from this web page.">
+              Get me to safety!
+            </button>
+            <p></p>
+            <button id="warningbutton" type="button"
+              style="background-color: #ff0000; margin: auto; color:white; width:100%"
+              title="This page is for the same account. Use the same settings for it.">
+              <b>This page is for the same account.</b>
+            </button>
+            <p></p>
+            <button id="nicknamebutton" type="button"
+              style="background-color: #000FF0; margin: auto; color:white; width:100%"
+              title="This page is for a different account.  I'll select a new nickname.">
+              <b>Pick a new nickname.</b>
+            </button>
+            <p></p>
+          </div>
+          <div id="http" class="warning nodisplay">
+            <span id="httptext">
+              <img src="warning.png" class="icon warning-icon">
+              <span class="warningtext">Warning: Page Not Secure</span>
+              <p>
+                The connection to this page is not secure. Are you sure you want to enter your password?
+              </p>
+            </span>
+          </div>
+          <div id="zero" class="warning nodisplay"
+            title="SitePassword didn't find any password fields.  You will have to paste your site password.">
+            <span id="zerotext">
+              <img src="warning.png" class="icon warning-icon">
+              <span class="warningtext">Warning: No Password Fields</span>
+              <p>
+                Site Password did not find any password fields
+                on this page. Try reloading the page. If that doesn't work, click the
+                Copy icon in the site password field to put
+                it on the clipboard.
+              </p>
+            </span>
+          </div>
           <div id="forget" class="warning nodisplay"
             title="Click the Forget button to delete the settings for the listed domain names.">
             <span id="forgettext">
-              <img src="warning.png" class="icon warning-icon" style="visibility: hidden">
-              <center>
-                <span class="warningtext">Forget Enabled</span>
-              </center>
+              <img src="warning.png" class="icon warning-icon">
+              <span class="warningtext">Forget Enabled</span>
+              <p>
+                Are you sure you want to delete the settings for these domain names?
+              </p>
+              <ul id="toforgetlist"></ul>
+              <b>This action cannot be undone.</b>
               <p>
                 Click the <b>Forget</b> button to delete the settings for the listed domain names.
                 Click <b>Cancel</b> if you changed your mind.
@@ -1069,11 +1126,6 @@
                   title="Click to cancel forgetting the settings for the listed domain names.">
                   <b>Cancel</b>
                 </button>
-                <p>
-                  Are you sure you want to delete the settings for these domain names?
-                  <b>This action cannot be undone.</b>
-                </p>
-                <ul id="toforgetlist"></ul>
               </div>
             </span>
           </div>
@@ -1090,78 +1142,17 @@
               </p>
             </span>
           </div>
-          <div class="form-row">
-            <div id="multiple" class="warning nodisplay">
-              <span id="multipletext">
-                <img src="warning.png" class="icon warning-icon">
-                <span class="warningtext">Warning: Multiple Passwords</span>
-                <p>
-                  There is more than one password field
-                  on this page. Click the Copy icon in the site password field to put it
-                  on the clipboard. <b> When you are done pasting your
-                    password, come back here and click the Clear Clipboard button.
-                </p>
-              </span>
-            </div>
-          </div>
-          <div class="form-row">
-            <div id="zero" class="warning nodisplay">
-              <span id="zerotext">
-                <img src="warning.png" class="icon warning-icon">
-                <span class="warningtext">Warning: No Password Fields</span>
-                <p>
-                  Site Password did not find any password fields
-                  on this page. Try reloading the page. If that doesn't work, click the
-                  Copy icon in the site password field to put
-                  it on the clipboard.
-                </p>
-              </span>
-            </div>
-          </div>
-          <div class="form-row">
-            <div id="http" class="warning nodisplay">
-              <span id="httptext">
-                <img src="warning.png" class="icon warning-icon">
-                <span class="warningtext">Warning: Not HTTPS</span>
-                <p>
-                  The connection to this page is not secure. Are you sure you want to enter your password?
-                </p>
-              </span>
-            </div>
-          </div>
-          <div class="form-row">
-            <div id="phishing" class="warning nodisplay">
+          <div id="multiple" class="warning nodisplay">
+            <span id="multipletext">
               <img src="warning.png" class="icon warning-icon">
-              <span class="warningtext">Warning: Possible Phishing</span>
-              <span id="phishingtext1"></span>
-              <br /><br />
-              <span id="phishingtext2" class="phishing"></span>
-              <br /><br />
-              <span id="phishingtext3"></span>
-              <br /><br />
-              <span id="phishingtext4" class="phishing"></span>
-              <br /><br />
-              <span id="phishingtext5"></span>
-              <br /><br />
-              <button id="cancelwarning" type="button"
-                style="background-color: #00ff00; margin: auto; color: black; width:100%"
-                title="I don't recognize this domain name. Take me away from this web page.">
-                Get me to safety!
-              </button>
-              <p></p>
-              <button id="warningbutton" type="button"
-                style="background-color: #ff0000; margin: auto; color:white; width:100%"
-                title="This page is for the same account. Use the same settings for it.">
-                <b>This page is for the same account.</b>
-              </button>
-              <p></p>
-              <button id="nicknamebutton" type="button"
-                style="background-color: #000FF0; margin: auto; color:white; width:100%"
-                title="This page is for a different account.  I'll select a new nickname.">
-                <b>Pick a new nickname.</b>
-              </button>
-              <p></p>
-            </div>
+              <span class="warningtext">Warning: Multiple Passwords</span>
+              <p>
+                There is more than one password field
+                on this page. Click the Copy icon in the site password field to put it
+                on the clipboard. <b> When you are done pasting your
+                  password, come back here and click the Clear Clipboard button.
+              </p>
+            </span>
           </div>
         </div>
         <div class="form-row">
