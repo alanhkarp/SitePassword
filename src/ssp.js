@@ -118,7 +118,7 @@ function eventSetup() {
     // is a race between message delivery and the next user click.  Fortunately, messages
     // are delivered in just a couple of ms, so there's no problem.  Just be aware that
     // this race is the source of any problems related to loss of the message sent here.
-    get("root").onmouseout = function (event) {
+    get("root").onmouseleave = function (event) {
         // If I close the window immediately, then messages in flight get lost
         if (autoclose && !document.elementFromPoint(event.pageX, event.pageY)) {
             if (!testMode) get("root").style.opacity = 0.1;
@@ -127,7 +127,7 @@ function eventSetup() {
             }, 750);
         }
     }
-    get("mainpanel").onmouseout = function () {
+    get("mainpanel").onmouseleave = function () {
         if (logging) console.log(Date.now(), "popup window.mouseleave", phishing, bg);
         // Don't persist phishing sites if user mouses out of popup. Can't use
         // isphising() because the new bookmark hasn't been created yet when the 
