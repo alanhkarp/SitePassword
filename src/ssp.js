@@ -1,7 +1,7 @@
 'use strict';
 import { webpage } from "./bg.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = true;
+const testMode = false;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -1049,42 +1049,31 @@ function clearallmessages() {
     }
 }
 function instructionSetup() {
-    get("overviewinfo").onclick = function () { sectionClick("overview"); };
-    get("basicinfo").onclick = function () { sectionClick("basic") };
-    get("domainnameinfo").onclick = function () { sectionClick("domainname"); };
-    get("superpwinfo").onclick = function () { sectionClick("superpw"); };
-    get("sitenameinfo").onclick = function () { sectionClick("sitename"); };
-    get("siteuninfo").onclick = function () { sectionClick("siteun"); };
-    get("sitepwinfo").onclick = function () { sectionClick("sitepw"); };
-    get("acceptableinfo").onclick = function () { sectionClick("acceptable"); };
-    get("changeinfo").onclick = function () { sectionClick("change"); };
-    get("clipboardinfo").onclick = function () { sectionClick("clipboard"); };
-    get("phishinginfo").onclick = function () { sectionClick("phishing"); };
-    get("extensioninfo").onclick = function () { sectionClick("extension"); };
-    get("downloadinfo").onclick = function () { sectionClick("download"); };
-    get("sharedinfo").onclick = function () { sectionClick("shared"); };
-    get("sourceinfo").onclick = function () { sectionClick("source"); };
-    get("paymentinfo").onclick = function () { sectionClick("payment"); };
-    // Safari doesn't support the bookmarks API
-    if (!chrome.bookmarks) {
-        get("sharedinfo").style.display = "none";
-    }
-    get("syncinfo").onclick = function () { 
-        if (chrome.bookmarks) {
-            sectionClick("sync");
+    let instructions = document.getElementsByName("instructions");
+    if (logging) console.log("popup instructions", instructions);
+    for (let instruction of instructions) {
+        let section = instruction.id.replace("info", "");
+        if (section === "shared") {
+            get("sharedinfo").style.display = "none";
+        } else if (section === "sync") {
+            if (chrome.bookmarks) {
+                instruction.onclick = function () { sectionClick("sync"); }
+            } else {
+                instruction.onclick = function () { sectionClick("syncSafari"); }
+            }
+        } else if (section === "extension") {
+            if (chrome.bookmarks) {
+                instruction.onclick = function () { sectionClick("extension"); }
+            } else {
+                instruction.onclick = function () { sectionClick("extensionSafari"); }
+            }
         } else {
-            sectionClick("syncSafari");
+            instruction.onclick = function () { sectionClick(section); }
         }
     }
-    get("extensioninfo").onclick = function () {
-        if (chrome.bookmarks) {
-            sectionClick("extension");
-        } else {
-            sectionClick("extensionSafari");
-        } 
-    };
 }
 function sectionClick(which) {
+    if (logging) console.log("popup sectionClick", which);
     const element = get(which + "div");
     if (element.style.display === "none") {
         closeAllInstructions();
