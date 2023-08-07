@@ -285,8 +285,8 @@ button:enabled:active {
 .menu-icon-blue {
   background-color: rgb(136, 204, 255, 20%);
 }
-.menu-icon.active {
-  background-color: opacity(0.5);
+.menu-icon:active {
+  opacity: 0.5;
 }
 .inner-icon-1 {
   position: absolute;
