@@ -65,6 +65,34 @@ body {
   padding: 8px 0;
   z-index: 1;
 }
+h1 {
+  font-family: Roboto;
+  font-size: 46px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 60px; /* 125% */
+  letter-spacing: -0.96px;
+  text-transform: capitalize;
+}
+h3 {
+  font-family: Roboto;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.22px;
+  text-transform: capitalize;
+}
+p {
+  margin: 1ex;
+  font-family: Roboto;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: 0.12px;
+  text-transform: initial;
+}
 .helptext {
   width: 250px; 
   display: none; 
@@ -88,8 +116,8 @@ body {
 }
 .settings {
   flex: 0 0 auto;
-  font-weight: bold;
-  font-size: 11pt;
+  font-weight: normal;
+  font-size: 12pt;
 }
 .settings-input {
   font-size: 10pt;
@@ -169,9 +197,6 @@ h1, h4 {
   margin-top: 1ex;
   margin-left: 0;
   text-align: center;
-}
-p {
-  margin: 1ex;
 }
 input::placeholder {
   font-family: 'Roboto', sans-serif;
@@ -262,7 +287,7 @@ button:enabled:active {
   background-color: rgb(136, 204, 255, 30%);
 }
 .setting-row {
-  margin: 1.2ex 0;
+  margin: 1.2ex 5px;
   height: 1.5em;
 }
 .icon {
