@@ -298,6 +298,10 @@ button:enabled:active {
   right: 2em;
   top: 14px;
 }
+.copied {
+  color: red;
+  top: 2px;
+}
 #sitepwcopy:active {
   color: #aa0;
 }

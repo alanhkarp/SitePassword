@@ -377,6 +377,7 @@ function eventSetup() {
         if (!sitepw) return;
         navigator.clipboard.writeText(sitepw).then(() => {
             if (logging) console.log("findpw wrote to clipboard", sitepw);
+            copied("siteun");
         }).catch((e) => {
             if (logging) console.log("findpw clipboard write failed", e);
         });
@@ -432,6 +433,7 @@ function eventSetup() {
             get("logopw").style.display = "block";
             chrome.action.setIcon({"path": "icon128pw.png"});
             chrome.storage.local.set({"onClipboard": true})
+            copied("sitepw");
         }).catch((e) => {
             if (logging) console.log("findpw clipboard write failed", e);
         });
@@ -648,6 +650,12 @@ function eventSetup() {
     } 
 }
 // Generic code for menus
+function copied(which) {
+    get(which + "copied").classList.remove("nodisplay");
+    setTimeout(() => {
+        get(which + "copied").classList.add("nodisplay");
+    }, 1000);
+}
 function menuOn(which, e) {
     allMenusOff();
     get(which + "3bluedots").style.display = "none";
