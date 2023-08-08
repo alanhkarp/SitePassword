@@ -323,8 +323,9 @@ button:enabled:active {
   top: 14px;
 }
 .copied {
-  color: red;
+  color: #d51c24;
   top: 2px;
+  font-size: 10pt;
 }
 #sitepwcopy:active {
   color: #aa0;
