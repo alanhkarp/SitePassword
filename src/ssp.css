@@ -178,7 +178,6 @@ input::placeholder {
 }
 button {
   border: none;
-  flex: 1;
   margin: 1ex 0ex;
   border-radius: 6pt;
   padding: 6px 6px;
