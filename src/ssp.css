@@ -67,11 +67,11 @@ body {
 }
 h1 {
   font-family: Roboto;
-  font-size: 46px;
+  font-size: 36px;
   font-style: normal;
   font-weight: 300;
-  line-height: 60px; /* 125% */
-  letter-spacing: -0.96px;
+  line-height: 36px; 
+  letter-spacing: -0.42px;
   text-transform: capitalize;
 }
 h3 {
