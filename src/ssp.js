@@ -1,7 +1,7 @@
 'use strict';
 import { webpage } from "./bg.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = false;
+const testMode = true;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -714,9 +714,15 @@ function hidesitepw() {
 function showInstructions() {
     helpAllOff();
     get("instructionpanel").style.display = "block";
+    get("maininfo").title = "Close Instructions";
+    get("instructionopen").classList.add("nodisplay");
+    get("instructionclose").classList.remove("nodisplay");
 }
 function hideInstructions() {
     get("instructionpanel").style.display = "none";
+    get("maininfo").title = "Open Instructions";
+    get("instructionopen").classList.remove("nodisplay");
+    get("instructionclose").classList.add("nodisplay");
 }
 function setSuperpwMeter(pw) {
     const $superpw = get("superpw");

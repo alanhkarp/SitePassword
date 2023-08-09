@@ -1170,14 +1170,18 @@
             <button>Clear Clipboard</button>
           </div>
           <span style="flex: 1"></span>
-          <div id="maininfo" class="icon" title="Instructions">
-            <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <div id="maininfo" class="icon" title="Open instructions">
+            <svg id="instructionopen" class="" width="24px" height="24px" viewBox="0 0 24 24" 
+              xmlns="http://www.w3.org/2000/svg" fill="none">
               <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                 stroke-width="2" />
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 15v-3m0-3v0" />
             </svg>
-          </div>
+            <svg id="instructionclose" class="nodisplay" width="24" height="24" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" stroke="black" stroke-width="2" fill="transparent"/>
+              <path d="M8,8 L16,16 M8,16 L16,8" stroke="black" stroke-width="2"/>
+            </svg>          </div>
         </div>
       </div>
     </div>
