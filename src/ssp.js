@@ -200,10 +200,10 @@ function eventSetup() {
         helpItemOn("domainname");
     }
     get("domainnamehelptextclose").onclick = function (e) {
-        helpItemOff("domainname");
+        helpAllOff();
     }
     get("domainnamehelptextmore").onclick = function (e) {
-        helpItemOff("domainname");
+        helpAllOff();
         sectionClick("domainname");
     }
     // Super Password
@@ -249,10 +249,10 @@ function eventSetup() {
         helpItemOn("superpw");
     }
     get("superpwhelptextclose").onclick = function (e) {
-        helpItemOff("superpw");
+        helpAllOff();
     }
     get("superpwhelptextmore").onclick = function (e) {
-        helpItemOff("superpw");
+        helpAllOff;
         sectionClick("superpw");
     }
     // Site Name
@@ -323,10 +323,10 @@ function eventSetup() {
         helpItemOn("sitename");
     }
     get("sitenamehelptextclose").onclick = function (e) {
-        helpItemOff("sitename");
+        helpAllOff();
     }
     get("sitenamehelptextmore").onclick = function (e) {
-        helpItemOff("sitename");
+        helpAllOff();
         sectionClick("sitename");
     }
     // Site Username
@@ -387,10 +387,10 @@ function eventSetup() {
         helpItemOn("siteun");
     }
     get("siteunhelptextclose").onclick = function (e) {
-        helpItemOff("siteun");
+        helpAllOff();
     }
     get("siteunhelptextmore").onclick = function (e) {
-        helpItemOff("siteun");
+        helpAllOff();
         sectionClick("siteun");
     }
     // Site Password
@@ -443,10 +443,10 @@ function eventSetup() {
         helpItemOn("sitepw");
     }
     get("sitepwhelptextclose").onclick = function (e) {
-        helpItemOff("sitepw");
+        helpAllOff();
     }
     get("sitepwhelptextmore").onclick = function (e) {
-        helpItemOff("sitepw");
+        helpAllOff();
         sectionClick("sitepw");
     }
     get("sitepwmenushow").onclick = function () {
@@ -689,7 +689,7 @@ function helpItemOn(which) {
         hidesettings();
         autoclose = false;
     } else {
-        helpItemOff(which);
+        helpAllOff();
     }
 }
 function helpItemOff(which) {
