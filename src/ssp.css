@@ -66,26 +66,30 @@ body {
   z-index: 1;
 }
 h1 {
-  font-family: Roboto;
+  font-family: Roboto sans-serif;
   font-size: 36px;
   font-style: normal;
   font-weight: 300;
   line-height: 36px; 
   letter-spacing: -0.42px;
   text-transform: capitalize;
+  margin-top: 1ex;
+  margin-left: 8px;
+  text-align: center;
 }
 h3 {
-  font-family: Roboto;
+  font-family: Roboto sans-serif;
   font-size: 20px;
   font-style: normal;
   font-weight: 500;
   line-height: 20px;
   letter-spacing: 0.22px;
+  margin-left: 8px;
   text-transform: capitalize;
 }
 p {
   margin: 1ex;
-  font-family: Roboto;
+  font-family: Roboto sans-serif;
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
@@ -192,11 +196,6 @@ p {
   padding-left: 5px;
   padding-right: 5px;
   font-size: 10pt;
-}
-h1, h4 {
-  margin-top: 1ex;
-  margin-left: 0;
-  text-align: center;
 }
 input::placeholder {
   font-family: 'Roboto', sans-serif;
