@@ -923,7 +923,9 @@
         </div>
         <div class="form-row">
           <label for="superpw" class="sr-only">
-            Super Password
+            Super Password 
+            <meter max="4" id="password-strength-meter""></meter>
+            Strength 
           </label>
           <input id="superpw" class="fixed" type="password" autocomplete="off" value=""
             placeholder="A strong super password" title="Choose a strong super password" />
@@ -950,10 +952,6 @@
               <img src="help.png" class="icon menu-icon">
             </div>
           </div>
-        </div>
-        <div class="form-row" style="top: -10px; font-weight: 100;">
-          Super password strength&nbsp;&nbsp;
-          <meter max="4" id="password-strength-meter" style="position: relative; top: 2px;"></meter>
         </div>
         <div class="form-row">
           <label for="sitename" class="sr-only">
