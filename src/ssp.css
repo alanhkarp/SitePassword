@@ -114,6 +114,11 @@ p {
 }
 #mainpanel {
   flex: 0 0 auto;
+  display: flex; background-color: 
+  rgb(136, 204, 255, 20%); 
+  overflow: auto; 
+  width: auto;
+  padding: 0;
 }
 #instructionpaneltext {
   padding-left: 3ex;
@@ -127,7 +132,7 @@ p {
   font-size: 10pt;
 }
 .main {
-  padding: 1ex 2ex 1.5ex;
+  padding: 6px 15px 9px 12px;
   height: auto;
   width: 24em;
 }

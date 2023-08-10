@@ -34,6 +34,16 @@ chrome.storage.local.get("onClipboard", (v) => {
 // and for downloading the site data.
 var database = {};
 if (logging) console.log("popup starting");
+// I need to adjust the width of the main panel when the scrollbar appears.
+window.addEventListener("resize", function() {
+    const element = document.getElementById("main"); 
+    if (element.offsetHeight > 600) {
+        get("main").style.padding = "6px 0px 9px 12px";
+    } else {
+        get("main").style.padding = "6px 15px 9px 12px";
+
+    }
+  });
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
 // outside the popup window.  I can't use window.onblur because the 
