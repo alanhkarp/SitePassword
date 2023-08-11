@@ -1042,35 +1042,43 @@
           <div id="phishing" class="warning nodisplay">
             <img src="warning.png" class="icon warning-icon">
             <span class="warningtext">Warning: Possible Phishing</span>
-            <span id="phishingtext1"></span>
+            <p>
+              Warning: You may be at a fake site that is trying to steal your password.
+              You previously used this nickname for
+            </p>
+            <span id="phishingtext1" class="phishing"></span>
             <br /><br />
+            <p>The domain asking for your password is</p>
             <span id="phishingtext2" class="phishing"></span>
             <br /><br />
-            <span id="phishingtext3"></span>
-            <br /><br />
-            <span id="phishingtext4" class="phishing"></span>
-            <br /><br />
-            <span id="phishingtext5"></span>
-            <br /><br />
+            <p>Check the domain name carefully to make sure it's for your account.</p>
             <button id="cancelwarning" type="button"
               style="background-color: #21973f; margin: auto; color: white; width:100%"
               title="I don't recognize this domain name. Take me away from this web page.">
-              Get me to safety!
+              Ths domain name looks suspicious
             </button>
-            <p></p>
+            <br /><br />
+            <p>
+              It is common to see different domain names for the same account login. 
+              For example, you may see <em>login.example.com</em> instead of <em>www.example.com</em>.
+              Just make sure you recognize the domain name.
+            </p>
             <button id="warningbutton" type="button"
               style="background-color: #D51c24; margin: auto; color:white; width:100%"
               title="This page is for the same account. Use the same settings for it.">
-              <b>This page is for the same account.</b>
+              <b>This page is for the same account</b>
             </button>
-            <p></p>
+            <br /><br />
+            <p>
+              You may have accidentally reused a nickname. In that case, you can just pick a different one.
+            </p>
             <button id="nicknamebutton" type="button"
               style="background-color: #1964dc; margin: auto; color:white; width:100%"
               title="This page is for a different account.  I'll select a new nickname.">
-              <b>Pick a new nickname.</b>
+              <b>Pick a new nickname</b>
             </button>
-            <p></p>
-          </div>
+            <br /><br />
+           </div>
           <div id="http" class="warning nodisplay">
             <span id="httptext">
               <img src="warning.png" class="icon warning-icon">
@@ -1103,13 +1111,13 @@
               </p>
               <ul id="toforgetlist"></ul>
               <div>
-                <p>Click <b>Cancel</b> if you changed your mind.</p>
+                <p>You can change your mind,</p>
                 <button id="cancelbutton" type="button" style="background-color: #21973f; color: white; width:100%"
                   title="Click to cancel forgetting the settings for the listed domain names.">
                   <b>Cancel</b>
                 </button>
                 <p>
-                  Click the <b>Permanently forget</b> button to delete the settings for the listed domain names.
+                  or permanently forget the settings for the listed domain names.
                   <b>This action cannot be undone.</b>
                 </p>
                 <button id="forgetbutton" type="button" style="background-color: #D51c24; color:white; width:100%"

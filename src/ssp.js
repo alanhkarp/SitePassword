@@ -273,16 +273,8 @@ function eventSetup() {
     get("sitename").onblur = function (e) {
         let d = isphishing(bg.settings.sitename)
         if (d) {
-            let warnElement1 = get("phishingtext1");
-            warnElement1.innerText  = "Warning: You may be at a fake site that is trying to steal your password. ";
-            warnElement1.innerText += "You previously used this nickname for";
-            get("phishingtext2").innerText = d;
-            get("phishingtext3").innerText = "The domain name asking for your password is";
-            get("phishingtext4").innerText = get("domainname").value;
-            let warnElement5 = get("phishingtext5");
-            warnElement5.innerText  = "It is common to see different domain names for the same account login. ";
-            warnElement5.innerText += "Click the top (green) button if that's not the case or the middle (red) button if it is. ";
-            warnElement5.innerText += "You can also pick a new nickname if this page is for a different account.";
+            get("phishingtext1").innerText = d;
+            get("phishingtext2").innerText = get("domainname").value;
             phishing = true;
             msgon("phishing");
             hidesettings();
