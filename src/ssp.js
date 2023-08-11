@@ -8,7 +8,6 @@ var activetab;
 var domainname;
 var mainPanelTimer;
 var autoclose = true;
-var baseHeight = 0;
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 var defaultTitle = "SitePassword";
 
@@ -40,7 +39,7 @@ window.addEventListener("resize", function() {
     if (element.offsetHeight > 600) {
         get("main").style.padding = "6px 0px 9px 12px";
     } else {
-        get("main").style.padding = "6px 15px 9px 12px";
+        get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
 
     }
   });
@@ -51,13 +50,6 @@ window.addEventListener("resize", function() {
 
 window.onload = function () {
     if (logging) console.log("popup getting active tab");
-    // Get sizes of main panel and settings panel.
-    baseHeight = get("mainpanel").getBoundingClientRect().bottom - 10;
-    get("settings").style.display = "block";
-    let settingsHeight = get("settings").getBoundingClientRect().bottom - 10;
-    console.log("popup baseHeight", baseHeight, "settingsHeight", settingsHeight);
-    get("settings").style.height = settingsHeight + "px";
-    get("settings").style.display = "none";
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         activetab = tabs[0];
         if (logging) console.log("popup tab", activetab);
@@ -89,6 +81,7 @@ function init() {
     if (get("superpw").value) {
         setSuperpwMeter(get("superpw").value);
     }
+    get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
     defaultfocus();
     ask2generate();
 }
@@ -733,6 +726,28 @@ function hideInstructions() {
     get("maininfo").title = "Open Instructions";
     get("instructionopen").classList.remove("nodisplay");
     get("instructionclose").classList.add("nodisplay");
+}
+// End of generic code for menus
+function scrollbarWidth() {
+    // Create a div with a known width and height
+    const div = document.createElement("div");
+    div.style.width = "50px";
+    div.style.height = "50px";
+  
+    // Set the overflow property to scroll
+    div.style.overflow = "scroll";
+  
+    // Append the div to the document
+    document.body.appendChild(div);
+  
+    // Calculate the width of the scrollbar
+    const scrollbarWidth = div.offsetWidth - div.clientWidth;
+  
+    // Remove the div from the document
+    document.body.removeChild(div);
+  
+    // Return the width of the scrollbar
+    return scrollbarWidth;
 }
 function setSuperpwMeter(pw) {
     const $superpw = get("superpw");
