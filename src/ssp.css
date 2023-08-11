@@ -90,7 +90,7 @@ h3 {
 p {
   margin: 1ex;
   font-family: Roboto sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 400;
   line-height: 18px;
@@ -346,13 +346,13 @@ button:enabled:active {
   cursor: pointer;
 }
 .bad-input {
-  border: 2px solid #F00 !important;
+  border: 2px solid #D51c24 !important;
   padding: 4px !important;
   color: #C00 !important;
 }
 .warning {
   padding : 1ex;
-  border : 2pt solid red;
+  border : 2pt solid #D51c24;
   border-radius: 8px;
   background-color : white;
   width: 92%;
