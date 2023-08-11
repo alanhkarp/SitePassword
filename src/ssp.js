@@ -136,7 +136,7 @@ function eventSetup() {
         // isphising() because the new bookmark hasn't been created yet when the 
         // user clicks the same account button.
         //get("superpw").focus();
-        if (get("phishing").style.display === "block") { 
+        if (!get("warnings").classList.contains("nodisplay")) {   
             autoclose = false;
             return;
         } 
@@ -1048,9 +1048,13 @@ var messages = [
 ];
 function msgon(msgname) {
     message(msgname, true);
+    get("warnings").classList.remove("nodisplay");
+    autoclose = false;
 }
 function msgoff(msgname) {
     message(msgname, false);
+    get("warnings").classList.add("nodisplay");
+    autoclose = false;
 }
 // Show only the highest priority message that is on
 function message(msgname, turnon) {
