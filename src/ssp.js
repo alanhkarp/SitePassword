@@ -802,10 +802,10 @@ function ask2generate() {
     if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
         msgon("nopw");
     } else {
-        msgoff("nopw");
+        message("nopw", false); // I don't want to hide any other open messages
         computed = generate(bg);
         if (computed) {
-            msgoff("nopw");
+            message("nopw", false); // I don't want to hide any other open messages
         } else {
             computed = "";
             if (get("superpw").value) {
