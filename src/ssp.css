@@ -19,6 +19,9 @@ body {
 */
   font-family: monospace;
 }
+.example {
+  font-family: monospace
+}
 .pw {
   color: white;
   background-color: #cc0000;
@@ -236,12 +239,10 @@ button:enabled:active {
   margin-right: 15px;
   cursor: pointer;
 }
-
 .checkbox-input {
   position: absolute;
   opacity: 0;
 }
-
 .checkbox-custom {
   position: absolute;
   top: 1px;
@@ -251,13 +252,11 @@ button:enabled:active {
   background-color: #fff;
   border: 1px solid #007bff;
 }
-
 .checkbox-custom::after {
   content: "";
   position: absolute;
   display: none;
 }
-
 .checkbox-input:checked ~ .checkbox-custom::after {
   display: none;
   left: 7px;
@@ -268,7 +267,6 @@ button:enabled:active {
   border-width: 0 3px 3px 0;
   transform: rotate(45deg);
 }
-
 .checkbox-input:checked ~ .checkbox-custom {
   background-color: rgb(136, 204, 255, 100%);
 }

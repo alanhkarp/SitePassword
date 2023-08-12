@@ -618,7 +618,6 @@ function eventSetup() {
     }
     get("nicknamebutton").onclick = function () {
         setfocus(get("sitename"));
-        showsettings();
         msgoff("phishing");
     }
     get("forgetbutton").onclick = function () {
