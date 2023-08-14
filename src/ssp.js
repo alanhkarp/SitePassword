@@ -369,13 +369,13 @@ function eventSetup() {
         }
     }
     get("siteunmenucopy").onclick = function(e) {
-        let sitepw = get("siteun").value;
-        if (!sitepw) return;
-        navigator.clipboard.writeText(sitepw).then(() => {
-            if (logging) console.log("findpw wrote to clipboard", sitepw);
+        let siteun = get("siteun").value;
+        if (!siteun) return;
+        navigator.clipboard.writeText(siteun).then(() => {
+            if (logging) console.log("popup wrote to clipboard", siteun);
             copied("siteun");
         }).catch((e) => {
-            if (logging) console.log("findpw clipboard write failed", e);
+            if (logging) console.log("popup siteun clipboard write failed", e);
         });
         menuOff("siteun", e);
     }
@@ -422,7 +422,7 @@ function eventSetup() {
         let sitepw = get("sitepw").value;
         if (!sitepw) return;
         navigator.clipboard.writeText(sitepw).then(() => {
-            if (logging) console.log("findpw wrote to clipboard", sitepw);
+            if (logging) console.log("popup wrote to clipboard", sitepw);
             chrome.action.setTitle({title: "A site password may be on the clipboard."});
             get("logopw").title = "A site password may be on the clipboard."
             get("logo").style.display = "none";
@@ -431,7 +431,7 @@ function eventSetup() {
             chrome.storage.local.set({"onClipboard": true})
             copied("sitepw");
         }).catch((e) => {
-            if (logging) console.log("findpw clipboard write failed", e);
+            if (logging) console.log("popup sitepw clipboard write failed", e);
         });
         menuOff("sitepw", e);
     }
