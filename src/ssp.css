@@ -148,6 +148,7 @@ p {
   flex: auto; 
   width: auto; 
   font-size: 12pt;
+  background-color: white;
 }
 .sticky {
   top: 0;
