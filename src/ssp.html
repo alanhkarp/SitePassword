@@ -1043,18 +1043,26 @@
             <img src="warning.png" class="icon warning-icon">
             <span class="warningtext">Warning: Possible Phishing</span>
             <p>
+              <!-- https://www.ipqualityscore.com/threat-feeds/malicious-url-scanner 
+                   https://www.abuseipdb.com/
+                   https://www.malwareurl.com/listing-urls.php
+                   https://www.scamadviser.com/
+              -->
               You may be at a fake site that is trying to steal your password.
-              You previously used this nickname for
+              You previously used the nickname
+              <span id="phishingtext0" class="phishing"></span>
+              for
             </p>
             <span id="phishingtext1" class="phishing"></span>
             <br /><br />
             <p>The domain asking for your password is</p>
             <span id="phishingtext2" class="phishing"></span>
             <br /><br />
-            <p>Check the domain name carefully to see if it's not for your account.  
-              You might see <span class="example">www.examp1e.com </span> instead 
-              of <span class="example">www.example.com</span>.  (There's a
-              <span class="example">1</span> (one) instead of an <span class="examp1e">l</span> (ell) in the first one.)
+            <p>
+              Check the domain name carefully; it may not be for your account.
+              You can check for known bad web pages at 
+              <a id="phishingcheck" href="https://www.scamadviser.com/">ScamAdvisor</a>
+              or other sites that check for phishing.
             </p>
             <button id="cancelwarning" type="button"
               style="background-color: #21973f; margin: auto; color: white; width:100%"
