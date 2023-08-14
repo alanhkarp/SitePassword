@@ -38,14 +38,14 @@ let resizelistener = window.addEventListener("resize", resizeListener);
 function resizeListener(e) {
     // Changing padding is a reize, so I have to turn off the listener
     window.removeEventListener("resize", resizelistener);
-    const element = document.getElementById("main"); 
-    if (element.offsetHeight > 600) {
-        get("main").style.padding = "6px 0px 9px 12px";
-    } else {
-        get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
-    }
-    // The listener gets turned back on after the resize is complete.
     setTimeout(() => {
+        const element = document.getElementById("main"); 
+        if (element.offsetHeight > 600) {
+            get("main").style.padding = "6px 0px 9px 12px";
+        } else {
+            get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
+        }
+        // The listener gets turned back on after the resize is complete.
         resizelistener = window.addEventListener("resize", resizeListener);        
     }, 0);
 };
