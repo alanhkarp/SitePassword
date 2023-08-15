@@ -83,6 +83,13 @@ function setupdatalist(element, list) {
         datalist.appendChild(option);
     });
 }
+function clearDatalist(listid) {
+    let datalist = get(listid);
+    if (datalist.hasChildNodes) {
+        const newDatalist = datalist.cloneNode(false);
+        datalist.replaceWith(newDatalist);
+    }
+}
 function getsettings() {
     if (logging) console.log("popup getsettings", domainname);
     chrome.runtime.sendMessage({
@@ -1063,13 +1070,6 @@ function message(msgname, turnon) {
         get(msg.name).style.display = msg.ison ? "block" : "none";
         if (ison) get(msg.name).style.display = "none";
         ison = ison || msg.ison;
-    }
-}
-function clearDatalist(listid) {
-    let datalist = get(listid);
-    if (datalist.hasChildNodes) {
-        const newDatalist = datalist.cloneNode(false);
-        datalist.replaceWith(newDatalist);
     }
 }
 function cleartransientmsgs() {
