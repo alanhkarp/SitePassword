@@ -33,22 +33,6 @@ chrome.storage.local.get("onClipboard", (v) => {
 // and for downloading the site data.
 var database = {};
 if (logging) console.log("popup starting");
-// I need to adjust the width of the main panel when the scrollbar appears.
-let resizelistener = window.addEventListener("resize", resizeListener);
-function resizeListener(e) {
-    // Changing padding is a reize, so I have to turn off the listener
-    window.removeEventListener("resize", resizelistener);
-    setTimeout(() => {
-        const element = document.getElementById("main"); 
-        if (element.offsetHeight > 600) {
-            get("main").style.padding = "6px 0px 9px 12px";
-        } else {
-            get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
-        }
-        // The listener gets turned back on after the resize is complete.
-        resizelistener = window.addEventListener("resize", resizeListener);        
-    }, 0);
-};
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
 // outside the popup window.  I can't use window.onblur because the 
@@ -722,12 +706,16 @@ function showInstructions() {
     get("maininfo").title = "Close Instructions";
     get("instructionopen").classList.add("nodisplay");
     get("instructionclose").classList.remove("nodisplay");
+    // I need to adjust the width of the main panel when the scrollbar appears.
+    get("main").style.padding = "6px 0px 9px 12px";
 }
 function hideInstructions() {
     get("instructionpanel").style.display = "none";
     get("maininfo").title = "Open Instructions";
     get("instructionopen").classList.remove("nodisplay");
     get("instructionclose").classList.add("nodisplay");
+    // I need to adjust the width of the main panel when the scrollbar appears.
+    get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
 }
 // End of generic code for menus
 function scrollbarWidth() {
