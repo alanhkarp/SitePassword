@@ -77,11 +77,13 @@ function init() {
 }
 function setupdatalist(element, list) {
     let datalist = get(element.id + "s");
+    const newDatalist = datalist.cloneNode(false);
     list.forEach((data) => {
         let option = document.createElement("option");
         option.value = data;
-        datalist.appendChild(option);
+        newDatalist.appendChild(option);
     });
+    datalist.replaceChildren(...newDatalist.children);
 }
 function clearDatalist(listid) {
     let datalist = get(listid);
@@ -256,20 +258,32 @@ function eventSetup() {
         sectionClick("superpw");
     }
     // Site Name
+    let focused = true;
     get("sitename").onfocus = function (e) {
-        let set = new Set();
+       let set = new Set();
+        let value = get("sitename").value;
         Object.keys(database.sites).forEach((sitename) => {
-            set.add(database.sites[normalize(sitename)].sitename);
+            let site = database.sites[normalize(sitename)].sitename;
+            if (!value || normalize(site).startsWith(value)) set.add(site);
         })
         let list = [... set].sort();
         setupdatalist(this, list);
+        if (!get("sitename").value && focused) {
+            get("sitename").blur();
+            focused = false;
+            get("sitename").focus();
+        } else {
+            focused = true;
+        }
     }
     get("sitename").onkeyup = function () {
         handlekeyup("sitename", "sitename");
+        clearDatalist("sitenames");
+        get("sitename").onfocus();
     }
     get("sitename").onblur = function (e) {
         let d = isphishing(bg.settings.sitename)
-        if (d) {
+        if (d && !focused) {
             get("phishingtext0").innerText = get("sitename").value;
             get("phishingtext1").innerText = d;
             get("phishingtext2").innerText = get("domainname").value;
