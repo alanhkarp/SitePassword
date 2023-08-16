@@ -1014,7 +1014,10 @@ function addForgetItem(domainname) {
 }
 function forgetDomainname(toforget) {
     delete database.domains[toforget];
+    get("sitename").value = "";
+    get("siteun").value = "";
     chrome.runtime.sendMessage({"cmd": "rootFolder"}, (rootFolderId) => {
+        if (logging) console.log("popup rootFolderId", rootFolderId);
         chrome.bookmarks.getChildren(rootFolderId, (allchildren) => {
             for (let i = 0; i < allchildren.length; i++) {
                 if (allchildren[i].title === toforget) {
@@ -1029,6 +1032,7 @@ function forgetDomainname(toforget) {
                 }
             }
         });
+        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
     });
 }
 function specialclick() {
