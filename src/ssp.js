@@ -337,16 +337,28 @@ function eventSetup() {
         sectionClick("sitename");
     }
     // Site Username
+    focused = true;
     get("siteun").onfocus = function (e) {
         let set = new Set();
+        let value = get("siteun").value;
         Object.keys(database.sites).forEach((sitename) => {
-            set.add(database.sites[normalize(sitename)].username);
+            let username = database.sites[normalize(sitename)].username;
+            if (!value || normalize(username).startsWith(value)) set.add(username);
         })
         let list = [... set].sort();
         setupdatalist(this, list);
+        if (!get("siteun").value && focused) {
+            get("siteun").blur();
+            focused = false;
+            get("siteun").focus();
+        } else {    
+            focused = true;
+        }
     }
     get("siteun").onkeyup = function () {
         handlekeyup("siteun", "username");
+        clearDatalist("siteuns");
+        get("siteun").onfocus();
     }
     get("siteun").onblur = function (e) {
         handleblur("siteun", "username");
