@@ -1124,7 +1124,7 @@ function instructionSetup() {
     if (logging) console.log("popup instructions", instructions);
     for (let instruction of instructions) {
         let section = instruction.id.replace("info", "");
-        if (section === "shared") {
+        if (section === "shared" && !chrome.bookmarks) {
             get("sharedinfo").style.display = "none";
         } else if (section === "sync") {
             if (chrome.bookmarks) {
