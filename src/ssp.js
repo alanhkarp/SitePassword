@@ -1,7 +1,7 @@
 'use strict';
 import { webpage } from "./bg.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = true;
+const testMode = false;
 let logging = testMode;
 if (logging) console.log("Version 1.0");
 var activetab;
@@ -84,11 +84,13 @@ function setupdatalist(element, list) {
         newDatalist.appendChild(option);
     });
     datalist.replaceChildren(...newDatalist.children);
-    let color = "white";
     if (datalist.children.length > 0) {
-        color = "rgb(136, 204, 255, 20%)";
+        get("main").classList.remove("datalist-closed");
+        get("main").classList.add("datalist-open");
+    } else {
+        get("main").classList.remove("datalist-open");
+        get("main").classList.add("datalist-closed");
     }
-    get("main").style.backgroundColor = color;
 }
 function clearDatalist(listid) {
     let datalist = get(listid);
@@ -96,7 +98,8 @@ function clearDatalist(listid) {
         const newDatalist = datalist.cloneNode(false);
         datalist.replaceWith(newDatalist);
     }
-    get("main").style.backgroundColor = "white";
+    get("main").classList.remove("datalist-open");
+    get("main").classList.add("datalist-closed");
 }
 function getsettings() {
     if (logging) console.log("popup getsettings", domainname);

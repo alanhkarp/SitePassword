@@ -141,6 +141,14 @@ p {
   height: auto;
   width: 24em;
 }
+.datalist-open {
+  background-color: rgb(136, 204, 255, 20%);
+  transition: background-color 1s;
+}
+.datalist-closed {
+  background-color: white;
+  transition: background-color 1s;
+}
 .side-panel {
   top: 5px;
   margin-top: 8px;
