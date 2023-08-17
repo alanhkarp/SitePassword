@@ -84,6 +84,11 @@ function setupdatalist(element, list) {
         newDatalist.appendChild(option);
     });
     datalist.replaceChildren(...newDatalist.children);
+    if (datalist.children.length > 0) {
+        get("main").style.backgroundColor = "rgb(136, 204, 255, 20%)";
+    } else {
+        get("main").style.backgroundColor = "white";
+    }
 }
 function clearDatalist(listid) {
     let datalist = get(listid);
@@ -91,6 +96,7 @@ function clearDatalist(listid) {
         const newDatalist = datalist.cloneNode(false);
         datalist.replaceWith(newDatalist);
     }
+    get("main").style.backgroundColor = "white";
 }
 function getsettings() {
     if (logging) console.log("popup getsettings", domainname);
