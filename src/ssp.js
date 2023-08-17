@@ -84,11 +84,11 @@ function setupdatalist(element, list) {
         newDatalist.appendChild(option);
     });
     datalist.replaceChildren(...newDatalist.children);
+    let color = "white";
     if (datalist.children.length > 0) {
-        get("main").style.backgroundColor = "rgb(136, 204, 255, 20%)";
-    } else {
-        get("main").style.backgroundColor = "white";
+        color = "rgb(136, 204, 255, 20%)";
     }
+    get("main").style.backgroundColor = color;
 }
 function clearDatalist(listid) {
     let datalist = get(listid);
