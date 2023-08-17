@@ -267,7 +267,7 @@ function eventSetup() {
         sectionClick("superpw");
     }
     // Site Name
-    let focused = true;
+    let focused = true; // Needed so I can blur and refocus to get the datalist updated
     get("sitename").onfocus = function (e) {
        let set = new Set();
         let value = get("sitename").value;
@@ -346,7 +346,7 @@ function eventSetup() {
         sectionClick("sitename");
     }
     // Site Username
-    focused = true;
+    focused = true; // Needed so I can blur and refocus to get the datalist updated
     get("siteun").onfocus = function (e) {
         let set = new Set();
         let value = get("siteun").value;
