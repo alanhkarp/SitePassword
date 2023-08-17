@@ -292,7 +292,7 @@ function eventSetup() {
     }
     get("sitename").onblur = function (e) {
         let d = isphishing(bg.settings.sitename)
-        if (d && !focused) {
+        if (d) {
             get("phishingtext0").innerText = get("sitename").value;
             get("phishingtext1").innerText = d;
             get("phishingtext2").innerText = get("domainname").value;
