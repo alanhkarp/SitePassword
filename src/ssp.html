@@ -289,8 +289,8 @@
               </p>
               <p>
                 SitePassword doesn't prevent you from using a weak super password,
-                but it does warn you. There is a strength indicator directly below
-                the super password field. It uses a meter, words, and color to
+                but it does warn you. There is a strength indicator directly above
+                the super password field. It uses a meter and color to
                 let you know how strong your super password is.
               </p>
               <p>
@@ -371,15 +371,15 @@
                   <li>This is the first time you've used SitePassword for this account.</li>
                   <li>This is a different domain name for logging into the same account.</li>
                   <li>You are at a fake site that is trying to steal your password.</li>
+                </ul>
+                <li>SitePassword couldn't find the password field.</li>
+                <li>SitePassword incorrectly guessed the location of the userid field.</li>
               </ol>
-              <li>SitePassword couldn't find the password field.</li>
-              <li>SitePassword incorrectly guessed the location of the userid field.</li>
-              </ol>
-              </p>
               <p>
+                In the last two cases, you'll have to open the popup and copy your password to the
+                clipboard. You can then paste it into the password field.
               </p>
-              </p>
-                </div>
+            </div>
           </section>
           <section id="sitepwinfo" name="instructions" class="instructionpaneltext">
             <svg id="opensitepw" class="accordian" style="display: block;" width="24px" height="24px"
@@ -887,7 +887,8 @@
           </div>
         </div>
       </div>
-      <div id="main" class="sticky main datalist-closed" style="flex: auto;">
+      <div id="main" class="sticky main datalist-closed" style="flex: auto; position: stick; top: 0;">
+        <div id="spacer"></div>
         <div class="form-row">
           <img id="logo" class="logo" src="icon128.png" />
           <img id="logopw" class="logo" src="icon128pw.png" style="display: none;">
