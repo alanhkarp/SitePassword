@@ -39,6 +39,11 @@ if (logging) console.log("popup starting");
 // popup window closes before the message it sends gets delivered.
 
 window.onload = function () {
+    // Hide some instructions if the browser doesn't support the bookmarks API
+    let tohide = document.getElementsByName("hideifnobookmarks");
+    for (let element of tohide) {
+        if (!chrome.bookmarks) element.classList.add("nodisplay");
+    }
     if (logging) console.log("popup getting active tab");
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         activetab = tabs[0];
