@@ -134,6 +134,10 @@ function eventSetup() {
     // is a race between message delivery and the next user click.  Fortunately, messages
     // are delivered in just a couple of ms, so there's no problem.  Just be aware that
     // this race is the source of any problems related to loss of the message sent here.
+    get("root").onscroll = function () {
+        let top = -get("content").getBoundingClientRect().top;
+        get("spacer").style.height = top + "px"; 
+    }
     get("root").onmouseleave = function (event) {
         // If I close the window immediately, then messages in flight get lost
         if (autoclose && !document.elementFromPoint(event.pageX, event.pageY)) {
