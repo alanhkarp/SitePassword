@@ -14,7 +14,7 @@ const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains":
 var database = clone(databaseDefault);
 var domainname = "";
 var protocol;
-var rootFolder = "foo";
+var rootFolder = {id: -1};
 var pwcount = 0;
 var createBookmarksFolder = true;
 export const webpage = "https://sitepassword.info/index.html";

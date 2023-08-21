@@ -160,7 +160,6 @@ function eventSetup() {
         //get("superpw").focus();
         if (warningMsg) {   
             autoclose = false;
-            return;
         } 
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg && bg.settings) {
