@@ -12,6 +12,7 @@ const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 var defaultTitle = "SitePassword";
 
 var phishing = false;
+var warningMsg = false;
 var bg = { "settings": {} };
 
 chrome.storage.local.get("onClipboard", (v) => {
@@ -60,9 +61,12 @@ window.onload = function () {
         get("sitepw").value = "";
         if (logging) console.log("popup got tab", domainname, activetab);
         if (logging) console.log("popup getting metadata");
-        instructionSetup();
-        getsettings();
-        eventSetup();
+        setTimeout(() => {
+            debugger;
+            instructionSetup();
+            getsettings();
+            eventSetup();
+            }, 0); // set to 1000 for debugging
     });
 }
 function init() {
@@ -135,6 +139,7 @@ function eventSetup() {
     // are delivered in just a couple of ms, so there's no problem.  Just be aware that
     // this race is the source of any problems related to loss of the message sent here.
     get("root").onscroll = function () {
+        if (warningMsg) return;
         let top = -get("content").getBoundingClientRect().top;
         get("spacer").style.height = top + "px"; 
     }
@@ -153,7 +158,7 @@ function eventSetup() {
         // isphising() because the new bookmark hasn't been created yet when the 
         // user clicks the same account button.
         //get("superpw").focus();
-        if (!get("warnings").classList.contains("nodisplay")) {   
+        if (warningMsg) {   
             autoclose = false;
             return;
         } 
@@ -1101,12 +1106,10 @@ var messages = [
 ];
 function msgon(msgname) {
     message(msgname, true);
-    get("warnings").classList.remove("nodisplay");
     autoclose = false;
 }
 function msgoff(msgname) {
     message(msgname, false);
-    get("warnings").classList.add("nodisplay");
     autoclose = false;
 }
 // Show only the highest priority message that is on
@@ -1119,6 +1122,7 @@ function message(msgname, turnon) {
         if (ison) get(msg.name).style.display = "none";
         ison = ison || msg.ison;
     }
+    warningMsg = ison;
 }
 function cleartransientmsgs() {
     for (var i = 0; i < messages.length; i++) {
