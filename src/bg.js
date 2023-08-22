@@ -146,6 +146,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 defaultSettings = request.newDefaults;
                 persistMetadata(sendResponse);
             } else if (request.cmd === "rootFolder") {
+                // bg might have been suspended and lost its value
+                getRootFolder(sendResponse, (rootFolder) => {
+                    sendResponse(rootFolder[0].id);
+                });
                 sendResponse(rootFolder.id);
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin || sender.url);
