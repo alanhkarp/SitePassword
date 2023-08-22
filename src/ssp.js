@@ -283,7 +283,7 @@ function eventSetup() {
     let focused = true; // Needed so I can blur and refocus to get the datalist updated
     get("sitename").onfocus = function (e) {
        let set = new Set();
-        let value = get("sitename").value;
+        let value = normalize(get("sitename").value);
         Object.keys(database.sites).forEach((sitename) => {
             let site = database.sites[normalize(sitename)].sitename;
             if (!value || normalize(site).startsWith(value)) set.add(site);
@@ -362,7 +362,7 @@ function eventSetup() {
     focused = true; // Needed so I can blur and refocus to get the datalist updated
     get("siteun").onfocus = function (e) {
         let set = new Set();
-        let value = get("siteun").value;
+        let value = normalize(get("siteun").value);
         Object.keys(database.sites).forEach((sitename) => {
             let username = database.sites[normalize(sitename)].username;
             if (!value || normalize(username).startsWith(value)) set.add(username);
@@ -773,6 +773,7 @@ function hideInstructions() {
     get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
 }
 // End of generic code for menus
+// Thanks, Copilot
 function scrollbarWidth() {
     // Create a div with a known width and height
     const div = document.createElement("div");
