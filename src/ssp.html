@@ -115,7 +115,7 @@
             <button id="makedefault" type="button"
               style="position: relative; left: 5px"
               target="_blank" title="Make the settings in the box your default">
-              Save as Default
+              Save as default
             </button>
             <span style="flex:1"></span>
           </div>
@@ -123,7 +123,7 @@
         <div class="form-row">
           <button id="sitedatagetbutton" type="button" style="display: inline; position: relative; top: 10px" target="_blank"
             title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
-            Download Site Data
+            Download site sata
           </button>
           <span style="flex:1"></span>
           <a id="data" href="data:application/octet-stream," target="_blank" style="display: none;"
@@ -207,8 +207,8 @@
               <p>
                 Mouse over to the login form's password field, which now should tell you to
                 <em>Click here for password</em>. Click, and your password gets
-                filled in. When you return to the page on any machine that you synchronize with
-                and has the extenstion installed, you'll see your user name filled in and
+                filled in. When you return to the same web page on any machine that you synchronize bookmarks with
+                and that has the extenstion installed, you'll see your user name filled in and
                 instructions to <em>Click here for password</em>. Click, and your
                 password gets filled in.
               </p>
@@ -500,6 +500,81 @@
               </p>
             </div>
           </section>
+          <section id="settingsinfo" name="instructions" class="instructionpaneltext">
+            <svg id="opensettings" class="accordian" style="display: block;" width="24px" height="24px"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 11 3 3 3-3" />
+            </svg>
+            <svg id="closesettings" class="accordian" style="display: none;" width="24px" height="24px"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 13 3-3 3 3" />
+            </svg>
+            <h3>Settings</h3>
+            <div id="settingsdiv" style="display:none">
+              <p>
+                The settings panel has a number of options divided
+                into two sections.  The first section is about your super and site passwords.
+                The second section controls how SitePassword computes your site password.
+                Click on the 
+                <svg class="menu-icon" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                  fill="none">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                </svg>
+                icon to open the settings panel and the  
+                <svg class="menu-icon" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                  fill="none">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.994 6.994 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.992 6.992 0 0 1-1.819 1.052L14 21z" />
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="m9 12 2 2 4-4" />
+                </svg>
+                icon to close the panel.  
+              </p> 
+             <p>
+                The top section of the settings panel has three settings related to your super and site passwords.  
+              </p>
+              <p>
+                Unlike most password managers that calculate your password, SitePassword gives you
+                the option to provide your own.  This is useful if you have a password that you
+                can't change, such as one provided by your employer.  You can also use this option
+                if SitePassword can't compute a password acceptable by the site. 
+              </p>
+              <p>
+                The password you 
+                provide is encrypted with the computed site password as a key.  That means you must 
+                fill in the form before entering your password.  After you fill in the form, open the
+                settings and check the <em>Provide your own site password</em> check box.
+                You'll then be able to enter your password into the site password field.
+              </p>
+              <p>
+                You normally leave your super password in the form, but you might not want to do 
+                that on a shared machine.  Check the <em>Clear super password on use</em> to clear 
+                your super password every time you use the calculated site password.  You'll have to
+                enter your super password every time you use SitePassword.
+              </p>
+              <p>
+                Your site password is not hidden by default for two reasons.  One is that it helps 
+                see how different the site password are for different inputs.  The second is that it's cool watching
+                the site password change as you type in the form.  Check the <em>Hide site password
+                by default</em> to hide the site password by default.
+              </p>
+              <p>
+                The next section controls how SitePassword computes your site password and is 
+                explained in <span id="acceptableref"><a href="#acceptableinfo">Computing an Acceptable Password</a></span>.
+              <p>
+                The <em>Download site data</em> button is explained in 
+                <span id="downloadref"><a href="#downloadinfo">Downloading Your Settings</a></span>.
+              </p>
+            </div>
+          </section>
           <section id="acceptableinfo" name="instructions" class="instructionpaneltext">
             <svg id="openacceptable" class="accordian" style="display: block;" width="24px" height="24px"
               viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
@@ -515,7 +590,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Computing an Acceptable Password</h3>
+            <h3>Computing an acceptable password</h3>
             <div id="acceptablediv" style="display: none;">
               <p>
                 Some web sites have strict password rules, how long it must be,
@@ -531,6 +606,18 @@
                 and change the appropriate menu entries. SitePassword
                 was tested on hundreds of web sites to make sure it can always
                 compute a valid password.
+              </p>
+              <p>
+                The defaults 
+                were chosen because SitePassword can calculate a password that is acceptable to most
+                sites with them.  You can change these settings if you run into a site that doesn't accept the
+                calculated password. 
+              </p>
+              <p>
+                Although these settings produce valid passwords for most sites, you might feel more comfortable generating
+                stronger site passwords by making them longer or by including special characters.  Click
+                <em>Save as default</em> to make these settings the default for all new accounts.
+              </p>
             </div>
           </section>
           <section id="changeinfo" name="instructions" class="instructionpaneltext">

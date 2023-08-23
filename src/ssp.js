@@ -679,6 +679,7 @@ function eventSetup() {
         }
         msgoff("forget");
     }
+    // I need to handle the case where the user clicks on the link in the instructions or help
     get("sharedref").onclick = function (e) {
         e.stopPropagation();
         sectionClick("shared");
@@ -688,6 +689,14 @@ function eventSetup() {
         showInstructions();
         sectionClick("shared");
     } 
+    get("downloadref").onclick = function (e) {
+        e.stopPropagation();
+        sectionClick("download");
+    }
+    get("acceptableref").onclick = function (e) {
+        e.stopPropagation();
+        sectionClick("acceptable");
+    }
     get("phishingcheck").onclick = function (e) {
         e.stopPropagation();
         chrome.tabs.create({url: this.href});
@@ -769,7 +778,7 @@ function hideInstructions() {
     get("maininfo").title = "Open Instructions";
     get("instructionopen").classList.remove("nodisplay");
     get("instructionclose").classList.add("nodisplay");
-    // I need to adjust the width of the main panel when the scrollbar appears.
+    // I need to adjust the width of the main panel when the scrollbar disappears.
     get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
 }
 // End of generic code for menus
