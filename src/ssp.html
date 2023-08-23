@@ -335,19 +335,19 @@
               </p>
             </div>
           </section>
-          <section id="siteuninfo" name="instructions" class="instructionpaneltext">
-            <svg id="opensiteun" class="accordian" style="display: block;" width="24px" height="24px"
+          <section id="usernameinfo" name="instructions" class="instructionpaneltext">
+            <svg id="openusername" class="accordian" style="display: block;" width="24px" height="24px"
               viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
               <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 11 3 3 3-3" />
             </svg>
-            <svg id="closesiteun" class="accordian" style="display: none;" width="24px" height="24px" 
+            <svg id="closeusername" class="accordian" style="display: none;" width="24px" height="24px" 
               viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
               <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 13 3-3 3 3" />
             </svg>
             <h3>Your User Name</h3>
-            <div id="siteundiv" style="display: none;">
+            <div id="usernamediv" style="display: none;">
               <p>
                 Your user name is the name you use to log in to the site. It is
                 associated with the nickname for the account and is used to 
@@ -840,7 +840,7 @@
             </button>
           </div>
         </div>
-        <div id="siteunhelptext" name="help" class="instructionpaneltext helptext">
+        <div id="usernamehelptext" name="help" class="instructionpaneltext helptext">
           <br />
           <h3>User Name Help</h3>
           <p>
@@ -853,11 +853,11 @@
             <span id="sharedref2"><a href="#sharedinfo">Shared Machines</a></span>.</span>   
           </p>
           <div class="form-row">
-            <button id="siteunhelptextclose" class="button" title="Close this help text.">
+            <button id="usernamehelptextclose" class="button" title="Close this help text.">
               Close
             </button>
             &nbsp;&nbsp;
-            <button id="siteunhelptextmore" title="Learn more about your username">
+            <button id="usernamehelptextmore" title="Learn more about your username">
               Learn more
             </button>
           </div>
@@ -980,31 +980,31 @@
           <datalist id="sitenames"></datalist>
         </div>
         <div class="form-row">
-          <label for="siteun" class="label">User Name
+          <label for="username" class="label">User Name
           </label>
-          <input id="siteun" list="siteuns" class="sans" type="text" title="Your user-id for this account"
+          <input id="username" list="usernames" class="sans" type="text" title="Your user-id for this account"
             autocomplete="off" value="" placeholder="Your user-id for this account" />
-          <div id="siteuncopied" class="inner-icon-2 copied nodisplay">copied!</div>
-          <div id="siteun3bluedots" class="icon inner-icon-1" 
+          <div id="usernamecopied" class="inner-icon-2 copied nodisplay">copied!</div>
+          <div id="username3bluedots" class="icon inner-icon-1" 
             title=" Click for menu" style="display: block">
             <img src="3bluedots.png" class="dots">
           </div>
-          <div id="siteunmenu" class="nodisplay menu inner-icon-2">
-            <div id="siteunmenuforget" display="block"
+          <div id="usernamemenu" class="nodisplay menu inner-icon-2">
+            <div id="usernamemenuforget" display="block"
               title="Click to enable forgetting all domain names associated with this userid.">
               <img src="forget.png" class="icon menu-icon">
             </div>
-            <div id="siteunmenucopy" display="block" title="Copy your user name to the clipboard.">
+            <div id="usernamemenucopy" display="block" title="Copy your user name to the clipboard.">
               <svg class="icon menu-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M8 5v0a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v0M8 5v0a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v0" />
               </svg>
             </div>
-            <div id="siteunmenuhelp" title="Find out more about how SitePassword uses your user name for this account.">
+            <div id="usernamemenuhelp" title="Find out more about how SitePassword uses your user name for this account.">
               <img src="help.png" class="icon menu-icon">
             </div>
           </div>
-          <datalist id="siteuns"></datalist>
+          <datalist id="usernames"></datalist>
         </div>
         <div class="form-row">
           <label for="sitepw" class="label">Site Password</label>

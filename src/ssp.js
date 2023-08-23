@@ -72,7 +72,7 @@ window.onload = function () {
 function init() {
     get("superpw").value = bg.superpw || "";
     get("sitename").value = bg.settings.sitename || "";
-    get("siteun").value = bg.settings.username || "";
+    get("username").value = bg.settings.username || "";
     fill();
     let protocol = activetab.url.split(":")[0];
     if (logging) console.log("popup testing for http", protocol);
@@ -165,7 +165,7 @@ function eventSetup() {
         if (bg && bg.settings) {
             bg.superpw = get("superpw").value || "";
             bg.settings.sitename = get("sitename").value;
-            bg.settings.username = get("siteun").value;
+            bg.settings.username = get("username").value;
             if (bg.settings.sitename) {
                 database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
                 database.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
@@ -313,13 +313,13 @@ function eventSetup() {
             msgon("phishing");
             hidesettings();
             get("superpw").disabled = true;
-            get("siteun").disabled = true;
+            get("username").disabled = true;
             get("sitepw").value = "";
         } else {
             phishing = false;
             msgoff("phishing");
             get("superpw").disabled = false;
-            get("siteun").disabled = false
+            get("username").disabled = false
             handleblur("sitename", "sitename");
             changePlaceholder();
         }
@@ -360,51 +360,51 @@ function eventSetup() {
     }
     // Site Username
     focused = true; // Needed so I can blur and refocus to get the datalist updated
-    get("siteun").onfocus = function (e) {
+    get("username").onfocus = function (e) {
         let set = new Set();
-        let value = normalize(get("siteun").value);
+        let value = normalize(get("username").value);
         Object.keys(database.sites).forEach((sitename) => {
             let username = database.sites[normalize(sitename)].username;
             if (!value || normalize(username).startsWith(value)) set.add(username);
         })
         let list = [... set].sort();
         setupdatalist(this, list);
-        if (!get("siteun").value && focused) {
-            get("siteun").blur();
+        if (!get("username").value && focused) {
+            get("username").blur();
             focused = false;
-            get("siteun").focus();
+            get("username").focus();
         } else {    
             focused = true;
         }
     }
-    get("siteun").onkeyup = function () {
-        handlekeyup("siteun", "username");
-        clearDatalist("siteuns");
-        get("siteun").onfocus();
+    get("username").onkeyup = function () {
+        handlekeyup("username", "username");
+        clearDatalist("usernames");
+        get("username").onfocus();
     }
-    get("siteun").onblur = function (e) {
-        handleblur("siteun", "username");
-        clearDatalist("siteuns");
+    get("username").onblur = function (e) {
+        handleblur("username", "username");
+        clearDatalist("usernames");
         changePlaceholder();
     }
-    get("siteunmenu").onmouseleave = function (e) {
-        menuOff("siteun", e);
+    get("usernamemenu").onmouseleave = function (e) {
+        menuOff("username", e);
     }
-    get("siteun3bluedots").onmouseover = function (e) {
-        let username = get("siteun").value;
+    get("username3bluedots").onmouseover = function (e) {
+        let username = get("username").value;
         if (username) {
-            get("siteunmenuforget").style.opacity = "1";
-            get("siteunmenucopy").style.opacity = "1";
+            get("usernamemenuforget").style.opacity = "1";
+            get("usernamemenucopy").style.opacity = "1";
         } else {
-            get("siteunmenuforget").style.opacity = "0.5";
-            get("siteunmenucopy").style.opacity = "0.5";
+            get("usernamemenuforget").style.opacity = "0.5";
+            get("usernamemenucopy").style.opacity = "0.5";
         }
-         menuOn("siteun", e);
+         menuOn("username", e);
     }
-    get("siteun3bluedots").onclick = get("siteun3bluedots").onmouseover;
-    get("siteunmenuforget").onclick = function (e) {
+    get("username3bluedots").onclick = get("username3bluedots").onmouseover;
+    get("usernamemenuforget").onclick = function (e) {
         msgon("forget");
-        let toforget = normalize(get("siteun").value);
+        let toforget = normalize(get("username").value);
         let $list = get("toforgetlist");
         for (let domain in database.domains) {
             let sitename = database.domains[domain];
@@ -413,26 +413,26 @@ function eventSetup() {
             }
         }
     }
-    get("siteunmenucopy").onclick = function(e) {
-        let siteun = get("siteun").value;
-        if (!siteun) return;
-        navigator.clipboard.writeText(siteun).then(() => {
-            if (logging) console.log("popup wrote to clipboard", siteun);
-            copied("siteun");
+    get("usernamemenucopy").onclick = function(e) {
+        let username = get("username").value;
+        if (!username) return;
+        navigator.clipboard.writeText(username).then(() => {
+            if (logging) console.log("popup wrote to clipboard", username);
+            copied("username");
         }).catch((e) => {
-            if (logging) console.log("popup siteun clipboard write failed", e);
+            if (logging) console.log("popup username clipboard write failed", e);
         });
-        menuOff("siteun", e);
+        menuOff("username", e);
     }
-    get("siteunmenuhelp").onclick = function (e) {
-        helpItemOn("siteun");
+    get("usernamemenuhelp").onclick = function (e) {
+        helpItemOn("username");
     }
-    get("siteunhelptextclose").onclick = function (e) {
+    get("usernamehelptextclose").onclick = function (e) {
         helpAllOff();
     }
-    get("siteunhelptextmore").onclick = function (e) {
+    get("usernamehelptextmore").onclick = function (e) {
         helpAllOff();
-        sectionClick("siteun");
+        sectionClick("username");
     }
     // Site Password
     get("sitepw").onblur = function (e) {
@@ -514,7 +514,7 @@ function eventSetup() {
     document.oncopy = get("clearclipboard").onclick;
     get("settingssave").onclick = hidesettings;
     get("providesitepw").onclick = function () {
-        if (!(get("sitename").value && get("siteun").value)) return;
+        if (!(get("sitename").value && get("username").value)) return;
         bg.settings.providesitepw = get("providesitepw").checked;
         if (get("providesitepw").checked) {
             get("sitepw").readOnly = false;
@@ -642,14 +642,14 @@ function eventSetup() {
     get("warningbutton").onclick = function () {
         phishing = false;
         get("superpw").disabled = false;
-        get("siteun").disabled = false;
+        get("username").disabled = false;
         get("sitename").disabled = false;
         msgoff("phishing");
         var sitename = getlowertrim("sitename");
         bg.settings = clone(database.sites[sitename]);
         bg.settings.sitename = get("sitename").value;
         database.domains[get("domainname").value] = bg.settings.sitename;
-        get("siteun").value = bg.settings.username;
+        get("username").value = bg.settings.username;
         showsettings();
         ask2generate();
     }
@@ -658,7 +658,7 @@ function eventSetup() {
         msgoff("phishing");
         get("domainname").value = "";
         get("sitename").value = "";
-        get("siteun").value = "";
+        get("username").value = "";
         chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
         window.close();
     }
@@ -713,14 +713,14 @@ function allMenusOff() {
     get("domainnamemenu").style.display = "none";
     get("superpwmenu").style.display = "none";
     get("sitenamemenu").style.display = "none";
-    get("siteunmenu").style.display = "none";
+    get("usernamemenu").style.display = "none";
     get("sitepwmenu").style.display = "none";
 }
 function dotsAllOn() {
     get("domainname3bluedots").style.display = "block";
     get("superpw3bluedots").style.display = "block";
     get("sitename3bluedots").style.display = "block";
-    get("siteun3bluedots").style.display = "block";
+    get("username3bluedots").style.display = "block";
     get("sitepw3bluedots").style.display = "block";
 }
 function helpItemOn(which) {
@@ -817,7 +817,7 @@ function handleblur(element, field) {
         bg.settings[field] = get(element).value;
     }
     bg.settings.characters = characters(bg.settings, database);
-    if (get("sitepw").value && get("sitename").value && get("siteun").value) {
+    if (get("sitepw").value && get("sitename").value && get("username").value) {
         get("providesitepw").disabled = false;
         get("providesitepwlabel").style.opacity = 1.0;
     } else {
@@ -837,7 +837,7 @@ function handleclick(which) {
     ask2generate();
 }
 function changePlaceholder() {
-    let u = get("siteun").value
+    let u = get("username").value
     if (get("superpw").value && get("sitename").value && u) {
         if (logging) console.log("popup sending fill fields", u);
         chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
@@ -847,7 +847,7 @@ function setfocus(element) {
     element.focus();
 }
 function defaultfocus() {
-    if (!get("siteun").value) setfocus(get("siteun"));
+    if (!get("username").value) setfocus(get("username"));
     if (!get("sitename").value) setfocus(get("sitename"));
     if (!get("superpw").value) setfocus(get("superpw"));
 }
@@ -877,25 +877,25 @@ function ask2generate() {
 }
 function fill() {
     if (bg.settings[domainname]) {
-        if (!get("siteun").value) get("siteun").value = bg.settings.username;
+        if (!get("username").value) get("username").value = bg.settings.username;
         if (!get("sitename").value) get("sitename").value = bg.settings.sitename;
     } else {
         bg.settings.domainname = getlowertrim("domainname");
         bg.settings.sitename = getlowertrim("sitename");
-        bg.settings.username = getlowertrim("siteun");
+        bg.settings.username = getlowertrim("username");
     }
     get("superpw").value = bg.superpw || "";
     if (logging) console.log("popup fill with", bg.settings.domainname, isSuperPw(bg.superpw), bg.settings.sitename, bg.settings.username);
     get("providesitepw").checked = bg.settings.providesitepw;
-    if (get("superpw").value && get("sitename").value && get("siteun").value) {
+    if (get("superpw").value && get("sitename").value && get("username").value) {
         get("providesitepw").disabled = false;
         get("providesitepwlabel").style.opacity = 1.0;
     } else {
         get("providesitepw").disabled = true;
         get("providesitepwlabel").style.opacity = 0.5;
     }
-    if (logging) console.log("popup sitename username disabled", get("sitename").value, get("siteun").value, get("providesitepw").disabled);
-    if (get("providesitepw").checked && get("superpw").value && get("sitename").value && get("siteun").value) {
+    if (logging) console.log("popup sitename username disabled", get("sitename").value, get("username").value, get("providesitepw").disabled);
+    if (get("providesitepw").checked && get("superpw").value && get("sitename").value && get("username").value) {
         get("sitepw").readOnly = false;
         get("sitepw").placeholder = "Enter your super password";
         get("superpw").focus();
@@ -1050,7 +1050,7 @@ function addForgetItem(domainname) {
 function forgetDomainname(toforget) {
     delete database.domains[toforget];
     get("sitename").value = "";
-    get("siteun").value = "";
+    get("username").value = "";
     chrome.runtime.sendMessage({"cmd": "rootFolder"}, (rootFolderId) => {
         if (logging) console.log("popup rootFolderId", rootFolderId);
         chrome.bookmarks.getChildren(rootFolderId, (allchildren) => {
@@ -1059,7 +1059,7 @@ function forgetDomainname(toforget) {
                     chrome.bookmarks.remove(allchildren[i].id, () => {
                         if (logging) console.log("popup removed bookmark for", toforget);
                         get("sitename").value = "";
-                        get("siteun").value = "";
+                        get("username").value = "";
                         getsettings();
                         chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": " ", "p": " ", "readyForClick": false });
                     });                       
