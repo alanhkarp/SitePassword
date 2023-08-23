@@ -326,7 +326,7 @@ button:enabled:active {
   top: 2px;
   width: 12pt;
   height: 12pt;
-  background-color: white;
+  background-color: transparent;
 }
 .menu-icon-blue {
   background-color: rgb(136, 204, 255, 20%);

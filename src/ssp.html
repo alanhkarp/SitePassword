@@ -222,6 +222,67 @@
               </p>
             </div>
           </section>
+          <section id="menusinfo" name="instructions" class="instructionpaneltext">
+            <svg id="openmenus" class="accordian" style="display: block;" width="24px" height="24px"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 11 3 3 3-3" />
+            </svg>
+            <svg id="closemenus" class="accordian" style="display: none;" width="24px" height="24px"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 13 3-3 3 3" />
+            </svg>
+            <h3>Menus</h3>
+            <div id="menusdiv" style="display:none">
+              <p>
+                Each of the input fields has a menu that shows up when you mouse over 
+                (or tap on a touchscreen) the 3 dots in the right side of the field.  Each field has a 
+                particular set of menu items.  
+                If an icon is grayed out, it is not available for that field.  For example, you can't show  
+                your super password if the field is empty.
+              </p>
+              <br />
+              <p>
+                <img src="help.png" alt="help" style="width: 16px; height: 16px; vertical-align: middle;"/> &nbsp; 
+                Every field has a help option, 
+                which provides a brief summary of the information provided in these Instructions.
+              </p>
+              <p>
+                <img src="forget.png" alt="forget" style="width: 16px; height: 16px; vertical-align: middle;"/> &nbsp;
+                The domain name, sitename and username fields have a Forget option.  For example, if you click this icon in the site nickname 
+                field, you will be given the opportunity to permanently forget the settings for all domain names associated 
+                with that site nickname.
+              </p>
+              <p style="position: relative; top: -12px">
+                <svg class="icon menu-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" style="top: 7px">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M8 5v0a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v0M8 5v0a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v0" />
+                </svg>
+                  The username and site password fields have a Copy option, which copies the contents of the field to the clipboard.
+              </p>
+              <p style="position: relative; top: -21px">
+                <svg class="icon menu-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" style="top: 7px">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 6.362A9.707 9.707 0 0 1 12 5c6.307 0 9.367 5.683 9.91 6.808.06.123.06.261 0 .385-.352.728-1.756 3.362-4.41 5.131M14 18.8a9.93 9.93 0 0 1-2 .2c-6.307 0-9.367-5.683-9.91-6.808a.44.44 0 0 1 0-.386c.219-.452.84-1.632 1.91-2.885m6 .843A3 3 0 0 1 14.236 14M3 3l18 18" />
+                </svg>
+                <svg class="icon menu-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" style="top: 7px">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 5c-6.307 0-9.367 5.683-9.91 6.808a.435.435 0 0 0 0 .384C2.632 13.317 5.692 19 12 19s9.367-5.683 9.91-6.808a.435.435 0 0 0 0-.384C21.368 10.683 18.308 5 12 5z" />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2" />
+                </svg>  
+                &nbsp; 
+                The user name and site password fields give you the option of showing or hiding the contents of the field.
+                By default, your super password is hidden, and your site password is not.  You can change this behavior of 
+                the site password field by clicking the <em>Hide site password by default</em> option in the settings panel.
+              </p>
+            </div>
+          </section>
           <section id="domainnameinfo" name="instructions" class="instructionpaneltext">
             <svg id="opendomainname" class="accordian" style="display: block;" width="24px" height="24px"
               viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
@@ -873,8 +934,7 @@
           <p>
             If the password field on
             the login form doesn't say <em>Click here for password</em>, you
-            can use the Copy option on the menu that shows up when you mouse
-            over the 3 dots in this field to put this password on the clipboard.
+            can use the Copy option on the menu to put this password on the clipboard.
           </p>
           <div class="form-row">
             <button id="sitepwhelptextclose" class="button" title="Close this help text.">
