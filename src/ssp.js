@@ -139,9 +139,10 @@ function eventSetup() {
     // are delivered in just a couple of ms, so there's no problem.  Just be aware that
     // this race is the source of any problems related to loss of the message sent here.
     get("root").onscroll = function () {
-        if (warningMsg) return;
         let top = -get("content").getBoundingClientRect().top;
-        get("spacer").style.height = top + "px"; 
+        get("spacer-settings").style.height = top + "px";
+        if (warningMsg) return;
+        get("spacer-main").style.height = top + "px"; 
     }
     get("root").onmouseleave = function (event) {
         // If I close the window immediately, then messages in flight get lost
@@ -930,7 +931,9 @@ function showsettings() {
     get("settingssave").style.display = "inline";
     get("settings").style.display = "block";
     helpAllOff();
-    hideInstructions();
+    if (!get("settingsdiv").style.display === "block") {
+        hideInstructions();
+    }
     get("superpw").value = bg.superpw || "";
     fill();
     pwoptions(["lower", "upper", "number", "special"]);
