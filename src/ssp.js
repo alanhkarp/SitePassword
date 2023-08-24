@@ -908,10 +908,12 @@ function fill() {
     if (get("providesitepw").checked && get("superpw").value && get("sitename").value && get("username").value) {
         get("sitepw").readOnly = false;
         get("sitepw").placeholder = "Enter your super password";
+        get("sitepw").style.backgroundColor = "white";
         get("superpw").focus();
     } else {
         get("sitepw").readOnly = true;
         get("sitepw").placeholder = "Your site password";
+        get("sitepw").style.backgroundColor = "rgb(136, 204, 255, 20%)";
         defaultfocus();
     }
     get("clearsuperpw").checked = database.clearsuperpw;
