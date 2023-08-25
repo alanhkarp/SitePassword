@@ -929,9 +929,7 @@ function showsettings() {
     get("settingssave").style.display = "inline";
     get("settings").style.display = "block";
     helpAllOff();
-    if (!get("settingsdiv").style.display === "block") {
-        hideInstructions();
-    }
+    hideInstructions();
     get("superpw").value = bg.superpw || "";
     fill();
     pwoptions(["lower", "upper", "number", "special"]);
