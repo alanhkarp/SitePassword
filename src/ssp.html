@@ -124,11 +124,20 @@
         <div class="form-row">
           <button id="sitedatagetbutton" type="button" style="display: inline; position: relative; top: 10px" target="_blank"
             title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
-            Download site sata
+            Download site data
           </button>
           <span style="flex:1"></span>
           <a id="data" href="data:application/octet-stream," target="_blank" style="display: none;"
             download="SiteData.html">SiteData.html</a>
+        </div>
+        <div class="form-row">
+          <button id="exportbutton" type="button" disabled style="display: inline; position: relative; top: 10px" target="_blank"
+            title="Export your passwords to a CSV file that can be imported into a spreadsheet.">
+            Export passwords
+          </button>
+          <span style="flex:1"></span>
+          <a id="data" href="data:application/octet-stream," target="_blank" style="display: none;"
+            download="passwords.csv">passwords.csv</a>
         </div>
         <br />
       </div>
@@ -838,6 +847,42 @@
                 Clicking this button lets you save your settings in a file you
                 can reference if you need to look them up. All settings created on machines
                 you synchronize with are included.
+              </p>
+            </div>
+          </section>
+          <section id="exportinfo" name="instructions" class="instructionpaneltext">
+            <svg id="openexport" class="accordian" style="display: block;" width="24px" height="24px"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 11 3 3 3-3" />
+            </svg>
+            <svg id="closeexport" class="accordian" style="display: none;" width="24px" height="24px"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 13 3-3 3 3" />
+            </svg>
+            <h3>Exporting Your Passwords</h3>
+            <div id="exportdiv" style="display: none;">
+              <p>
+                There may come a time when you want to use a different password manager.
+                In that case you can use the <em>Export passwords</em> button at the bottom of
+                the popup window after you click
+                <svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                </svg>. 
+                Clicking this button creates a file with your passwords.  You can see a readable form 
+                of the data in the file by opening it in a spreadsheet.
+              </p>
+              <p>
+                <b>Be very careful with this file.</b>  Completely delete it from your machine, including
+                emptying the trash, after you use it.  If you don't, anyone who gets access to your machine
+                can get your passwords.
               </p>
             </div>
           </section>

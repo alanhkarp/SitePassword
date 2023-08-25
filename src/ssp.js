@@ -47,6 +47,12 @@ window.onload = function () {
     }
     if (logging) console.log("popup getting active tab");
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
+        setTimeout(() => {
+            debugger;
+            instructionSetup();
+            getsettings();
+            eventSetup();
+        }, 0); // set to 1000 for debugging
         activetab = tabs[0];
         if (logging) console.log("popup tab", activetab);
         let protocol = activetab.url.split(":")[0];
@@ -61,12 +67,6 @@ window.onload = function () {
         get("sitepw").value = "";
         if (logging) console.log("popup got tab", domainname, activetab);
         if (logging) console.log("popup getting metadata");
-        setTimeout(() => {
-            debugger;
-            instructionSetup();
-            getsettings();
-            eventSetup();
-            }, 0); // set to 1000 for debugging
     });
 }
 function init() {
@@ -83,6 +83,7 @@ function init() {
     get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
     defaultfocus();
     ask2generate();
+    updateExportButton();
 }
 function setupdatalist(element, list) {
     let datalist = get(element.id + "s");
@@ -630,6 +631,7 @@ function eventSetup() {
         chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults})
     }
     get("sitedatagetbutton").onclick = sitedataHTML;
+    get("exportbutton").onclick = exportPasswords;
     get("maininfo").onclick = function () {
         if (get("instructionpanel").style.display == "none") {
             showInstructions();
@@ -827,14 +829,8 @@ function handleblur(element, field) {
         bg.settings[field] = get(element).value;
     }
     bg.settings.characters = characters(bg.settings, database);
-    if (get("sitepw").value && get("sitename").value && get("username").value) {
-        get("providesitepw").disabled = false;
-        get("providesitepwlabel").style.opacity = 1.0;
-    } else {
-        get("providesitepw").disabled = true;
-        get("providesitepwlabel").style.opacity = 0.5;
-    }
     ask2generate();
+    updateExportButton();
 }
 function handleclick(which) {
     bg.settings["allow" + which] = get("allow" + which + "checkbox").checked;
@@ -959,6 +955,55 @@ function pwoptions(options) {
             require.style.display = "none";
         }
     }
+}
+function updateExportButton() {
+    if (get("superpw").value) {
+        get("exportbutton").disabled = false;
+        get("exportbutton").title = "Export site data";
+    } else {
+        get("exportbutton").disabled = true;
+        get("exportbutton").title = "Enter your super password to export site data";
+    }
+}
+function exportPasswords() {
+    if (!get("superpw").value) return;
+    let domainnames = database.domains;
+    let sitenames = database.sites;
+    let sorted = Object.keys(domainnames).sort(function (x, y) {
+        if (x.toLowerCase() < y.toLowerCase()) return -1;
+        if (x.toLowerCase() == y.toLowerCase()) return 0;
+        return 1;
+    });
+    let oldsitename = get("sitename").value;
+    let oldusername = get("username").value;
+    let data = "Domain Name, Site Name, User Name, Site Password\n";
+    for (let i = 0; i < sorted.length; i++) {
+        let domainname = sorted[i];
+        let sitename = database.domains[domainname];
+        let settings = database.sites[sitename];
+        let username = settings.username;
+        bg.settings.sitename = sitename;
+        bg.settings.username = username;
+        ask2generate();
+        let sitepw = get("sitepw").value;
+        data += domainname + "," + sitename + "," + username + "," + sitepw + "\n";
+    }
+    bg.settings.sitename = oldsitename;
+    bg.settings.username = oldusername;
+    let url = "data:text/csv," + encodeURIComponent(data);
+    let link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.download = "SitePasswordExport.csv";
+    document.body.appendChild(link);
+    link.click();    
+    document.body.removeChild(link);
+    // chrome.tabs.create({ "url": url }).then((e) => {
+    //     if (logging) console.log("popup export passwords");
+    // }).catch((e) => {
+    //     // Can't SaveAs on Chrome
+    //     let w = window.open();
+    //     w.document.write(data);
+    // });
 }
 function sitedataHTML() {
     var domainnames = database.domains
