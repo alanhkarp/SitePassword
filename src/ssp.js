@@ -984,7 +984,7 @@ function exportPasswords() {
         bg.settings.username = username;
         ask2generate();
         let sitepw = get("sitepw").value;
-        data += domainname + "," + sitename + "," + username + "," + sitepw + "\n";
+        data += '"' + domainname + '"' + "," + '"' + sitename + '"' + "," + '"' + username + '"' + "," + '"' + sitepw + '"' + "\n";
     }
     bg.settings.sitename = oldsitename;
     bg.settings.username = oldusername;
