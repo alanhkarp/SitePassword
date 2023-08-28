@@ -52,7 +52,7 @@ window.onload = function () {
             instructionSetup();
             getsettings();
             eventSetup();
-        }, 0); // set to 1000 for debugging
+        }, 1000); // set to 1000 for debugging
         activetab = tabs[0];
         if (logging) console.log("popup tab", activetab);
         let protocol = activetab.url.split(":")[0];
@@ -761,7 +761,7 @@ function helpAllOff() {
 }
 function hidesitepw() {
     if (logging) console.log("popup checking hidesitepw", get("hidesitepw").checked, database.hidesitepw);
-    if (get("hidesitepw").checked || database.hidesitepw) {
+    if (get("hidesitepw").checked || (database && database.hidesitepw)) {
         get("sitepw").type = "password";
     } else {
         get("sitepw").type = "text";
