@@ -705,6 +705,14 @@ function eventSetup() {
         e.stopPropagation();
         sectionClick("acceptable");
     }
+    get("changeref").onclick = function (e) {
+        e.stopPropagation();
+        sectionClick("change");
+    }
+    get("exportref").onclick = function (e) {
+        e.stopPropagation();
+        sectionClick("export");
+    }
     get("phishingcheck").onclick = function (e) {
         e.stopPropagation();
         chrome.tabs.create({url: this.href});
