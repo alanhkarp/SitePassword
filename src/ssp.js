@@ -118,6 +118,11 @@ function getsettings() {
         "domainname": domainname,
         "activetab": activetab
     }, (response) => {
+        if (response.duplicate) {
+            let msg = "You have two bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.";
+            alert(msg);
+            return;
+        }
         bg = response.bg;
         database = response.database;
         hidesitepw();

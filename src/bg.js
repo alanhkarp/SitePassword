@@ -287,7 +287,7 @@ async function persistMetadata(sendResponse) {
     } catch {
         chrome.storage.session.set({"superpw": superpw});
     }
-    let db = database;
+    let db = clone(database);
     let found = await getRootFolder(sendResponse);
     if (found.length > 1) return;
     rootFolder = found[0];
@@ -296,6 +296,7 @@ async function persistMetadata(sendResponse) {
         let oldsitename = db.domains[bg.settings.domainname];
         if ((!oldsitename) || sitename === oldsitename) {
             db.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
+            if (!bg.settings.pwdomainname) bg.settings.pwdomainname = bg.settings.domainname;
             if (bg.settings.pwdomainname !== bg.settings.domainname) {
                 db.domains[bg.settings.pwdomainname] = normalize(bg.settings.sitename);
             }
@@ -316,7 +317,7 @@ async function persistMetadata(sendResponse) {
         delete db.sites[""];
         delete db.sites["undefined"];
     }
-    if (db && db.domains && db.domains[""] || db.sites["undefined"]) {
+    if (db && db.domains && db.domains[""] || db.domains["undefined"]) {
         console.log("bg bad domainname", db);
         delete db.domains[""];
         delete db.domains["undefined"];
@@ -501,7 +502,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                         delete bkmksSafari[children[i]];
                     }
                } else {
-                    sendResponse("duplicate");
+                    sendResponse({"duplicate": children[i].title});
                     continue;
                 }
             } else {
@@ -518,9 +519,10 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                     let specials = array2string(settings.specials);
                     settings.specials = specials;
                 }
-                delete settings.undefined; // Clean up from development work
-                newdb.domains[title] = normalize(settings.sitename);
-                newdb.sites[normalize(settings.sitename)] = settings;
+                if (settings.sitename) {
+                    newdb.domains[title] = normalize(settings.sitename);
+                    newdb.sites[normalize(settings.sitename)] = settings;
+                }
             }
         }
         database = newdb;
