@@ -192,8 +192,7 @@ function eventSetup() {
     }
     get("root").onmouseenter = function (e) {
         get("root").style.opacity = 1; 
-        autoclose = true;               
-        clearTimeout(mainPanelTimer);
+       clearTimeout(mainPanelTimer);
     }
     get("title").onclick = function () {
         window.open("https://sitepassword.info");
@@ -782,6 +781,7 @@ function hidesitepw() {
 }
 function showInstructions() {
     helpAllOff();
+    autoclose = false;
     get("instructionpanel").style.display = "block";
     get("maininfo").title = "Close Instructions";
     get("instructionopen").classList.add("nodisplay");
@@ -790,6 +790,7 @@ function showInstructions() {
     get("main").style.padding = "6px 0px 9px 12px";
 }
 function hideInstructions() {
+    autoclose = true;
     get("instructionpanel").style.display = "none";
     get("maininfo").title = "Open Instructions";
     get("instructionopen").classList.remove("nodisplay");
