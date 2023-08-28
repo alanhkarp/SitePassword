@@ -116,7 +116,7 @@
             <button id="makedefault" type="button"
               style="position: relative; left: 5px"
               target="_blank" title="Make the settings in the box your default">
-              Save as default
+              <span class="btn-text">Save as default</span>
             </button>
             <span style="flex:1"></span>
           </div>
@@ -124,16 +124,14 @@
         <div class="form-row">
           <button id="sitedatagetbutton" type="button" style="display: inline; position: relative; top: 10px" target="_blank"
             title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
-            Download site data
+            <span class="btn-text">Download site data</span>
           </button>
           <span style="flex:1"></span>
           <a id="data" href="data:application/octet-stream," target="_blank" style="display: none;"
             download="SiteData.html">SiteData.html</a>
-        </div>
-        <div class="form-row">
           <button id="exportbutton" type="button" disabled style="display: inline; position: relative; top: 10px" target="_blank"
             title="Export your passwords to a CSV file that can be imported into a spreadsheet.">
-            Export passwords
+            <span class="btn-text">Export passwords</span>
           </button>
           <span style="flex:1"></span>
           <a id="data" href="data:application/octet-stream," target="_blank" style="display: none;"
@@ -988,11 +986,11 @@
           </p>
           <div class="form-row">
             <button id="domainnamehelptextclose" class="button" title="Close this help text">
-              Close
+              <span class="btn-text">Close</span>
             </button>
             &nbsp;&nbsp;
             <button id="domainnamehelptextmore" title="Learn more about how SitePassword uses domain names.">
-              Learn more
+              <span class="btn-text">Learn more</span>
             </button>
           </div>
         </div>
@@ -1006,11 +1004,11 @@
           </p>
           <div class="form-row">
             <button id="superpwhelptextclose" class="button" title="Close this help text.">
-              Close
+              <span class="btn-text">Close<span class="btn-text"></span>
             </button>
             &nbsp;&nbsp;
             <button id="superpwhelptextmore" title="Learn more about your super password">
-              Learn more
+              <span class="btn-text">Learn more</span>
             </button>
             <span style="flex:1"></span>
           </div>
@@ -1026,11 +1024,11 @@
           </p>
           <div class="form-row">
             <button id="sitenamehelptextclose" class="button" title="Close this help text.">
-              Close
+              <span class="btn-text">Close<span class="btn-text"></span>
             </button>
             &nbsp;&nbsp;
             <button id="sitenamehelptextmore" title="Learn more about your site nickname">
-              Learn more
+              <span class="btn-text">Learn more</span>
             </button>
           </div>
         </div>
@@ -1048,11 +1046,11 @@
           </p>
           <div class="form-row">
             <button id="usernamehelptextclose" class="button" title="Close this help text.">
-              Close
+              <span class="btn-text">Close</span>
             </button>
             &nbsp;&nbsp;
             <button id="usernamehelptextmore" title="Learn more about your username">
-              Learn more
+              <span class="btn-text">Learn more</span>
             </button>
           </div>
         </div>
@@ -1071,11 +1069,11 @@
           </p>
           <div class="form-row">
             <button id="sitepwhelptextclose" class="button" title="Close this help text.">
-              Close
+              <span class="btn-text">Close</span>
             </button>
             &nbsp;&nbsp;
             <button id="sitepwhelptextmore" title="Learn more about your site password">
-              Learn more
+              <span class="btn-text">Learn more</span>
             </button>
           </div>
         </div>
@@ -1088,7 +1086,7 @@
           <span style="flex: 1"></span>
           <button id="title" onclick="window.location='https://sitepassword.info'"
             title="Use https://sitepassword.info when you can't use the extension.">
-            <span style="text-decoration: underline;">SitePassword.info</span>
+            <span class="btn-txt" style="text-decoration: underline;">SitePassword.info</span>
           </button>
           <span style="flex:1"></span>
           <img id="logo" class="logo" style="visibility: hidden;" src="ssplogo.png" />
@@ -1263,7 +1261,7 @@
             <button id="cancelwarning" type="button"
               style="background-color: #21973f; margin: auto; color: white; width:100%"
               title="I don't recognize this domain name. Take me away from this web page.">
-              Ths domain name looks suspicious
+              <span class="btn-text" style="color: white">Ths domain name looks suspicious</span>
             </button>
             <br /><br />
             <p>
@@ -1275,7 +1273,7 @@
             <button id="warningbutton" type="button"
               style="background-color: #D51c24; margin: auto; color:white; width:100%"
               title="This page is for the same account. Use the same settings for it.">
-              <b>This page is for the same account</b>
+              <span class="btn-text" style="color: white">This page is for the same account</span>
             </button>
             <br /><br />
             <p>
@@ -1284,7 +1282,7 @@
             <button id="nicknamebutton" type="button"
               style="background-color: #1964dc; margin: auto; color:white; width:100%"
               title="This page is for a different account.  I'll select a new nickname.">
-              <b>Pick a new nickname</b>
+              <span class="btn-text" style="color: white">Pick a new nickname</span>
             </button>
             <br /><br />
            </div>
@@ -1323,7 +1321,7 @@
                 <p>You can change your mind,</p>
                 <button id="cancelbutton" type="button" style="background-color: #21973f; color: white; width:100%"
                   title="Click to cancel forgetting the settings for the listed domain names.">
-                  <b>Cancel</b>
+                  <span class="btn-text" style="color: white">Cancel</span>
                 </button>
                 <p>
                   or permanently forget the settings for the listed domain names.
@@ -1331,7 +1329,7 @@
                 </p>
                 <button id="forgetbutton" type="button" style="background-color: #D51c24; color:white; width:100%"
                   title="Click to delete the settings for the listed domain names.">
-                  <b>Permanently forget</b>
+                  <span class="btn-text" style="color: white">Permanently forget</span>
                 </button>
               </div>
             </span>
@@ -1382,7 +1380,7 @@
           </div>
           <span style="flex: 1"></span>
           <div id="clearclipboard" style="display:block;" title="In case a site password is on the clipboard">
-            <button>Clear Clipboard</button>
+            <button><span class="btn-text">Clear Clipboard</span></button>
           </div>
           <span style="flex: 1"></span>
           <div id="maininfo" class="icon" title="Open instructions">

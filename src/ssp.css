@@ -1,5 +1,5 @@
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: ''Roboto'', sans-serif;
 }
 .serif {
 /*
@@ -71,7 +71,7 @@ body {
   z-index: 1;
 }
 h1 {
-  font-family: Roboto sans-serif;
+  font-family: 'Roboto' sans-serif;
   font-size: 36px;
   font-style: normal;
   font-weight: 300;
@@ -83,7 +83,7 @@ h1 {
   text-align: center;
 }
 h3 {
-  font-family: Roboto sans-serif;
+  font-family: 'Roboto' sans-serif;
   font-size: 20px;
   font-style: normal;
   font-weight: 500;
@@ -94,7 +94,7 @@ h3 {
 }
 p {
   margin: 1ex;
-  font-family: Roboto sans-serif;
+  font-family: 'Roboto' sans-serif;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -104,7 +104,7 @@ p {
 }
 li {
   margin: 1ex;
-  font-family: Roboto sans-serif;
+  font-family: 'Roboto' sans-serif;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -225,14 +225,26 @@ li {
   padding-right: 5px;
   font-size: 10pt;
 }
+.btn-text {
+  color: #000;
+  font-family: 'Roboto' sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: 0.28px;
+}
 input::placeholder {
-  font-family: 'Roboto', sans-serif;
+  font-family: ''Roboto'', sans-serif;
 }
 button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   border: none;
   margin: 1ex 0ex;
-  border-radius: 6pt;
-  padding: 6px 6px;
+  border-radius: 4px;
+  padding: 6px 16px;
 }
 button:disabled {
   color: black;
