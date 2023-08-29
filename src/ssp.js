@@ -145,10 +145,13 @@ function eventSetup() {
     // are delivered in just a couple of ms, so there's no problem.  Just be aware that
     // this race is the source of any problems related to loss of the message sent here.
     get("root").onscroll = function () {
-        let top = -get("content").getBoundingClientRect().top;
-        get("spacer-settings").style.height = top + "px";
-        if (warningMsg) return;
-        get("spacer-main").style.height = top + "px"; 
+        let top = get("top").getBoundingClientRect().top;
+        let bot = get("bottom").getBoundingClientRect().bottom;
+        let max = Math.max((bot - top) - 590, 0); // 600 is the max height of the popup
+        let space = -get("content").getBoundingClientRect().top;
+        get("spacer-settings").style.height = space + "px";
+        space = Math.max(space - max, 0);
+        get("spacer-main").style.height = space + "px"; 
     }
     get("root").onmouseleave = function (event) {
         // If I close the window immediately, then messages in flight get lost
