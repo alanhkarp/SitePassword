@@ -171,6 +171,7 @@ function eventSetup() {
         if (warningMsg) {   
             autoclose = false;
         } 
+        if (isphishing(get("sitename").value)) return;
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg && bg.settings) {
             bg.superpw = get("superpw").value || "";
