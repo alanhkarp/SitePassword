@@ -135,6 +135,14 @@ li {
   width: auto;
   padding: 0;
 }
+#main {
+  overflow-y: auto;
+  height: 440px;
+}
+#instructionpanel {
+  overflow-y: auto;
+  height: 800px;
+}
 #instructionpaneltext {
   padding-left: 3ex;
 }
