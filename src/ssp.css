@@ -122,16 +122,18 @@ li {
   display: block;
   margin: 0;
   transition: opacity 2s;
+  background-color: rgb(136, 204, 255, 20%); 
 }
 #content {
   display: flex;
   flex-flow: row wrap;
+  overflow: hidden;
 }
 #mainpanel {
   flex: 0 0 auto;
   display: flex; 
   background-color: rgb(136, 204, 255, 20%); 
-  overflow: auto; 
+  overflow: hidden; 
   width: auto;
   padding: 0;
 }
@@ -141,6 +143,7 @@ li {
 }
 #instructionpanel {
   overflow-y: auto;
+  overflow-x: hidden;
   height: 800px;
 }
 #instructionpaneltext {
