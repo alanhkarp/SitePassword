@@ -144,15 +144,6 @@ function eventSetup() {
     // is a race between message delivery and the next user click.  Fortunately, messages
     // are delivered in just a couple of ms, so there's no problem.  Just be aware that
     // this race is the source of any problems related to loss of the message sent here.
-    get("root").onscroll = function () {
-        let top = get("top").getBoundingClientRect().top;
-        let bot = get("bottom").getBoundingClientRect().bottom;
-        let max = Math.max((bot - top) - 590, 0); // 600 is the max height of the popup
-        let space = -get("content").getBoundingClientRect().top;
-        get("spacer-settings").style.height = space + "px";
-        space = Math.max(space - max, 0);
-        get("spacer-main").style.height = space + "px"; 
-    }
     get("root").onmouseleave = function (event) {
         // If I close the window immediately, then messages in flight get lost
         if (autoclose && !document.elementFromPoint(event.pageX, event.pageY)) {
@@ -792,7 +783,6 @@ function showInstructions() {
     get("instructionopen").classList.add("nodisplay");
     get("instructionclose").classList.remove("nodisplay");
     // I need to adjust the width of the main panel when the scrollbar appears.
-    get("main").style.padding = "6px 0px 9px 12px";
 }
 function hideInstructions() {
     autoclose = true;
@@ -950,6 +940,8 @@ function showsettings() {
     get("settings").style.display = "block";
     helpAllOff();
     hideInstructions();
+    let height = get("settings").getBoundingClientRect().height;
+    get("main").style.height = height + "px";
     get("superpw").value = bg.superpw || "";
     fill();
     pwoptions(["lower", "upper", "number", "special"]);
@@ -958,6 +950,8 @@ function hidesettings() {
     get("settingsshow").style.display = "inline";
     get("settingssave").style.display = "none";
     get("settings").style.display = "none";
+    let height = mainHeight();
+    get("main").style.height = height + "px";
 }
 function pwoptions(options) {
     for (var x in options) {
@@ -1199,7 +1193,21 @@ function message(msgname, turnon) {
         if (ison) get(msg.name).style.display = "none";
         ison = ison || msg.ison;
     }
+    let height = mainHeight();
+    get("main").style.height = height + "px";
+    get("instructionpanel").style.height = height + "px";
+    if (height <= 575) get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
     warningMsg = ison;
+}
+function mainHeight() {
+    let $bottom = get("bottom");
+    let padding = get("main").style.padding.split(" ");
+    let topMargin = parseInt(padding[0]);
+    let bottomMargin = parseInt(padding[2]);
+    let bottom = $bottom.getBoundingClientRect().bottom + bottomMargin;
+    let top = get("top").getBoundingClientRect().top - topMargin;
+    let height = Math.min(bottom - top, 575);
+    return height;
 }
 function cleartransientmsgs() {
     for (var i = 0; i < messages.length; i++) {
