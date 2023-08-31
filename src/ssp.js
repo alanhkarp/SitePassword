@@ -785,6 +785,7 @@ function showInstructions() {
 }
 function hideInstructions() {
     autoclose = true;
+    closeAllInstructions();
     get("instructionpanel").style.display = "none";
     get("maininfo").title = "Open Instructions";
     get("instructionopen").classList.remove("nodisplay");
