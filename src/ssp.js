@@ -171,7 +171,7 @@ function eventSetup() {
         if (warningMsg) {   
             autoclose = false;
         } 
-        if (isphishing(get("sitename").value)) return;
+        if (phishing) return;
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg && bg.settings) {
             bg.superpw = get("superpw").value || "";
@@ -661,8 +661,8 @@ function eventSetup() {
         bg.settings.sitename = get("sitename").value;
         database.domains[get("domainname").value] = bg.settings.sitename;
         get("username").value = bg.settings.username;
-        showsettings();
         ask2generate();
+        autoclose = false;
     }
     get("cancelwarning").onclick = function () {
         phishing = true;
@@ -676,6 +676,7 @@ function eventSetup() {
     get("nicknamebutton").onclick = function () {
         setfocus(get("sitename"));
         msgoff("phishing");
+        autoclose = false;
     }
     get("forgetbutton").onclick = function () {
         let children = get("toforgetlist").children;
@@ -726,7 +727,7 @@ function copied(which) {
     get(which + "copied").classList.remove("nodisplay");
     setTimeout(() => {
         get(which + "copied").classList.add("nodisplay");
-    }, 1000);
+    }, 900);
 }
 function menuOn(which, e) {
     allMenusOff();
