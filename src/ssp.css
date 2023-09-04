@@ -57,7 +57,7 @@ body {
   height: 14px;
   z-index: 1;
   visibility: visible;
-  opacity: 0.7;
+  opacity: 1;
 }
 .menu {
   display: flex;
