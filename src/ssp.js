@@ -749,6 +749,14 @@ function helpItemOn(which) {
         helpAllOff();
         get("helptext").style.display = "block";
         $element.style.display = "block";
+        let $main = get("main");
+        let mainTop = $main.getBoundingClientRect().top;
+        let $input = get(which);
+        let top = $input.getBoundingClientRect().top - 45;
+        $element.style.top = top - mainTop + "px";
+        let $buttons = get(which + "helptextclose");
+        let bottom = $buttons.getBoundingClientRect().bottom + 10;
+        $element.style.height = bottom - top + "px";
         hideInstructions();
         hidesettings();
         autoclose = false;

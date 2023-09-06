@@ -113,6 +113,7 @@ li {
   text-transform: initial;
 }
 .helptext {
+  position: relative;
   width: 250px; 
   display: none; 
   flex: 0 0 auto;
@@ -177,6 +178,7 @@ li {
   flex: auto; 
   width: auto; 
   font-size: 12pt;
+  overflow-y: auto;
 }
 .sticky {
   top: 0;
