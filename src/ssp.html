@@ -1111,7 +1111,7 @@
         <div class="form-row">
           <label for="superpw" class="label">
             Super Password 
-            <meter max="4" id="password-strength-meter""></meter>
+            <meter max="4" id="superpw-strength-meter""></meter>
             Strength 
           </label>
           <input id="superpw" class="fixed" type="password" autocomplete="off" value=""
@@ -1191,7 +1191,11 @@
           <datalist id="usernames"></datalist>
         </div>
         <div class="form-row">
-          <label for="sitepw" class="label">Site Password</label>
+          <label for="sitepw" class="label">
+            Super Password 
+            <meter max="4" id="sitepw-strength-meter""></meter>
+            Strength 
+          </label>
           <input id="sitepw" class="fixed" style="background-color: rgb(136, 204, 255, 20%)" readonly="readonly" 
             type="text" title="Your password for this account" autocomplete="off" value="" placeholder="Your site password" />
             <div id="sitepwcopied" class="inner-icon-2 copied nodisplay">copied!</div>
@@ -1278,7 +1282,7 @@
               <span class="btn-text" style="color: white">Pick a new nickname</span>
             </button>
             <br /><br />
-           </div>
+          </div>
           <div id="http" class="warning nodisplay">
             <span id="httptext">
               <img src="warning.png" class="icon warning-icon">

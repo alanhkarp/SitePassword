@@ -8,6 +8,7 @@ var activetab;
 var domainname;
 var mainPanelTimer;
 var autoclose = true;
+const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 var defaultTitle = "SitePassword";
 
@@ -78,7 +79,8 @@ function init() {
     if (logging) console.log("popup testing for http", protocol);
     message("http", protocol !== "https");
     if (get("superpw").value) {
-        setSuperpwMeter(get("superpw").value);
+        setMeter("superpw");
+        setMeter("sitepw");
     }
     get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
     defaultfocus();
@@ -236,7 +238,8 @@ function eventSetup() {
     get("superpw").onkeyup = function (e) {
         bg.superpw = get("superpw").value || "";
         ask2generate();
-        setSuperpwMeter($superpw.value);
+        setMeter("superpw");
+        setMeter("sitepw");
         handleblur("superpw", "superpw");
     }
     get("superpw").onblur = function (e) {
@@ -817,16 +820,13 @@ function scrollbarWidth() {
     // Return the width of the scrollbar
     return scrollbarWidth;
 }
-function setSuperpwMeter(pw) {
-    const $superpw = get("superpw");
-    const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
-    const $meter = get("password-strength-meter");
-    const $meterText = get("password-strength-text");
-    const report = zxcvbn(pw);
+function setMeter(which) {
+    const $meter = get(which + "-strength-meter");
+    const $input = get(which);
+    const report = zxcvbn($input.value);
     $meter.value = report.score;
     $meter.title = strengthText[report.score];
-    $superpw.style.color = strengthColor[report.score];
-    $superpw.title = strengthText[report.score] + " Super Password";
+    $input.style.color = strengthColor[report.score];
 }
 
 function handlekeyup(element, field) {
@@ -840,6 +840,7 @@ function handleblur(element, field) {
     }
     bg.settings.characters = characters(bg.settings, database);
     ask2generate();
+    setMeter("sitepw");
     updateExportButton();
 }
 function handleclick(which) {
