@@ -147,12 +147,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
                 defaultSettings = request.newDefaults;
                 persistMetadata(sendResponse);
-            } else if (request.cmd === "rootFolder") {
-                // bg might have been suspended and lost its value
-                getRootFolder(sendResponse, (rootFolder) => {
-                    sendResponse(rootFolder[0].id);
-                });
-                sendResponse(rootFolder.id);
+            } else if (request.cmd === "forget") {
+                forget(request.toforget, rootFolder, sendResponse);
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
@@ -586,6 +582,23 @@ function bgsettings(domainname) {
         bg.settings.domainname = domainname;
     }
     return bg.settings;
+}
+function forget(toforget, rootFolder, sendResponse) {
+    if (logging) console.log("bg forget", toforget);
+    for (const item of toforget)  {
+        chrome.bookmarks.getChildren(rootFolder.id, (allchildren) => {
+            for (let child of allchildren) {
+                if (child.title === item) {
+                    chrome.bookmarks.remove(child.id, () => {
+                        if (logging) console.log("bg removed bookmark for", item);
+                        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": " ", "p": " ", "readyForClick": false });
+                    });                       
+                }
+            }
+        });
+        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
+    }
+    sendResponse("forgot");
 }
 function sameSettings(a, b) {
     if (!a || !b) return false;  // Assumes one or the other is set
