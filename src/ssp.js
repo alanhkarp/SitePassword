@@ -1,8 +1,8 @@
 'use strict';
 import { webpage } from "./bg.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = false;
-let logging = testMode;
+const debugMode = false;
+let logging = debugMode;
 if (logging) console.log("Version 1.0");
 var activetab;
 var domainname;
@@ -149,9 +149,9 @@ function eventSetup() {
     get("root").onmouseleave = function (event) {
         // If I close the window immediately, then messages in flight get lost
         if (autoclose && !document.elementFromPoint(event.pageX, event.pageY)) {
-            if (!testMode) get("root").style.opacity = 0.1;
+            if (!debugMode) get("root").style.opacity = 0.1;
             mainPanelTimer = setTimeout(() => {
-                if (!testMode) window.close();
+                if (!debugMode) window.close();
             }, 750);
         }
     }
