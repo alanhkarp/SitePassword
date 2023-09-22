@@ -1,9 +1,12 @@
 'use strict';
 import { webpage } from "./bg.js";
+import { runTests } from "./test.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-const testMode = false;
-let logging = testMode;
-if (logging) console.log("Version 1.0");
+
+const debugMode = false;
+let test = false;
+const logging = debugMode;
+if (logging) console.log("Version 2.0");
 var activetab;
 var domainname;
 var mainPanelTimer;
@@ -53,7 +56,7 @@ window.onload = function () {
             instructionSetup();
             getsettings();
             eventSetup();
-        }, 0); // set to 1000 for debugging
+        }, 1000); // set to 1000 for debugging
         activetab = tabs[0];
         if (logging) console.log("popup tab", activetab);
         let protocol = activetab.url.split(":")[0];
@@ -137,6 +140,10 @@ function getsettings() {
         if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
         message("multiple", bg.pwcount > 1);
         message("zero", bg.pwcount == 0);
+        if (!test && response.test) { // Only run tests once
+            test = true;
+            runTests();
+        }
     });
 }
 function eventSetup() {
@@ -149,9 +156,9 @@ function eventSetup() {
     get("root").onmouseleave = function (event) {
         // If I close the window immediately, then messages in flight get lost
         if (autoclose && !document.elementFromPoint(event.pageX, event.pageY)) {
-            if (!testMode) get("root").style.opacity = 0.1;
+            if (!debugMode) get("root").style.opacity = 0.1;
             mainPanelTimer = setTimeout(() => {
-                if (!testMode) window.close();
+                if (!debugMode) window.close();
             }, 750);
         }
     }
@@ -411,7 +418,7 @@ function eventSetup() {
         let toforget = normalize(get("username").value);
         let $list = get("toforgetlist");
         for (let domain in database.domains) {
-            let sitename = database.domains[domain];
+            let sitename = normalize(database.domains[domain]);
             if (normalize(database.sites[sitename].username) === toforget) {
                 addForgetItem(domain);
             }
@@ -1119,7 +1126,7 @@ function addForgetItem(domainname) {
     $item.innerText = domainname;
     $list.appendChild($item);
 }
-function forgetDomainname(toforget) {
+async function forgetDomainname(toforget) {
     delete database.domains[toforget];
     get("sitename").value = "";
     get("username").value = "";
@@ -1130,8 +1137,6 @@ function forgetDomainname(toforget) {
                 if (allchildren[i].title === toforget) {
                     chrome.bookmarks.remove(allchildren[i].id, () => {
                         if (logging) console.log("popup removed bookmark for", toforget);
-                        get("sitename").value = "";
-                        get("username").value = "";
                         getsettings();
                         chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": " ", "p": " ", "readyForClick": false });
                     });                       

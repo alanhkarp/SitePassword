@@ -1,12 +1,15 @@
 'use strict';
 import { generate, isSuperPw, normalize,  string2array, array2string, stringXorArray } from "./generate.js";
-const testMode = false;
+const testMode = true;
+const debugMode = false;
+const logging = debugMode;
 const commonSettingsTitle = "CommonSettings";
-let logging = testMode;
 // State I want to keep around that doesn't appear in the file system
 let sitedataBookmark = "SitePasswordData"; 
 if (testMode) {
     sitedataBookmark = "SitePasswordDataTest"; //"SitePasswordDataTest";
+} else if (debugMode) {
+    sitedataBookmark = "SitePasswordDataDebug";
 }
 var superpw = "";
 var activetab;
@@ -117,7 +120,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 sendResponse("reset");        
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);
-                // Update time stamp if settings changed
                 bg = clone(request.bg);
                 database.clearsuperpw = request.clearsuperpw;
                 database.hidesitepw = request.hidesitepw;
@@ -215,7 +217,7 @@ async function getMetadata(request, _sender, sendResponse) {
         domainname = getdomainname(activetabUrl);
         if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
         if (logging) console.log("bg sending metadata", pwcount, bg, db);
-        sendResponse({"superpw": superpw || "", "bg": bg, "database": db});
+        sendResponse({"test" : testMode, "superpw": superpw || "", "bg": bg, "database": db});
     };
 }
 function onContentPageload(request, sender, sendResponse) {
