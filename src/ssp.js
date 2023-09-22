@@ -674,9 +674,11 @@ function eventSetup() {
     }
     get("forgetbutton").onclick = function () {
         let children = get("toforgetlist").children;
+        let list = [];
         for (let child of children) {
-            forgetDomainname(child.innerText);
+            list.push(child.innerText);
         }
+        forgetDomainnames(list);
         get("cancelbutton").click();
     }
     get("cancelbutton").onclick = function () {
@@ -1119,26 +1121,14 @@ function addForgetItem(domainname) {
     $item.innerText = domainname;
     $list.appendChild($item);
 }
-function forgetDomainname(toforget) {
-    delete database.domains[toforget];
+function forgetDomainnames(toforget) {
     get("sitename").value = "";
     get("username").value = "";
-    chrome.runtime.sendMessage({"cmd": "rootFolder"}, (rootFolderId) => {
-        if (logging) console.log("popup rootFolderId", rootFolderId);
-        chrome.bookmarks.getChildren(rootFolderId, (allchildren) => {
-            for (let i = 0; i < allchildren.length; i++) {
-                if (allchildren[i].title === toforget) {
-                    chrome.bookmarks.remove(allchildren[i].id, () => {
-                        if (logging) console.log("popup removed bookmark for", toforget);
-                        get("sitename").value = "";
-                        get("username").value = "";
-                        getsettings();
-                        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": " ", "p": " ", "readyForClick": false });
-                    });                       
-                    return;
-                }
-            }
-        });
+    chrome.runtime.sendMessage({"cmd": "forget", "toforget": toforget}, (response) => {
+        if (logging) console.log("popup forget response", response);
+        for (let item of toforget) {
+            delete database.domains[item];
+        }
         if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
     });
 }
