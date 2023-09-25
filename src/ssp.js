@@ -53,24 +53,27 @@ window.onload = function () {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         setTimeout(() => {
             debugger;
+            activetab = tabs[0];
+            if (test) activetab.url = get("domainname").value;
             instructionSetup();
             getsettings();
             eventSetup();
+            // I need to be able to change the URL to test the phishing
+            // and forget functions.
+            if (logging) console.log("popup tab", activetab);
+            let protocol = activetab.url.split(":")[0];
+            if ( protocol === "file") {
+                domainname = activetab.url.split("///")[1];
+            } else if (protocol === "mailto") {
+                domainname = activetab.url.split(":")[1];
+            } else {
+                domainname = activetab.url.split("/")[2]
+            }
+            get("domainname").value = domainname;
+            get("sitepw").value = "";
+            if (logging) console.log("popup got tab", domainname, activetab);
+            if (logging) console.log("popup getting metadata");
         }, 1000); // set to 1000 for debugging
-        activetab = tabs[0];
-        if (logging) console.log("popup tab", activetab);
-        let protocol = activetab.url.split(":")[0];
-        if ( protocol === "file") {
-            domainname = activetab.url.split("///")[1];
-        } else if (protocol === "mailto") {
-            domainname = activetab.url.split(":")[1];
-        } else {
-            domainname = activetab.url.split("/")[2]
-        }
-        get("domainname").value = domainname;
-        get("sitepw").value = "";
-        if (logging) console.log("popup got tab", domainname, activetab);
-        if (logging) console.log("popup getting metadata");
     });
 }
 function init() {
@@ -183,9 +186,8 @@ function eventSetup() {
             }
             let sitename = get("sitename").value;
             changePlaceholder();
-            bg.settings.domainname = domainname;
             if (logging) console.log("popup sending site data", domainname, bg);
-           chrome.runtime.sendMessage({
+            chrome.runtime.sendMessage({
                 "cmd": "siteData",
                 "sitename": sitename,
                 "clearsuperpw": get("clearsuperpw").checked,
@@ -660,6 +662,7 @@ function eventSetup() {
         var sitename = getlowertrim("sitename");
         bg.settings = clone(database.sites[sitename]);
         bg.settings.sitename = get("sitename").value;
+        if (test) bg.settings.domainname = get("domainname").value;
         database.domains[get("domainname").value] = bg.settings.sitename;
         get("username").value = bg.settings.username;
         ask2generate();
@@ -671,8 +674,10 @@ function eventSetup() {
         get("domainname").value = "";
         get("sitename").value = "";
         get("username").value = "";
-        chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
-        window.close();
+        if (!test) {
+            chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
+            window.close();
+        }
     }
     get("nicknamebutton").onclick = function () {
         setfocus(get("sitename"));
@@ -846,6 +851,11 @@ function handleblur(element, field) {
         bg.superpw = get(element).value;
     } else {
         bg.settings[field] = get(element).value;
+    }
+    if (get("superpw").value && get("sitename").value && get("username").value) {
+        get("providesitepw").disabled = false;
+    } else {
+        get("providesitepw").disabled = true;
     }
     bg.settings.characters = characters(bg.settings, database);
     ask2generate();
@@ -1107,6 +1117,7 @@ function sitedataHTMLDoc(doc, sorted) {
 }
 function isphishing(sitename) {
     if (!sitename) return "";
+    let domainname = get("domainname").value; // Needed for tests
     var domains = Object.keys(database.domains);
     var phishing = "";
     domains.forEach(function (d) {
