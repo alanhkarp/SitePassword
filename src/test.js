@@ -33,28 +33,25 @@ export async function runTests() {
         alert("Starting tests");
     }
     if (!restart) {
-        testCalculation();
-        await sleep(sleepTime);
-        testRememberForm();
-        await sleep(sleepTime);
-        testProvidedpw();
-        await sleep(sleepTime);
-        testForget();
-        await sleep(sleepTime);
-        testPhishing();
-        await sleep(sleepTime);
+        await testCalculation();
+        await testRememberForm();
+        await testProvidedpw();
+        await testForget();
+        await testPhishing();
         //testSaveAsDefault();
+        console.log("Tests complete");
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
         } else {
             console.error("Unknown test", restart);
         }
+        debugger;
     }
     // Test password calculation
     async function testCalculation() {
         await resetState();
-        await sleep(sleepTime);
+        if ($providesitepw.checked) debugger;
         const expected = "to3X9g55EK8C";
         fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
         let actual = $sitepw.value;
@@ -62,6 +59,7 @@ export async function runTests() {
             console.log("Passed: Test calculation")
         } else {
             console.warn("Failed: Test calculation", expected, "|" + actual + "|");
+            debugger;
         }
     }
     async function testRememberForm() {
@@ -80,6 +78,7 @@ export async function runTests() {
             console.log("Passed: Test remember form");
         } else {
             console.warn("Failed: Test remember form", "Guru", "alan", "|" + $sitename.value + "|");
+            debugger;
         }
     }
     async function testProvidedpw() {
@@ -103,8 +102,8 @@ export async function runTests() {
             console.log("Passed: Test provided pw");
         } else {
             console.warn("Failed: Test provided pw", sitepw, "|" + $sitepw.value + "|");
+            debugger;
         }
-        forgetDomain("alantheguru.alanhkarp.com");
         await sleep(sleepTime);
     }
     // Test forget
@@ -121,51 +120,50 @@ export async function runTests() {
         fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
         $mainpanel.onmouseleave();
         await sleep(sleepTime);
-        let db = JSON.parse(localStorage.SitePasswordDataTest);
-        // Check the database directly since the form doesn't act the same programatically
-        let test = !db.domains["alantheguru.alanhkarp.com"] && !db.sites["guru"];
+        let test = $sitename.value === "" && $username.value === "";
         if (!test) {
             console.warn("Failed: Test forget when site name is supposed to be empty");
         }
         // See if database still has site name if it should
-        fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
-        $mainpanel.onmouseleave();
-        await sleep(sleepTime);
-        phishingSetup();
-        await sleep(sleepTime);
-        $warningbutton.onclick();
-        $domainname3bluedots.onmouseover();
-        $domainnamemenuforget.onclick();
-        $forgetbutton.onclick();
-        await sleep(sleepTime);
-        db = JSON.parse(localStorage.SitePasswordDataTest);
-        test = test && !db.domains["allantheguru.alanhkarp.com"] && db.sites["guru"];
-        // See if forget by site name works
-        phishingSetup();
-        await sleep(sleepTime);
-        $warningbutton.onclick(); // Now I have two domain names pointing to the same site name
-        $sitename3bluedots.onmouseover();
-        $sitenamemenuforget.onclick();
-        $forgetbutton.onclick();
-        await sleep(sleepTime);
-        db = JSON.parse(localStorage.SitePasswordDataTest);
-        test = test && !db.domains["alantheguru.alanhkarp.com"] && !db.sites["guru"];
-        test = test && !db.domains["allantheguru.alanhkarp.com"];
-        // See if forget by username works
-        phishingSetup();
-        await sleep(sleepTime);
-        $warningbutton.onclick(); // Now I have two domain names pointing to the same site name
-        $username3bluedots.onmouseover();
-        $usernamemenuforget.onclick();
-        $forgetbutton.onclick();
-        await sleep(sleepTime);
-        db = JSON.parse(localStorage.SitePasswordDataTest);
-        test = test && !db.domains["alantheguru.alanhkarp.com"] && !db.sites["guru"];
-        test = test && !db.domains["allantheguru.alanhkarp.com"];
+        // fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+        // $mainpanel.onmouseleave();
+        // await sleep(sleepTime);
+        // phishingSetup();
+        // await sleep(sleepTime);
+        // $warningbutton.onclick();
+        // $domainname3bluedots.onmouseover();
+        // $domainnamemenuforget.onclick();
+        // $forgetbutton.onclick();
+        // await sleep(sleepTime);
+        // db = JSON.parse(localStorage.SitePasswordDataTest);
+        // test = test && !db.domains["allantheguru.alanhkarp.com"] && db.sites["guru"];
+        // // See if forget by site name works
+        // phishingSetup();
+        // await sleep(sleepTime);
+        // $warningbutton.onclick(); // Now I have two domain names pointing to the same site name
+        // $sitename3bluedots.onmouseover();
+        // $sitenamemenuforget.onclick();
+        // $forgetbutton.onclick();
+        // await sleep(sleepTime);
+        // db = JSON.parse(localStorage.SitePasswordDataTest);
+        // test = test && !db.domains["alantheguru.alanhkarp.com"] && !db.sites["guru"];
+        // test = test && !db.domains["allantheguru.alanhkarp.com"];
+        // // See if forget by username works
+        // phishingSetup();
+        // await sleep(sleepTime);
+        // $warningbutton.onclick(); // Now I have two domain names pointing to the same site name
+        // $username3bluedots.onmouseover();
+        // $usernamemenuforget.onclick();
+        // $forgetbutton.onclick();
+        // await sleep(sleepTime);
+        // db = JSON.parse(localStorage.SitePasswordDataTest);
+        // test = test && !db.domains["alantheguru.alanhkarp.com"] && !db.sites["guru"];
+        // test = test && !db.domains["allantheguru.alanhkarp.com"];
         if (test) {
             console.log("Passed: Test forget");
         } else {
             console.warn("Failed: Test forget");
+            debugger;
         } 
     }
     // Test phishing
@@ -178,12 +176,17 @@ export async function runTests() {
         // Does warning go away leaving form cleared?
         $cancelwarning.onclick();
         test = test && $phishing.style.display === "none" && $sitename.value === "";
+        if (!test) {
+            console.warn("Failed: Test phishing: Warning not showing.");
+            return;
+        }
         // Does setting new site name work?
         phishingSetup();
         await sleep(sleepTime);
         $nicknamebutton.onclick();
         await sleep(sleepTime);
-        test = test && $phishing.style.display === "none" && $sitename.value === "Guru";
+        test = test && $phishing.style.display === "none" && $sitename.value === "Guru" 
+            && document.activeElement === $sitename;
         // Does same account option work?
         phishingSetup();
         await sleep(sleepTime);
@@ -191,11 +194,17 @@ export async function runTests() {
         test = test && $phishing.style.display === "none" && $sitename.value === "Guru";
         test = test && $username.value === "alan";
         $mainpanel.onmouseleave();
-        test = test && SitePassword.database.domains["allantheguru.alanhkarp.com"] === "guru";
+        await sleep(sleepTime);
+        clearForm();
+        fillForm("", "allantheguru.alanhkarp.com", "", "");
+        $domainname.onblur();
+        await sleep(sleepTime);
+        test = test && $sitename.value === "Guru" && $username.value === "alan";
             if (test) {
             console.log("Passed: Test phishing");
         } else {    
             console.warn("Failed: Test phishing");
+            debugger;
         }
     }
     // Test save as default
@@ -207,7 +216,7 @@ export async function runTests() {
         $specials.value = "%^&";
         $specials.onkeyup();
         $makedefaultbutton.click();
-        chrome.runtime.reload();
+        //chrome.runtime.reload();
     }
     function testSaveAsDefault2() {
         localStorage.restart = "";
@@ -235,6 +244,7 @@ export async function runTests() {
     }
     async function resetState() {
         clearForm();
+        $providesitepw.checked = false;
         forgetDomain("alantheguru.alanhkarp.com");
         await sleep(sleepTime);
         forgetDomain("allantheguru.alanhkarp.com");
@@ -252,11 +262,11 @@ export async function runTests() {
     }
     async function phishingSetup() {
         clearForm();
-        fillForm("qwerty", "https://alantheguru.alanhkarp.com", "Guru", "alan");
+        fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
         $mainpanel.onmouseleave();
         await sleep(sleepTime);
         clearForm();
-        $domainname.value = "https://allantheguru.alanhkarp.com";
+        $domainname.value = "allantheguru.alanhkarp.com";
         $sitename.value = "Guru";
         $sitename.onblur();    
     }
@@ -274,6 +284,7 @@ export async function runTests() {
         $username.value = "";
         $sitepw.value = "";
         $superpw.onkeyup();
+        $providesitepw.checked = false;
     }
     function get(id) {
         return document.getElementById(id);

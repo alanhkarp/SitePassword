@@ -4,10 +4,10 @@ const testMode = true;
 const debugMode = false;
 const logging = debugMode;
 const commonSettingsTitle = "CommonSettings";
-// State I want to keep around that doesn't appear in the file system
+// State I want to keep around
 let sitedataBookmark = "SitePasswordData"; 
 if (testMode) {
-    sitedataBookmark = "SitePasswordDataTest"; //"SitePasswordDataTest";
+    sitedataBookmark = "SitePasswordDataTest";
 } else if (debugMode) {
     sitedataBookmark = "SitePasswordDataDebug";
 }
