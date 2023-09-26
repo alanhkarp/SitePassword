@@ -178,8 +178,8 @@ function eventSetup() {
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg && bg.settings) {
             bg.superpw = get("superpw").value || "";
-            bg.settings.sitename = get("sitename").value;
-            bg.settings.username = get("username").value;
+            bg.settings.sitename = get("sitename").value || "";
+            bg.settings.username = get("username").value || "";
             if (bg.settings.sitename) {
                 database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
                 database.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
@@ -873,11 +873,9 @@ function handleclick(which) {
     ask2generate();
 }
 function changePlaceholder() {
-    let u = get("username").value
-    if (get("superpw").value && get("sitename").value && u) {
-        if (logging) console.log("popup sending fill fields", u);
-        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": true });
-    }
+    let u = get("username").value || "";
+    let readyForClick = get("superpw").value && u;
+    chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
 }
 function setfocus(element) {
     element.focus();
