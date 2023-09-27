@@ -76,7 +76,7 @@ window.onload = function () {
             instructionSetup();
             getsettings();
             eventSetup();
-        }, 1000); // set to 1000 for debugging
+        }, 0); // set to 1000 for debugging
     });
 }
 // Used for testing
@@ -128,7 +128,7 @@ function clearDatalist(listid) {
     get("main").classList.remove("datalist-open");
     get("main").classList.add("datalist-closed");
 }
-function getsettings() {
+async function getsettings() {
     if (logging) console.log("popup getsettings", domainname);
     chrome.runtime.sendMessage({
         "cmd": "getMetadata",
@@ -216,7 +216,7 @@ function eventSetup() {
     // Domain Name
     get("domainname").onblur = function (e) {
         get("sitename").value = "";
-        getsettings(() => {
+        getsettings().then(() => {
             fill();
             ask2generate();
         });

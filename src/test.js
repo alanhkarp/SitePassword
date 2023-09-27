@@ -22,6 +22,7 @@ export async function runTests() {
     const $domainnamemenuforget = get("domainnamemenuforget");
     const $nicknamebutton = get("nicknamebutton");
     const $phishing = get("phishing");
+    const $settings = get("settings");
     const $sitename3bluedots = get("sitename3bluedots");
     const $sitenamemenuforget = get("sitenamemenuforget");
     const $username3bluedots = get("username3bluedots");
@@ -125,6 +126,74 @@ export async function runTests() {
             failed += 1;
         }
     }
+    // Test phishing
+    async function testPhishing() {
+        await resetState();
+        await phishingSetup();
+        await sleep(sleepTime);
+        // Does warning appear?
+        let test = $phishing.style.display === "block";
+        if (test) {
+            console.log("Passed: Phishing warning is showing.");
+            passed += 1;
+        } else {
+            console.warn("Failed: Phishing warning not showing.");
+            failed += 1;
+        }
+        // Does warning go away leaving form cleared?
+        $cancelwarning.onclick();
+        test = $phishing.style.display === "none" && $sitename.value === "";
+        if (test) {
+            console.log("Passed: Phishing warning not showing.");
+            passed += 1;
+        } else {
+            console.warn("Failed: Phishing warning is showing.");
+            failed += 1;
+        }
+        // Does setting new site name work?
+        await phishingSetup();
+        await sleep(sleepTime);
+        $nicknamebutton.onclick();
+        await sleep(sleepTime);
+        test = $phishing.style.display === "none" && $sitename.value === "Guru" 
+            && document.activeElement === $sitename;
+        if (test) {
+            console.log("Passed: Phishing new site name");
+            passed += 1;
+        } else {
+            console.warn("Failed: Phishing new site name");
+            failed += 1;
+        }
+        // Does same account option work?
+        await phishingSetup();
+        await sleep(sleepTime);
+        $warningbutton.onclick();
+        await sleep(sleepTime);
+        $mainpanel.onmouseleave();
+        await sleep(sleepTime);
+        test = $phishing.style.display === "none" && $sitename.value === "Guru";
+        test = test && $username.value === "alan";
+        if (test) {
+            console.log("Passed: Phishing same account");
+            passed += 1;
+        } else {
+            console.warn("Failed: Phishing same account");
+            failed += 1;
+        }
+        await sleep(sleepTime);
+        clearForm();
+        await fillForm("", "allantheguru.alanhkarp.com", "", "");
+        $domainname.onblur();
+        await sleep(sleepTime);
+        test = $sitename.value === "Guru" && $username.value === "alan";
+            if (test) {
+            console.log("Passed: Phishing remmbered same account");
+            passed += 1;
+        } else {    
+            console.warn("Failed: Phishing remmbered same account");
+            failed += 1;
+        }
+    }
     // Test forget
     async function testForget() {
         await resetState();
@@ -146,12 +215,13 @@ export async function runTests() {
             failed += 1;
         }
         // See if database still has site name if it should
-        phishingSetup();
+        await phishingSetup();
         await sleep(sleepTime);
         $warningbutton.onclick();
+        $mainpanel.onmouseleave();
         await sleep(sleepTime);
         await forgetDomainname();
-        await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+        await fillForm("qwerty", "allantheguru.alanhkarp.com", "", "");
         $domainname.onblur();
         await sleep(sleepTime);
         test = $sitename.value === "" && $username.value === "";
@@ -159,11 +229,11 @@ export async function runTests() {
             console.log("Passed: Forget site name when it should");
             passed += 1;
         } else {
-            console.warn("Failed: Forget site name when it should");
+            console.warn("Failed: Did not forget site name when it should");
             failed += 1;
         }
         // See if forget by site name works
-        phishingSetup();
+        await phishingSetup();
         await sleep(sleepTime);
         $warningbutton.onclick(); // Now I have two domain names pointing to the same site name
         $sitename3bluedots.onmouseover();
@@ -186,7 +256,7 @@ export async function runTests() {
             failed += 1;
         }
         // See if forget by username works
-        phishingSetup();
+        await phishingSetup();
         await sleep(sleepTime);
         $warningbutton.onclick(); // Now I have two domain names pointing to the same site name
         $username3bluedots.onmouseover();
@@ -208,73 +278,6 @@ export async function runTests() {
             console.warn("Failed: Forget by username");
             failed += 1;
         } 
-    }
-    // Test phishing
-    async function testPhishing() {
-        await resetState();
-        phishingSetup();
-        await sleep(sleepTime);
-        // Does warning appear?
-        let test = $phishing.style.display === "block";
-        if (test) {
-            console.log("Passed: Phishing warning showing.");
-            passed += 1;
-        } else {
-            console.warn("Failed: Phishing warning not showing.");
-            failed += 1;
-        }
-        // Does warning go away leaving form cleared?
-        $cancelwarning.onclick();
-        test = $phishing.style.display === "none" && $sitename.value === "";
-        if (test) {
-            console.log("Passed: Phishing warning not showing.");
-            passed += 1;
-        } else {
-            console.warn("Failed: Phishing warning not showing.");
-            failed += 1;
-        }
-        // Does setting new site name work?
-        phishingSetup();
-        await sleep(sleepTime);
-        $nicknamebutton.onclick();
-        await sleep(sleepTime);
-        test = $phishing.style.display === "none" && $sitename.value === "Guru" 
-            && document.activeElement === $sitename;
-        if (test) {
-            console.log("Passed: Phishing new site name");
-            passed += 1;
-        } else {
-            console.warn("Failed: Phishing new site name");
-            failed += 1;
-        }
-        // Does same account option work?
-        phishingSetup();
-        await sleep(sleepTime);
-        $warningbutton.onclick();
-        await sleep(sleepTime);
-        test = $phishing.style.display === "none" && $sitename.value === "Guru";
-        test = test && $username.value === "alan";
-        if (test) {
-            console.log("Passed: Phishing same account");
-            passed += 1;
-        } else {
-            console.warn("Failed: Phishing same account");
-            failed += 1;
-        }
-        $mainpanel.onmouseleave();
-        await sleep(sleepTime);
-        clearForm();
-        await fillForm("", "allantheguru.alanhkarp.com", "", "");
-        $domainname.onblur();
-        await sleep(sleepTime);
-        test = $sitename.value === "Guru" && $username.value === "alan";
-            if (test) {
-            console.log("Passed: Phishing remmbered same account");
-            passed += 1;
-        } else {    
-            console.warn("Failed: Phishing remmbered same account");
-            failed += 1;
-        }
     }
     // Test save as default
     function testSaveAsDefault() {
@@ -349,6 +352,7 @@ export async function runTests() {
         await sleep(sleepTime);
     }
     async function phishingSetup() {
+        await resetState();
         clearForm();
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
         $mainpanel.onmouseleave();
@@ -373,6 +377,7 @@ export async function runTests() {
         $sitepw.value = "";
         $superpw.onkeyup();
         $providesitepw.checked = false;
+        $settings.style.display = "none";
     }
     function get(id) {
         return document.getElementById(id);
