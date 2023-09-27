@@ -13,8 +13,6 @@ if (testMode) {
 }
 var superpw = "";
 var activetab;
-const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
-var database = clone(databaseDefault);
 var domainname = "";
 var protocol;
 var rootFolder = {id: -1};
@@ -29,7 +27,7 @@ export const config = {
     miniter: 100,
     maxiter: 1000
 };
-let defaultSettings = {
+export let defaultSettings = {
     sitename: "",
     username: "",
     providesitepw: false,
@@ -48,7 +46,9 @@ let defaultSettings = {
     minspecial: 1,
     specials: config.specials,
 };
-let bgDefault = {superpw: "", settings: defaultSettings};
+export let bgDefault = {superpw: "", settings: defaultSettings};
+export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
+var database = clone(databaseDefault);
 var bg = clone(bgDefault);
 
 let bkmksId;
@@ -125,7 +125,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 database.hidesitepw = request.hidesitepw;
                 superpw = bg.superpw || "";
                 persistMetadata(sendResponse);
-            } else if (request.cmd === "getPassword") {
+            } else if (request.cmd === "getPassword") {                
                 let domainname = getdomainname(sender.origin || sender.url);
                 bg.settings = bgsettings(domainname);
                 let p = generate(bg);
@@ -143,12 +143,24 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 } else {
                     sendResponse({"keepAlive": true});
                 }
+                // Used for testing
+            } else if (request.cmd === "reset") {
+                getRootFolder(sendResponse).then((rootFolder) => {
+                    chrome.bookmarks.removeTree(rootFolder[0].id, () => {
+                        createBookmarksFolder = true;
+                        retrieveMetadata(sendResponse, () => {
+                            sendResponse("reset");
+                        });
+                    });
+                });
             } else if (request.cmd === "newDefaults") {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
                 defaultSettings = request.newDefaults;
                 persistMetadata(sendResponse);
             } else if (request.cmd === "forget") {
-                forget(request.toforget, rootFolder, sendResponse);
+                getRootFolder(sendResponse).then((rootFolder) => {
+                    forget(request.toforget, rootFolder[0], sendResponse);
+                });
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
@@ -242,35 +254,36 @@ function onContentPageload(request, sender, sendResponse) {
         } catch {
             chrome.storage.session.set({"savedData": savedData});
         }    
-    };
-    let domainname = getdomainname(activetab.url);
-    if (logging) console.log("domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
-    let sitename = database.domains[domainname];
-    if (logging) console.log("bg |sitename|, settings, database", sitename, database.sites[sitename], database);
-    if (sitename) {
-        bg.settings = database.sites[sitename];
-    } else {
-        bg.settings = clone(defaultSettings);
+        let domainname = getdomainname(activetab.url);
+        if (logging) console.log("domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
+        let sitename = database.domains[domainname];
+        if (logging) console.log("bg |sitename|, settings, database", sitename, database.sites[sitename], database);
+        if (sitename) {
+            bg.settings = database.sites[sitename];
+        } else {
+            bg.settings = clone(defaultSettings);
+        }
+        bg.settings.domainname = domainname;
+        bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
+        let readyForClick = false;
+        if (superpw && bg.settings.sitename && bg.settings.username) {
+            readyForClick = true;
+        }
+        let sitepass = "";
+        if (bg.pwcount !== 0 && bg.settings.username) {
+            let p = generate(bg);
+            p = stringXorArray(p, bg.settings.xor);
+            sitepass = p;
+        }
+        if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
+        sendResponse({ "cmd": "fillfields", 
+                    "u": bg.settings.username || "", 
+                    "p": sitepass || "", 
+                    "clearsuperpw": database.clearsuperpw,
+                    "hideSitepw": database.hideSitepw,
+                    "readyForClick": readyForClick
+        });
     }
-    bg.settings.domainname = domainname;
-    bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
-    let readyForClick = false;
-    if (superpw && bg.settings.sitename && bg.settings.username) {
-        readyForClick = true;
-    }
-    let sitepass = "";
-    if (bg.pwcount !== 0 && bg.settings.username) {
-        let p = generate(bg);
-        p = stringXorArray(p, bg.settings.xor);
-        sitepass = p;
-    }
-    if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
-    sendResponse({ "cmd": "fillfields", 
-                   "u": bg.settings.username || "", 
-                   "p": sitepass || "", 
-                   "clearsuperpw": database.clearsuperpw,
-                   "hideSitepw": database.hideSitepw,
-                   "readyForClick": readyForClick});
 }
 async function persistMetadata(sendResponse) {
     // localStorage[name] = JSON.stringify(value);
@@ -451,6 +464,7 @@ async function retrieveMetadata(sendResponse, callback) {
                 // happen when the browser newly implements the bookmarks API.
                 bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
                 if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                // Nothing in sync storage unless using Safari
                 let values = await chrome.storage.sync.get();
                 for (let title in values) {
                     chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});

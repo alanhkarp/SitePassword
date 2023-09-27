@@ -1,10 +1,10 @@
 'use strict';
-import { webpage } from "./bg.js";
+import { bgDefault, databaseDefault, webpage } from "./bg.js";
 import { runTests } from "./test.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
 const debugMode = false;
-let test = false;
+let testMode = false;
 const logging = debugMode;
 if (logging) console.log("Version 2.0");
 var activetab;
@@ -54,10 +54,7 @@ window.onload = function () {
         setTimeout(() => {
             debugger;
             activetab = tabs[0];
-            if (test) activetab.url = get("domainname").value;
-            instructionSetup();
-            getsettings();
-            eventSetup();
+            if (testMode) activetab.url = get("domainname").value;
             // I need to be able to change the URL to test the phishing
             // and forget functions.
             if (logging) console.log("popup tab", activetab);
@@ -69,12 +66,24 @@ window.onload = function () {
             } else {
                 domainname = activetab.url.split("/")[2]
             }
+            let testdomainname = get("domainname").value;
             get("domainname").value = domainname;
+            // Ignore the page domain name when testing
+            if (testMode) get("domainname").value = testdomainname;
             get("sitepw").value = "";
             if (logging) console.log("popup got tab", domainname, activetab);
             if (logging) console.log("popup getting metadata");
+            instructionSetup();
+            getsettings();
+            eventSetup();
         }, 1000); // set to 1000 for debugging
     });
+}
+// Used for testing
+export function reset() {
+    bg = clone(bgDefault);
+    database = databaseDefault;
+    if (logging) console.log("popup reset");
 }
 function init() {
     get("superpw").value = bg.superpw || "";
@@ -143,8 +152,8 @@ function getsettings() {
         if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
         message("multiple", bg.pwcount > 1);
         message("zero", bg.pwcount == 0);
-        if (!test && response.test) { // Only run tests once
-            test = true;
+        if (!testMode && response.test) { // Only run tests once
+            testMode = true;
             runTests();
         }
     });
@@ -178,6 +187,7 @@ function eventSetup() {
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg && bg.settings) {
             bg.superpw = get("superpw").value || "";
+            bg.settings.domainname = get("domainname").value || "";
             bg.settings.sitename = get("sitename").value || "";
             bg.settings.username = get("username").value || "";
             if (bg.settings.sitename) {
@@ -204,9 +214,6 @@ function eventSetup() {
         window.open("https://sitepassword.info");
     }
     // Domain Name
-    get("domainname").onkeyup = function () {
-        get("sitename").value = "";
-    }
     get("domainname").onblur = function (e) {
         get("sitename").value = "";
         getsettings(() => {
@@ -628,6 +635,7 @@ function eventSetup() {
             domainname: "",
             pwdomainname: "",
             pwlength: get("pwlength").value,
+            providesitepw: get("providesitepw").checked,
             startwithletter: get("startwithletter").checked,
             allowlower: get("allowlowercheckbox").checked,
             allowupper: get("allowuppercheckbox").checked,
@@ -662,7 +670,7 @@ function eventSetup() {
         var sitename = getlowertrim("sitename");
         bg.settings = clone(database.sites[sitename]);
         bg.settings.sitename = get("sitename").value;
-        if (test) bg.settings.domainname = get("domainname").value;
+        if (testMode) bg.settings.domainname = get("domainname").value;
         database.domains[get("domainname").value] = bg.settings.sitename;
         get("username").value = bg.settings.username;
         ask2generate();
@@ -674,7 +682,7 @@ function eventSetup() {
         get("domainname").value = "";
         get("sitename").value = "";
         get("username").value = "";
-        if (!test) {
+        if (!testMode) {
             chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
             window.close();
         }
@@ -874,7 +882,8 @@ function handleclick(which) {
 }
 function changePlaceholder() {
     let u = get("username").value || "";
-    let readyForClick = get("superpw").value && u;
+    let readyForClick = false;
+    if (get("superpw").value && u) readyForClick = true;
     chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
 }
 function setfocus(element) {
