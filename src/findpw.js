@@ -150,7 +150,7 @@ function handleMutations(mutations) {
 }
 function fillfield(field, text) {
     // Don't change if there is a value to avoid mutationObserver cycling
-    if (field && text && field.value !== text) {
+    if (field && text && !field.value) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
         field.value = text.trim();
         fixfield(field, text.trim());
