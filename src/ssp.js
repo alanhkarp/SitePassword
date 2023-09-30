@@ -1,9 +1,13 @@
 'use strict';
-import { webpage } from "./bg.js";
+import { bgDefault, databaseDefault, webpage } from "./bg.js";
+import { runTests } from "./test.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
+
 const debugMode = false;
-let logging = debugMode;
-if (logging) console.log("Version 1.0");
+// testMode must start as false.  Its value will come in a message from bg.js.
+let testMode = false;
+const logging = debugMode;
+if (logging) console.log("Version 2.0");
 var activetab;
 var domainname;
 var mainPanelTimer;
@@ -48,27 +52,35 @@ window.onload = function () {
     }
     if (logging) console.log("popup getting active tab");
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
+        let timeout = 0;
+        if (testMode) timeout = 1000; // set to 1000 for debugging
         setTimeout(() => {
-            debugger;
+            activetab = tabs[0];
+            if (logging) console.log("popup tab", activetab);
+            let protocol = activetab.url.split(":")[0];
+            if ( protocol === "file") {
+                domainname = activetab.url.split("///")[1];
+            } else if (protocol === "mailto") {
+                domainname = activetab.url.split(":")[1];
+            } else {
+                domainname = activetab.url.split("/")[2]
+            }
+            get("domainname").value = domainname;
+            // Ignore the page domain name when testing
+            get("sitepw").value = "";
+            if (logging) console.log("popup got tab", domainname, activetab);
+            if (logging) console.log("popup getting metadata");
             instructionSetup();
-            getsettings();
             eventSetup();
-        }, 0); // set to 1000 for debugging
-        activetab = tabs[0];
-        if (logging) console.log("popup tab", activetab);
-        let protocol = activetab.url.split(":")[0];
-        if ( protocol === "file") {
-            domainname = activetab.url.split("///")[1];
-        } else if (protocol === "mailto") {
-            domainname = activetab.url.split(":")[1];
-        } else {
-            domainname = activetab.url.split("/")[2]
-        }
-        get("domainname").value = domainname;
-        get("sitepw").value = "";
-        if (logging) console.log("popup got tab", domainname, activetab);
-        if (logging) console.log("popup getting metadata");
+            getsettings(domainname);
+            debugger;
+        }, timeout);
     });
+}
+// Used for testing
+export async function reset(domainname) {
+    await getsettings(domainname);
+    if (logging) console.log("popup reset");
 }
 function init() {
     get("superpw").value = bg.superpw || "";
@@ -113,7 +125,8 @@ function clearDatalist(listid) {
     get("main").classList.remove("datalist-open");
     get("main").classList.add("datalist-closed");
 }
-function getsettings() {
+async function getsettings(testdomainname) {
+    if (testMode) domainname = testdomainname;
     if (logging) console.log("popup getsettings", domainname);
     chrome.runtime.sendMessage({
         "cmd": "getMetadata",
@@ -137,6 +150,10 @@ function getsettings() {
         if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
         message("multiple", bg.pwcount > 1);
         message("zero", bg.pwcount == 0);
+        if (!testMode && response.test) { // Only run tests once
+            testMode = true;
+            runTests();
+        }
     });
 }
 function eventSetup() {
@@ -168,6 +185,7 @@ function eventSetup() {
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg && bg.settings) {
             bg.superpw = get("superpw").value || "";
+            bg.settings.domainname = get("domainname").value || "";
             bg.settings.sitename = get("sitename").value || "";
             bg.settings.username = get("username").value || "";
             if (bg.settings.sitename) {
@@ -176,9 +194,8 @@ function eventSetup() {
             }
             let sitename = get("sitename").value;
             changePlaceholder();
-            bg.settings.domainname = domainname;
             if (logging) console.log("popup sending site data", domainname, bg);
-           chrome.runtime.sendMessage({
+            chrome.runtime.sendMessage({
                 "cmd": "siteData",
                 "sitename": sitename,
                 "clearsuperpw": get("clearsuperpw").checked,
@@ -195,12 +212,10 @@ function eventSetup() {
         window.open("https://sitepassword.info");
     }
     // Domain Name
-    get("domainname").onkeyup = function () {
-        get("sitename").value = "";
-    }
     get("domainname").onblur = function (e) {
         get("sitename").value = "";
-        getsettings(() => {
+        if (testMode) domainname = get("domainname").value;
+        getsettings(domainname).then(() => {
             fill();
             ask2generate();
         });
@@ -411,7 +426,7 @@ function eventSetup() {
         let toforget = normalize(get("username").value);
         let $list = get("toforgetlist");
         for (let domain in database.domains) {
-            let sitename = database.domains[domain];
+            let sitename = normalize(database.domains[domain]);
             if (normalize(database.sites[sitename].username) === toforget) {
                 addForgetItem(domain);
             }
@@ -619,6 +634,7 @@ function eventSetup() {
             domainname: "",
             pwdomainname: "",
             pwlength: get("pwlength").value,
+            providesitepw: get("providesitepw").checked,
             startwithletter: get("startwithletter").checked,
             allowlower: get("allowlowercheckbox").checked,
             allowupper: get("allowuppercheckbox").checked,
@@ -653,6 +669,7 @@ function eventSetup() {
         var sitename = getlowertrim("sitename");
         bg.settings = clone(database.sites[sitename]);
         bg.settings.sitename = get("sitename").value;
+        if (testMode) bg.settings.domainname = get("domainname").value;
         database.domains[get("domainname").value] = bg.settings.sitename;
         get("username").value = bg.settings.username;
         ask2generate();
@@ -664,8 +681,10 @@ function eventSetup() {
         get("domainname").value = "";
         get("sitename").value = "";
         get("username").value = "";
-        chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
-        window.close();
+        if (!testMode) {
+            chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
+            window.close();
+        }
     }
     get("nicknamebutton").onclick = function () {
         setfocus(get("sitename"));
@@ -840,6 +859,11 @@ function handleblur(element, field) {
     } else {
         bg.settings[field] = get(element).value;
     }
+    if (get("superpw").value && get("sitename").value && get("username").value) {
+        get("providesitepw").disabled = false;
+    } else {
+        get("providesitepw").disabled = true;
+    }
     bg.settings.characters = characters(bg.settings, database);
     ask2generate();
     setMeter("sitepw");
@@ -857,7 +881,8 @@ function handleclick(which) {
 }
 function changePlaceholder() {
     let u = get("username").value || "";
-    let readyForClick = get("superpw").value && u;
+    let readyForClick = false;
+    if (get("superpw").value && u) readyForClick = true;
     chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
 }
 function setfocus(element) {
@@ -1098,6 +1123,7 @@ function sitedataHTMLDoc(doc, sorted) {
 }
 function isphishing(sitename) {
     if (!sitename) return "";
+    let domainname = get("domainname").value; // Needed for tests
     var domains = Object.keys(database.domains);
     var phishing = "";
     domains.forEach(function (d) {
