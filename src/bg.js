@@ -1,6 +1,9 @@
 'use strict';
 import { generate, isSuperPw, normalize,  string2array, array2string, stringXorArray } from "./generate.js";
-const testMode = true;
+// Set to true to run the tests in test.js then reload the extension.
+// Using any kind of storage (session, local, sync) is awkward because 
+// accessing the value is an async operation.
+const testMode = false;
 const debugMode = false;
 const logging = debugMode;
 const commonSettingsTitle = "CommonSettings";
@@ -174,7 +177,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 onContentPageload(request, sender, sendResponse);
                 persistMetadata(sendResponse);
             }
-            database = clone(databaseDefault);
             if (logging) console.log("bg addListener returning", isSuperPw(superpw));
         };
     });

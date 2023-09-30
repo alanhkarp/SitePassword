@@ -4,6 +4,7 @@ import { runTests } from "./test.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
 const debugMode = false;
+// testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
 const logging = debugMode;
 if (logging) console.log("Version 2.0");
@@ -51,12 +52,10 @@ window.onload = function () {
     }
     if (logging) console.log("popup getting active tab");
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
+        let timeout = 0;
+        if (testMode) timeout = 1000; // set to 1000 for debugging
         setTimeout(() => {
-            debugger;
             activetab = tabs[0];
-            if (testMode) activetab.url = get("domainname").value;
-            // I need to be able to change the URL to test the phishing
-            // and forget functions.
             if (logging) console.log("popup tab", activetab);
             let protocol = activetab.url.split(":")[0];
             if ( protocol === "file") {
@@ -66,23 +65,21 @@ window.onload = function () {
             } else {
                 domainname = activetab.url.split("/")[2]
             }
-            let testdomainname = get("domainname").value;
             get("domainname").value = domainname;
             // Ignore the page domain name when testing
-            if (testMode) get("domainname").value = testdomainname;
             get("sitepw").value = "";
             if (logging) console.log("popup got tab", domainname, activetab);
             if (logging) console.log("popup getting metadata");
             instructionSetup();
-            getsettings();
             eventSetup();
-        }, 0); // set to 1000 for debugging
+            getsettings(domainname);
+            debugger;
+        }, timeout);
     });
 }
 // Used for testing
-export function reset() {
-    bg = clone(bgDefault);
-    database = databaseDefault;
+export async function reset(domainname) {
+    await getsettings(domainname);
     if (logging) console.log("popup reset");
 }
 function init() {
@@ -128,7 +125,8 @@ function clearDatalist(listid) {
     get("main").classList.remove("datalist-open");
     get("main").classList.add("datalist-closed");
 }
-async function getsettings() {
+async function getsettings(testdomainname) {
+    if (testMode) domainname = testdomainname;
     if (logging) console.log("popup getsettings", domainname);
     chrome.runtime.sendMessage({
         "cmd": "getMetadata",
@@ -216,7 +214,8 @@ function eventSetup() {
     // Domain Name
     get("domainname").onblur = function (e) {
         get("sitename").value = "";
-        getsettings().then(() => {
+        if (testMode) domainname = get("domainname").value;
+        getsettings(domainname).then(() => {
             fill();
             ask2generate();
         });

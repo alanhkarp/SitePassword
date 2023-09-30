@@ -1,3 +1,8 @@
+// To run the tests, set testMode to true in bg.js and reload 
+// the extension.  Then open any https page, e.g., https://alanhkarp.com. 
+// Right click on the SitePassword icon and select "Inspect".  You will 
+// see an alert "Starting tests".  Click OK and check the console for results.
+
 import { reset as resetssp } from "./ssp.js";
 export async function runTests() {
     const sleepTime = 100;
@@ -63,10 +68,10 @@ export async function runTests() {
         await resetState();
         let test = !$providesitepw.checked;
         if (test) {
-            console.log("Passed: Calculation provide site pw correct");
+            console.log("Passed: Calculation provide site pw checkbox not checked");
             passed += 1;
         } else {
-            console.warn("Failed: Calculation rovide site pw incorrect, should not be checked");
+            console.warn("Failed: Calculation rovide site pw checkbox should not be checked");
             failed += 1;
         }
         const expected = "to3X9g55EK8C";
@@ -313,14 +318,21 @@ export async function runTests() {
         $makedefaultbutton.click();
     }
     // Utility functions
+
+    // Many of the event handlers are asyc.  I could await them, but then
+    // I would have to make the functions async, and I don't want to make
+    // that many changes to the code just to support testing.  Instead, I 
+    // sleep long enough that the funtion should have completed.  Change
+    // the value of sleepTime if I guessed wrong.
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
+    // I want to start with a clean slate for each set of tests.
     async function resetState() {
         clearForm();
         let reset = await chrome.runtime.sendMessage({"cmd": "reset"});
         if (chrome.runtime.lastError) console.log("test lastError", chrome.runtime.lastError);
-        resetssp();
+        resetssp(get("domainname").value);
         await sleep(sleepTime);
     }
     async function fillForm(superpw, domainname, sitename, username) {
@@ -332,6 +344,8 @@ export async function runTests() {
         $sitename.onkeyup();
         $username.value = username;
         $username.onkeyup();
+        // For some reason testprovidesitepw does not work without this line
+        await sleep(sleepTime);
     }
     async function forgetDomainname() {
         $domainname3bluedots.onmouseover();
