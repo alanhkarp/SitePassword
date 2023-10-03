@@ -607,7 +607,7 @@ function forget(toforget, rootFolder, sendResponse) {
                 if (child.title === item) {
                     chrome.bookmarks.remove(child.id, () => {
                         if (logging) console.log("bg removed bookmark for", item);
-                        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": " ", "p": " ", "readyForClick": false });
+                        chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
                     });                       
                 }
             }
