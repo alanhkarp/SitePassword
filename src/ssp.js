@@ -1148,6 +1148,7 @@ function addForgetItem(domainname) {
 function forgetDomainnames(toforget) {
     get("sitename").value = "";
     get("username").value = "";
+    chrome.tabs.sendMessage(activetab.id, { "cmd": "clear"});
     chrome.runtime.sendMessage({"cmd": "forget", "toforget": toforget}, (response) => {
         if (logging) console.log("popup forget response", response);
         for (let item of toforget) {
