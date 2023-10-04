@@ -405,9 +405,9 @@ async function persistMetadata(sendResponse) {
                 url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
                 try {
                     chrome.bookmarks.update(found.id, { "url": url }, (_e) => {
-                        //if (logging) console.log("bg updated settings bookmark", _e, found);
+                        if (chrome.runtime.lastError) console.log("bg update lastError", chrome.runtime.lastError, found);
+                       //if (logging) console.log("bg updated settings bookmark", _e, found);
                     });
-                    if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
                 } catch {
                     if (bkmksSafari[found.title] && bkmksSafari[found.title].url !== url) {
                         bkmksSafari[found.title].url = url;
@@ -423,6 +423,7 @@ async function persistMetadata(sendResponse) {
                 url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
                 try {
                     chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url }, (e) => {
+                        if (chrome.runtime.lastError) console.log("bg create bookmark lastError", chrome.runtime.lastError);
                         if (logging) console.log("bg created settings bookmark", e, title);
                         if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
                     });
@@ -465,11 +466,12 @@ async function retrieveMetadata(sendResponse, callback) {
                 // then copy those entries to bookmarks and clear sync storage.  This will
                 // happen when the browser newly implements the bookmarks API.
                 bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
-                if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                if (chrome.runtime.lastError) console.log("bg sync lastError", chrome.runtime.lastError);
                 // Nothing in sync storage unless using Safari
                 let values = await chrome.storage.sync.get();
                 for (let title in values) {
                     chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
+                    if (chrome.runtime.lastError) console.log("bg sync create lastError", chrome.runtime.lastError);
                 }
                 // Leaving the entries in sync storage protects against the case where a browser (Safari) 
                 // starts supporting the bookmarks API, but users haven't updated the browser on all their machines.
@@ -485,7 +487,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
     if (logging) console.log("bg parsing bookmark");
     try {
         chrome.bookmarks.getChildren(rootFolderId, (children) => {cleanbkmks(children)});
-        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+        if (chrome.runtime.lastError) console.log("bg parseBkmk lastError", chrome.runtime.lastError);
     } catch {
         cleanbkmks(Object.values(bkmksSafari));
     }
@@ -499,7 +501,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
             if (!isNaN(title)) {
                 try {
                     chrome.bookmarks.remove(children[i].id);
-                    if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                    if (chrome.runtime.lastError) console.log("bg remove legacy lastError", chrome.runtime.lastError);
                 } catch {
                     delete bkmksSafari[children[i]];
                     chrome.storage.sync.set(bkmksSafari);
@@ -511,7 +513,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 if (sameSettings(seen, dupl)) {
                     try {
                         chrome.bookmarks.remove(children[i].id);
-                        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+                        if (chrome.runtime.lastError) console.log("bg duplicates lastError", chrome.runtime.lastError);
                     } catch {
                         delete bkmksSafari[children[i]];
                     }
@@ -599,13 +601,16 @@ function bgsettings(domainname) {
     }
     return bg.settings;
 }
-function forget(toforget, rootFolder, sendResponse) {
+async function forget(toforget, rootFolder, sendResponse) {
     if (logging) console.log("bg forget", toforget);
     for (const item of toforget)  {
+        delete database.domains[item];
         chrome.bookmarks.getChildren(rootFolder.id, (allchildren) => {
+            if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
             for (let child of allchildren) {
                 if (child.title === item) {
                     chrome.bookmarks.remove(child.id, () => {
+                        if (chrome.runtime.lastError) console.log("bg remove child lastError", chrome.runtime.lastError);
                         if (logging) console.log("bg removed bookmark for", item);
                         chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
                     });                       
