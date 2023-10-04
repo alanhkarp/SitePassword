@@ -55,6 +55,7 @@ window.onload = function () {
         let timeout = 0;
         if (testMode) timeout = 1000; // set to 1000 for debugging
         setTimeout(() => {
+            debugger;
             activetab = tabs[0];
             if (logging) console.log("popup tab", activetab);
             let protocol = activetab.url.split(":")[0];
@@ -73,7 +74,6 @@ window.onload = function () {
             instructionSetup();
             eventSetup();
             getsettings(domainname);
-            debugger;
         }, timeout);
     });
 }
