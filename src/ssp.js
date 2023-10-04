@@ -173,7 +173,7 @@ function eventSetup() {
         }
     }
     get("mainpanel").onmouseleave = function () {
-        if (logging) console.log(Date.now(), "popup window.mouseleave", phishing, bg);
+        if (logging) console.log(Date.now(), "popup window.mouseleave", autoclose, phishing, bg);
         // Don't persist phishing sites if user mouses out of popup. Can't use
         // isphising() because the new bookmark hasn't been created yet when the 
         // user clicks the same account button.
@@ -1196,7 +1196,7 @@ function msgon(msgname) {
 }
 function msgoff(msgname) {
     message(msgname, false);
-    autoclose = false;
+    autoclose = true;
 }
 // Show only the highest priority message that is on
 function message(msgname, turnon) {
@@ -1213,6 +1213,7 @@ function message(msgname, turnon) {
     get("instructionpanel").style.height = height + "px";
     if (height <= 575) get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
     warningMsg = ison;
+    autoclose = !ison;
 }
 function mainHeight() {
     let $bottom = get("bottom");
