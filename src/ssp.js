@@ -174,13 +174,13 @@ function eventSetup() {
     }
     get("mainpanel").onmouseleave = function () {
         if (logging) console.log(Date.now(), "popup window.mouseleave", autoclose, phishing, bg);
-        // Don't persist phishing sites if user mouses out of popup. Can't use
-        // isphising() because the new bookmark hasn't been created yet when the 
-        // user clicks the same account button.
-        //get("superpw").focus();
         if (warningMsg) {   
             autoclose = false;
         } 
+       // Don't persist phishing sites if user mouses out of popup. Can't use
+        // isphising() because the new bookmark hasn't been created yet when the 
+        // user clicks the same account button.
+        get("superpw").focus(); // Force phishing test in case focus is on sitename
         if (phishing) return;
         // window.onblur fires before I even have a chance to see the window, much less focus it
         if (bg && bg.settings) {
