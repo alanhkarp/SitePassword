@@ -52,8 +52,7 @@ window.onload = function () {
     }
     if (logging) console.log("popup getting active tab");
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
-        let timeout = 0;
-        if (testMode) timeout = 1000; // set to 1000 for debugging
+        let timeout = testMode ? 1000 : 0;     
         setTimeout(() => {
             debugger;
             activetab = tabs[0];
