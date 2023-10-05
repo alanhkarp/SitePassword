@@ -42,14 +42,20 @@ browser session. If your settings aren't there when you think they
 should be, reloading the page with the login form will solve the
 problem.  
 
-There may be a time when you want to forget the settings for a
-particular domain name. Maybe you cancelled your account at the
-site and want to use the site name for another one. Or, maybe
-you inadverently accepted a phishing site. You can forget the
-settings by opening the Bookmark Manager, and deleting the entry
-in the *SitePasswordData* folder with the domain name you wish
-to forget.
+[The Domain Name](#domainname)
+---------------------------------------
 
+The domain name is associated with the settings for this account.
+It is also the name of a bookmark in the SitePasswordData bookmark folder.
+That's the bookmark you can use to get your settings when you're on a machine
+that doesn't have the SitePassword extension installed.
+
+You may have more than one domain name for a given account because some web sites
+use more than one domain name for the same login page. You'll get the same password
+for all of the domain names as long as they are all associated with the same nickname.
+
+You can forget this domain name
+and all settings associated with it by clicking the Forget menu icon or by deleting the bookmark.
 
 [Your Super Password](#superpassword)
 ---------------------------------------
@@ -61,6 +67,11 @@ password and can guess your nickname and user name for that site
 can start guessing super passwords. You want to make that job has
 hard as you can.
 
+You can protect yourself further by using different super passwords
+for different kinds of accounts. You could have one that you use for
+banking, another for subscriptions, and a third for sites you find
+sketchy.
+
 SitePassword doesn't prevent you from using a weak super password,
 but it does warn you. There is a strength indicator directly below
 the super password field. It uses a meter, words, and color to
@@ -70,8 +81,19 @@ SitePassword cannot retrieve your super password. You should make
 sure it's something you won't easily forget. You might even want
 to write it down and keep the copy in a secure place.
 
+[Your Site Nickname][#sitename]
 
-[Your Site Passwords](#site)
+Your nickname is the way you refer to this account. It should be easy to remember,
+such as 'amazon' for amazon.com, but it doesn't have to be that simple.
+
+Your additional settings,
+such as the site password length and whether your
+site password contains special characters are associated with this nickname.
+
+[Changing a Site Password](#changing-a-site-password)
+tells you how to do that.
+
+[Your Site Passwords](#sitepw)
 --------------------------
 
 You only need to open SitePassword to enter your super password, to 
