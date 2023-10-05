@@ -1207,6 +1207,11 @@ function message(msgname, turnon) {
         if (ison) get(msg.name).style.display = "none";
         ison = ison || msg.ison;
     }
+    if (ison) {
+        get("warnings").style.display = "block";
+    } else {
+        get("warnings").style.display = "none";
+    }
     let height = mainHeight();
     get("main").style.height = height + "px";
     get("instructionpanel").style.height = height + "px";
