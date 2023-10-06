@@ -398,8 +398,7 @@ button:enabled:active {
   border : 2pt solid #D51c24;
   border-radius: 8px;
   background-color : white;
-  width: 92%;
-  margin: 10px 0;
+  margin: 10px;
 }
 .warningtext {
   position: relative;
