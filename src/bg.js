@@ -650,6 +650,55 @@ function getdomainname(url) {
 function getprotocol(url) {
     return url.split(":")[0];
 }
+// An experiment to see if I can keep the service worker awake
+// from https://github.com/w3c/webextensions/issues/72#issuecomment-1379374344
+// WARNING: May only work due to a bug in Chrome.
+// In ServiceWorker.js
+// -------------------
+// Forcing service worker to stay alive by sending a "ping" to a port where noone is listening
+// Essentially it prevents SW to fall asleep after the first 30 secs of work.
+
+const INTERNAL_STAYALIVE_PORT = "Whatever_Port_Name_You_Want"
+var alivePort = null;
+// Call the function at SW start
+StayAlive();
+async function StayAlive() {
+    var lastCall = Date.now();
+    var wakeup = setInterval( () => {
+        
+        const now = Date.now();
+        const age = now - lastCall;
+        
+        console.log(`(DEBUG StayAlive) ----------------------- time elapsed: ${age}`)
+        if (alivePort == null) {
+            alivePort = chrome.runtime.connect({name:INTERNAL_STAYALIVE_PORT})
+
+            alivePort.onDisconnect.addListener( (p) => {
+				if (chrome.runtime.lastError){
+					console.log(`(DEBUG StayAlive) Disconnected due to an error: ${chrome.runtime.lastError.message}`);
+				} else {
+					console.log(`(DEBUG StayAlive): port disconnected`);
+				}
+
+				alivePort = null;
+			});
+        }
+
+        if (alivePort) {
+                        
+            alivePort.postMessage({content: "ping"});
+            
+            if (chrome.runtime.lastError) {                              
+                console.log(`(DEBUG StayAlive): postMessage error: ${chrome.runtime.lastError.message}`)                
+            } else {                               
+                console.log(`(DEBUG StayAlive): "ping" sent through ${alivePort.name} port`)
+            }
+            
+        }         
+        //lastCall = Date.now();
+               
+    }, 25000);
+}
 /* 
 This code is a major modification of the code released with the
 following licence.  Neither Hewlett-Packard Company nor Hewlett-Packard
