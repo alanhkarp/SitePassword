@@ -1,5 +1,5 @@
 'use strict';
-import { bgDefault, databaseDefault, webpage } from "./bg.js";
+import { bgDefault, webpage } from "./bg.js";
 import { runTests } from "./test.js";
 import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
@@ -18,7 +18,7 @@ var defaultTitle = "SitePassword";
 
 var phishing = false;
 var warningMsg = false;
-var bg = { "settings": {} };
+var bg = bgDefault;
 
 chrome.storage.local.get("onClipboard", (v) => {
     if (v.onClipboard) {
@@ -1147,11 +1147,9 @@ function addForgetItem(domainname) {
 function forgetDomainnames(toforget) {
     get("sitename").value = "";
     get("username").value = "";
+    bg = bgDefault;
     chrome.runtime.sendMessage({"cmd": "forget", "toforget": toforget}, (response) => {
         if (logging) console.log("popup forget response", response);
-        for (let item of toforget) {
-            delete database.domains[item];
-        }
         if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
     });
 }
