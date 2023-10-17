@@ -359,6 +359,12 @@ function overlaps(field, label) {
     if (floc.left >= lloc.right) return false;
     return true;
 }
+/*
+    https://bugs.chromium.org/p/chromium/issues/detail?id=1342046 shows
+    how this content script can learn the user's super password that's
+    stored in session storage even though it's not supposed to.  The
+    solution is to not use chrome.storage.addListener.
+*/
 /* 
 This code is a major modification of the code released with the
 following licence.  Neither Hewlett-Packard Company nor Hewlett-Packard
