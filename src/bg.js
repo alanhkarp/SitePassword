@@ -141,6 +141,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
                 sendResponse(p);
             } else if (request.cmd === "keepAlive") {
+                // Firefox doesn't preserve session storage across restarts, but Chrome does.
+                // It's a good thing the keepAlive message works for Firefox but not for Chrome.
                 if (chrome.storage.session) {
                     sendResponse({"keepAlive": false});
                 } else {
