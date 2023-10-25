@@ -79,6 +79,24 @@ if (logging) console.log("bg clear superpw");
 
 if (logging) console.log("bg starting with database", database);
 
+// Check reminder clock set in ssp.js.  If too much time has passed, 
+// clear superpw so user has to reenter it as an aid in not forgetting it.
+chrome.storage.local.get("reminder", (value) => {
+    if (logging) console.log("bg got reminder", value);
+    if (value.reminder) {
+        let now = new Date();
+        let then = new Date(value.reminder);
+        let diff = now - then;
+        if (logging) console.log("bg reminder diff", diff);
+        if (diff > 604800000) {
+            if (logging) console.log("bg clearing superpw because of reminder");
+            superpw = "";
+            chrome.storage.session.set({"superpw": ""});
+            chrome.storage.local.set({"reminder": ""});
+        }
+    }
+});
+
 // Need to clear cache following an update
 chrome.runtime.onInstalled.addListener(function(details) {
     if (logging) console.log("bg clearing browser cache because of", details)
@@ -104,6 +122,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         if (logging) console.log("bg listener back from retrieveMetadata", database);
         try {
             let superpw = sessionStorage.getItem("superpw");
+            if (logging) console.log("bg got superpw", superpw);
             remainder(superpw);
         } catch {
             chrome.storage.session.get(["superpw"], (value) => {

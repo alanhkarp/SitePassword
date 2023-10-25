@@ -250,7 +250,9 @@ function eventSetup() {
     // Super Password
     const $superpw = get("superpw");
     get("superpw").onkeyup = function (e) {
-        bg.superpw = get("superpw").value || "";
+        // Start the reminder clock ticking
+        chrome.storage.local.set({"reminder": Date.now()});
+        bg.superpw = $superpw.value || "";
         ask2generate();
         setMeter("superpw");
         setMeter("sitepw");
