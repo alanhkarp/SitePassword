@@ -1,10 +1,10 @@
 'use strict';
-import { generate, isSuperPw, normalize,  string2array, array2string, stringXorArray } from "./generate.js";
+import {isSuperPw, normalize,  string2array, array2string, stringXorArray, generatePassword } from "./generate.js";
 // Set to true to run the tests in test.js then reload the extension.
 // Using any kind of storage (session, local, sync) is awkward because 
 // accessing the value is an async operation.
 const testMode = false;
-const debugMode = false;
+const debugMode = true;
 const logging = debugMode;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
@@ -17,7 +17,7 @@ if (testMode) {
 var superpw = "";
 var activetab;
 var domainname = "";
-var protocol;
+var protocol; // VSCode says this is unused, but it is in function retrieved() below.
 var rootFolder = {id: -1};
 var pwcount = 0;
 var createBookmarksFolder = true;
@@ -150,15 +150,16 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             } else if (request.cmd === "getPassword") {                
                 let domainname = getdomainname(sender.origin || sender.url);
                 bg.settings = bgsettings(domainname);
-                let p = generate(bg);
-                p = stringXorArray(p, bg.settings.xor);
-                if (database.clearsuperpw) {
-                    superpw = "";
-                    bg.superpw = "";
-                    persistMetadata(sendResponse);
-                }
-                if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
-                sendResponse(p);
+                generatePassword(bg, (p) => {
+                    p = stringXorArray(p, bg.settings.xor);
+                    if (database.clearsuperpw) {
+                        superpw = "";
+                        bg.superpw = "";
+                        persistMetadata(sendResponse);
+                    }
+                    if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
+                    sendResponse(p);
+                });
             } else if (request.cmd === "keepAlive") {
                 // Firefox doesn't preserve session storage across restarts, but Chrome does.
                 // It's a good thing the keepAlive message works for Firefox but not for Chrome.
@@ -268,7 +269,7 @@ function onContentPageload(request, sender, sendResponse) {
             remainder(savedData);
         });
     }
-    function remainder(savedData) {
+    async function remainder(savedData) {
         savedData[activetab.url] = pwcount;
         if (logging) console.log("bg saving data", savedData[activetab.url]);
         try {
@@ -294,18 +295,23 @@ function onContentPageload(request, sender, sendResponse) {
         }
         let sitepass = "";
         if (bg.pwcount !== 0 && bg.settings.username) {
-            let p = generate(bg);
+            let p = await generatePassword(bg);
             p = stringXorArray(p, bg.settings.xor);
             sitepass = p;
+            remainder();
+        } else {
+            remainder();
         }
-        if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
-        sendResponse({ "cmd": "fillfields", 
-                    "u": bg.settings.username || "", 
-                    "p": sitepass || "", 
-                    "clearsuperpw": database.clearsuperpw,
-                    "hideSitepw": database.hideSitepw,
-                    "readyForClick": readyForClick
-        });
+        function remainder() {
+            if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
+            sendResponse({ "cmd": "fillfields", 
+                "u": bg.settings.username || "", 
+                "p": sitepass || "", 
+                "clearsuperpw": database.clearsuperpw,
+                "hideSitepw": database.hideSitepw,
+                "readyForClick": readyForClick
+            });
+        }
     }
 }
 async function persistMetadata(sendResponse) {

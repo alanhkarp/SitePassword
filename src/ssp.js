@@ -1,7 +1,7 @@
 'use strict';
-import { bgDefault, webpage } from "./bg.js";
+import { bgDefault, defaultSettings, webpage } from "./bg.js";
 import { runTests } from "./test.js";
-import { characters, generate, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
+import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
 const debugMode = false;
 // testMode must start as false.  Its value will come in a message from bg.js.
@@ -617,7 +617,12 @@ function eventSetup() {
     // case letters.  If there are too many special characters,
     // then the first lower case letter is past index 63.
     const alphanumerics = /[0-9A-Za-z]/g;
-    get("specials").onkeyup = function() {
+    get("specials").onblur = function() {
+        if (!get("specials").value) {
+            alert("You must enter at least one special character.");
+            get("specials").value = bg.settings.specials;
+            return;
+        }
         let specials = get("specials");
         specials.value = specials.value
             .replace(alphanumerics, '')  // eliminate alphanumerics
@@ -898,25 +903,28 @@ function ask2generate() {
     var computed = "";
     if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
         msgon("nopw");
+        remainder();
     } else {
         message("nopw", false); // I don't want to hide any other open messages
-        computed = generate(bg);
-        if (computed) {
-            message("nopw", false); // I don't want to hide any other open messages
-        } else {
-            computed = "";
-            if (get("superpw").value) {
-                msgon("nopw");
+        generatePassword(bg).then((computed) => {
+            if (computed) {
+                message("nopw", false); // I don't want to hide any other open messages
+            } else {
+                computed = "";
+                if (get("superpw").value) {
+                    msgon("nopw");
+                }
             }
-        }
+            remainder(computed);
+        });
     }
-    let provided = stringXorArray(computed, bg.settings.xor);
+    function remainder(computed) {let provided = stringXorArray(computed, bg.settings.xor);
     if (logging) console.log("popup filling sitepw field", computed);
     get("sitepw").value = provided;
     hidesitepw();
     const report = zxcvbn(provided);
     get("sitepw").style.color = strengthColor[report.score];
-    return computed;
+    return computed;}
 }
 function fill() {
     if (bg.settings[domainname]) {
@@ -1162,7 +1170,7 @@ function specialclick() {
         minspecial.disabled = false;
         minspecial.value = 0;
         specials.disabled = false;
-        specials.value = "/!=@?._-";
+        specials.value = defaultSettings.specials;
     } else {
         minspecial.disabled = true;
         minspecial.value = "";

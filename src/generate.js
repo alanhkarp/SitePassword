@@ -1,53 +1,153 @@
 'use strict';
 import { zxcvbnExport as zxcvbn } from "./zxcvbn.js";
-import { core_sha256, swap32, chrsz } from "./sha256.js";
-import { Utf8Encode, str2binb, binl2b64 } from "./sha256.js";
+import { Utf8Encode } from "./sha256.js";
 import { config } from "./bg.js";
-export function generate(bg) {
+
+const logging = false;
+
+export async function generatePassword(bg) {
     let settings = bg.settings;
     var n = normalize(settings.sitename || "");
     var u = normalize(settings.username || "");
     let m = bg.superpw;
-    if (!m) {
+    if (!m || !isConsistent(settings)) {
         return "";
     }
-    let s = n.toString() + '\t' + u.toString() + '\t' + m.toString();
-    let p = compute(s, settings);
+    let salt = n.toString() + '\t' + u.toString();
+    let p = await computePassword(m, salt, settings);
     if (!settings.providesitepw) {
         settings.xor = xorStrings(p, p); // set to 0s
     }
     return p;
+    function isConsistent(settings) {
+        let total = 0
+        if (settings.allowupper) total += settings.minupper;
+        if (settings.allowlower) total += settings.minlower;
+        if (settings.allownumber) total += settings.minnumber;
+        if (settings.allowspecial) total += settings.minspecial;
+        return total <= settings.pwlength;
+    }
 }
 export function isSuperPw(superpw) {
     if (superpw) return "SuperPW";
     else return "No SuperPW";
 }
-function compute(s, settings) {
-    s = Utf8Encode(s);
-    let h = core_sha256(str2binb(s), s.length * chrsz);
-    let iter;
-    for (iter = 1; iter < config.miniter; iter++) {
-        h = core_sha256(h, 16 * chrsz);
+async function computePassword(superpw, salt, settings) {
+    if (!(settings.allowupper || settings.allowlower || settings.allownumber)) {
+        return Promise.resolve("");
     }
-    // let ok = false;
-    let sitePassword;
-    let chars = characters(settings);
-    while (iter < config.maxiter) {
-        h = core_sha256(h, 16 * chrsz);
-        let hswap = Array(h.length);
-        for (let i = 0; i < h.length; i++) {
-            hswap[i] = swap32(h[i]);
+    let args = {"pw": superpw, "salt": salt, "settings": settings, "iters": 200_000, "keysize": settings.pwlength * 8};
+    let pw = await candidatePassword(args);
+    // Find a valid password
+    let iter = 0;
+    let startIter = Date.now();
+    while (iter < 200) {
+        if (verifyPassword(pw, settings)) {
+            if (logging) console.log("bg succeeded in", iter, "iterations and took", Date.now() - startIter, "ms");
+            return pw;
         }
-        sitePassword = binl2b64(hswap, chars).substring(0, settings.pwlength);
-        if (verify(sitePassword, settings)) break;
         iter++;
-        if (iter >= config.maxiter) {
-            sitePassword = "";
-        }
+        args = {"pw": pw, "salt": salt, "settings": settings, "iters": 1, "keysize": settings.pwlength * 8};
+        pw = await candidatePassword(args);
     }
-    return sitePassword;
+    // Construct a legal password since hashing failed to produce one
+    console.log("bg failed after", iter, "extra iteration and took", Date.now() - startIter, "ms, founds", pw);
+    pw = uint2chars();
+    return pw;
+    function uint2chars() {
+        let byteArray = new TextEncoder().encode(pw);
+        let digits = config.digits;
+        let upper = config.upper;
+        let lower = config.lower;
+        let specials = settings.specials;
+        let cset = digits + upper + lower + specials;
+        let chars = "";
+        if (settings.startwithletter) {
+            let alphabet = "";
+            if (settings.allowupper) alphabet += upper;
+            if (settings.allowlower) alphabet += lower;
+            pickChars(1, byteArray, alphabet);
+        }
+        let firstIsUpper = settings.startwithletter && upper.includes(chars[0]) ? 1 : 0;
+        let firstIsLower = settings.startwithletter && lower.includes(chars[0]) ? 1 : 0;
+        if (settings.allowupper) pickChars(settings.minupper - firstIsUpper, byteArray.slice(chars.length), upper);
+        if (settings.allowlower) pickChars(settings.minlower - firstIsLower, byteArray.slice(chars.length), lower);
+        if (settings.allownumber) pickChars(settings.minnumber, byteArray.slice(chars.length), digits);
+        if (settings.allowspecial) pickChars(settings.minspecial, byteArray.slice(chars.length), specials);
+        let len = byteArray.length - chars.length;
+        pickChars(len, byteArray.slice(chars.length), cset);
+        // In case password must start with a letter
+        if (settings.startwithletter) {
+            chars = chars[0] + shuffle(chars.slice(1));
+        } else {
+            chars = shuffle(chars);
+        }
+        return chars;
+        function pickChars(nchars, byteArray, cset) {
+            for (let i = 0; i < nchars; i++) {
+                chars += cset[byteArray[i] % cset.length];
+            }
+        }
+        function shuffle(chars) {
+            let currentIndex = chars.length, temporaryValue, randomIndex;
+            let charsArray = chars.split("");
+            // While there remain elements to shuffle...
+            while (0 !== currentIndex) {                      
+              // Pick a remaining element...
+              randomIndex = byteArray[currentIndex] % charsArray.length;
+              currentIndex -= 1;                      
+              // And swap it with the current element.
+              temporaryValue = charsArray[currentIndex];
+              charsArray[currentIndex] = charsArray[randomIndex];
+              charsArray[randomIndex] = temporaryValue;
+            }
+            chars = charsArray.join("");
+            return chars;
+          }                      
+    }            
 }
-function verify(pw, settings) {
+async function candidatePassword(args) {
+    let superpw = args.pw;
+    let salt = args.salt;
+    let settings = args.settings;
+    let iters = args.iters;
+    let keysize = args.keysize;
+    let payload = Utf8Encode(superpw);
+    let passphrase = new TextEncoder().encode(payload);
+    // Use Password Based Key Derivation Function because repeated iterations
+    // don't weaken the result as much as repeated SHA-256 hashing.
+    return window.crypto.subtle.importKey("raw", passphrase, { name: "PBKDF2" }, false, ["deriveBits"])
+    .then(async (passphraseImported) => {
+        let start = Date.now();
+        return window.crypto.subtle.deriveBits(
+            {
+                name: "PBKDF2",
+                hash: 'SHA-256',
+                salt: new TextEncoder().encode(salt),
+                iterations: iters
+            },
+            passphraseImported,
+            keysize 
+        )  
+        .then((bits) => {
+            const cset = characters(settings);
+            if (Date.now() - start > 2) console.log("deriveBits did", iters, "iterations in", Date.now() - start, "ms");
+            let bytes = new Uint8Array(bits);
+            // Convert the Uint32Array to a string using a custom algorithm               
+            let pw = uint2chars(bytes.slice(0, settings.pwlength*8), cset).substring(0, settings.pwlength);
+            return pw;
+            function uint2chars(array) {
+                let chars = "";
+                let len = array.length;
+                for (let i = 0; i < len; i++) {
+                    chars += cset[array[i] % cset.length];
+                }
+                return chars;
+            }            
+    }); 
+    });
+}
+function verifyPassword(pw, settings) {
     let report = zxcvbn(pw);
     if ((pw.length >= 12 && report.score < 4) ||
         (pw.length >= 10 && pw.length < 12 && report.score < 3) ||
@@ -84,13 +184,9 @@ function verify(pw, settings) {
     }
     return valOK;
 }
-// The computation assumes there are 64 characters to choose from
 export function characters(settings) {
-    // generate a set of 64 characters for encoding
+    // generate a set of no more than 256 characters for encoding
     let chars = "";
-    if (settings.allowspecial) {
-        chars += settings.specials;
-    }
     if (settings.allownumber) {
         chars += config.digits;
     }
@@ -100,10 +196,13 @@ export function characters(settings) {
     if (settings.allowlower) {
         chars += config.lower;
     }
-    while ((chars.length > 0) && (chars.length < 64)) {
-        chars += chars;
+    if (settings.allowspecial) {
+        chars += settings.specials;
+        while (chars.length < 5) {
+            chars += settings.specials;
+        }
     }
-    return chars;
+    return chars.substring(0, 256); // substring just in case...
 }
 export function normalize(name) {
     if (name) {
