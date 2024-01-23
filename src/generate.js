@@ -116,10 +116,10 @@ async function candidatePassword(args) {
     let passphrase = new TextEncoder().encode(payload);
     // Use Password Based Key Derivation Function because repeated iterations
     // don't weaken the result as much as repeated SHA-256 hashing.
-    return window.crypto.subtle.importKey("raw", passphrase, { name: "PBKDF2" }, false, ["deriveBits"])
+    return crypto.subtle.importKey("raw", passphrase, { name: "PBKDF2" }, false, ["deriveBits"])
     .then(async (passphraseImported) => {
         let start = Date.now();
-        return window.crypto.subtle.deriveBits(
+        return crypto.subtle.deriveBits(
             {
                 name: "PBKDF2",
                 hash: 'SHA-256',
@@ -131,7 +131,7 @@ async function candidatePassword(args) {
         )  
         .then((bits) => {
             const cset = characters(settings);
-            if (Date.now() - start > 2) console.log("deriveBits did", iters, "iterations in", Date.now() - start, "ms");
+            if (logging && Date.now() - start > 2) console.log("deriveBits did", iters, "iterations in", Date.now() - start, "ms");
             let bytes = new Uint8Array(bits);
             // Convert the Uint32Array to a string using a custom algorithm               
             let pw = uint2chars(bytes.slice(0, settings.pwlength*8), cset).substring(0, settings.pwlength);

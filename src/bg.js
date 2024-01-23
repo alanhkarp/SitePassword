@@ -4,7 +4,7 @@ import {isSuperPw, normalize,  string2array, array2string, stringXorArray, gener
 // Using any kind of storage (session, local, sync) is awkward because 
 // accessing the value is an async operation.
 const testMode = false;
-const debugMode = true;
+const debugMode = false;
 const logging = debugMode;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
@@ -150,7 +150,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             } else if (request.cmd === "getPassword") {                
                 let domainname = getdomainname(sender.origin || sender.url);
                 bg.settings = bgsettings(domainname);
-                generatePassword(bg, (p) => {
+                generatePassword(bg).then((p) => {
                     p = stringXorArray(p, bg.settings.xor);
                     if (database.clearsuperpw) {
                         superpw = "";
@@ -279,7 +279,7 @@ function onContentPageload(request, sender, sendResponse) {
             chrome.storage.session.set({"savedData": savedData});
         }    
         let domainname = getdomainname(activetab.url);
-        if (logging) console.log("domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
+        if (logging) console.log("bg domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
         let sitename = database.domains[domainname];
         if (logging) console.log("bg |sitename|, settings, database", sitename, database.sites[sitename], database);
         if (sitename) {
@@ -293,25 +293,14 @@ function onContentPageload(request, sender, sendResponse) {
         if (superpw && bg.settings.sitename && bg.settings.username) {
             readyForClick = true;
         }
-        let sitepass = "";
-        if (bg.pwcount !== 0 && bg.settings.username) {
-            let p = await generatePassword(bg);
-            p = stringXorArray(p, bg.settings.xor);
-            sitepass = p;
-            remainder();
-        } else {
-            remainder();
-        }
-        function remainder() {
-            if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
-            sendResponse({ "cmd": "fillfields", 
-                "u": bg.settings.username || "", 
-                "p": sitepass || "", 
-                "clearsuperpw": database.clearsuperpw,
-                "hideSitepw": database.hideSitepw,
-                "readyForClick": readyForClick
-            });
-        }
+        if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "readyForClick": readyForClick });
+        sendResponse({ "cmd": "fillfields", 
+            "u": bg.settings.username || "", 
+            "p": "", 
+            "clearsuperpw": database.clearsuperpw,
+            "hideSitepw": database.hideSitepw,
+            "readyForClick": readyForClick
+        });
     }
 }
 async function persistMetadata(sendResponse) {
