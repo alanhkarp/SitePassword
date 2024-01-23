@@ -851,9 +851,19 @@ function setMeter(which) {
     const $meter = get(which + "-strength-meter");
     const $input = get(which);
     const report = zxcvbn($input.value);
-    $meter.value = report.score;
-    $meter.title = strengthText[report.score];
-    $input.style.color = strengthColor[report.score];
+    let score = Math.min(20, report.guesses_log10);
+    // A strong super password needs a score of 20
+    // A strong site password needs a score of 16
+    if (which === "superpw") {
+        if (score > 0 ) score -= 0; // In case I want to penalize superpw
+    } else {
+        if (score > 0 ) score += 4;
+    }
+    let index = Math.min(4, Math.floor(score / 5));
+    $meter.value = score;
+    $meter.style.setProperty("--meter-value-color", strengthColor[index]);
+    $meter.title = strengthText[index];
+    $input.style.color = strengthColor[index];
 }
 
 function handlekeyup(element, field) {
@@ -922,8 +932,7 @@ function ask2generate() {
     if (logging) console.log("popup filling sitepw field", computed);
     get("sitepw").value = provided;
     hidesitepw();
-    const report = zxcvbn(provided);
-    get("sitepw").style.color = strengthColor[report.score];
+    setMeter("sitepw");
     return computed;}
 }
 function fill() {
