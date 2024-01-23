@@ -51,7 +51,7 @@ That's the bookmark you can use to get your settings when you're on a machine
 that doesn't have the SitePassword extension installed.
 
 You may have more than one domain name for a given account because some web sites
-use more than one domain name for the same login page. You'll get the same password
+use more than one domain name for logging into that account. You'll get the same password
 for all of the domain names as long as they are all associated with the same nickname.
 
 You can forget this domain name
@@ -73,7 +73,7 @@ banking, another for subscriptions, and a third for sites you find
 sketchy.
 
 SitePassword doesn't prevent you from using a weak super password,
-but it does warn you. There is a strength indicator directly below
+but it does warn you. There is a strength indicator directly above
 the super password field. It uses a meter, words, and color to
 let you know how strong your super password is.
 
@@ -125,7 +125,7 @@ it to the clipboard using the Copy menu icon in the userid field.
 --------------------------
 
 You only need to open SitePassword to enter your super password, to 
-set up a new site, or when SitePassword you need to paste your password.  
+set up a new site, or when you need to paste your password.  
 Most of the time, you can just click on the login 
 form's password field.  You'll know which to do because the password field will 
 say either *Click SitePassword* or *Click here for password*.  If the 
@@ -300,7 +300,7 @@ the warning by using the SitePassword *Clear Clipboard* button.
 --------------------------
 
 SitePassword includes an antiphishing feature. If you try to use
-the same nickname for a domain name you've already used, you will get a big,
+the a nickname you previously used for a different domain name, you will get a big,
 scary warning. It's telling you that you may be at a site
 spoofing the one you think you are at. Unfortunately, you will
 also see this warning when you are not being tricked. Many
