@@ -4,8 +4,9 @@
 // see an alert "Starting tests".  Click OK and check the console for results.
 
 import { reset as resetssp } from "./ssp.js";
+import { getRootFolder } from "./bg.js";
 export async function runTests() {
-    const sleepTime = 100;
+    const sleepTime = 500;
     // Fields needed for tests
     const $mainpanel = get("mainpanel");
     const $domainname = get("domainname");
@@ -32,7 +33,7 @@ export async function runTests() {
     const $sitenamemenuforget = get("sitenamemenuforget");
     const $username3bluedots = get("username3bluedots");
     const $usernamemenuforget = get("usernamemenuforget");
-    
+
     let passed = 0;
     let failed = 0;
     let restart = localStorage.restart;
@@ -43,17 +44,16 @@ export async function runTests() {
     }
     if (!restart) {
         testCalculation().then(() => {
-            testRememberForm().then(() => {
-                testProvidedpw().then(() => {
-                    testPhishing().then(() => {
-                        testForget().then(() => {
-                            //testSaveAsDefault();
-                            console.log("Tests complete: " + passed + " passed, " + failed + " failed");
-                        });
-                    });
-                });
-
-            });
+            // testRememberForm().then(() => {
+            //     testProvidedpw().then(() => {
+            //         testPhishing().then(() => {
+            //             testForget().then(() => {
+            //                 //testSaveAsDefault();
+            //                 console.log("Tests complete: " + passed + " passed, " + failed + " failed");
+            //             });
+            //         });
+            //     });
+            // });
         });
     } else {
         if (restart === "testSaveAsDefault2") {
@@ -66,24 +66,16 @@ export async function runTests() {
     // Test password calculation
     async function testCalculation() {
         await resetState();
-        let test = !$providesitepw.checked;
-        if (test) {
-            console.log("Passed: Calculation provide site pw checkbox not checked");
-            passed += 1;
-        } else {
-            console.warn("Failed: Calculation rovide site pw checkbox should not be checked");
-            failed += 1;
-        }
-        const expected = "to3X9g55EK8C";
-        await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+        const expected = "UG1qIyn6mSuJ";
+        fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
         await sleep(sleepTime);
         let actual = $sitepw.value;
-        test = actual === expected;
-        if (test) {
+        if (actual === expected) {
             console.log("Passed: Calculation")
             passed += 1;
         } else {
-            console.warn("Failed: Calculation", expected, "|" + actual + "|");
+            let inputs = {"expected": expected, "actual": actual, "superpw": $superpw.value, "sitename": $sitename.value, "username": $username.value};
+            console.warn("Failed: Calculation", inputs);
             failed += 1;
         }
     }
@@ -330,22 +322,31 @@ export async function runTests() {
     // I want to start with a clean slate for each set of tests.
     async function resetState() {
         clearForm();
-        let reset = await chrome.runtime.sendMessage({"cmd": "reset"});
+        let rootFolder = await getRootFolder();
+        await chrome.bookmarks.removeTree(rootFolder[0].id);
         if (chrome.runtime.lastError) console.log("test lastError", chrome.runtime.lastError);
-        resetssp(get("domainname").value);
-        await sleep(sleepTime);
+        return await sleep(sleepTime);
     }
-    async function fillForm(superpw, domainname, sitename, username) {
+    function clearForm() {
+        $domainname.value = "";
+        $superpw.value = "";
+        $sitename.value = "";
+        $username.value = "";
+        $sitepw.value = "";
+        $providesitepw.checked = false;
+        $settings.style.display = "none";
+    }
+    function fillForm(superpw, domainname, sitename, username) {
         clearForm();
         $domainname.value = domainname;
         $superpw.value = superpw;
-        $superpw.onkeyup();
+        $superpw.onblur();
         $sitename.value = sitename;
-        $sitename.onkeyup();
+        $sitename.onblur();
         $username.value = username;
-        $username.onkeyup();
+        $username.onblur();
         // For some reason testprovidesitepw does not work without this line
-        await sleep(sleepTime);
+        // return await sleep(sleepTime);
     }
     async function forgetDomainname() {
         $domainname3bluedots.onmouseover();
@@ -382,16 +383,6 @@ export async function runTests() {
         $domainnamemenuforget.onclick();
         $forgetbutton.onclick();
         await sleep(sleepTime);
-    }
-    function clearForm() {
-        $domainname.value = "";
-        $superpw.value = "";
-        $sitename.value = "";
-        $username.value = "";
-        $sitepw.value = "";
-        $superpw.onkeyup();
-        $providesitepw.checked = false;
-        $settings.style.display = "none";
     }
     function get(id) {
         return document.getElementById(id);

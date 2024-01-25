@@ -631,7 +631,7 @@ function eventSetup() {
         handlekeyup("specials");
     }    
 
-    get("makedefault").onclick = function () {
+    get("makedefaultbutton").onclick = function () {
         let newDefaults = {
             sitename: "",
             username: "",

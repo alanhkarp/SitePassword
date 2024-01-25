@@ -3,7 +3,7 @@ import {isSuperPw, normalize,  string2array, array2string, stringXorArray, gener
 // Set to true to run the tests in test.js then reload the extension.
 // Using any kind of storage (session, local, sync) is awkward because 
 // accessing the value is an async operation.
-const testMode = false;
+const testMode = true;
 const debugMode = false;
 const logging = debugMode;
 const commonSettingsTitle = "CommonSettings";
@@ -139,7 +139,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 chrome.storage.local.set({"onClipboard": false});
                 chrome.action.setTitle({title: "Site Password"});
                 chrome.action.setIcon({"path": "icon128.png"});
-                sendResponse("reset");        
+                sendResponse("icon reset");        
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);
                 bg = clone(request.bg);
@@ -168,16 +168,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 } else {
                     sendResponse({"keepAlive": true});
                 }
-                // Used for testing
-            } else if (request.cmd === "reset") {
-                getRootFolder(sendResponse).then((rootFolder) => {
-                    chrome.bookmarks.removeTree(rootFolder[0].id, () => {
-                        createBookmarksFolder = true;
-                        retrieveMetadata(sendResponse, () => {
-                            sendResponse("reset");
-                        });
-                    });
-                });
             } else if (request.cmd === "newDefaults") {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
                 defaultSettings = request.newDefaults;
@@ -357,7 +347,7 @@ async function persistMetadata(sendResponse) {
     let allchildren;
     try {
         allchildren = await chrome.bookmarks.getChildren(rootFolder.id); // Deleted some so recreate list
-        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+        if (chrome.runtime.lastError) console.log("bg getChildren lastError", chrome.runtime.lastError);
     } catch {
         allchildren = Object.values(bkmksSafari);
     }
@@ -380,9 +370,9 @@ async function persistMetadata(sendResponse) {
         let url = "ssp://" + JSON.stringify(common);
         try {
             chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url }, (commonBkmk) => {
+                if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
                 if (logging) console.log("bg created bookmark", commonBkmk.id);
             });
-            if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
         } catch {
             bkmksSafari[commonSettingsTitle] = {};
             bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
@@ -397,7 +387,7 @@ async function persistMetadata(sendResponse) {
             chrome.bookmarks.update(commonSettings[0].id, { "url": url }, (_e) => {
                 if (logging) console.log("bg updated bookmark", _e, commonSettings[0].id);
             });
-            if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+            if (chrome.runtime.lastError) console.log("bg common settings lastError", chrome.runtime.lastError);
         } catch {
             bkmksSafari[commonSettingsTitle].url = url;
             chrome.storage.sync.set(bkmksSafari);
@@ -561,13 +551,15 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         retrieved(callback);
     }
 }
-async function getRootFolder(sendResponse) {
+// Export needed only for testing
+export async function getRootFolder(sendResponse) {
     if (logging) console.log("bg getRootFolder", sitedataBookmark);
     // bookmarks.search finds any bookmark with a title containing the
     // search string, but I need to find one with an exact match.  I
     // also only want to include those in the bookmarks bar.
     try {
         let candidates = await chrome.bookmarks.search({ "title": sitedataBookmark });
+        if (chrome.runtime.lastError) console.log("bg search lastError", chrome.runtime.lastError);
         let folders = [];
         for (let i = 0; i < candidates.length; i++) {
             if (candidates[i].parentId === bkmksId &&
@@ -575,7 +567,7 @@ async function getRootFolder(sendResponse) {
         }
         if (folders.length > 1) {
             console.log("bg found multiple", sitedataBookmark, "folders", folders);
-            sendResponse("multiple");
+            if (sendResponse) sendResponse("multiple");
         } 
         if (logging) console.log("bg getRootFolder returning", folders);
         return folders;
