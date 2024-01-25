@@ -43,18 +43,17 @@ export async function runTests() {
         alert("Starting tests");
     }
     if (!restart) {
-        testCalculation().then(() => {
+        await testCalculation();
             // testRememberForm().then(() => {
             //     testProvidedpw().then(() => {
             //         testPhishing().then(() => {
             //             testForget().then(() => {
             //                 //testSaveAsDefault();
-            //                 console.log("Tests complete: " + passed + " passed, " + failed + " failed");
             //             });
             //         });
             //     });
             // });
-        });
+        console.log("Tests complete: " + passed + " passed, " + failed + " failed");
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
