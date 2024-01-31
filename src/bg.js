@@ -58,7 +58,7 @@ let bkmksId;
 let bkmksSafari = {};
 try {
     chrome.bookmarks.getTree((nodes) => {
-        bkmksId = nodes[0].children[0].id
+        bkmksId = nodes[0].children[0].id;
     });
 } catch {
     // Safari
@@ -168,6 +168,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 } else {
                     sendResponse({"keepAlive": true});
                 }
+            } else if (request.cmd === "reset") {
+                // Used for testing, can't be in test.js becuase it needs to set createBookmarksFolder 
+                if (logging) console.log("bg removing bookmarks folder for testing");
+                getRootFolder(sendResponse).then((rootFolder) => {
+                    chrome.bookmarks.removeTree(rootFolder[0].id, () => {
+                        createBookmarksFolder = true;
+                        retrieveMetadata(sendResponse, () => {
+                            sendResponse("reset");
+                        });
+                    });
+                });
             } else if (request.cmd === "newDefaults") {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
                 defaultSettings = request.newDefaults;
@@ -373,6 +384,7 @@ async function persistMetadata(sendResponse) {
                 if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
                 if (logging) console.log("bg created bookmark", commonBkmk.id);
             });
+            if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
         } catch {
             bkmksSafari[commonSettingsTitle] = {};
             bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
@@ -385,6 +397,7 @@ async function persistMetadata(sendResponse) {
         let url = "ssp://" + JSON.stringify(common);
         try {
             chrome.bookmarks.update(commonSettings[0].id, { "url": url }, (_e) => {
+                if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
                 if (logging) console.log("bg updated bookmark", _e, commonSettings[0].id);
             });
             if (chrome.runtime.lastError) console.log("bg common settings lastError", chrome.runtime.lastError);
@@ -551,8 +564,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         retrieved(callback);
     }
 }
-// Export needed only for testing
-export async function getRootFolder(sendResponse) {
+async function getRootFolder(sendResponse) {
     if (logging) console.log("bg getRootFolder", sitedataBookmark);
     // bookmarks.search finds any bookmark with a title containing the
     // search string, but I need to find one with an exact match.  I

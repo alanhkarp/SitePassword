@@ -73,7 +73,9 @@ function searchShadowRoots(element) {
 // Tell the service worker that the user has copied something to the clipboard
 // so it can clear the icon
 document.oncopy = function () {
-    chrome.runtime.sendMessage({"cmd": "resetIcon"});
+    chrome.runtime.sendMessage({"cmd": "resetIcon"}, () => {
+        if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
+    });
 }
 function startup(sendPageInfo) {
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.

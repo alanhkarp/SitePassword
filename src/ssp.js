@@ -54,7 +54,7 @@ window.onload = function () {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         let timeout = testMode ? 1000 : 0;     
         setTimeout(() => {
-            debugger;
+            debugger; // Doesn't fire if timeout is 0
             activetab = tabs[0];
             if (logging) console.log("popup tab", activetab);
             let protocol = activetab.url.split(":")[0];
@@ -253,10 +253,11 @@ function eventSetup() {
         // Start the reminder clock ticking
         chrome.storage.local.set({"reminder": Date.now()});
         bg.superpw = $superpw.value || "";
-        ask2generate();
-        setMeter("superpw");
-        setMeter("sitepw");
-        handleblur("superpw", "superpw");
+        ask2generate().then(() => {
+            setMeter("superpw");
+            setMeter("sitepw");
+            handleblur("superpw", "superpw");    
+        });
     }
     get("superpw").onblur = function (e) {
         if (logging) console.log("popup superpw onmouseout");
@@ -459,9 +460,10 @@ function eventSetup() {
         menuOff("sitepw", e);
         if (get("sitepw").readOnly || !get("sitepw").value) return;
         let provided = get("sitepw").value;
-        let computed = ask2generate(bg);
-        bg.settings.xor = xorStrings(provided, computed);
-        get("sitepw").value = provided;
+        ask2generate(bg).then((computed) => {
+            bg.settings.xor = xorStrings(provided, computed);
+            get("sitepw").value = provided;    
+        });
     }
     get("sitepw").onkeyup = function () {
         get("sitepw").onblur();
@@ -652,7 +654,9 @@ function eventSetup() {
             minspecial: get("minspecial").value,
             specials: get("specials").value,
         }
-        chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults})
+        chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults}, () => {
+            if (logging) console.log("popup newDefaults sent", newDefaults);
+        })
     }
     get("sitedatagetbutton").onclick = sitedataHTML;
     get("exportbutton").onclick = exportPasswords;
@@ -881,9 +885,10 @@ function handleblur(element, field) {
         get("providesitepw").disabled = true;
     }
     bg.settings.characters = characters(bg.settings, database);
-    ask2generate();
-    setMeter("sitepw");
-    updateExportButton();
+    ask2generate().then(() => {
+        setMeter("sitepw");
+        updateExportButton();    
+    });
 }
 function handleclick(which) {
     bg.settings["allow" + which] = get("allow" + which + "checkbox").checked;
@@ -916,7 +921,7 @@ function ask2generate() {
         remainder();
     } else {
         message("nopw", false); // I don't want to hide any other open messages
-        generatePassword(bg).then((computed) => {
+        return generatePassword(bg).then((computed) => {
             if (computed) {
                 message("nopw", false); // I don't want to hide any other open messages
             } else {
@@ -929,11 +934,12 @@ function ask2generate() {
         });
     }
     function remainder(computed) {let provided = stringXorArray(computed, bg.settings.xor);
-    if (logging) console.log("popup filling sitepw field", computed);
-    get("sitepw").value = provided;
-    hidesitepw();
-    setMeter("sitepw");
-    return computed;}
+        if (logging) console.log("popup filling sitepw field", computed);
+        get("sitepw").value = provided;
+        hidesitepw();
+        setMeter("sitepw");
+        return computed;
+    }
 }
 function fill() {
     if (bg.settings[domainname]) {
@@ -1040,9 +1046,10 @@ function exportPasswords() {
         let username = settings.username;
         bg.settings.sitename = sitename;
         bg.settings.username = username;
-        ask2generate();
-        let sitepw = get("sitepw").value;
-        data += '"' + domainname + '"' + "," + '"' + sitename + '"' + "," + '"' + username + '"' + "," + '"' + sitepw + '"' + "\n";
+        ask2generate().then(() => {
+            let sitepw = get("sitepw").value;
+            data += '"' + domainname + '"' + "," + '"' + sitename + '"' + "," + '"' + username + '"' + "," + '"' + sitepw + '"' + "\n";
+        });
     }
     bg.settings.sitename = oldsitename;
     bg.settings.username = oldusername;
