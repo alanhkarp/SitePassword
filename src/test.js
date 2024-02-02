@@ -43,13 +43,9 @@ export async function runTests() {
     const sleepTime = 200;
     let delay = 0;
     if (!restart) {
-        testCalculation(); 
-        setTimeout(() => {
-            console.log("main slept", delay + sleepTime);
-            testRememberForm();
-            setTimeout(() => {
-            //     console.log("main slept", delay + sleepTime);
-            //     testProvidedpw();
+        await testCalculation(); 
+        await testRememberForm();
+        await testProvidedpw();
             //         setTimeout(() => {
             //             console.log("main slept", delay + sleepTime);
             //             //         testPhishing().then(() => {
@@ -59,8 +55,6 @@ export async function runTests() {
             //             //             });
                 console.log("Tests complete: " + passed + " passed, " + failed + " failed");
             //         }, delay + sleepTime);
-            }, delay + sleepTime);
-        }, delay + sleepTime);
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -69,70 +63,50 @@ export async function runTests() {
         }
     }
     // Test password calculation
-    function testCalculation() {
-        delay = 3*sleepTime;
-        //console.log("testCalculation", delay);
-        resetState();
-        //console.log("testCalculation state reset");
-        setTimeout(() => {
-            //console.log("testCalculation slept", sleepTime);
-            const expected = "UG1qIyn6mSuJ";
-            fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
-            $superpw.onblur();
-            //console.log("testCalculation form filled", $sitename.value, $username.value);
-            setTimeout(() => {
-                //console.log("testCalculation filled form slept", sleepTime, $sitename.value, $username.value);
-                let actual = $sitepw.value;
-                if (actual === expected) {
-                    console.log("Passed: Calculation", delay);
-                    passed += 1;
-                } else {
-                    let inputs = {"expected": expected, "actual": actual, "superpw": $superpw.value, "sitename": $sitename.value, "username": $username.value};
-                    console.warn("Failed: Calculation", delay, inputs);
-                    failed += 1;
-                }
-            }, 2*sleepTime);
-        }, sleepTime);
+    async function testCalculation() {
+        // console.log("testCalculation");
+        await resetState();
+        console.log("testCalculation state reset");
+        const expected = "UG1qIyn6mSuJ";
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+        console.log("testCalculation form filled", $sitename.value, $username.value);
+        let actual = $sitepw.value;
+        if (actual === expected) {
+            console.log("Passed: Calculation");
+            passed += 1;
+        } else {
+            let inputs = {"expected": expected, "actual": actual, "superpw": $superpw.value, "sitename": $sitename.value, "username": $username.value};
+            console.warn("Failed: Calculation", delay, inputs);
+            failed += 1;
+        }
     }
     async function testRememberForm() {
-        delay = 4*sleepTime;
-        console.log("testRememberForm", delay);
-        resetState();
-        setTimeout(() => {
-            //console.log("testRememberForm state reset slept", sleepTime);
-            fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
-            $mainpanel.onmouseleave();
-            //console.log("testRememberForm filled form", $sitename.value, $username.value);
-            setTimeout(() => {
-                //console.log("testRememberForm slept", $sitename.value, $username.value, sleepTime);
-                // See if it remembers
-                resetState();
-                setTimeout(() => {  
-                    //console.log("testRememberForm reset state slept", sleepTime, $sitename.value, $username.value);                  
-                    // See if it remembers
-                    fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-                    $domainname.onblur();
-                    setTimeout(() => {
-                        //console.log("testRememberForm filled form slept", sleepTime, $sitename.value, $username.value);
-                        let tests = $sitename.value === "Guru";
-                        tests = tests && $username.value === "alan";
-                        if (tests) {
-                            console.log("Passed: Remember form");
-                            passed += 1;
-                        } else {
-                            console.warn("Failed: Remember form", "Guru", "alan", "|" + $sitename.value + "|");
-                            failed += 1;
-                        }
-                    }, sleepTime);
-                }, sleepTime);
-            }, sleepTime);
-        }, sleepTime);
+        console.log("testRememberForm");
+        await resetState();
+        //console.log("testRememberForm state reset slept", sleepTime);
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+        await waitForEvent("mouseleave", $mainpanel);  // $mainpanel.onmouseleave(); saves the settings
+        //console.log("testRememberForm filled form", $sitename.value, $username.value);
+        // See if it remembers
+        await resetState();
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
+        await waitForEvent("blur", $domainname);
+        // See if it remembers
+        let tests = $sitename.value === "Guru";
+        tests = tests && $username.value === "alan";
+        if (tests) {
+            console.log("Passed: Remember form");
+            passed += 1;
+        } else {
+            console.warn("Failed: Remember form", "Guru", "alan", "|" + $sitename.value + "|");
+            failed += 1;
+        }
     }
     async function testProvidedpw() {
         delay = 8*sleepTime;
         console.log("testProvidedpw", delay);
         const expected = "MyStrongPassword";
-        resetState();
+        await resetState();
         console.log("testProvidedpw state reset");
         setTimeout(() => {
             console.log("testProvidedpw state reset slept", sleepTime);
@@ -367,18 +341,29 @@ export async function runTests() {
     }
     // I want to start with a clean slate for each set of tests.
     async function resetState() {
-        // console.log("resetState");
         clearForm();
-        setTimeout(() => {
-            chrome.runtime.sendMessage("reset", response => {
+        return new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage({"cmd": "reset"}, async (response) => {
                 if (chrome.runtime.lastError) {
-                    console.log("test send reset msg", chrome.runtime.lastError);
+                    reject(chrome.runtime.lastError);
+                } else {
+                    resolve(response);
                 }
             });
-            setTimeout(() => {
-                resetssp();
-            }, sleepTime);
-        }, sleepTime);        
+        });
+    }
+    async function waitForEvent(event, element) {
+        return new Promise((resolve, _) => {
+            let oldHandler = element[event];
+            element.addEventListener(event, async (e) => {
+                setTimeout(() => {
+                    resolve();
+                }, sleepTime);
+            }, { once: true });
+            element[event] = oldHandler;
+            let e = new Event(event);
+            element.dispatchEvent(e);
+        });
     }
     function clearForm() {
         $domainname.value = "";
@@ -390,18 +375,17 @@ export async function runTests() {
         $settings.style.display = "none";
     }
     async function fillForm(superpw, domainname, sitename, username) {
-        //console.log("fillForm", superpw, domainname, sitename, username);
         clearForm();
-        $superpw.value = superpw;
-        $superpw.onblur();
+        $username.value = username;
+        let promise = waitForEvent("blur", $username);
+        await promise
         $domainname.value = domainname;
         $sitename.value = sitename;
-        $sitename.onblur();
-        $username.value = username;
-        $username.onblur();
-        //console.log("fillForm done", $sitename.value, $username.value);
-       // For some reason testprovidesitepw does not work without this line
-        // await sleep(sleepTime);
+        promise = waitForEvent("blur", $sitename);
+        await promise
+        $superpw.value = superpw;
+        promise = waitForEvent("blur", $superpw);
+        await promise
     }
     async function forgetDomainname() {
         $domainname3bluedots.onmouseover();
