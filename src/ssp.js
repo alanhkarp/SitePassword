@@ -914,24 +914,21 @@ function defaultfocus() {
     if (!get("sitename").value) setfocus(get("sitename"));
     if (!get("superpw").value) setfocus(get("superpw"));
 }
-function ask2generate() {
-    var computed = "";
+async function ask2generate() {
     if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
         msgon("nopw");
         remainder();
     } else {
         message("nopw", false); // I don't want to hide any other open messages
-        return generatePassword(bg).then((computed) => {
-            if (computed) {
-                message("nopw", false); // I don't want to hide any other open messages
-            } else {
-                computed = "";
-                if (get("superpw").value) {
-                    msgon("nopw");
-                }
+        const computed = await generatePassword(bg);
+        if (computed) {
+            message("nopw", false); // I don't want to hide any other open messages
+        } else {
+            if (get("superpw").value) {
+                msgon("nopw");
             }
-            remainder(computed);
-        });
+        }
+        return remainder(computed);
     }
     function remainder(computed) {let provided = stringXorArray(computed, bg.settings.xor);
         if (logging) console.log("popup filling sitepw field", computed);
