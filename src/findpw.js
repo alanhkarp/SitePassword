@@ -83,6 +83,15 @@ function startup(sendPageInfo) {
     // The code in this function used to be called once, but now it's called several times.
     // There is no reason to declare new mutation observers and listeners on every call.
     if (!mutationObserver) {
+        // Firefox doesn't preserve sessionStorage across restarts of
+        // the service worker.  Sending periodic messages keeps it
+        // alive, but there's no reason to send them if I'm using
+        // storage.session.
+        let keepAlive = setInterval(() => {
+            chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
+                if (!alive.keepAlive) clearInterval(keepAlive);
+            });
+        }, 10000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button
         document.body.onclick = function () {
             if (logging) console.log("findpw click on body");
@@ -203,16 +212,7 @@ function sendpageinfo(cpi, clicked, onload) {
         let mutations = mutationObserver.takeRecords();
         fillfield(cpi.idfield, userid);
         setPlaceholder(userid, response.p);
-        // Firefox doesn't preserve sessionStorage across restarts of
-        // the service worker.  Sending periodic messages keeps it
-        // alive, but there's no reason to send them if I'm using
-        // storage.session.
-        let keepAlive = setInterval(() => {
-            chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
-                if (!alive.keepAlive) clearInterval(keepAlive);
-            });
-        }, 10000);
-         if (userid) fillfield(cpi.pwfields[0], "");
+        if (userid) fillfield(cpi.pwfields[0], "");
         let myMutations = mutationObserver.takeRecords();
         if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
         handleMutations(mutations);
