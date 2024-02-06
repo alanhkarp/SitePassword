@@ -89,12 +89,12 @@ function startup(sendPageInfo) {
         // storage.session.
         let keepAlive = setInterval(() => {
             chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
-                let error = chrome.runtime.lastError;
-                if (error) console.log("findpw keepAlive error", error);
-                if (error || !alive.keepAlive) clearInterval(keepAlive);
                 if (!alive.keepAlive) clearInterval(keepAlive);
             });
-        }, 10000);
+            if (chrome.runtime.lastError) {
+                console.log("findpw keepAlive error", error);
+                clearInterval(keepAlive);}
+        }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button
         document.body.onclick = function () {
             if (logging) console.log("findpw click on body");
