@@ -89,6 +89,9 @@ function startup(sendPageInfo) {
         // storage.session.
         let keepAlive = setInterval(() => {
             chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
+                let error = chrome.runtime.lastError;
+                if (error) console.log("findpw keepAlive error", error);
+                if (error || !alive.keepAlive) clearInterval(keepAlive);
                 if (!alive.keepAlive) clearInterval(keepAlive);
             });
         }, 10000);
