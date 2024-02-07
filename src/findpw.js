@@ -90,10 +90,12 @@ function startup(sendPageInfo) {
         // alive, but there's no reason to send them if I'm using
         // storage.session.
         let keepAlive = setInterval(() => {
-            if (logging) console.log("sending keepAlive");
             chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
-                if (logging) console.log("keepAlive response", alive.keepAlive);
-                if (!alive.keepAlive) clearInterval(keepAlive);
+                if (chrome.runtime.lastError) {
+                    console.log("findpw keepAlive error", error);
+                    clearInterval(keepAlive);
+                }
+                    if (!alive.keepAlive) clearInterval(keepAlive);
             });
         }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button

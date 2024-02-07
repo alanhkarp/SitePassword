@@ -4,6 +4,7 @@ import {isSuperPw, normalize,  string2array, array2string, stringXorArray, gener
 // Using any kind of storage (session, local, sync) is awkward because 
 // accessing the value is an async operation.
 const testMode = true;
+const testLogging = false;
 const debugMode = false;
 const logging = debugMode;
 const commonSettingsTitle = "CommonSettings";
@@ -114,7 +115,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
 });
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (logging) console.log("bg got message request, sender", request, sender);
+    if (logging || testLogging) console.log("bg got message request, sender", request, sender);
     // Start with a new database in case something changed while the service worker stayed open
     database = clone(databaseDefault);
     bg = clone(bgDefault);
@@ -170,13 +171,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 }
             } else if (request.cmd === "reset") {
                 // Used for testing, can't be in test.js becuase it needs to set createBookmarksFolder 
-                if (logging) console.log("bg removing bookmarks folder for testing");
+                if (testLogging) console.log("bg removing bookmarks folder for testing");
+                defaultSettings = clone(bgDefault.settings);
                 getRootFolder(sendResponse).then((rootFolder) => {
                     chrome.bookmarks.removeTree(rootFolder[0].id, () => {
                         createBookmarksFolder = true;
-                        retrieveMetadata(sendResponse, () => {
-                            sendResponse("reset");
-                        });
+                        if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0]);
+                        sendResponse("reset");
                     });
                 });
             } else if (request.cmd === "newDefaults") {
@@ -477,20 +478,26 @@ async function retrieveMetadata(sendResponse, callback) {
         // folder is being created, resulting in two of them.  My solution is to
         // use a flag to make sure I only create it once.
         if (createBookmarksFolder) {
-            if (logging) console.log("Creating SSP bookmark folder");
             createBookmarksFolder = false;
+            if (logging || testLogging) console.log("Creating SSP bookmark folder");
             let bkmk = - 1;
             try {
                 // If there's no bookmarks folder, but there are entries in sync storage,
                 // then copy those entries to bookmarks and clear sync storage.  This will
                 // happen when the browser newly implements the bookmarks API.
+                if (logging) console.log("bg creating bookmarks folder");
                 bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
                 if (chrome.runtime.lastError) console.log("bg sync lastError", chrome.runtime.lastError);
                 // Nothing in sync storage unless using Safari
                 let values = await chrome.storage.sync.get();
                 for (let title in values) {
-                    chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
-                    if (chrome.runtime.lastError) console.log("bg sync create lastError", chrome.runtime.lastError);
+                    chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url}, (bkmk) => {
+                         if (chrome.runtime.lastError) {
+                            console.log("bg sync create lastError", chrome.runtime.lastError);
+                        } else {
+                            if (testLogging) console.log("bg created bookmark", bkmk);
+                        }
+                    });
                 }
                 // Leaving the entries in sync storage protects against the case where a browser (Safari) 
                 // starts supporting the bookmarks API, but users haven't updated the browser on all their machines.
@@ -578,9 +585,11 @@ async function getRootFolder(sendResponse) {
                 candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
         }
         if (folders.length > 1) {
-            console.log("bg found multiple", sitedataBookmark, "folders", folders);
+            if (logging) console.log("bg found multiple", sitedataBookmark, "folders", folders);
             if (sendResponse) sendResponse("multiple");
-        } 
+        } else if (folders.length === 0) {
+            if (logging) console.log("bg found no", sitedataBookmark, "folders");
+        }
         if (logging) console.log("bg getRootFolder returning", folders);
         return folders;
     } catch {

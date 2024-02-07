@@ -76,11 +76,6 @@ window.onload = function () {
         }, timeout);
     });
 }
-// Used for testing
-export async function reset(domainname) {
-    await getsettings(domainname);
-    if (logging) console.log("popup reset");
-}
 function init() {
     get("superpw").value = bg.superpw || "";
     get("sitename").value = bg.settings.sitename || "";
@@ -124,7 +119,7 @@ function clearDatalist(listid) {
     get("main").classList.remove("datalist-open");
     get("main").classList.add("datalist-closed");
 }
-async function getsettings(testdomainname) {
+export async function getsettings(testdomainname) {
     if (testMode) domainname = testdomainname;
     if (logging) console.log("popup getsettings", domainname);
     chrome.runtime.sendMessage({
@@ -214,9 +209,9 @@ function eventSetup() {
     get("domainname").onblur = function (e) {
         get("sitename").value = "";
         if (testMode) domainname = get("domainname").value;
-        getsettings(domainname).then(() => {
+        getsettings(domainname).then(async () => {
             fill();
-            ask2generate();
+            await ask2generate();
         });
     }
     get("domainnamemenu").onmouseleave = function (e) {
@@ -462,7 +457,7 @@ function eventSetup() {
         let provided = get("sitepw").value;
         ask2generate(bg).then((computed) => {
             bg.settings.xor = xorStrings(provided, computed);
-            get("sitepw").value = provided;    
+            get("sitepw").value = provided;   
         });
     }
     get("sitepw").onkeyup = function () {
@@ -930,7 +925,8 @@ async function ask2generate() {
         }
         return remainder(computed);
     }
-    function remainder(computed) {let provided = stringXorArray(computed, bg.settings.xor);
+    function remainder(computed) {
+        let provided = stringXorArray(computed, bg.settings.xor);
         if (logging) console.log("popup filling sitepw field", computed);
         get("sitepw").value = provided;
         hidesitepw();
@@ -974,6 +970,10 @@ function fill() {
     hidesitepw();
     get("pwlength").value = bg.settings.pwlength;
     get("startwithletter").checked = bg.settings.startwithletter;
+    get("allowlowercheckbox").checked = bg.settings.allowlower;
+    get("allowuppercheckbox").checked = bg.settings.allowupper;
+    get("allownumbercheckbox").checked = bg.settings.allownumber;
+    get("allowspecialcheckbox").checked = bg.settings.allowspecial;
     get("minnumber").value = bg.settings.minnumber;
     get("minlower").value = bg.settings.minlower;
     get("minupper").value = bg.settings.minupper;
