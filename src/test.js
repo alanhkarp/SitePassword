@@ -41,7 +41,7 @@ export async function runTests() {
     } else {
         alert("Starting tests");
     }
-    const sleepTime = 500;
+    const sleepTime = 300;
     if (!restart) {
         await testCalculation(); 
         await testRememberForm();
@@ -342,11 +342,11 @@ export async function runTests() {
         $domainname.value = domainname;
         await triggerEvent("blur", $domainname);
         $superpw.value = superpw;
-        await triggerEvent("blur", $superpw);
+        await triggerEvent("keyup", $superpw);
         $sitename.value = sitename;
-        await triggerEvent("blur", $sitename);
+        await triggerEvent("keyup", $sitename);
         $username.value = username;
-        await triggerEvent("blur", $username);
+        await triggerEvent("keyup", $username);
        if (logging) console.log("fillForm", $domainname.value, $superpw.value, $sitename.value, $username.value);
     }
     async function forgetDomainname() {
