@@ -37,9 +37,10 @@ export async function runTests() {
     let failed = 0;
     let restart = localStorage.restart;
     if (restart) {
+        alert("Restarting test");
         console.log("Restarting test " + restart);
     } else {
-        alert("Starting tests");
+        alert("Starting tests. Set testMode in bg.js to false to stop tests.");
     }
     const sleepTime = 300;
     if (!restart) {
