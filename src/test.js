@@ -42,7 +42,7 @@ export async function runTests() {
     } else {
         alert("Starting tests. Set testMode in bg.js to false to stop tests.");
     }
-    const sleepTime = 300;
+    const sleepTime = 500;
     if (!restart) {
         await testCalculation(); 
         await testRememberForm();
