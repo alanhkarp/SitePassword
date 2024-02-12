@@ -20,6 +20,8 @@ var phishing = false;
 var warningMsg = false;
 var bg = bgDefault;
 
+export let promise;
+
 chrome.storage.local.get("onClipboard", (v) => {
     if (v.onClipboard) {
         chrome.action.setTitle({title: "A site password may be on the clipboard."});
@@ -865,10 +867,10 @@ function setMeter(which) {
     $input.style.color = strengthColor[index];
 }
 
-function handlekeyup(element, field) {
-    handleblur(element, field);
+async function handlekeyup(element, field) {
+    await handleblur(element, field);
 }
-function handleblur(element, field) {
+async function handleblur(element, field) {
     if (element === "superpw") {
         bg.superpw = get(element).value;
     } else {
@@ -880,10 +882,11 @@ function handleblur(element, field) {
         get("providesitepw").disabled = true;
     }
     bg.settings.characters = characters(bg.settings, database);
-    ask2generate().then(() => {
-        setMeter("sitepw");
-        updateExportButton();    
-    });
+    promise = ask2generate();
+    await promise;
+    setMeter("sitepw");
+    updateExportButton();  
+    console.log("popup handleblur promise resolved", element, field, promise); 
 }
 function handleclick(which) {
     bg.settings["allow" + which] = get("allow" + which + "checkbox").checked;

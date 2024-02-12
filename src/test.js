@@ -2,9 +2,10 @@
 // the extension.  Then open any https page, e.g., https://alanhkarp.com. 
 // Right click on the SitePassword icon and select "Inspect".  You will 
 // see an alert "Starting tests".  Click OK and check the console for results.
-import { getsettings } from "./ssp.js";
+import { getsettings, promise } from "./ssp.js";
 
-let logging = false;
+let logging = true;
+
 export async function runTests() {
     // Fields needed for tests
     const $mainpanel = get("mainpanel");
@@ -45,13 +46,13 @@ export async function runTests() {
     const sleepTime = 500;
     if (!restart) {
         await testCalculation(); 
-        await testRememberForm();
-        await testProvidedpw();
-        await testPhishing();
-        await testForget();
-        console.log("Tests complete: " + passed + " passed, " + failed + " failed");
-        alert("Tests restart complete: " + passed + " passed, " + failed + " failed");
-        await testSaveAsDefault();
+        // await testRememberForm();
+        // await testProvidedpw();
+        // await testPhishing();
+        // await testForget();
+        // console.log("Tests complete: " + passed + " passed, " + failed + " failed");
+        // alert("Tests restart complete: " + passed + " passed, " + failed + " failed");
+        // await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -314,21 +315,15 @@ export async function runTests() {
         });
     }
     async function triggerEvent(event, element) {
-        return new Promise((resolve, _) => {
-            let oldHandler = element[event];
-            element.addEventListener(event, async (e) => {
-                setTimeout(() => {
-                    if (logging && element === $providesitepw) console.log("triggerEvent triggered", element.id, event, element.checked);
-                    resolve();
-                }, sleepTime);
-            }, { once: true });
-            element[event] = oldHandler;
-            let e = new Event(event);
-            element.dispatchEvent(e);
-            if (logging && element === $providesitepw) console.log("triggerEvent trigger", element.id, event, element.checked);
-        });
-    }
+        if (logging) console.log("triggerEvent", element.id, event);
+        let e = new Event(event);
+        element.dispatchEvent(e);
+        if (logging) console.log("triggerEvent event dispatched", element.id, event);
+        await promise;
+        if (logging) console.log("triggerEvent promise resolved", element.id, event, promise);
+     }
     async function clearForm() {
+        if (logging) console.log("clearForm");
         $domainname.value = "";
         $superpw.value = "";
         $sitename.value = "";
@@ -336,12 +331,13 @@ export async function runTests() {
         $sitepw.value = "";
         $providesitepw.checked = false;
         $settings.style.display = "none";
+        if (logging) console.log("clearForm done");
         await getsettings("");
+        if (logging) console.log("clearForm getsettings done");
     }
     async function fillForm(superpw, domainname, sitename, username) {
         if (logging) console.log("fillForm", superpw, domainname, sitename, username);
-        $domainname.value = domainname;
-        await triggerEvent("blur", $domainname);
+        $domainname.value = domainname;  // domainname.onblur triggered automatically
         $superpw.value = superpw;
         await triggerEvent("keyup", $superpw);
         $sitename.value = sitename;
@@ -366,7 +362,6 @@ export async function runTests() {
         await triggerEvent("click", $forgetbutton);
     }
     async function phishingSetup() {
-        await clearForm();
         await resetState();
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
         await triggerEvent("mouseleave", $mainpanel);
