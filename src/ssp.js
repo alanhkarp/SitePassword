@@ -71,7 +71,7 @@ window.onload = function () {
             if (logging) console.log("popup got tab", domainname, activetab);
             if (logging) console.log("popup getting metadata");
             instructionSetup();
-            eventSetup();
+            //eventSetup();
             getsettings(domainname);
         }, timeout);
     });
@@ -150,597 +150,596 @@ export async function getsettings(testdomainname) {
         }
     });
 }
-function eventSetup() {
-    // This function sends a message to the service worker when the mouse leaves the 
-    // outermost div on the window.  When the user clicks outside the popup, the window
-    // loses focus and closes.  Any messages in flight will be lost.  That means there
-    // is a race between message delivery and the next user click.  Fortunately, messages
-    // are delivered in just a couple of ms, so there's no problem.  Just be aware that
-    // this race is the source of any problems related to loss of the message sent here.
-    get("root").onmouseleave = function (event) {
-        // If I close the window immediately, then messages in flight get lost
-        if (autoclose && !document.elementFromPoint(event.pageX, event.pageY)) {
-            if (!debugMode) get("root").style.opacity = 0.1;
-            mainPanelTimer = setTimeout(() => {
-                if (!debugMode) window.close();
-            }, 750);
-        }
-    }
-    get("mainpanel").onmouseleave = function () {
-        if (logging) console.log(Date.now(), "popup window.mouseleave", autoclose, phishing, bg);
-        if (warningMsg) {   
-            autoclose = false;
-        } 
-       // Don't persist phishing sites if user mouses out of popup. Can't use
-        // isphising() because the new bookmark hasn't been created yet when the 
-        // user clicks the same account button.
-        get("superpw").focus(); // Force phishing test in case focus is on sitename
-        if (phishing) return;
-        // window.onblur fires before I even have a chance to see the window, much less focus it
-        if (bg && bg.settings) {
-            bg.superpw = get("superpw").value || "";
-            bg.settings.domainname = get("domainname").value || "";
-            bg.settings.sitename = get("sitename").value || "";
-            bg.settings.username = get("username").value || "";
-            if (bg.settings.sitename) {
-                database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
-                database.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
-            }
-            let sitename = get("sitename").value;
-            changePlaceholder();
-            if (logging) console.log("popup sending site data", domainname, bg);
-            chrome.runtime.sendMessage({
-                "cmd": "siteData",
-                "sitename": sitename,
-                "clearsuperpw": get("clearsuperpw").checked,
-                "hidesitepw": get("hidesitepw").checked,
-                "bg": bg,
-            });
-        }
-    }
-    get("root").onmouseenter = function (e) {
-        get("root").style.opacity = 1; 
-       clearTimeout(mainPanelTimer);
-    }
-    get("title").onclick = function () {
-        window.open("https://sitepassword.info");
-    }
-    // Domain Name
-    get("domainname").onblur = function (e) {
-        get("sitename").value = "";
-        if (testMode) domainname = get("domainname").value;
-        getsettings(domainname).then(async () => {
-            fill();
-            await ask2generate();
-        });
-    }
-    get("domainnamemenu").onmouseleave = function (e) {
-        menuOff("domainname", e);
-    }
-    get("domainname3bluedots").onmouseover = function (e) {
-        let domainname = get("domainname").value;
-        if (domainname && database.domains[domainname]) {
-            get("domainnamemenuforget").style.opacity = "1";
-        } else {
-            get("domainnamemenuforget").style.opacity = "0.5";
-        }
-        menuOn("domainname", e);
-    }
-    get("domainname3bluedots").onclick = get("domainname3bluedots").onmouseover;
-    get("domainnamemenuforget").onclick = function (e) {
-        msgon("forget");
-        let toforget = normalize(get("domainname").value);
-        addForgetItem(toforget);
-    }
-    get("domainnamemenuhelp").onclick = function (e) {
-        helpItemOn("domainname");
-    }
-    get("domainnamehelptextclose").onclick = function (e) {
-        helpAllOff();
-    }
-    get("domainnamehelptextmore").onclick = function (e) {
-        helpAllOff();
-        sectionClick("domainname");
-    }
-    // Super Password
-    const $superpw = get("superpw");
-    get("superpw").onkeyup = function (e) {
-        // Start the reminder clock ticking
-        chrome.storage.local.set({"reminder": Date.now()});
-        bg.superpw = $superpw.value || "";
-        ask2generate().then(() => {
-            setMeter("superpw");
-            setMeter("sitepw");
-            handleblur("superpw", "superpw");    
-        });
-    }
-    get("superpw").onblur = function (e) {
-        if (logging) console.log("popup superpw onmouseout");
-        handleblur("superpw", "superpw");
-        changePlaceholder();
-    }
-    get("superpwmenu").onmouseleave = function (e) {
-        menuOff("superpw", e);
-    }
-    get("superpw3bluedots").onmouseover = function (e) {
-        if (get("superpw").value) {
-            get("superpwmenushow").style.opacity = "1";
-            get("superpwmenuhide").style.opacity = "1";
-        } else {
-            get("superpwmenushow").style.opacity = "0.5";
-            get("superpwmenuhide").style.opacity = "0.5";
-        }
-        menuOn("superpw", e);      
-    }
-    get("superpw3bluedots").onclick = get("superpw3bluedots").onmouseover;
-    get("superpwmenushow").onclick = function(e) {
-        if (!get("superpw").value) return;
-        get("superpw").type = "text";
-        get("superpwmenuhide").classList.toggle("nodisplay");
-        get("superpwmenushow").classList.toggle("nodisplay")    ;
-    }
-    get("superpwmenuhide").onclick = function(e) {
-        if (!get("superpw").value) return;
-        get("superpw").type = "password";
-        get("superpwmenuhide").classList.toggle("nodisplay");
-        get("superpwmenushow").classList.toggle("nodisplay")    ;
-    }
-    get("superpwmenuhelp").onclick = function (e) {
-        helpItemOn("superpw");
-    }
-    get("superpwhelptextclose").onclick = function (e) {
-        helpAllOff();
-    }
-    get("superpwhelptextmore").onclick = function (e) {
-        helpAllOff;
-        sectionClick("superpw");
-    }
-    // Site Name
-    let focused = true; // Needed so I can blur and refocus to get the datalist updated
-    get("sitename").onfocus = function (e) {
-       let set = new Set();
-        let value = normalize(get("sitename").value);
-        Object.keys(database.sites).forEach((sitename) => {
-            let site = database.sites[normalize(sitename)].sitename;
-            if (!value || normalize(site).startsWith(value)) set.add(site);
-        })
-        let list = [... set].sort();
-        setupdatalist(this, list);
-        if (!get("sitename").value && focused) {
-            get("sitename").blur();
-            focused = false;
-            get("sitename").focus();
-        } else {
-            focused = true;
-        }
-    }
-    get("sitename").onkeyup = function () {
-        handlekeyup("sitename", "sitename");
-        clearDatalist("sitenames");
-        get("sitename").onfocus();
-    }
-    get("sitename").onblur = function (e) {
-        let d = isphishing(bg.settings.sitename)
-        if (d) {
-            get("phishingtext0").innerText = get("sitename").value;
-            get("phishingtext1").innerText = d;
-            get("phishingtext2").innerText = get("domainname").value;
-            phishing = true;
-            msgon("phishing");
-            hidesettings();
-            get("superpw").disabled = true;
-            get("username").disabled = true;
-            get("sitepw").value = "";
-        } else {
-            phishing = false;
-            msgoff("phishing");
-            get("superpw").disabled = false;
-            get("username").disabled = false
-            handleblur("sitename", "sitename");
-            changePlaceholder();
-        }
-        clearDatalist("sitenames");
-    }
-    get("sitename3bluedots").onmouseover = function (e) {
-        let sitename = get("sitename").value;
-        if (sitename) {
-            get("sitenamemenuforget").style.opacity = "1";
-        } else {
-            get("sitenamemenuforget").style.opacity = "0.5";
-        }
-         menuOn("sitename", e);
-    }
-    get("sitename3bluedots").onclick = get("sitename3bluedots").onmouseover;
-    get("sitenamemenu").onmouseleave = function (e) {
-        menuOff("sitename", e);
-    }
-    get("sitenamemenuforget").onclick = function (e) {
-        msgon("forget");
-        let toforget = normalize(get("sitename").value);
-        let $list = get("toforgetlist");
-        for (let domain in database.domains) {
-            if (normalize(database.domains[domain]) === toforget) {
-                addForgetItem(domain);
-            }
-        }
-    }
-    get("sitenamemenuhelp").onclick = function (e) {
-        helpItemOn("sitename");
-    }
-    get("sitenamehelptextclose").onclick = function (e) {
-        helpAllOff();
-    }
-    get("sitenamehelptextmore").onclick = function (e) {
-        helpAllOff();
-        sectionClick("sitename");
-    }
-    // Site Username
-    focused = true; // Needed so I can blur and refocus to get the datalist updated
-    get("username").onfocus = function (e) {
-        let set = new Set();
-        let value = normalize(get("username").value);
-        Object.keys(database.sites).forEach((sitename) => {
-            let username = database.sites[normalize(sitename)].username;
-            if (!value || normalize(username).startsWith(value)) set.add(username);
-        })
-        let list = [... set].sort();
-        setupdatalist(this, list);
-        if (!get("username").value && focused) {
-            get("username").blur();
-            focused = false;
-            get("username").focus();
-        } else {    
-            focused = true;
-        }
-    }
-    get("username").onkeyup = function () {
-        handlekeyup("username", "username");
-        clearDatalist("usernames");
-        get("username").onfocus();
-    }
-    get("username").onblur = function (e) {
-        handleblur("username", "username");
-        clearDatalist("usernames");
-        changePlaceholder();
-    }
-    get("usernamemenu").onmouseleave = function (e) {
-        menuOff("username", e);
-    }
-    get("username3bluedots").onmouseover = function (e) {
-        let username = get("username").value;
-        if (username) {
-            get("usernamemenuforget").style.opacity = "1";
-            get("usernamemenucopy").style.opacity = "1";
-        } else {
-            get("usernamemenuforget").style.opacity = "0.5";
-            get("usernamemenucopy").style.opacity = "0.5";
-        }
-         menuOn("username", e);
-    }
-    get("username3bluedots").onclick = get("username3bluedots").onmouseover;
-    get("usernamemenuforget").onclick = function (e) {
-        msgon("forget");
-        let toforget = normalize(get("username").value);
-        let $list = get("toforgetlist");
-        for (let domain in database.domains) {
-            let sitename = normalize(database.domains[domain]);
-            if (normalize(database.sites[sitename].username) === toforget) {
-                addForgetItem(domain);
-            }
-        }
-    }
-    get("usernamemenucopy").onclick = function(e) {
-        let username = get("username").value;
-        if (!username) return;
-        navigator.clipboard.writeText(username).then(() => {
-            if (logging) console.log("popup wrote to clipboard", username);
-            copied("username");
-        }).catch((e) => {
-            if (logging) console.log("popup username clipboard write failed", e);
-        });
-        menuOff("username", e);
-    }
-    get("usernamemenuhelp").onclick = function (e) {
-        helpItemOn("username");
-    }
-    get("usernamehelptextclose").onclick = function (e) {
-        helpAllOff();
-    }
-    get("usernamehelptextmore").onclick = function (e) {
-        helpAllOff();
-        sectionClick("username");
-    }
-    // Site Password
-    get("sitepw").onblur = function (e) {
-        menuOff("sitepw", e);
-        if (get("sitepw").readOnly || !get("sitepw").value) return;
-        let provided = get("sitepw").value;
-        ask2generate(bg).then((computed) => {
-            bg.settings.xor = xorStrings(provided, computed);
-            get("sitepw").value = provided;   
-        });
-    }
-    get("sitepw").onkeyup = function () {
-        get("sitepw").onblur();
-    }
-    get("sitepwmenu").onmouseleave = function (e) {
-        menuOff("sitepw", e);
-    }
-    get("sitepw3bluedots").onmouseover = function (e) {
-        let sitepw = get("sitepw").value;
-        if (sitepw) {
-            get("sitepwmenucopy").style.opacity = "1";
-            get("sitepwmenushow").style.opacity = "1";
-            get("sitepwmenuhide").style.opacity = "1";
-        } else {
-            get("sitepwmenucopy").style.opacity = "0.5";
-            get("sitepwmenushow").style.opacity = "0.5";
-            get("sitepwmenuhide").style.opacity = "0.5";
-        }
-        menuOn("sitepw", e);
-    }
-    get("sitepw3bluedots").onclick = get("sitepw3bluedots").onmouseover;
-    get("sitepwmenucopy").onclick = function(e) {
-        let sitepw = get("sitepw").value;
-        if (!sitepw) return;
-        navigator.clipboard.writeText(sitepw).then(() => {
-            if (logging) console.log("popup wrote to clipboard", sitepw);
-            chrome.action.setTitle({title: "A site password may be on the clipboard."});
-            get("logopw").title = "A site password may be on the clipboard."
-            get("logo").style.display = "none";
-            get("logopw").style.display = "block";
-            chrome.action.setIcon({"path": "icon128pw.png"});
-            chrome.storage.local.set({"onClipboard": true})
-            copied("sitepw");
-        }).catch((e) => {
-            if (logging) console.log("popup sitepw clipboard write failed", e);
-        });
-        menuOff("sitepw", e);
-    }
-    get("sitepwmenuhelp").onclick = function (e) {
-        helpItemOn("sitepw");
-    }
-    get("sitepwhelptextclose").onclick = function (e) {
-        helpAllOff();
-    }
-    get("sitepwhelptextmore").onclick = function (e) {
-        helpAllOff();
-        sectionClick("sitepw");
-    }
-    get("sitepwmenushow").onclick = function () {
-        get("sitepw").type = "text";
-        get("sitepwmenushow").classList.toggle("nodisplay");
-        get("sitepwmenuhide").classList.toggle("nodisplay")    ;
-    };
-    get("sitepwmenuhide").onclick = function () {
-        get("sitepw").type = "password";
-        get("sitepwmenushow").classList.toggle("nodisplay");
-        get("sitepwmenuhide").classList.toggle("nodisplay");
-    }
-    get("settingsshow").onclick = showsettings;
-    get("clearclipboard").onclick = function() {
-        if (logging) console.log("popup clear clipboard");
-        navigator.clipboard.writeText("");
-        chrome.action.setTitle({title: defaultTitle});
-        get("logo").title = defaultTitle;
-        chrome.storage.local.set({"onClipboard": false});
-        get("logo").style.display = "block";
-        get("logopw").style.display = "none";
-        chrome.action.setIcon({"path": "icon128.png"});
-    }
-    document.oncopy = get("clearclipboard").onclick;
-    get("settingssave").onclick = hidesettings;
-    get("providesitepw").onclick = function () {
-        if (!(get("sitename").value && get("username").value)) return;
-        bg.settings.providesitepw = get("providesitepw").checked;
-        if (get("providesitepw").checked) {
-            get("sitepw").readOnly = false;
-            get("sitepw").value = "";
-            get("sitepw").focus();
-            get("sitepw").style.backgroundColor = "white";
-            get("sitepwmenushow").classList.remove("menu-icon-blue");
-            get("sitepwmenuhide").classList.remove("menu-icon-blue");
-            get("sitepwmenucopy").classList.remove("menu-icon-blue");
-            get("sitepwmenuhelp").classList.remove("menu-icon-blue");
-            get("sitepw").placeholder = "Enter your site password";
-        } else {
-            get("sitepw").readOnly = true;
-            get("sitepw").style.backgroundColor = "rgb(136, 204, 255, 20%)";
-            get("sitepwmenushow").classList.add("menu-icon-blue");
-            get("sitepwmenuhide").classList.add("menu-icon-blue");
-            get("sitepwmenucopy").classList.add("menu-icon-blue");
-            get("sitepwmenuhelp").classList.add("menu-icon-blue");
-            get("sitepw").placeholder = "Your site password";
-            ask2generate();
-            defaultfocus();
-        }
-    }
-    get("clearsuperpw").onclick = function () {
-        database.clearsuperpw = get("clearsuperpw").checked;
-    }
-    get("hidesitepw").onclick = function () {
-        database.hidesitepw = get("hidesitepw").checked;
-        hidesitepw();
-    }
-    get("pwlength").onmouseout = function () {
-        handleblur("pwlength", "pwlength");
-    }
-    get("pwlength").onblur = function () {
-        handleblur("pwlength", "pwlength");
-    }
-    get("startwithletter").onclick = function () {
-        bg.settings.startwithletter = get("startwithletter").checked;
-        ask2generate();
-    }
-    get("allowlowercheckbox").onclick = function () {
-        handleclick("lower");
-    }
-    get("allowuppercheckbox").onclick = function () {
-        handleclick("upper");
-    }
-    get("allownumbercheckbox").onclick = function () {
-        handleclick("number");
-    }
-    get("allowspecialcheckbox").onclick = function () {
-        handleclick("special");
-    }
-    get("minlower").onmouseout = function () {
-        handleblur("minlower", "minlower");
-    }
-    get("minlower").onblur = function () {
-        handleblur("minlower", "minlower");
-    }
-    get("minupper").onmouseout = function () {
-        handleblur("minupper", "minupper");
-    }
-    get("minupper").onblur = function () {
-        handleblur("minupper", "minupper");
-    }
-    get("minnumber").onmouseout = function () {
-        handleblur("minnumber", "minnumber");
-    }
-    get("minnumber").onblur = function () {
-        handleblur("minnumber", "minnumber");
-    }
-    get("minspecial").onmouseout = function () {
-        handleblur("minspecial", "minspecial");
-    }
-    get("minspecial").onblur = function () {
-        handleblur("minspecial", "minspecial");
-    }
-    // I need to limit the number of specials because generate() 
-    // computes a number between 0 and 63 to index into the
-    // characters array.  There are 10 integers and 26 upper
-    // case letters.  If there are too many special characters,
-    // then the first lower case letter is past index 63.
-    const alphanumerics = /[0-9A-Za-z]/g;
-    get("specials").onblur = function() {
-        if (!get("specials").value) {
-            alert("You must enter at least one special character.");
-            get("specials").value = bg.settings.specials;
-            return;
-        }
-        let specials = get("specials");
-        specials.value = specials.value
-            .replace(alphanumerics, '')  // eliminate alphanumerics
-            .substring(0, 12);  // limit to 12 specials
-        bg.settings.specials = specials.value;
-        handlekeyup("specials");
-    }    
-
-    get("makedefaultbutton").onclick = function () {
-        let newDefaults = {
-            sitename: "",
-            username: "",
-            providesitepw: false,
-            xor: new Array(12).fill(0),
-            domainname: "",
-            pwdomainname: "",
-            pwlength: get("pwlength").value,
-            providesitepw: get("providesitepw").checked,
-            startwithletter: get("startwithletter").checked,
-            allowlower: get("allowlowercheckbox").checked,
-            allowupper: get("allowuppercheckbox").checked,
-            allownumber: get("allownumbercheckbox").checked,
-            allowspecial: get("allowspecialcheckbox").checked,
-            minlower: get("minlower").value,
-            minupper: get("minupper").value,
-            minnumber: get("minnumber").value,
-            minspecial: get("minspecial").value,
-            specials: get("specials").value,
-        }
-        chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults}, () => {
-            if (logging) console.log("popup newDefaults sent", newDefaults);
-        })
-    }
-    get("sitedatagetbutton").onclick = sitedataHTML;
-    get("exportbutton").onclick = exportPasswords;
-    get("maininfo").onclick = function () {
-        if (get("instructionpanel").style.display == "none") {
-            showInstructions();
-            hidesettings();
-            helpAllOff();
-        } else {
-            hideInstructions();
-        }
+//}
+// This function sends a message to the service worker when the mouse leaves the 
+// outermost div on the window.  When the user clicks outside the popup, the window
+// loses focus and closes.  Any messages in flight will be lost.  That means there
+// is a race between message delivery and the next user click.  Fortunately, messages
+// are delivered in just a couple of ms, so there's no problem.  Just be aware that
+// this race is the source of any problems related to loss of the message sent here.
+get("root").onmouseleave = function (event) {
+    // If I close the window immediately, then messages in flight get lost
+    if (autoclose && !document.elementFromPoint(event.pageX, event.pageY)) {
+        if (!debugMode) get("root").style.opacity = 0.1;
+        mainPanelTimer = setTimeout(() => {
+            if (!debugMode) window.close();
+        }, 750);
+    }
+}
+get("mainpanel").onmouseleave = function () {
+    if (logging) console.log(Date.now(), "popup window.mouseleave", autoclose, phishing, bg);
+    if (warningMsg) {   
         autoclose = false;
-    }
-    get("warningbutton").onclick = function () {
-        phishing = false;
-        get("superpw").disabled = false;
-        get("username").disabled = false;
-        get("sitename").disabled = false;
-        msgoff("phishing");
-        var sitename = getlowertrim("sitename");
-        bg.settings = clone(database.sites[sitename]);
-        bg.settings.sitename = get("sitename").value;
-        if (testMode) bg.settings.domainname = get("domainname").value;
-        database.domains[get("domainname").value] = bg.settings.sitename;
-        get("username").value = bg.settings.username;
-        ask2generate();
-        autoclose = false;
-    }
-    get("cancelwarning").onclick = function () {
-        phishing = true;
-        msgoff("phishing");
-        get("domainname").value = "";
-        get("sitename").value = "";
-        get("username").value = "";
-        if (!testMode) {
-            chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
-            window.close();
-        }
-    }
-    get("nicknamebutton").onclick = function () {
-        setfocus(get("sitename"));
-        msgoff("phishing");
-        autoclose = false;
-    }
-    get("forgetbutton").onclick = function () {
-        let children = get("toforgetlist").children;
-        let list = [];
-        for (let child of children) {
-            list.push(child.innerText);
-        }
-        forgetDomainnames(list);
-        get("cancelbutton").click();
-    }
-    get("cancelbutton").onclick = function () {
-        while ( get("toforgetlist").firstChild ) {
-            get("toforgetlist").removeChild(get("toforgetlist").firstChild);
-        }
-        msgoff("forget");
-    }
-    // I need to handle the case where the user clicks on the link in the instructions or help
-    get("sharedref").onclick = function (e) {
-        e.stopPropagation();
-        sectionClick("shared");
-    }
-    get("sharedref2").onclick = function (e) {
-        e.stopPropagation();
-        showInstructions();
-        sectionClick("shared");
     } 
-    get("downloadref").onclick = function (e) {
-        e.stopPropagation();
-        sectionClick("download");
+    // Don't persist phishing sites if user mouses out of popup. Can't use
+    // isphising() because the new bookmark hasn't been created yet when the 
+    // user clicks the same account button.
+    get("superpw").focus(); // Force phishing test in case focus is on sitename
+    if (phishing) return;
+    // window.onblur fires before I even have a chance to see the window, much less focus it
+    if (bg && bg.settings) {
+        bg.superpw = get("superpw").value || "";
+        bg.settings.domainname = get("domainname").value || "";
+        bg.settings.sitename = get("sitename").value || "";
+        bg.settings.username = get("username").value || "";
+        if (bg.settings.sitename) {
+            database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
+            database.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
+        }
+        let sitename = get("sitename").value;
+        changePlaceholder();
+        if (logging) console.log("popup sending site data", domainname, bg);
+        chrome.runtime.sendMessage({
+            "cmd": "siteData",
+            "sitename": sitename,
+            "clearsuperpw": get("clearsuperpw").checked,
+            "hidesitepw": get("hidesitepw").checked,
+            "bg": bg,
+        });
     }
-    get("acceptableref").onclick = function (e) {
-        e.stopPropagation();
-        sectionClick("acceptable");
+}
+get("root").onmouseenter = function (e) {
+    get("root").style.opacity = 1; 
+    clearTimeout(mainPanelTimer);
+}
+get("title").onclick = function () {
+    window.open("https://sitepassword.info");
+}
+// Domain Name
+get("domainname").onblur = function (e) {
+    get("sitename").value = "";
+    if (testMode) domainname = get("domainname").value;
+    getsettings(domainname).then(async () => {
+        fill();
+        await ask2generate();
+    });
+}
+get("domainnamemenu").onmouseleave = function (e) {
+    menuOff("domainname", e);
+}
+get("domainname3bluedots").onmouseover = function (e) {
+    let domainname = get("domainname").value;
+    if (domainname && database.domains[domainname]) {
+        get("domainnamemenuforget").style.opacity = "1";
+    } else {
+        get("domainnamemenuforget").style.opacity = "0.5";
     }
-    get("changeref").onclick = function (e) {
-        e.stopPropagation();
-        sectionClick("change");
+    menuOn("domainname", e);
+}
+get("domainname3bluedots").onclick = get("domainname3bluedots").onmouseover;
+get("domainnamemenuforget").onclick = function (e) {
+    msgon("forget");
+    let toforget = normalize(get("domainname").value);
+    addForgetItem(toforget);
+}
+get("domainnamemenuhelp").onclick = function (e) {
+    helpItemOn("domainname");
+}
+get("domainnamehelptextclose").onclick = function (e) {
+    helpAllOff();
+}
+get("domainnamehelptextmore").onclick = function (e) {
+    helpAllOff();
+    sectionClick("domainname");
+}
+// Super Password
+const $superpw = get("superpw");
+get("superpw").onkeyup = function (e) {
+    // Start the reminder clock ticking
+    chrome.storage.local.set({"reminder": Date.now()});
+    bg.superpw = $superpw.value || "";
+    ask2generate().then(() => {
+        setMeter("superpw");
+        setMeter("sitepw");
+        handleblur("superpw", "superpw");    
+    });
+}
+get("superpw").onblur = function (e) {
+    if (logging) console.log("popup superpw onmouseout");
+    handleblur("superpw", "superpw");
+    changePlaceholder();
+}
+get("superpwmenu").onmouseleave = function (e) {
+    menuOff("superpw", e);
+}
+get("superpw3bluedots").onmouseover = function (e) {
+    if (get("superpw").value) {
+        get("superpwmenushow").style.opacity = "1";
+        get("superpwmenuhide").style.opacity = "1";
+    } else {
+        get("superpwmenushow").style.opacity = "0.5";
+        get("superpwmenuhide").style.opacity = "0.5";
     }
-    get("exportref").onclick = function (e) {
-        e.stopPropagation();
-        sectionClick("export");
+    menuOn("superpw", e);      
+}
+get("superpw3bluedots").onclick = get("superpw3bluedots").onmouseover;
+get("superpwmenushow").onclick = function(e) {
+    if (!get("superpw").value) return;
+    get("superpw").type = "text";
+    get("superpwmenuhide").classList.toggle("nodisplay");
+    get("superpwmenushow").classList.toggle("nodisplay")    ;
+}
+get("superpwmenuhide").onclick = function(e) {
+    if (!get("superpw").value) return;
+    get("superpw").type = "password";
+    get("superpwmenuhide").classList.toggle("nodisplay");
+    get("superpwmenushow").classList.toggle("nodisplay")    ;
+}
+get("superpwmenuhelp").onclick = function (e) {
+    helpItemOn("superpw");
+}
+get("superpwhelptextclose").onclick = function (e) {
+    helpAllOff();
+}
+get("superpwhelptextmore").onclick = function (e) {
+    helpAllOff;
+    sectionClick("superpw");
+}
+// Site Name
+let focused = true; // Needed so I can blur and refocus to get the datalist updated
+get("sitename").onfocus = function (e) {
+    let set = new Set();
+    let value = normalize(get("sitename").value);
+    Object.keys(database.sites).forEach((sitename) => {
+        let site = database.sites[normalize(sitename)].sitename;
+        if (!value || normalize(site).startsWith(value)) set.add(site);
+    })
+    let list = [... set].sort();
+    setupdatalist(this, list);
+    if (!get("sitename").value && focused) {
+        get("sitename").blur();
+        focused = false;
+        get("sitename").focus();
+    } else {
+        focused = true;
     }
-    get("phishingcheck").onclick = function (e) {
-        e.stopPropagation();
-        chrome.tabs.create({url: this.href});
+}
+get("sitename").onkeyup = function () {
+    handlekeyup("sitename", "sitename");
+    clearDatalist("sitenames");
+    get("sitename").onfocus();
+}
+get("sitename").onblur = function (e) {
+    let d = isphishing(bg.settings.sitename)
+    if (d) {
+        get("phishingtext0").innerText = get("sitename").value;
+        get("phishingtext1").innerText = d;
+        get("phishingtext2").innerText = get("domainname").value;
+        phishing = true;
+        msgon("phishing");
+        hidesettings();
+        get("superpw").disabled = true;
+        get("username").disabled = true;
+        get("sitepw").value = "";
+    } else {
+        phishing = false;
+        msgoff("phishing");
+        get("superpw").disabled = false;
+        get("username").disabled = false
+        handleblur("sitename", "sitename");
+        changePlaceholder();
     }
+    clearDatalist("sitenames");
+}
+get("sitename3bluedots").onmouseover = function (e) {
+    let sitename = get("sitename").value;
+    if (sitename) {
+        get("sitenamemenuforget").style.opacity = "1";
+    } else {
+        get("sitenamemenuforget").style.opacity = "0.5";
+    }
+        menuOn("sitename", e);
+}
+get("sitename3bluedots").onclick = get("sitename3bluedots").onmouseover;
+get("sitenamemenu").onmouseleave = function (e) {
+    menuOff("sitename", e);
+}
+get("sitenamemenuforget").onclick = function (e) {
+    msgon("forget");
+    let toforget = normalize(get("sitename").value);
+    let $list = get("toforgetlist");
+    for (let domain in database.domains) {
+        if (normalize(database.domains[domain]) === toforget) {
+            addForgetItem(domain);
+        }
+    }
+}
+get("sitenamemenuhelp").onclick = function (e) {
+    helpItemOn("sitename");
+}
+get("sitenamehelptextclose").onclick = function (e) {
+    helpAllOff();
+}
+get("sitenamehelptextmore").onclick = function (e) {
+    helpAllOff();
+    sectionClick("sitename");
+}
+// Site Username
+focused = true; // Needed so I can blur and refocus to get the datalist updated
+get("username").onfocus = function (e) {
+    let set = new Set();
+    let value = normalize(get("username").value);
+    Object.keys(database.sites).forEach((sitename) => {
+        let username = database.sites[normalize(sitename)].username;
+        if (!value || normalize(username).startsWith(value)) set.add(username);
+    })
+    let list = [... set].sort();
+    setupdatalist(this, list);
+    if (!get("username").value && focused) {
+        get("username").blur();
+        focused = false;
+        get("username").focus();
+    } else {    
+        focused = true;
+    }
+}
+get("username").onkeyup = function () {
+    handlekeyup("username", "username");
+    clearDatalist("usernames");
+    get("username").onfocus();
+}
+get("username").onblur = function (e) {
+    handleblur("username", "username");
+    clearDatalist("usernames");
+    changePlaceholder();
+}
+get("usernamemenu").onmouseleave = function (e) {
+    menuOff("username", e);
+}
+get("username3bluedots").onmouseover = function (e) {
+    let username = get("username").value;
+    if (username) {
+        get("usernamemenuforget").style.opacity = "1";
+        get("usernamemenucopy").style.opacity = "1";
+    } else {
+        get("usernamemenuforget").style.opacity = "0.5";
+        get("usernamemenucopy").style.opacity = "0.5";
+    }
+        menuOn("username", e);
+}
+get("username3bluedots").onclick = get("username3bluedots").onmouseover;
+get("usernamemenuforget").onclick = function (e) {
+    msgon("forget");
+    let toforget = normalize(get("username").value);
+    let $list = get("toforgetlist");
+    for (let domain in database.domains) {
+        let sitename = normalize(database.domains[domain]);
+        if (normalize(database.sites[sitename].username) === toforget) {
+            addForgetItem(domain);
+        }
+    }
+}
+get("usernamemenucopy").onclick = function(e) {
+    let username = get("username").value;
+    if (!username) return;
+    navigator.clipboard.writeText(username).then(() => {
+        if (logging) console.log("popup wrote to clipboard", username);
+        copied("username");
+    }).catch((e) => {
+        if (logging) console.log("popup username clipboard write failed", e);
+    });
+    menuOff("username", e);
+}
+get("usernamemenuhelp").onclick = function (e) {
+    helpItemOn("username");
+}
+get("usernamehelptextclose").onclick = function (e) {
+    helpAllOff();
+}
+get("usernamehelptextmore").onclick = function (e) {
+    helpAllOff();
+    sectionClick("username");
+}
+// Site Password
+get("sitepw").onblur = function (e) {
+    menuOff("sitepw", e);
+    if (get("sitepw").readOnly || !get("sitepw").value) return;
+    let provided = get("sitepw").value;
+    ask2generate(bg).then((computed) => {
+        bg.settings.xor = xorStrings(provided, computed);
+        get("sitepw").value = provided;   
+    });
+}
+get("sitepw").onkeyup = function () {
+    get("sitepw").onblur();
+}
+get("sitepwmenu").onmouseleave = function (e) {
+    menuOff("sitepw", e);
+}
+get("sitepw3bluedots").onmouseover = function (e) {
+    let sitepw = get("sitepw").value;
+    if (sitepw) {
+        get("sitepwmenucopy").style.opacity = "1";
+        get("sitepwmenushow").style.opacity = "1";
+        get("sitepwmenuhide").style.opacity = "1";
+    } else {
+        get("sitepwmenucopy").style.opacity = "0.5";
+        get("sitepwmenushow").style.opacity = "0.5";
+        get("sitepwmenuhide").style.opacity = "0.5";
+    }
+    menuOn("sitepw", e);
+}
+get("sitepw3bluedots").onclick = get("sitepw3bluedots").onmouseover;
+get("sitepwmenucopy").onclick = function(e) {
+    let sitepw = get("sitepw").value;
+    if (!sitepw) return;
+    navigator.clipboard.writeText(sitepw).then(() => {
+        if (logging) console.log("popup wrote to clipboard", sitepw);
+        chrome.action.setTitle({title: "A site password may be on the clipboard."});
+        get("logopw").title = "A site password may be on the clipboard."
+        get("logo").style.display = "none";
+        get("logopw").style.display = "block";
+        chrome.action.setIcon({"path": "icon128pw.png"});
+        chrome.storage.local.set({"onClipboard": true})
+        copied("sitepw");
+    }).catch((e) => {
+        if (logging) console.log("popup sitepw clipboard write failed", e);
+    });
+    menuOff("sitepw", e);
+}
+get("sitepwmenuhelp").onclick = function (e) {
+    helpItemOn("sitepw");
+}
+get("sitepwhelptextclose").onclick = function (e) {
+    helpAllOff();
+}
+get("sitepwhelptextmore").onclick = function (e) {
+    helpAllOff();
+    sectionClick("sitepw");
+}
+get("sitepwmenushow").onclick = function () {
+    get("sitepw").type = "text";
+    get("sitepwmenushow").classList.toggle("nodisplay");
+    get("sitepwmenuhide").classList.toggle("nodisplay")    ;
+};
+get("sitepwmenuhide").onclick = function () {
+    get("sitepw").type = "password";
+    get("sitepwmenushow").classList.toggle("nodisplay");
+    get("sitepwmenuhide").classList.toggle("nodisplay");
+}
+get("settingsshow").onclick = showsettings;
+get("clearclipboard").onclick = function() {
+    if (logging) console.log("popup clear clipboard");
+    navigator.clipboard.writeText("");
+    chrome.action.setTitle({title: defaultTitle});
+    get("logo").title = defaultTitle;
+    chrome.storage.local.set({"onClipboard": false});
+    get("logo").style.display = "block";
+    get("logopw").style.display = "none";
+    chrome.action.setIcon({"path": "icon128.png"});
+}
+document.oncopy = get("clearclipboard").onclick;
+get("settingssave").onclick = hidesettings;
+get("providesitepw").onclick = function () {
+    if (!(get("sitename").value && get("username").value)) return;
+    bg.settings.providesitepw = get("providesitepw").checked;
+    if (get("providesitepw").checked) {
+        get("sitepw").readOnly = false;
+        get("sitepw").value = "";
+        get("sitepw").focus();
+        get("sitepw").style.backgroundColor = "white";
+        get("sitepwmenushow").classList.remove("menu-icon-blue");
+        get("sitepwmenuhide").classList.remove("menu-icon-blue");
+        get("sitepwmenucopy").classList.remove("menu-icon-blue");
+        get("sitepwmenuhelp").classList.remove("menu-icon-blue");
+        get("sitepw").placeholder = "Enter your site password";
+    } else {
+        get("sitepw").readOnly = true;
+        get("sitepw").style.backgroundColor = "rgb(136, 204, 255, 20%)";
+        get("sitepwmenushow").classList.add("menu-icon-blue");
+        get("sitepwmenuhide").classList.add("menu-icon-blue");
+        get("sitepwmenucopy").classList.add("menu-icon-blue");
+        get("sitepwmenuhelp").classList.add("menu-icon-blue");
+        get("sitepw").placeholder = "Your site password";
+        ask2generate();
+        defaultfocus();
+    }
+}
+get("clearsuperpw").onclick = function () {
+    database.clearsuperpw = get("clearsuperpw").checked;
+}
+get("hidesitepw").onclick = function () {
+    database.hidesitepw = get("hidesitepw").checked;
+    hidesitepw();
+}
+get("pwlength").onmouseout = function () {
+    handleblur("pwlength", "pwlength");
+}
+get("pwlength").onblur = function () {
+    handleblur("pwlength", "pwlength");
+}
+get("startwithletter").onclick = function () {
+    bg.settings.startwithletter = get("startwithletter").checked;
+    ask2generate();
+}
+get("allowlowercheckbox").onclick = function () {
+    handleclick("lower");
+}
+get("allowuppercheckbox").onclick = function () {
+    handleclick("upper");
+}
+get("allownumbercheckbox").onclick = function () {
+    handleclick("number");
+}
+get("allowspecialcheckbox").onclick = function () {
+    handleclick("special");
+}
+get("minlower").onmouseout = function () {
+    handleblur("minlower", "minlower");
+}
+get("minlower").onblur = function () {
+    handleblur("minlower", "minlower");
+}
+get("minupper").onmouseout = function () {
+    handleblur("minupper", "minupper");
+}
+get("minupper").onblur = function () {
+    handleblur("minupper", "minupper");
+}
+get("minnumber").onmouseout = function () {
+    handleblur("minnumber", "minnumber");
+}
+get("minnumber").onblur = function () {
+    handleblur("minnumber", "minnumber");
+}
+get("minspecial").onmouseout = function () {
+    handleblur("minspecial", "minspecial");
+}
+get("minspecial").onblur = function () {
+    handleblur("minspecial", "minspecial");
+}
+// I need to limit the number of specials because generate() 
+// computes a number between 0 and 63 to index into the
+// characters array.  There are 10 integers and 26 upper
+// case letters.  If there are too many special characters,
+// then the first lower case letter is past index 63.
+const alphanumerics = /[0-9A-Za-z]/g;
+get("specials").onblur = function() {
+    if (!get("specials").value) {
+        alert("You must enter at least one special character.");
+        get("specials").value = bg.settings.specials;
+        return;
+    }
+    let specials = get("specials");
+    specials.value = specials.value
+        .replace(alphanumerics, '')  // eliminate alphanumerics
+        .substring(0, 12);  // limit to 12 specials
+    bg.settings.specials = specials.value;
+    handlekeyup("specials");
+}    
+
+get("makedefaultbutton").onclick = function () {
+    let newDefaults = {
+        sitename: "",
+        username: "",
+        providesitepw: false,
+        xor: new Array(12).fill(0),
+        domainname: "",
+        pwdomainname: "",
+        pwlength: get("pwlength").value,
+        providesitepw: get("providesitepw").checked,
+        startwithletter: get("startwithletter").checked,
+        allowlower: get("allowlowercheckbox").checked,
+        allowupper: get("allowuppercheckbox").checked,
+        allownumber: get("allownumbercheckbox").checked,
+        allowspecial: get("allowspecialcheckbox").checked,
+        minlower: get("minlower").value,
+        minupper: get("minupper").value,
+        minnumber: get("minnumber").value,
+        minspecial: get("minspecial").value,
+        specials: get("specials").value,
+    }
+    chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults}, () => {
+        if (logging) console.log("popup newDefaults sent", newDefaults);
+    })
+}
+get("sitedatagetbutton").onclick = sitedataHTML;
+get("exportbutton").onclick = exportPasswords;
+get("maininfo").onclick = function () {
+    if (get("instructionpanel").style.display == "none") {
+        showInstructions();
+        hidesettings();
+        helpAllOff();
+    } else {
+        hideInstructions();
+    }
+    autoclose = false;
+}
+get("warningbutton").onclick = function () {
+    phishing = false;
+    get("superpw").disabled = false;
+    get("username").disabled = false;
+    get("sitename").disabled = false;
+    msgoff("phishing");
+    var sitename = getlowertrim("sitename");
+    bg.settings = clone(database.sites[sitename]);
+    bg.settings.sitename = get("sitename").value;
+    if (testMode) bg.settings.domainname = get("domainname").value;
+    database.domains[get("domainname").value] = bg.settings.sitename;
+    get("username").value = bg.settings.username;
+    ask2generate();
+    autoclose = false;
+}
+get("cancelwarning").onclick = function () {
+    phishing = true;
+    msgoff("phishing");
+    get("domainname").value = "";
+    get("sitename").value = "";
+    get("username").value = "";
+    if (!testMode) {
+        chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
+        window.close();
+    }
+}
+get("nicknamebutton").onclick = function () {
+    setfocus(get("sitename"));
+    msgoff("phishing");
+    autoclose = false;
+}
+get("forgetbutton").onclick = function () {
+    let children = get("toforgetlist").children;
+    let list = [];
+    for (let child of children) {
+        list.push(child.innerText);
+    }
+    forgetDomainnames(list);
+    get("cancelbutton").click();
+}
+get("cancelbutton").onclick = function () {
+    while ( get("toforgetlist").firstChild ) {
+        get("toforgetlist").removeChild(get("toforgetlist").firstChild);
+    }
+    msgoff("forget");
+}
+// I need to handle the case where the user clicks on the link in the instructions or help
+get("sharedref").onclick = function (e) {
+    e.stopPropagation();
+    sectionClick("shared");
+}
+get("sharedref2").onclick = function (e) {
+    e.stopPropagation();
+    showInstructions();
+    sectionClick("shared");
+} 
+get("downloadref").onclick = function (e) {
+    e.stopPropagation();
+    sectionClick("download");
+}
+get("acceptableref").onclick = function (e) {
+    e.stopPropagation();
+    sectionClick("acceptable");
+}
+get("changeref").onclick = function (e) {
+    e.stopPropagation();
+    sectionClick("change");
+}
+get("exportref").onclick = function (e) {
+    e.stopPropagation();
+    sectionClick("export");
+}
+get("phishingcheck").onclick = function (e) {
+    e.stopPropagation();
+    chrome.tabs.create({url: this.href});
 }
 // Generic code for menus
 function copied(which) {
