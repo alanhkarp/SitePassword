@@ -20,6 +20,8 @@ var phishing = false;
 var warningMsg = false;
 var bg = bgDefault;
 
+export let promise;
+
 chrome.storage.local.get("onClipboard", (v) => {
     if (v.onClipboard) {
         chrome.action.setTitle({title: "A site password may be on the clipboard."});
