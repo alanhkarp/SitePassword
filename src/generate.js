@@ -21,10 +21,10 @@ export async function generatePassword(bg) {
     return p;
     function isConsistent(settings) {
         let total = 0
-        if (settings.allowupper) total += settings.minupper;
-        if (settings.allowlower) total += settings.minlower;
-        if (settings.allownumber) total += settings.minnumber;
-        if (settings.allowspecial) total += settings.minspecial;
+        if (settings.allowupper) total += settings.minupper - 0;
+        if (settings.allowlower) total += settings.minlower - 0;
+        if (settings.allownumber) total += settings.minnumber - 0;
+        if (settings.allowspecial) total += settings.minspecial - 0;
         return total <= settings.pwlength;
     }
 }

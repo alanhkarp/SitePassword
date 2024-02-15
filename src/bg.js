@@ -3,7 +3,7 @@ import {isSuperPw, normalize,  string2array, array2string, stringXorArray, gener
 // Set to true to run the tests in test.js then reload the extension.
 // Using any kind of storage (session, local, sync) is awkward because 
 // accessing the value is an async operation.
-const testMode = true;
+const testMode = false;
 const testLogging = false;
 const debugMode = false;
 const logging = debugMode;

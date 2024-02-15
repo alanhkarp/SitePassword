@@ -53,7 +53,7 @@ window.onload = function () {
     if (logging) console.log("popup getting active tab");
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         let timeout = testMode ? 1000 : 0;     
-        setTimeout(() => {
+        setTimeout(async () => {
             debugger; // Doesn't fire if timeout is 0
             activetab = tabs[0];
             if (logging) console.log("popup tab", activetab);
@@ -71,16 +71,15 @@ window.onload = function () {
             if (logging) console.log("popup got tab", domainname, activetab);
             if (logging) console.log("popup getting metadata");
             instructionSetup();
-            //eventSetup();
-            getsettings(domainname);
+            await getsettings(domainname);
         }, timeout);
     });
 }
-function init() {
+async function init() {
     get("superpw").value = bg.superpw || "";
     get("sitename").value = bg.settings.sitename || "";
     get("username").value = bg.settings.username || "";
-    fill();
+    await fill();
     let protocol = activetab.url.split(":")[0];
     if (logging) console.log("popup testing for http", protocol);
     message("http", protocol !== "https");
@@ -90,7 +89,6 @@ function init() {
     }
     get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
     defaultfocus();
-    ask2generate();
     updateExportButton();
 }
 function setupdatalist(element, list) {
@@ -122,32 +120,35 @@ function clearDatalist(listid) {
 export async function getsettings(testdomainname) {
     if (testMode) domainname = testdomainname;
     if (logging) console.log("popup getsettings", domainname);
-    chrome.runtime.sendMessage({
-        "cmd": "getMetadata",
-        "domainname": domainname,
-        "activetab": activetab
-    }, (response) => {
-        if (response.duplicate) {
-            let msg = "You have two bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.";
-            alert(msg);
-            return;
-        }
-        bg = response.bg;
-        database = response.database;
-        hidesitepw();
-        if (!bg.settings.sitename) {
-            bg.settings.sitename = "";
-        }
-        get("superpw").value = response.superpw || "";
-        init();
-        if (logging) console.log("popup got metadata", bg, database);
-        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
-        message("multiple", bg.pwcount > 1);
-        message("zero", bg.pwcount == 0);
-        if (!testMode && response.test) { // Only run tests once
-            testMode = true;
-            runTests();
-        }
+    return new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({
+            "cmd": "getMetadata",
+            "domainname": domainname,
+            "activetab": activetab
+        }, (response) => {
+            if (response.duplicate) {
+                let msg = "You have two bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.";
+                alert(msg);
+                return;
+            }
+            bg = response.bg;
+            database = response.database;
+            hidesitepw();
+            if (!bg.settings.sitename) {
+                bg.settings.sitename = "";
+            }
+            get("superpw").value = response.superpw || "";
+            init();
+            if (logging) console.log("popup got metadata", bg, database);
+            if (chrome.runtime.lastError) console.log("popup getsettings lastError", chrome.runtime.lastError);
+            message("multiple", bg.pwcount > 1);
+            message("zero", bg.pwcount == 0);
+            if (!testMode && response.test) { // Only run tests once
+                testMode = true;
+                runTests();
+            }
+            resolve("getsettings");
+        });
     });
 }
 //}
@@ -166,38 +167,55 @@ get("root").onmouseleave = function (event) {
         }, 750);
     }
 }
-get("mainpanel").onmouseleave = function () {
-    if (logging) console.log(Date.now(), "popup window.mouseleave", autoclose, phishing, bg);
-    if (warningMsg) {   
-        autoclose = false;
-    } 
-    // Don't persist phishing sites if user mouses out of popup. Can't use
-    // isphising() because the new bookmark hasn't been created yet when the 
-    // user clicks the same account button.
-    get("superpw").focus(); // Force phishing test in case focus is on sitename
-    if (phishing) return;
-    // window.onblur fires before I even have a chance to see the window, much less focus it
-    if (bg && bg.settings) {
-        bg.superpw = get("superpw").value || "";
-        bg.settings.domainname = get("domainname").value || "";
-        bg.settings.sitename = get("sitename").value || "";
-        bg.settings.username = get("username").value || "";
-        if (bg.settings.sitename) {
-            database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
-            database.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
+
+export function mouseleavePromise() {
+    return new Promise((resolve, reject) => {
+        get("mainpanel").onmouseleave = function () {
+            if (logging) console.log("popup mainpanel mousleave", bg);
+            if (warningMsg) {   
+                autoclose = false;
+            } 
+            // Don't persist phishing sites if user mouses out of popup. Can't use
+            // isphising() because the new bookmark hasn't been created yet when the 
+            // user clicks the same account button.
+            get("superpw").focus(); // Force phishing test in case focus is on sitename
+            if (logging) console.log("popup phishing mouseleave phishing", phishing);
+            if (phishing) {
+                if (logging) console.log("popup phishing mouseleave resolve", phishing);
+                resolve("mouseleavePromise");
+                return;
+            }
+            // window.onblur fires before I even have a chance to see the window, much less focus it
+            if (bg && bg.settings) {
+                bg.superpw = get("superpw").value || "";
+                bg.settings.domainname = get("domainname").value || "";
+                bg.settings.sitename = get("sitename").value || "";
+                bg.settings.username = get("username").value || "";
+                if (bg.settings.sitename) {
+                    database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
+                    database.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
+                }
+                let sitename = get("sitename").value;
+                changePlaceholder();
+                if (logging) console.log("popup sending siteData", bg.settings, database);
+                chrome.runtime.sendMessage({
+                    "cmd": "siteData",
+                    "sitename": sitename,
+                    "clearsuperpw": get("clearsuperpw").checked,
+                    "hidesitepw": get("hidesitepw").checked,
+                    "bg": bg,
+                }, (response) => {
+                    if (logging) console.log("popup siteData response", response);
+                    resolve("mouseleavePromise");
+                });
+            } else {
+                if (logging) console.log("popup no bg.settings mouseleave resolve");
+                resolve("mouseleavePromise");
+            }
         }
-        let sitename = get("sitename").value;
-        changePlaceholder();
-        if (logging) console.log("popup sending site data", domainname, bg);
-        chrome.runtime.sendMessage({
-            "cmd": "siteData",
-            "sitename": sitename,
-            "clearsuperpw": get("clearsuperpw").checked,
-            "hidesitepw": get("hidesitepw").checked,
-            "bg": bg,
-        });
-    }
+    });
 }
+mouseleavePromise(); // Instantiate event handler
 get("root").onmouseenter = function (e) {
     get("root").style.opacity = 1; 
     clearTimeout(mainPanelTimer);
@@ -206,14 +224,18 @@ get("title").onclick = function () {
     window.open("https://sitepassword.info");
 }
 // Domain Name
-get("domainname").onblur = function (e) {
-    get("sitename").value = "";
-    if (testMode) domainname = get("domainname").value;
-    getsettings(domainname).then(async () => {
-        fill();
-        await ask2generate();
+export function domainnameblurPromise() {
+    return new Promise((resolve, reject) => {
+        get("domainname").onblur = async function (e) {
+            get("sitename").value = "";
+            if (testMode) domainname = get("domainname").value;
+            await getsettings(domainname);
+            await fill();
+            resolve("domainnameblurPromise");
+        }
     });
 }
+domainnameblurPromise(); // Instantiate event handler
 get("domainnamemenu").onmouseleave = function (e) {
     menuOff("domainname", e);
 }
@@ -244,21 +266,33 @@ get("domainnamehelptextmore").onclick = function (e) {
 }
 // Super Password
 const $superpw = get("superpw");
-get("superpw").onkeyup = function (e) {
-    // Start the reminder clock ticking
-    chrome.storage.local.set({"reminder": Date.now()});
-    bg.superpw = $superpw.value || "";
-    ask2generate().then(() => {
-        setMeter("superpw");
-        setMeter("sitepw");
-        handleblur("superpw", "superpw");    
+export function superpwkeyupPromise() { 
+    return new Promise((resolve, reject) => {
+        get("superpw").onkeyup = async function (e) {
+            // Start the reminder clock ticking
+            chrome.storage.local.set({"reminder": Date.now()});
+            bg.superpw = $superpw.value || "";
+            await ask2generate()
+            setMeter("superpw");
+            setMeter("sitepw");
+            handleblur("superpw", "superpw"); 
+            resolve("superpwkeyupPromise"); 
+        }
     });
 }
-get("superpw").onblur = function (e) {
-    if (logging) console.log("popup superpw onmouseout");
-    handleblur("superpw", "superpw");
-    changePlaceholder();
+superpwkeyupPromise(); // Instantiate event handler
+superpwkeyupPromise();
+export function superpwblurPromise() { 
+    return new Promise((resolve, reject) => {
+        get("superpw").onblur = async function (e) {
+            if (logging) console.log("popup superpw onmouseout");
+            await handleblur("superpw", "superpw");
+            resolve("superpwblurPromise");
+            changePlaceholder();
+        }
+    });
 }
+superpwblurPromise(); // Instantiate event handler
 get("superpwmenu").onmouseleave = function (e) {
     menuOff("superpw", e);
 }
@@ -314,33 +348,45 @@ get("sitename").onfocus = function (e) {
         focused = true;
     }
 }
-get("sitename").onkeyup = function () {
-    handlekeyup("sitename", "sitename");
-    clearDatalist("sitenames");
-    get("sitename").onfocus();
+export function sitenamekeyupPromise() { 
+    return new Promise((resolve, reject) => {
+        get("sitename").onkeyup = async function () {
+            await handlekeyup("sitename", "sitename");
+            resolve("sitenamekeyupPromise");
+            clearDatalist("sitenames");
+            get("sitename").onfocus();
+        }
+    });
 }
-get("sitename").onblur = function (e) {
-    let d = isphishing(bg.settings.sitename)
-    if (d) {
-        get("phishingtext0").innerText = get("sitename").value;
-        get("phishingtext1").innerText = d;
-        get("phishingtext2").innerText = get("domainname").value;
-        phishing = true;
-        msgon("phishing");
-        hidesettings();
-        get("superpw").disabled = true;
-        get("username").disabled = true;
-        get("sitepw").value = "";
-    } else {
-        phishing = false;
-        msgoff("phishing");
-        get("superpw").disabled = false;
-        get("username").disabled = false
-        handleblur("sitename", "sitename");
-        changePlaceholder();
-    }
-    clearDatalist("sitenames");
+sitenamekeyupPromise(); // Instantiate event handler
+export function sitenameblurPromise() {
+    return new Promise(async (resolve, reject) => {
+        get("sitename").onblur = async function (e) {
+            let d = isphishing(bg.settings.sitename)
+            if (d) {
+                get("phishingtext0").innerText = get("sitename").value;
+                get("phishingtext1").innerText = d;
+                get("phishingtext2").innerText = get("domainname").value;
+                phishing = true;
+                msgon("phishing");
+                hidesettings();
+                get("superpw").disabled = true;
+                get("username").disabled = true;
+                get("sitepw").value = "";
+            } else {
+                phishing = false;
+                msgoff("phishing");
+                get("superpw").disabled = false;
+                get("username").disabled = false
+                await handleblur("sitename", "sitename");
+                changePlaceholder();
+            }
+            resolve("sitenameblurPromise");
+            clearDatalist("sitenames");
+        }
+    });
 }
+sitenameblurPromise(); // Instantiate event handler
 get("sitename3bluedots").onmouseover = function (e) {
     let sitename = get("sitename").value;
     if (sitename) {
@@ -357,7 +403,6 @@ get("sitenamemenu").onmouseleave = function (e) {
 get("sitenamemenuforget").onclick = function (e) {
     msgon("forget");
     let toforget = normalize(get("sitename").value);
-    let $list = get("toforgetlist");
     for (let domain in database.domains) {
         if (normalize(database.domains[domain]) === toforget) {
             addForgetItem(domain);
@@ -393,11 +438,17 @@ get("username").onfocus = function (e) {
         focused = true;
     }
 }
-get("username").onkeyup = function () {
-    handlekeyup("username", "username");
-    clearDatalist("usernames");
-    get("username").onfocus();
+export function usernamekeyupPromise() {
+    return new Promise((resolve, reject) => {
+        get("username").onkeyup = async function () {
+            await handlekeyup("username", "username");
+            resolve("usernamekeyupPromise");
+            clearDatalist("usernames");
+            get("username").onfocus();
+        }
+    });
 }
+usernamekeyupPromise(); // Instantiate event handler
 get("username").onblur = function (e) {
     handleblur("username", "username");
     clearDatalist("usernames");
@@ -451,15 +502,20 @@ get("usernamehelptextmore").onclick = function (e) {
     sectionClick("username");
 }
 // Site Password
-get("sitepw").onblur = function (e) {
-    menuOff("sitepw", e);
-    if (get("sitepw").readOnly || !get("sitepw").value) return;
-    let provided = get("sitepw").value;
-    ask2generate(bg).then((computed) => {
-        bg.settings.xor = xorStrings(provided, computed);
-        get("sitepw").value = provided;   
+export function sitepwblurPromise(){
+    return new Promise((resolve, reject) => {
+        get("sitepw").onblur = async function (e) {
+            menuOff("sitepw", e);
+            if (get("sitepw").readOnly || !get("sitepw").value) return;
+            let provided = get("sitepw").value;
+            let computed = await ask2generate(bg)
+            resolve("sitepwblurPromise");
+            bg.settings.xor = xorStrings(provided, computed);
+            get("sitepw").value = provided;   
+        }
     });
 }
+sitepwblurPromise(); // Instantiate event handler
 get("sitepw").onkeyup = function () {
     get("sitepw").onblur();
 }
@@ -530,31 +586,38 @@ get("clearclipboard").onclick = function() {
 }
 document.oncopy = get("clearclipboard").onclick;
 get("settingssave").onclick = hidesettings;
-get("providesitepw").onclick = function () {
-    if (!(get("sitename").value && get("username").value)) return;
-    bg.settings.providesitepw = get("providesitepw").checked;
-    if (get("providesitepw").checked) {
-        get("sitepw").readOnly = false;
-        get("sitepw").value = "";
-        get("sitepw").focus();
-        get("sitepw").style.backgroundColor = "white";
-        get("sitepwmenushow").classList.remove("menu-icon-blue");
-        get("sitepwmenuhide").classList.remove("menu-icon-blue");
-        get("sitepwmenucopy").classList.remove("menu-icon-blue");
-        get("sitepwmenuhelp").classList.remove("menu-icon-blue");
-        get("sitepw").placeholder = "Enter your site password";
-    } else {
-        get("sitepw").readOnly = true;
-        get("sitepw").style.backgroundColor = "rgb(136, 204, 255, 20%)";
-        get("sitepwmenushow").classList.add("menu-icon-blue");
-        get("sitepwmenuhide").classList.add("menu-icon-blue");
-        get("sitepwmenucopy").classList.add("menu-icon-blue");
-        get("sitepwmenuhelp").classList.add("menu-icon-blue");
-        get("sitepw").placeholder = "Your site password";
-        ask2generate();
-        defaultfocus();
-    }
+export function providesitepwclickPromise() {
+    return new Promise((resolve, reject) => {
+        get("providesitepw").onclick = async function () {
+            if (!(get("sitename").value && get("username").value)) return;
+            bg.settings.providesitepw = get("providesitepw").checked;
+            if (get("providesitepw").checked) {
+                get("sitepw").readOnly = false;
+                get("sitepw").value = "";
+                get("sitepw").focus();
+                get("sitepw").style.backgroundColor = "white";
+                get("sitepwmenushow").classList.remove("menu-icon-blue");
+                get("sitepwmenuhide").classList.remove("menu-icon-blue");
+                get("sitepwmenucopy").classList.remove("menu-icon-blue");
+                get("sitepwmenuhelp").classList.remove("menu-icon-blue");
+                get("sitepw").placeholder = "Enter your site password";
+                resolve("providesitepwclickPromise checked");
+            } else {
+                get("sitepw").readOnly = true;
+                get("sitepw").style.backgroundColor = "rgb(136, 204, 255, 20%)";
+                get("sitepwmenushow").classList.add("menu-icon-blue");
+                get("sitepwmenuhide").classList.add("menu-icon-blue");
+                get("sitepwmenucopy").classList.add("menu-icon-blue");
+                get("sitepwmenuhelp").classList.add("menu-icon-blue");
+                get("sitepw").placeholder = "Your site password";
+                await ask2generate();
+                resolve("providesitepwclickPromise unchecked");
+                defaultfocus();
+            }
+        }
+    });
 }
+providesitepwclickPromise(); // Instantiate event handler
 get("clearsuperpw").onclick = function () {
     database.clearsuperpw = get("clearsuperpw").checked;
 }
@@ -562,12 +625,24 @@ get("hidesitepw").onclick = function () {
     database.hidesitepw = get("hidesitepw").checked;
     hidesitepw();
 }
-get("pwlength").onmouseout = function () {
-    handleblur("pwlength", "pwlength");
+export function pwlengthmouseoutPromise() {
+    return new Promise((resolve, reject) => {
+        get("pwlength").onmouseout = async function () {
+            await handleblur("pwlength", "pwlength");
+            resolve("pwlengthmouseoutPromise");
+        }
+    });
 }
-get("pwlength").onblur = function () {
-    handleblur("pwlength", "pwlength");
+pwlengthmouseoutPromise(); // Instantiate event handler
+export function pwlengthblurPromise() {
+    return new Promise((resolve, reject) => {
+        get("pwlength").onblur = async function () {
+            await handleblur("pwlength", "pwlength");
+            resolve("pwlengthblurPromise");
+        }
+    });
 }
+pwlengthblurPromise(); // Instantiate event handler
 get("startwithletter").onclick = function () {
     bg.settings.startwithletter = get("startwithletter").checked;
     ask2generate();
@@ -581,9 +656,15 @@ get("allowuppercheckbox").onclick = function () {
 get("allownumbercheckbox").onclick = function () {
     handleclick("number");
 }
-get("allowspecialcheckbox").onclick = function () {
-    handleclick("special");
+export function allowspecialchecboxPromise() {
+    new Promise((resolve, reject) => {
+        get("allowspecialcheckbox").onclick = async function () {
+            await handleclick("special");
+            resolve("allowspecialchecboxPromise");
+        }
+    });
 }
+allowspecialchecboxPromise(); // Instantiate event handler
 get("minlower").onmouseout = function () {
     handleblur("minlower", "minlower");
 }
@@ -614,45 +695,56 @@ get("minspecial").onblur = function () {
 // case letters.  If there are too many special characters,
 // then the first lower case letter is past index 63.
 const alphanumerics = /[0-9A-Za-z]/g;
-get("specials").onblur = function() {
-    if (!get("specials").value) {
-        alert("You must enter at least one special character.");
-        get("specials").value = bg.settings.specials;
-        return;
-    }
-    let specials = get("specials");
-    specials.value = specials.value
-        .replace(alphanumerics, '')  // eliminate alphanumerics
-        .substring(0, 12);  // limit to 12 specials
-    bg.settings.specials = specials.value;
-    handlekeyup("specials");
-}    
-
-get("makedefaultbutton").onclick = function () {
-    let newDefaults = {
-        sitename: "",
-        username: "",
-        providesitepw: false,
-        xor: new Array(12).fill(0),
-        domainname: "",
-        pwdomainname: "",
-        pwlength: get("pwlength").value,
-        providesitepw: get("providesitepw").checked,
-        startwithletter: get("startwithletter").checked,
-        allowlower: get("allowlowercheckbox").checked,
-        allowupper: get("allowuppercheckbox").checked,
-        allownumber: get("allownumbercheckbox").checked,
-        allowspecial: get("allowspecialcheckbox").checked,
-        minlower: get("minlower").value,
-        minupper: get("minupper").value,
-        minnumber: get("minnumber").value,
-        minspecial: get("minspecial").value,
-        specials: get("specials").value,
-    }
-    chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults}, () => {
-        if (logging) console.log("popup newDefaults sent", newDefaults);
-    })
+export function specialsblurPromise() {
+    return new Promise((resolve, reject) => {
+        get("specials").onblur = async function() {
+            if (!get("specials").value) {
+                alert("You must enter at least one special character.");
+                get("specials").value = bg.settings.specials;
+                return;
+            }
+            let specials = get("specials");
+            specials.value = specials.value
+                .replace(alphanumerics, '')  // eliminate alphanumerics
+                .substring(0, 12);  // limit to 12 specials
+            bg.settings.specials = specials.value;
+            await handlekeyup("specials");
+            resolve("specialsblurPromise");
+        }
+    }); 
+}   
+specialsblurPromise(); // Instantiate event handler
+export function makedefaultPromise() {
+    return new Promise((resolve, reject) => {
+        get("makedefaultbutton").onclick = function () {
+            let newDefaults = {
+                sitename: "",
+                username: "",
+                providesitepw: false,
+                xor: new Array(12).fill(0),
+                domainname: "",
+                pwdomainname: "",
+                pwlength: get("pwlength").value,
+                providesitepw: get("providesitepw").checked,
+                startwithletter: get("startwithletter").checked,
+                allowlower: get("allowlowercheckbox").checked,
+                allowupper: get("allowuppercheckbox").checked,
+                allownumber: get("allownumbercheckbox").checked,
+                allowspecial: get("allowspecialcheckbox").checked,
+                minlower: get("minlower").value,
+                minupper: get("minupper").value,
+                minnumber: get("minnumber").value,
+                minspecial: get("minspecial").value,
+                specials: get("specials").value,
+            }
+            chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults}, () => {
+                if (logging) console.log("popup newDefaults sent", newDefaults);
+                resolve("makedefaultPromise");
+            })
+        }
+    });
 }
+makedefaultPromise(); // Instantiate event handler
 get("sitedatagetbutton").onclick = sitedataHTML;
 get("exportbutton").onclick = exportPasswords;
 get("maininfo").onclick = function () {
@@ -663,21 +755,6 @@ get("maininfo").onclick = function () {
     } else {
         hideInstructions();
     }
-    autoclose = false;
-}
-get("warningbutton").onclick = function () {
-    phishing = false;
-    get("superpw").disabled = false;
-    get("username").disabled = false;
-    get("sitename").disabled = false;
-    msgoff("phishing");
-    var sitename = getlowertrim("sitename");
-    bg.settings = clone(database.sites[sitename]);
-    bg.settings.sitename = get("sitename").value;
-    if (testMode) bg.settings.domainname = get("domainname").value;
-    database.domains[get("domainname").value] = bg.settings.sitename;
-    get("username").value = bg.settings.username;
-    ask2generate();
     autoclose = false;
 }
 get("cancelwarning").onclick = function () {
@@ -691,20 +768,52 @@ get("cancelwarning").onclick = function () {
         window.close();
     }
 }
+export function warningclickPromise() {
+    return new Promise((resolve, reject) => {
+        get("warningbutton").onclick = async function () {
+            phishing = false;
+            get("superpw").disabled = false;
+            get("username").disabled = false;
+            get("sitename").disabled = false;
+            msgoff("phishing");
+            var sitename = getlowertrim("sitename");
+            bg.settings = clone(database.sites[sitename]);
+            bg.settings.sitename = get("sitename").value;
+            if (testMode) bg.settings.domainname = get("domainname").value;
+            database.domains[get("domainname").value] = bg.settings.sitename;
+            get("username").value = bg.settings.username;
+            await ask2generate();
+            autoclose = false;
+            resolve("warningclickPromise");}
+    });
+}
+warningclickPromise(); // Instantiate event handler
 get("nicknamebutton").onclick = function () {
     setfocus(get("sitename"));
     msgoff("phishing");
     autoclose = false;
 }
-get("forgetbutton").onclick = function () {
-    let children = get("toforgetlist").children;
-    let list = [];
-    for (let child of children) {
-        list.push(child.innerText);
+export function forgetclickPromise() {
+    get("forgetbutton").onclick = function () {
+        return new Promise((resolve, reject) => {
+            let children = get("toforgetlist").children;
+            let list = [];
+            for (let child of children) {
+                list.push(child.innerText);
+            }
+            get("sitename").value = "";
+            get("username").value = "";
+            bg = bgDefault;
+            chrome.runtime.sendMessage({"cmd": "forget", "toforget": list}, (response) => {
+                if (logging) console.log("popup forget response", response);
+                if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
+                resolve("forgetclickPromise");
+            });
+            get("cancelbutton").click();
+        });
     }
-    forgetDomainnames(list);
-    get("cancelbutton").click();
 }
+forgetclickPromise(); // Instantiate event handler
 get("cancelbutton").onclick = function () {
     while ( get("toforgetlist").firstChild ) {
         get("toforgetlist").removeChild(get("toforgetlist").firstChild);
@@ -864,10 +973,10 @@ function setMeter(which) {
     $input.style.color = strengthColor[index];
 }
 
-function handlekeyup(element, field) {
-    handleblur(element, field);
+async function handlekeyup(element, field) {
+    await handleblur(element, field);
 }
-function handleblur(element, field) {
+async function handleblur(element, field) {
     if (element === "superpw") {
         bg.superpw = get(element).value;
     } else {
@@ -879,12 +988,12 @@ function handleblur(element, field) {
         get("providesitepw").disabled = true;
     }
     bg.settings.characters = characters(bg.settings, database);
-    ask2generate().then(() => {
-        setMeter("sitepw");
-        updateExportButton();    
-    });
+    await ask2generate()
+    setMeter("superpw");
+    setMeter("sitepw");
+    updateExportButton();    
 }
-function handleclick(which) {
+async function handleclick(which) {
     bg.settings["allow" + which] = get("allow" + which + "checkbox").checked;
     pwoptions([which]);
     if (!(bg.settings.allowupper || bg.settings.allowlower)) {
@@ -892,7 +1001,7 @@ function handleclick(which) {
         get("startwithletter").checked = false;
     }
     bg.settings.characters = characters(bg.settings, database)
-    ask2generate();
+    await ask2generate();
 }
 function changePlaceholder() {
     let u = get("username").value || "";
@@ -926,14 +1035,14 @@ async function ask2generate() {
     }
     function remainder(computed) {
         let provided = stringXorArray(computed, bg.settings.xor);
-        if (logging) console.log("popup filling sitepw field", computed);
+        if (logging) console.log("popup filling sitepw field", computed, provided, bg.settings.xor);
         get("sitepw").value = provided;
         hidesitepw();
         setMeter("sitepw");
         return computed;
     }
 }
-function fill() {
+async function fill() {
     if (bg.settings[domainname]) {
         if (!get("username").value) get("username").value = bg.settings.username;
         if (!get("sitename").value) get("sitename").value = bg.settings.sitename;
@@ -943,8 +1052,8 @@ function fill() {
         bg.settings.username = getlowertrim("username");
     }
     get("superpw").value = bg.superpw || "";
-    if (logging) console.log("popup fill with", bg.settings.domainname, isSuperPw(bg.superpw), bg.settings.sitename, bg.settings.username);
     get("providesitepw").checked = bg.settings.providesitepw;
+    if (logging) console.log("popup fill with", bg.settings.domainname, isSuperPw(bg.superpw), bg.settings.sitename, bg.settings.username);
     if (get("superpw").value && get("sitename").value && get("username").value) {
         get("providesitepw").disabled = false;
         get("providesitepwlabel").style.opacity = 1.0;
@@ -952,7 +1061,6 @@ function fill() {
         get("providesitepw").disabled = true;
         get("providesitepwlabel").style.opacity = 0.5;
     }
-    if (logging) console.log("popup sitename username disabled", get("sitename").value, get("username").value, get("providesitepw").disabled);
     if (get("providesitepw").checked && get("superpw").value && get("sitename").value && get("username").value) {
         get("sitepw").readOnly = false;
         get("sitepw").placeholder = "Enter your super password";
@@ -978,9 +1086,9 @@ function fill() {
     get("minupper").value = bg.settings.minupper;
     get("minspecial").value = bg.settings.minspecial;
     get("specials").value = bg.settings.specials;
-    ask2generate();
+    await ask2generate();
 }
-function showsettings() {
+async function showsettings() {
     get("settingsshow").style.display = "none";
     get("settingssave").style.display = "inline";
     get("settings").style.display = "block";
@@ -989,7 +1097,7 @@ function showsettings() {
     let height = get("settings").getBoundingClientRect().height;
     get("main").style.height = height + "px";
     get("superpw").value = bg.superpw || "";
-    fill();
+    await fill();
     pwoptions(["lower", "upper", "number", "special"]);
 }
 function hidesettings() {
@@ -1165,15 +1273,6 @@ function addForgetItem(domainname) {
     let $item = document.createElement("li");
     $item.innerText = domainname;
     $list.appendChild($item);
-}
-function forgetDomainnames(toforget) {
-    get("sitename").value = "";
-    get("username").value = "";
-    bg = bgDefault;
-    chrome.runtime.sendMessage({"cmd": "forget", "toforget": toforget}, (response) => {
-        if (logging) console.log("popup forget response", response);
-        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
-    });
 }
 function specialclick() {
     var minspecial = get("minspecial");
