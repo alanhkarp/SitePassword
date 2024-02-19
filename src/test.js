@@ -57,9 +57,9 @@ export async function runTests() {
     }
     const sleepTime = 500;
     if (!restart) {
-        // await testCalculation(); 
-        // await testRememberForm();
-        // await testProvidedpw();
+        await testCalculation(); 
+        await testRememberForm();
+        await testProvidedpw();
         await testPhishing();
         await testForget();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed");
