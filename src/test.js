@@ -64,8 +64,8 @@ export async function runTests() {
         await testPhishing();
         await testForget();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed");
-        alert("Tests restart complete: " + passed + " passed, " + failed + " failed");
-        await testSaveAsDefault();
+        // alert("Tests restart complete: " + passed + " passed, " + failed + " failed");
+        // await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();

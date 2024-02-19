@@ -128,6 +128,7 @@ export async function getsettings(testdomainname) {
             "domainname": domainname,
             "activetab": activetab
         }, (response) => {
+            if (logging) console.log("popup getsettings response", response);
             if (response.duplicate) {
                 let msg = "You have two bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.";
                 alert(msg);
@@ -808,7 +809,7 @@ export function forgetclickPromise() {
             bg = bgDefault;
             chrome.runtime.sendMessage({"cmd": "forget", "toforget": list}, (response) => {
                 if (logging) console.log("popup forget response", response);
-                if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
+                if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
                 resolve("forgetclickPromise");
             });
             get("cancelbutton").click();
