@@ -95,7 +95,7 @@ function startup(sendPageInfo) {
                     console.log("findpw keepAlive error", error);
                     clearInterval(keepAlive);
                 }
-                    if (!alive.keepAlive) clearInterval(keepAlive);
+                if (!alive.duplicate || !alive.keepAlive) clearInterval(keepAlive);
             });
         }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button

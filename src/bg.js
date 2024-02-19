@@ -3,7 +3,7 @@ import {isSuperPw, normalize,  string2array, array2string, stringXorArray, gener
 // Set to true to run the tests in test.js then reload the extension.
 // Using any kind of storage (session, local, sync) is awkward because 
 // accessing the value is an async operation.
-const testMode = false;
+const testMode = true;
 const testLogging = false;
 const debugMode = false;
 const logging = debugMode;
@@ -119,7 +119,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     // Start with a new database in case something changed while the service worker stayed open
     database = clone(databaseDefault);
     bg = clone(bgDefault);
-    retrieveMetadata(sendResponse, () => {
+    retrieveMetadata(sendResponse, request, () => {
         if (logging) console.log("bg listener back from retrieveMetadata", database);
         try {
             let superpw = sessionStorage.getItem("superpw");
@@ -458,10 +458,10 @@ async function persistMetadata(sendResponse) {
     }
     sendResponse("persisted");
 }
-async function retrieveMetadata(sendResponse, callback) {
+async function retrieveMetadata(sendResponse, request, callback) {
     database = clone(databaseDefault); // Start with an empty database
     bg = clone(bgDefault); // and settings
-    if (logging) console.log("bg find SSP bookmark folder");
+    if (logging) console.log("bg find SSP bookmark folder", request);
     let folders = await getRootFolder(sendResponse);
     if (folders.length === 1) {
         if (logging) console.log("bg found bookmarks folder: ", folders[0]);
@@ -487,7 +487,7 @@ async function retrieveMetadata(sendResponse, callback) {
                 // happen when the browser newly implements the bookmarks API.
                 if (logging) console.log("bg creating bookmarks folder");
                 bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
-                if (chrome.runtime.lastError) console.log("bg sync lastError", chrome.runtime.lastError);
+                if (chrome.runtime.lastError) console.log("bg sync lastError", request, chrome.runtime.lastError);
                 // Nothing in sync storage unless using Safari
                 let values = await chrome.storage.sync.get();
                 for (let title in values) {
@@ -506,6 +506,9 @@ async function retrieveMetadata(sendResponse, callback) {
                 // Nothing to do here
             }
             parseBkmk(bkmk.id, callback, sendResponse);
+        } else {
+            console.log("bg no bookmarks folder", request);
+            sendResponse("nobkmk");
         }
     }
 }
