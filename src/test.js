@@ -22,7 +22,6 @@ export async function runTests() {
     // Fields needed for tests
     const $mainpanel = get("mainpanel");
     const $domainname = get("domainname");
-    const $bookmark = get("bookmark");
     const $sitename = get("sitename");
     const $username = get("username");
     const $superpw = get("superpw");
@@ -32,9 +31,7 @@ export async function runTests() {
     const $allowspecialcheckbox = get("allowspecialcheckbox");
     const $specials = get("specials");
     const $makedefaultbutton = get("makedefaultbutton");
-    const $cancelbutton = get("cancelbutton");
     const $warningbutton = get("warningbutton");
-    const $cancelwarning = get("cancelwarning");
     const $forgetbutton = get("forgetbutton");
     const $domainname3bluedots = get("domainname3bluedots");
     const $domainnamemenuforget = get("domainnamemenuforget");
@@ -55,16 +52,16 @@ export async function runTests() {
     } else {
         alert("Starting tests. Set testMode in bg.js to false to stop tests.");
     }
-    const sleepTime = 500;
     if (!restart) {
         await testCalculation(); 
         await testRememberForm();
         await testProvidedpw();
         await testPhishing();
         await testForget();
-        console.log("Tests complete: " + passed + " passed, " + failed + " failed");
-        // alert("Tests restart complete: " + passed + " passed, " + failed + " failed");
-        // await testSaveAsDefault();
+        await testSaveAsDefault();
+        let pending = restart ? 1 : 0;
+        console.log("Tests complete: " + passed + " passed, " + failed + " failed, " + pending + " pending");
+        alert("Tests restart complete: " + passed + " passed, " + failed + " failed, " + pending + " pending");
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -140,7 +137,6 @@ export async function runTests() {
     }
     // Test phishing
     async function testPhishing() {
-        loggingPhishing = true;
         await phishingSetup();
         // Does warning appear?
         let test = $phishing.style.display === "block";
@@ -195,6 +191,7 @@ export async function runTests() {
     }
     // Test forget
     async function testForget() {
+        if (loggingForget) console.log("testForget");
         await resetState();
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
@@ -245,7 +242,6 @@ export async function runTests() {
             failed += 1;
         }
         // See if forget by username works
-        if (loggingForget) console.log("testForget forget by username");
         await phishingSetup();
         await triggerEvent("click", $warningbutton, "warningbuttonResolver"); // Now I have two domain names pointing to the same site name
         if (loggingForget) console.log("testForget forget by username");
@@ -270,23 +266,25 @@ export async function runTests() {
     async function testSaveAsDefault() {
         if (loggingDefault) console.log("testSaveAsDefault");
         await resetState();
+        if (loggingDefault) console.log("testSaveAsDefault state reset");
         localStorage.restart = "testSaveAsDefault2";
         $pwlength.value = 15;
         await triggerEvent("blur", $pwlength, "pwlengthblurResolver");
-        await triggerEvent("click", $allowspecialcheckbox, allowspecialchecboxPromise);
+        if (loggingDefault) console.log("testSaveAsDefault blur pwlength");
+        await triggerEvent("click", $allowspecialcheckbox, "allowspecialclickResolver");
+        if (loggingDefault) console.log("testSaveAsDefault click allowspecialcheckbox");
         $specials.value = "%^&";
-        if (loggingDefault) console.log("testSaveAsDefault |" + $specials.value + "|" + $allowspecialcheckbox.checked + "|");
+        if (loggingDefault) console.log("testSaveAsDefault |" + $pwlength.value + "|" + $specials.value + "|" + $allowspecialcheckbox.checked + "|");
         await triggerEvent("blur", $specials, "specialsblurResolver");
         await triggerEvent("click", $makedefaultbutton, "makedefaultResolver");
+        if (loggingDefault) console.log("testSaveAsDefault click makedefaultbutton");
         alert("Inspect the extension again to see the results of testSaveAsDefault.");
     }
     async function testSaveAsDefault2() {
-        if (loggingDefault) console.log("testSaveAsDefault2 |" + $specials.value + "|" + $allowspecialcheckbox.checked + "|");
+        if (loggingDefault) console.log("testSaveAsDefault2 |" + $pwlength.value + "|" + $specials.value + "|" + $allowspecialcheckbox.checked + "|");
         localStorage.restart = "";
         let tests = $pwlength.value === "15";
-        if (loggingDefault) console.log("testSaveAsDefault2 |" + $allowspecialcheckbox.checked + "|");
         tests = tests && $allowspecialcheckbox.checked;
-        if (loggingDefault) console.log("testSaveAsDefault2", tests, "|" + $allowspecialcheckbox.checked + "|");
         tests = tests && $specials.value === "%^&";
         if (tests) {
             console.log("Passed: Save as default");
@@ -318,15 +316,6 @@ export async function runTests() {
             });
         });
     }
-    async function triggerEvent(event, element, resolverName) {
-        let promise = wrapHandler(element.id, event, resolverName);
-        if (event === "click") element.checked = !element.checked;
-        if (loggingTrigger) console.log("triggerEvent", element.id, event, promise);
-        let e = new Event(event);
-        element.dispatchEvent(e);
-        await promise;
-        if (loggingTrigger) console.log("triggerEvent promise resolved", element.id, event, promise);
-    }
     async function clearForm() {
         if (logging) console.log("clearForm");
         $domainname.value = "";
@@ -355,26 +344,33 @@ export async function runTests() {
         if (loggingFill) console.log("fillForm", $domainname.value, $superpw.value, $sitename.value, $username.value);
     }
     async function forgetDomainname() {
+        if (loggingForget) console.log("forgetDomainname");
         $domainname3bluedots.onmouseover();
         $domainnamemenuforget.click();
         await triggerEvent("click", $forgetbutton, "forgetclickResolver");
+        if (loggingForget) console.log("forgetDomainname done");
     }
     async function forgetSitename() {
+        if (loggingForget) console.log("forgetSitename");
         $sitename3bluedots.onmouseover();
         $sitenamemenuforget.click();
         await triggerEvent("click", $forgetbutton, "forgetclickResolver");
+        if (loggingForget) console.log("forgetSitename done");
     }
     async function forgetUsername() {
+        if (loggingForget) console.log("forgetUsername");
         $username3bluedots.onmouseover();
         $usernamemenuforget.click();
+        if (loggingForget) console.log("forgetUsername click forgetbutton forgetclickResolver");
         await triggerEvent("click", $forgetbutton, "forgetclickResolver");
+        if (loggingForget) console.log("forgetUsername forgetclickResolver done");
     }
     async function phishingSetup() {
         if (loggingPhishing) console.log("phishingSetup");
         await resetState();
         if (loggingPhishing) console.log("phishingSetup state reset");
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
-        if (loggingPhishing) console.log("phishingSetup mouseleave", $sitename.value, $username.value);
+        if (loggingPhishing) console.log("phishingSetup mouseleave", $domainname.value, $sitename.value, $username.value);
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         // if (loggingPhishing) console.log("phishingSetup domainname blur", $sitename.value, $username.value);
         // await triggerEvent("blur", $domainname, "domainnameblurResolver");
@@ -384,14 +380,23 @@ export async function runTests() {
         await triggerEvent("blur", $sitename, "sitenameblurResolver");    
     }
 }
-function wrapHandler(elementid, event, promiseName) {
-    let element = get(elementid);
-    if (loggingWrapHandler) console.log("wrapHandler", element.id, event, promiseName);
-    return new Promise((resolve, reject) => {
-        resolvers[promiseName] = resolve;
-        if (loggingWrapHandler) console.log("wrapHandler resolve", element.id, event, promiseName);
-        element["on" + event]();
+async function triggerEvent(event, element, resolverName) {
+    let promise = wrapHandler(resolverName);
+    if (event === "click") element.checked = !element.checked;
+    if (loggingTrigger) console.log("triggerEvent", element.id, event, resolverName, promise);
+    let e = new Event(event);
+    element.dispatchEvent(e);
+    await promise;
+    if (loggingTrigger) console.log("triggerEvent promise resolved", element.id, event, promise, resolvers);
+}
+function wrapHandler(resolverName) {
+    if (loggingWrapHandler) console.log("wrapHandler create promise", resolverName, resolvers);
+    let promise = new Promise((resolve, reject) => {
+        resolvers[resolverName] = resolve;
+        if (loggingWrapHandler) console.log("wrapHandler promise created", resolverName, resolvers);
     });
+    if (loggingWrapHandler) console.log("wrapHandler return promise", resolverName, promise);
+    return promise;
 }
 function get(id) {
     return document.getElementById(id);

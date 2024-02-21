@@ -3,7 +3,7 @@ import {isSuperPw, normalize,  string2array, array2string, stringXorArray, gener
 // Set to true to run the tests in test.js then reload the extension.
 // Using any kind of storage (session, local, sync) is awkward because 
 // accessing the value is an async operation.
-const testMode = true;
+const testMode = false;
 const testLogging = false;
 const debugMode = false;
 const logging = false;
@@ -141,7 +141,7 @@ async function setup() {
             // Start with a new database in case something changed while the service worker stayed open
             database = clone(databaseDefault);
             bg = clone(bgDefault);
-            retrieveMetadata(sendResponse, () => {
+            retrieveMetadata(sendResponse, request, () => {
                 if (logging) console.log("bg listener back from retrieveMetadata", database);
                 try {
                     sessionStorage.getItem("superpw", (value) => {
@@ -212,8 +212,11 @@ async function setup() {
                         defaultSettings = request.newDefaults;
                         await persistMetadata(sendResponse);
                     } else if (request.cmd === "forget") {
+                        if (logging) console.log("bg forget", request.cmd);
                         rootFolder = await getRootFolder(sendResponse);
+                        if (logging) console.log("bg forget rootFolder", rootFolder, request.toforget);
                         await forget(request.toforget, rootFolder[0], sendResponse);
+                        if (logging) console.log("bg forget done");
                     } else if (request.clicked) {
                         domainname = getdomainname(sender.origin || sender.url);
                         bg.domainname = domainname;
@@ -473,16 +476,17 @@ async function persistMetadata(sendResponse) {
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
             let foundSettings = JSON.parse(sspUrl(found.url).replace(/%22/g, "\"").replace(/%20/g, " "));
-            // Second clause to handle legacy bookmarks
             if (!sameSettings(settings, foundSettings) || found.url.substr(0,6) === "ssp://") {
                 url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
                 let promise = new Promise((resolve, reject) => {
                     try {
                         chrome.bookmarks.update(found.id, { "url": url }, (_e) => {
                             if (chrome.runtime.lastError) console.log("bg update lastError", chrome.runtime.lastError, found);
+                            if (logging) console.log("bg updated bookmark resolving promise");
                             resolve("updated");
                         });
                     } catch {
+                        // Handle Safari bookmarks
                         if (bkmksSafari[found.title] && bkmksSafari[found.title].url !== url) {
                             bkmksSafari[found.title].url = url;
                             chrome.storage.sync.set(bkmksSafari, () => {
@@ -499,6 +503,7 @@ async function persistMetadata(sendResponse) {
                 (domainnames[i] === bg.settings.pwdomainname)) {
                 let title = domainnames[i];
                 url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
+                if (logging) console.log("bg creating bookmark for", title);
                 let promise = new Promise((resolve, reject) => {
                     try {
                         chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url }, (e) => {
@@ -719,24 +724,33 @@ function bgsettings(domainname) {
 async function forget(toforget, rootFolder, sendResponse) {
     if (logging) console.log("bg forget", toforget);
     for (const item of toforget)  {
+        if (logging) console.log("bg forget item", item);
         delete database.domains[item];
         let promise = new Promise((resolve, reject) => {
+            if (logging) console.log("bg forget getting children", item, rootFolder);
             chrome.bookmarks.getChildren(rootFolder.id, (allchildren) => {
                 if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
+                if (logging) console.log("bg forget got children", allchildren);
                 for (let child of allchildren) {
                     if (child.title === item) {
+                        if (logging) console.log("bg removing bookmark for", child.title);
                         chrome.bookmarks.remove(child.id, () => {
                             if (chrome.runtime.lastError) console.log("bg remove child lastError", chrome.runtime.lastError);
                             if (logging) console.log("bg removed bookmark for", item);
                             chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" }, () => {
+                                if (logging) console.log("bg sent clear message");
                                 resolve("removed");
                             });
                         });                       
+                    } else {
+                        resolve("not found");
                     }
                 }
             });
         });
+        if (logging) console.log("bg forget await promise", item, promise);
         await promise;
+        if (logging) console.log("bg forget done", item);
     }
     sendResponse("forgot");
 }

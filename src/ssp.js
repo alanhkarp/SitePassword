@@ -20,8 +20,6 @@ var phishing = false;
 var warningMsg = false;
 var bg = bgDefault;
 
-export let promise;
-
 chrome.storage.local.get("onClipboard", (v) => {
     if (v.onClipboard) {
         chrome.action.setTitle({title: "A site password may be on the clipboard."});
@@ -170,7 +168,6 @@ get("root").onmouseleave = function (event) {
         }, 750);
     }
 }
-
 get("mainpanel").onmouseleave = function () {
     if (logging) console.log("popup mainpanel mousleave", bg);
     if (warningMsg) {   
@@ -182,7 +179,7 @@ get("mainpanel").onmouseleave = function () {
     get("superpw").focus(); // Force phishing test in case focus is on sitename
     if (logging) console.log("popup phishing mouseleave phishing", phishing);
     if (phishing) {
-        if (logging) console.log("popup phishing mouseleave resolve", phishing);
+        if (logging) console.log("popup phishing mouseleave resolve mouseleaveResolver", phishing, resolvers);
         if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
     }
     // window.onblur fires before I even have a chance to see the window, much less focus it
@@ -205,12 +202,12 @@ get("mainpanel").onmouseleave = function () {
             "hidesitepw": get("hidesitepw").checked,
             "bg": bg,
         }, (response) => {
-            if (logging) console.log("popup siteData response", response);
+            if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
             if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
         });
     } else {
-        if (logging) console.log("popup no bg.settings mouseleave resolve");
-        resolve("mouseleavePromise");
+        if (logging) console.log("popup no bg.settings mouseleave resolve", resolvers);
+        if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
     }
 }
 get("root").onmouseenter = function (e) {
@@ -335,8 +332,6 @@ get("sitename").onkeyup = async function () {
     get("sitename").onfocus();
     if (resolvers.sitenamekeyupResolver) resolvers.sitenamekeyupResolver("sitenamekeyupPromise");
 }
-export function sitenameblurPromise() {
-    return new Promise(async (resolve, reject) => {
 get("sitename").onblur = async function (e) {
     let d = isphishing(bg.settings.sitename)
     if (d) {
@@ -359,6 +354,7 @@ get("sitename").onblur = async function (e) {
     }
     clearDatalist("sitenames");
     if (resolvers.sitenameblurResolver) resolvers.sitenameblurResolver("sitenameblurPromise");
+}
 get("sitename3bluedots").onmouseover = function (e) {
     let sitename = get("sitename").value;
     if (sitename) {
@@ -416,7 +412,6 @@ get("username").onkeyup = async function () {
     get("username").onfocus();
     if (resolvers.usernamekeyupResolver) resolvers.usernamekeyupResolver("usernamekeyupPromise");
 }
-usernamekeyupPromise(); // Instantiate event handler
 get("username").onblur = function (e) {
     handleblur("username", "username");
     clearDatalist("usernames");
@@ -529,8 +524,8 @@ get("sitepwhelptextmore").onclick = function (e) {
 get("sitepwmenushow").onclick = function () {
     get("sitepw").type = "text";
     get("sitepwmenushow").classList.toggle("nodisplay");
-    get("sitepwmenuhide").classList.toggle("nodisplay")    ;
-};
+    get("sitepwmenuhide").classList.toggle("nodisplay");
+}
 get("sitepwmenuhide").onclick = function () {
     get("sitepw").type = "password";
     get("sitepwmenushow").classList.toggle("nodisplay");
@@ -584,7 +579,7 @@ get("hidesitepw").onclick = function () {
 }
 get("pwlength").onmouseout = async function () {
     await handleblur("pwlength", "pwlength");
-    if (resolvers.pwlengthblurPromise) resolvers.pwlengthblurPromise("pwlengthblurPromise");
+    if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurPromise("pwlengthblurPromise");
 }
 get("pwlength").onblur = async function () {
     await handleblur("pwlength", "pwlength");
@@ -721,32 +716,23 @@ get("nicknamebutton").onclick = function () {
     msgoff("phishing");
     autoclose = false;
 }
-    get("forgetbutton").onclick = function () {
-    get("forgetbutton").onclick = function () {
-        return new Promise((resolve, reject) => {
-            let children = get("toforgetlist").children;
-            let list = [];
-            for (let child of children) {
-                list.push(child.innerText);
-            }
-            get("sitename").value = "";
-            get("username").value = "";
-            bg = bgDefault;
-            chrome.runtime.sendMessage({"cmd": "forget", "toforget": list}, (response) => {
-                if (logging) console.log("popup forget response", response);
-                if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
-                resolve("forgetclickPromise");
-            });
-            get("cancelbutton").click();
-        });
+get("forgetbutton").onclick = function () {
+    if (logging) console.log("popup forgetbutton");
+    let list = [];
+    let children = get("toforgetlist").children;
+    for (let child of children) {
+        list.push(child.innerText);
     }
     get("sitename").value = "";
     get("username").value = "";
     bg = bgDefault;
+    if (logging) console.log("popup forgetbutton sending forget", list);
     chrome.runtime.sendMessage({"cmd": "forget", "toforget": list}, (response) => {
         if (logging) console.log("popup forget response", response);
-        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
-        if (resolvers.forgetbuttonResolver) resolvers.forgetbuttonResolver("forgetbuttonPromise");
+        if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
+        if (logging) console.log("popup forgetbutton resolve forgetclickResolver", resolvers);
+        if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
+        if (logging) console.log("popup forgetbutton resolved forgetclickResolver", resolvers);
     });
     get("cancelbutton").click();
 }
