@@ -2,21 +2,28 @@
 // the extension.  Then open any https page, e.g., https://alanhkarp.com. 
 // Right click on the SitePassword icon and select "Inspect".  You will 
 // see an alert "Starting tests".  Click OK and check the console for results.
+import { defaultSettings } from "./bg.js";
 import { normalize } from "./generate.js";
 import { getsettings } from "./ssp.js";
 
 export let resolvers = {};
 
 let logging = false;
-let loggingReset = false;
-let loggingFill = false;
-let loggingTrigger = false;
-let loggingPhishing = false;
-let loggingForget = false;
-let loggingDefault = false;
-let loggingProvide = false;
 let loggingCalculation = false;
+let loggingClear = false;
+let loggingDefault = false;
+let loggingFill = false;
+let loggingForget = false;
+let loggingPhishing = false;
+let loggingProvide = false;
+let loggingReset = false;
+let loggingTrigger = false;
 let loggingWrapHandler = false;
+if (logging) {
+    loggingCalculation = loggingClear = loggingDefault = loggingFill = 
+                         loggingForget = loggingPhishing = loggingProvide = 
+                         loggingReset = loggingTrigger = loggingWrapHandler = true;
+}
 
 export async function runTests() {
     // Fields needed for tests
@@ -28,7 +35,15 @@ export async function runTests() {
     const $sitepw = get("sitepw");
     const $providesitepw = get("providesitepw");
     const $pwlength = get("pwlength");
+    const $allowlowercheckbox = get("allowlowercheckbox");
+    const $allowuppercheckbox = get("allowuppercheckbox");
+    const $allownumbercheckbox = get("allownumbercheckbox");
     const $allowspecialcheckbox = get("allowspecialcheckbox");
+    const $minlower = get("minlower");
+    const $minupper = get("minupper");
+    const $minnumber = get("minnumber");
+    const $minspecial = get("minspecial");
+    const $startwithletter = get("startwithletter");
     const $specials = get("specials");
     const $makedefaultbutton = get("makedefaultbutton");
     const $warningbutton = get("warningbutton");
@@ -58,10 +73,10 @@ export async function runTests() {
         await testProvidedpw();
         await testPhishing();
         await testForget();
-        await testSaveAsDefault();
         let pending = restart ? 1 : 0;
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, " + pending + " pending");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, " + pending + " pending");
+        await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -73,7 +88,7 @@ export async function runTests() {
     // Test password calculation
     async function testCalculation() {
         await resetState();
-        if (loggingCalculation) console.log("testCalculation state reset");
+        if (loggingCalculation) console.log("testCalculation state reset", $pwlength.value);
         const expected = "UG1qIyn6mSuJ";
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
         if (loggingCalculation) console.log("testCalculation form filled", $sitename.value, $username.value);
@@ -267,17 +282,17 @@ export async function runTests() {
         if (loggingDefault) console.log("testSaveAsDefault");
         await resetState();
         if (loggingDefault) console.log("testSaveAsDefault state reset");
-        localStorage.restart = "testSaveAsDefault2";
         $pwlength.value = 15;
         await triggerEvent("blur", $pwlength, "pwlengthblurResolver");
         if (loggingDefault) console.log("testSaveAsDefault blur pwlength");
         await triggerEvent("click", $allowspecialcheckbox, "allowspecialclickResolver");
         if (loggingDefault) console.log("testSaveAsDefault click allowspecialcheckbox");
         $specials.value = "%^&";
-        if (loggingDefault) console.log("testSaveAsDefault |" + $pwlength.value + "|" + $specials.value + "|" + $allowspecialcheckbox.checked + "|");
+        if (loggingDefault) console.log("testSaveAsDefault blur |" + $pwlength.value + "|" + $specials.value + "|" + $allowspecialcheckbox.checked + "|");
         await triggerEvent("blur", $specials, "specialsblurResolver");
+        if (loggingDefault) console.log("testSaveAsDefault click |" + $pwlength.value + "|" + $specials.value + "|" + $allowspecialcheckbox.checked + "|");
         await triggerEvent("click", $makedefaultbutton, "makedefaultResolver");
-        if (loggingDefault) console.log("testSaveAsDefault click makedefaultbutton");
+        localStorage.restart = "testSaveAsDefault2";
         alert("Inspect the extension again to see the results of testSaveAsDefault.");
     }
     async function testSaveAsDefault2() {
@@ -299,35 +314,46 @@ export async function runTests() {
     // I want to start with a clean slate for each set of tests.
     async function resetState() {
         if (loggingReset) console.log("resetState clear form");
-        await clearForm();
-        if (loggingReset) console.log("resetState clear storage");
-        await chrome.storage.sync.clear();
-        if (loggingReset) console.log("resetState storage cleared", await chrome.storage.sync.get());
         return new Promise((resolve, reject) => {
-            if (loggingReset) console.log("resetState send reset message");
-            chrome.runtime.sendMessage({"cmd": "reset"}, async (response) => {
-                if (chrome.runtime.lastError) {
-                    if (loggingReset) console.error("resetState reset message error", chrome.runtime.lastError);
-                    reject(chrome.runtime.lastError);
-                } else {
-                    if (loggingReset) console.log("resetState reset message response", response);
-                    resolve(response);
-                }
-            });
+            if (loggingReset) console.log("resetState clear storage");
+            chrome.storage.sync.clear(() => {;
+                if (loggingReset) console.log("resetState send reset message");
+                chrome.runtime.sendMessage({"cmd": "reset"}, async (response) => {
+                    if (chrome.runtime.lastError) {
+                        if (loggingReset) console.error("resetState reset message error", chrome.runtime.lastError);
+                        reject(chrome.runtime.lastError);
+                    } else {
+                        if (loggingReset) console.log("resetState reset message response", response);
+                        clearForm();
+                        await getsettings("");
+                        if (loggingClear) console.log("clearForm getsettings done", $pwlength.value);
+                                        resolve(response);
+                    }
+                });
+            })
         });
     }
-    async function clearForm() {
-        if (logging) console.log("clearForm");
+    function clearForm() {
+        if (loggingClear) console.log("clearForm", defaultSettings.pwlength);
         $domainname.value = "";
         $superpw.value = "";
         $sitename.value = "";
         $username.value = "";
         $sitepw.value = "";
-        $providesitepw.checked = false;
+        $providesitepw.checked = defaultSettings.providesitepw;
+        $pwlength.value = defaultSettings.pwlength;
+        $startwithletter.checked = defaultSettings.startwithletter;
+        $allowlowercheckbox.checked = defaultSettings.allowlower;
+        $allowuppercheckbox.checked = defaultSettings.allowupper;
+        $allownumbercheckbox.checked = defaultSettings.allownumber;
+        $allowspecialcheckbox.checked = defaultSettings.allowspecial;
+        $minlower.value = defaultSettings.minlower;
+        $minupper.value = defaultSettings.minupper;
+        $minnumber.value = defaultSettings.minnumber;
+        $minspecial.value = defaultSettings.minspecial;
+        $specials.value = defaultSettings.specials;
         $settings.style.display = "none";
-        if (logging) console.log("clearForm done");
-        await getsettings("");
-        if (logging) console.log("clearForm getsettings done");
+        if (loggingClear) console.log("clearForm done", $pwlength.value);
     }
     async function fillForm(superpw, domainname, sitename, username) {
         if (loggingFill) console.log("fillForm", superpw, domainname, sitename, username);

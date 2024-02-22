@@ -1,5 +1,5 @@
 'use strict';
-import { bgDefault, defaultSettings, webpage } from "./bg.js";
+import { bgDefault, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
@@ -127,6 +127,9 @@ export async function getsettings(testdomainname) {
             "activetab": activetab
         }, (response) => {
             if (logging) console.log("popup getsettings response", response);
+            if (!response) {
+                alert("SitePassword could not get the metadata for " + domainname);
+            }
             if (response.duplicate) {
                 let msg = "You have two bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.";
                 alert(msg);
@@ -669,7 +672,7 @@ get("makedefaultbutton").onclick = function () {
     }
     chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults}, () => {
         if (logging) console.log("popup newDefaults sent", newDefaults);
-        if (resolvers.makedefaultbuttonResolver) resolvers.makedefaultbuttonResolver("makedefaultbuttonPromise");
+        if (resolvers.makedefaultResolver) resolvers.makedefaultResolver("makedefaultbuttonPromise");
     })
 }
 get("sitedatagetbutton").onclick = sitedataHTML;
@@ -1195,22 +1198,6 @@ function addForgetItem(domainname) {
     let $item = document.createElement("li");
     $item.innerText = domainname;
     $list.appendChild($item);
-}
-function specialclick() {
-    var minspecial = get("minspecial");
-    var specials = get("specials");
-    if (get("allowspecial").checked) {
-        minspecial.disabled = false;
-        minspecial.value = 0;
-        specials.disabled = false;
-        specials.value = defaultSettings.specials;
-    } else {
-        minspecial.disabled = true;
-        minspecial.value = "";
-        specials.disabled = true;
-        specials.value = "";
-    }
-    bg.settings.characters = bg.characters(bg.settings);
 }
 function get(element) {
     return document.getElementById(element);

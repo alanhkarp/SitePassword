@@ -28,10 +28,8 @@ export const config = {
     upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     digits: "0123456789",
     specials: "/!=@?._-",
-    miniter: 100,
-    maxiter: 1000
 };
-export let defaultSettings = {
+const baseDefaultSettings = {
     sitename: "",
     username: "",
     providesitepw: false,
@@ -50,6 +48,7 @@ export let defaultSettings = {
     minspecial: 1,
     specials: config.specials,
 };
+export let defaultSettings =  clone(baseDefaultSettings);
 export let bgDefault = {superpw: "", settings: defaultSettings};
 export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
 var database = clone(databaseDefault);
@@ -193,20 +192,20 @@ async function setup() {
                             sendResponse({"keepAlive": true});
                         }
                     } else if (request.cmd === "reset") {
-                        // Used for testing, can't be in test.js becuase it needs to set createBookmarksFolder 
-                        if (testLogging) console.log("bg removing bookmarks folder for testing");
-                        defaultSettings = clone(bgDefault.settings);
+                        // Used for testing, can't be in test.js becuase it needs to set local variables 
+                        defaultSettings = clone(baseDefaultSettings);
+                        database = clone(databaseDefault);
+                        if (testLogging) console.log("bg removing bookmarks folder for testing", defaultSettings.pwlength);
                         rootFolder = await getRootFolder(sendResponse);
                         let promise = new Promise((resolve, reject) => {
                             chrome.bookmarks.removeTree(rootFolder[0].id, () => {
                                 createBookmarksFolder = true;
-                                if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0]);
+                                if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0].title, defaultSettings.pwlength);
                                 sendResponse("reset");
                                 resolve("reset");
                             });
                         });
                         await promise;
-                        resolve("reset");
                     } else if (request.cmd === "newDefaults") {
                         if (logging) console.log("bg got new default settings", request.newDefaults);
                         defaultSettings = request.newDefaults;
@@ -423,6 +422,7 @@ async function persistMetadata(sendResponse) {
     delete common.domains;
     delete common.sites;
     common.defaultSettings = defaultSettings;
+    if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
     if (commonSettings.length === 0) {
         let url = "ssp://" + JSON.stringify(common);
@@ -430,7 +430,7 @@ async function persistMetadata(sendResponse) {
             try {
                 chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url }, (commonBkmk) => {
                     if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
-                    if (logging) console.log("bg created bookmark", commonBkmk.id);
+                    if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonSettings.pwlength);
                     resolve("created");
                 });
             } catch {
@@ -446,12 +446,11 @@ async function persistMetadata(sendResponse) {
     }
     let url = "ssp://" + JSON.stringify(common);
     if (commonSettings.length > 0 && url !== commonSettings[0].url.replace(/%22/g, "\"").replace(/%20/g, " ")) {
-        let url = "ssp://" + JSON.stringify(common);
         let promise = new Promise((resolve, reject) => {
             try {
                 chrome.bookmarks.update(commonSettings[0].id, { "url": url }, (_e) => {
                     if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
-                    if (logging) console.log("bg updated bookmark", _e, commonSettings[0].id);
+                    console.log("bg updated bookmark", _e, commonSettings[0].id, url);
                     resolve("updated");
                 });
             } catch {
@@ -638,6 +637,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
             }
             if (title === commonSettingsTitle) {
                 let common = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+                if (logging) console.log("bg common settings from bookmark", common.defaultSettings.pwlength);
                 newdb.clearsuperpw = common.clearsuperpw;
                 newdb.hidesitepw = common.hidesitepw;
                 defaultSettings = common.defaultSettings || defaultSettings;
