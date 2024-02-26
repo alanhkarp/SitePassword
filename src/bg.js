@@ -229,7 +229,6 @@ async function setup() {
                 }
                 if (logging) console.log("bg addListener returning", isSuperPw(superpw));
             };
-            resolve("added listener");
         });
         return true;
     });
