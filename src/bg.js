@@ -135,100 +135,101 @@ async function setup() {
         // Start with a new database in case something changed while the service worker stayed open
         database = clone(databaseDefault);
         bg = clone(bgDefault);
-        retrieveMetadata(sendResponse, request, () => {
+        retrieveMetadata(sendResponse, request, async () => {
             if (logging) console.log("bg listener back from retrieveMetadata", database);
+            superpw = "";
             try {
                 sessionStorage.getItem("superpw", (value) => {
                     if (logging) console.log("bg got superpw", value.superpw);
-                    remainder(value.superpw);
-            });
+                    superpw = value.superpw;
+               });
             } catch {
-                chrome.storage.session.get(["superpw"], async (value) => {
-                    remainder(value.superpw);
+                superpw = await new Promise((resolve, reject) => {
+                    chrome.storage.session.get(["superpw"], async (value) => {
+                        resolve(value.superpw);
+                    });
                 });
             }
-            async function remainder(superpw) {
-                superpw = superpw || ""; // Need to set global value
-                bg.superpw = superpw;
-                if (logging) console.log("bg got ssp", isSuperPw(superpw));
-                if (request.cmd === "getMetadata") {
-                    getMetadata(request, sender, sendResponse);
-                } else if (request.cmd === "resetIcon") {
-                    // Don't worry about ordering or waiting for theses to finish
-                    chrome.storage.local.set({"onClipboard": false});
-                    chrome.action.setTitle({title: "Site Password"});
-                    chrome.action.setIcon({"path": "icon128.png"});
-                    sendResponse("icon reset");        
-                } else if (request.cmd === "siteData") {
-                    if (logging) console.log("bg got site data", request);
-                    bg = clone(request.bg);
-                    database.clearsuperpw = request.clearsuperpw;
-                    database.hidesitepw = request.hidesitepw;
-                    superpw = bg.superpw || "";
+            superpw = superpw || "";
+            bg.superpw = superpw;
+            if (logging) console.log("bg got ssp", isSuperPw(superpw));
+            if (request.cmd === "getMetadata") {
+                getMetadata(request, sender, sendResponse);
+            } else if (request.cmd === "resetIcon") {
+                // Don't worry about ordering or waiting for theses to finish
+                chrome.storage.local.set({"onClipboard": false});
+                chrome.action.setTitle({title: "Site Password"});
+                chrome.action.setIcon({"path": "icon128.png"});
+                sendResponse("icon reset");        
+            } else if (request.cmd === "siteData") {
+                if (logging) console.log("bg got site data", request);
+                bg = clone(request.bg);
+                database.clearsuperpw = request.clearsuperpw;
+                database.hidesitepw = request.hidesitepw;
+                superpw = bg.superpw || "";
+                persistMetadata(sendResponse);
+            } else if (request.cmd === "getPassword") {                
+                let domainname = getdomainname(sender.origin || sender.url);
+                bg.settings = bgsettings(domainname);
+                let p = await generatePassword(bg);
+                p = stringXorArray(p, bg.settings.xor);
+                if (database.clearsuperpw) {
+                    superpw = "";
+                    bg.superpw = "";
                     persistMetadata(sendResponse);
-                } else if (request.cmd === "getPassword") {                
-                    let domainname = getdomainname(sender.origin || sender.url);
-                    bg.settings = bgsettings(domainname);
-                    let p = await generatePassword(bg);
-                    p = stringXorArray(p, bg.settings.xor);
-                    if (database.clearsuperpw) {
-                        superpw = "";
-                        bg.superpw = "";
-                        persistMetadata(sendResponse);
-                    }
-                    if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
-                    sendResponse(p);
-                } else if (request.cmd === "keepAlive") {
-                    // Firefox doesn't preserve session storage across restarts, but Chrome does.
-                    // It's a good thing the keepAlive message works for Firefox but not for Chrome.
-                    if (chrome.storage.session) {
-                        sendResponse({"keepAlive": false});
-                    } else {
-                        sendResponse({"keepAlive": true});
-                    }
-                } else if (request.cmd === "reset") {
-                    // Used for testing, can't be in test.js becuase it needs to set local variables 
-                    defaultSettings = clone(baseDefaultSettings);
-                    database = clone(databaseDefault);
-                    if (testLogging) console.log("bg removing bookmarks folder for testing", defaultSettings.pwlength);
-                    rootFolder = await getRootFolder(sendResponse);
-                    let promise = new Promise((resolve, reject) => {
-                        chrome.bookmarks.removeTree(rootFolder[0].id, () => {
-                            createBookmarksFolder = true;
-                            if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0].title, defaultSettings.pwlength);
-                            sendResponse("reset");
-                            resolve("reset");
-                        });
-                    });
-                    await promise;
-                } else if (request.cmd === "newDefaults") {
-                    if (logging) console.log("bg got new default settings", request.newDefaults);
-                    defaultSettings = request.newDefaults;
-                    await persistMetadata(sendResponse);
-                } else if (request.cmd === "forget") {
-                    if (logging) console.log("bg forget", request.cmd);
-                    rootFolder = await getRootFolder(sendResponse);
-                    if (logging) console.log("bg forget rootFolder", rootFolder, request.toforget);
-                    await forget(request.toforget, rootFolder[0], sendResponse);
-                    if (logging) console.log("bg forget done");
-                } else if (request.clicked) {
-                    domainname = getdomainname(sender.origin || sender.url);
-                    bg.domainname = domainname;
-                    if (logging) console.log("bg clicked: sending response", bg);
-                    sendResponse(bg);
-                    if (database.clearsuperpw) {
-                        superpw = "";
-                        if (logging) console.log("bg clear superpw", isSuperPw(superpw));
-                    }
-                } else if (request.onload) {
-                    await onContentPageload(request, sender, sendResponse);
-                    await persistMetadata(sendResponse);
-                } else {
-                    if (logging) console.log("bg got unknown request", request);
-                    sendResponse("unknown request");
                 }
-                if (logging) console.log("bg addListener returning", isSuperPw(superpw));
-            };
+                if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
+                sendResponse(p);
+            } else if (request.cmd === "keepAlive") {
+                // Firefox doesn't preserve session storage across restarts, but Chrome does.
+                // It's a good thing the keepAlive message works for Firefox but not for Chrome.
+                if (chrome.storage.session) {
+                    sendResponse({"keepAlive": false});
+                } else {
+                    sendResponse({"keepAlive": true});
+                }
+            } else if (request.cmd === "reset") {
+                // Used for testing, can't be in test.js becuase it needs to set local variables 
+                defaultSettings = clone(baseDefaultSettings);
+                database = clone(databaseDefault);
+                if (testLogging) console.log("bg removing bookmarks folder for testing", defaultSettings.pwlength);
+                rootFolder = await getRootFolder(sendResponse);
+                let promise = new Promise((resolve, reject) => {
+                    chrome.bookmarks.removeTree(rootFolder[0].id, () => {
+                        createBookmarksFolder = true;
+                        if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0].title, defaultSettings.pwlength);
+                        sendResponse("reset");
+                        resolve("reset");
+                    });
+                });
+                await promise;
+            } else if (request.cmd === "newDefaults") {
+                if (logging) console.log("bg got new default settings", request.newDefaults);
+                defaultSettings = request.newDefaults;
+                await persistMetadata(sendResponse);
+            } else if (request.cmd === "forget") {
+                if (logging) console.log("bg forget", request.cmd);
+                rootFolder = await getRootFolder(sendResponse);
+                if (logging) console.log("bg forget rootFolder", rootFolder, request.toforget);
+                await forget(request.toforget, rootFolder[0], sendResponse);
+                if (logging) console.log("bg forget done");
+            } else if (request.clicked) {
+                domainname = getdomainname(sender.origin || sender.url);
+                bg.domainname = domainname;
+                if (logging) console.log("bg clicked: sending response", bg);
+                sendResponse(bg);
+                if (database.clearsuperpw) {
+                    superpw = "";
+                    if (logging) console.log("bg clear superpw", isSuperPw(superpw));
+                }
+            } else if (request.onload) {
+                await onContentPageload(request, sender, sendResponse);
+                await persistMetadata(sendResponse);
+            } else {
+                if (logging) console.log("bg got unknown request", request);
+                sendResponse("unknown request");
+            }
+            if (logging) console.log("bg addListener returning", isSuperPw(superpw));
         });
         return true;
     });
