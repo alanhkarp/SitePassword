@@ -92,7 +92,7 @@ function startup(sendPageInfo) {
         let keepAlive = setInterval(() => {
             chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
                 if (chrome.runtime.lastError) {
-                    console.log("findpw keepAlive error", error);
+                    console.log("findpw keepAlive error", chrome.runtime.lastError.message);
                     clearInterval(keepAlive);
                 }
                 if (!alive.duplicate || !alive.keepAlive) clearInterval(keepAlive);
