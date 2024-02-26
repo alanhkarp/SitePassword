@@ -287,50 +287,52 @@ async function onContentPageload(request, sender, sendResponse) {
     bg.pwcount = request.count;
     pwcount = request.count;
     // Save data that service worker needs after it restarts
+    let savedData = {};
     try {
         let t = sessionStorage.getItem("savedData");
-        let savedData = JSON.parse(t) || {};
-        remainder(savedData);
+        savedData = JSON.parse(t) || {};
     } catch {
-        chrome.storage.session.get(["savedData"], (s) => {
-            let savedData = {};
-            if (Object.keys(s).length > 0) savedData = s.savedData;
-            remainder(savedData);
+        savedData = await new Promise((resolve, reject) => {
+            chrome.storage.session.get(["savedData"], (s) => {
+                if (Object.keys(s).length > 0) savedData = s.savedData;
+                resolve(savedData);
+            });
         });
     }
-    async function remainder(savedData) {
-        savedData[activetab.url] = pwcount;
-        if (logging) console.log("bg saving data", savedData[activetab.url]);
-        try {
-            let s = JSON.stringify(savedData);
-            sessionStorage.setItem("savedData", s);
-        } catch {
-            chrome.storage.session.set({"savedData": savedData}); // Don't worry about waiting for this to finish
-        }    
-        let domainname = getdomainname(activetab.url);
-        if (logging) console.log("bg domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
-        let sitename = database.domains[domainname];
-        if (logging) console.log("bg |sitename|, settings, database", sitename, database.sites[sitename], database);
-        if (sitename) {
-            bg.settings = database.sites[sitename];
-        } else {
-            bg.settings = clone(defaultSettings);
-        }
-        bg.settings.domainname = domainname;
-        bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
-        let readyForClick = false;
-        if (superpw && bg.settings.sitename && bg.settings.username) {
-            readyForClick = true;
-        }
-        if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "readyForClick": readyForClick });
-        sendResponse({ "cmd": "fillfields", 
-            "u": bg.settings.username || "", 
-            "p": "", 
-            "clearsuperpw": database.clearsuperpw,
-            "hideSitepw": database.hideSitepw,
-            "readyForClick": readyForClick
+    savedData[activetab.url] = pwcount;
+    if (logging) console.log("bg saving data", savedData[activetab.url]);
+    try {
+        let s = JSON.stringify(savedData);
+        sessionStorage.setItem("savedData", s);
+    } catch {
+        await new Promise((resolve, reject) => {
+            chrome.storage.session.set({"savedData": savedData}); 
+            resolve("savedData");
         });
+    }    
+    let domainname = getdomainname(activetab.url);
+    if (logging) console.log("bg domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
+    let sitename = database.domains[domainname];
+    if (logging) console.log("bg |sitename|, settings, database", sitename, database.sites[sitename], database);
+    if (sitename) {
+        bg.settings = database.sites[sitename];
+    } else {
+        bg.settings = clone(defaultSettings);
     }
+    bg.settings.domainname = domainname;
+    bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
+    let readyForClick = false;
+    if (superpw && bg.settings.sitename && bg.settings.username) {
+        readyForClick = true;
+    }
+    if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "readyForClick": readyForClick });
+    sendResponse({ "cmd": "fillfields", 
+        "u": bg.settings.username || "", 
+        "p": "", 
+        "clearsuperpw": database.clearsuperpw,
+        "hideSitepw": database.hideSitepw,
+        "readyForClick": readyForClick
+    });
 }
 async function persistMetadata(sendResponse) {
     // localStorage[name] = JSON.stringify(value);
