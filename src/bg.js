@@ -169,8 +169,8 @@ async function setup() {
                 } else if (request.cmd === "getPassword") {                
                     let domainname = getdomainname(sender.origin || sender.url);
                     bg.settings = bgsettings(domainname);
-                    await generatePassword(bg);
-                    let p = stringXorArray(p, bg.settings.xor);
+                    let p = await generatePassword(bg);
+                    p = stringXorArray(p, bg.settings.xor);
                     if (database.clearsuperpw) {
                         superpw = "";
                         bg.superpw = "";
