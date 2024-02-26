@@ -250,37 +250,36 @@ async function getMetadata(request, _sender, sendResponse) {
     // Restores data stored the last time this page was loaded
     let activetabUrl = activetab.url;
     if (logging) console.log("bg got active tab", activetab);
+    let savedData = {};
     try {
         let t = sessionStorage.getItem("savedData");
-        let savedData = JSON.parse(t) || {};
-        remainder(savedData);
+        savedData = JSON.parse(t) || {};
     } catch {
-        chrome.storage.session.get(["savedData"], (s)=> {
-            if (logging) console.log("bg got saved data", s);
-            let savedData = {};
-            if (s && Object.keys(s).length > 0) savedData = s.savedData;
-            remainder(savedData);
+        await new Promise((resolve, reject) => {
+            chrome.storage.session.get(["savedData"], (s)=> {
+                if (logging) console.log("bg got saved data", s);
+                if (s && Object.keys(s).length > 0) savedData = s.savedData;
+                resolve("savedData");
+            });
         });
     }
-    function remainder(savedData) {
-        // I don't create savedData in onContentPageLoad() for two reasons.
-        //    1. Pages without a password field never send the message to trigger the save.
-        //    2. file:/// pages don't get a content script to send that message.
-        // In those cases s === {}, but I still need to send a response.
-        if (savedData[activetabUrl]) {
-            if (logging) console.log("bg got saved data for", activetabUrl, savedData[activetabUrl]);
-            pwcount = savedData[activetabUrl];
-            bg.pwcount = pwcount;
-        } else {
-            if (logging) console.log("bg no saved data for", activetabUrl, savedData);
-            pwcount = 0;
-            bg.pwcount = 0;
-        }
-        domainname = getdomainname(activetabUrl);
-        if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
-        if (logging) console.log("bg sending metadata", pwcount, bg, db);
-        sendResponse({"test" : testMode, "superpw": superpw || "", "bg": bg, "database": db});
-    };
+    // I don't create savedData in onContentPageLoad() for two reasons.
+    //    1. Pages without a password field never send the message to trigger the save.
+    //    2. file:/// pages don't get a content script to send that message.
+    // In those cases s === {}, but I still need to send a response.
+    if (savedData[activetabUrl]) {
+        if (logging) console.log("bg got saved data for", activetabUrl, savedData[activetabUrl]);
+        pwcount = savedData[activetabUrl];
+        bg.pwcount = pwcount;
+    } else {
+        if (logging) console.log("bg no saved data for", activetabUrl, savedData);
+        pwcount = 0;
+        bg.pwcount = 0;
+    }
+    domainname = getdomainname(activetabUrl);
+    if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
+    if (logging) console.log("bg sending metadata", pwcount, bg, db);
+    sendResponse({"test" : testMode, "superpw": superpw || "", "bg": bg, "database": db});
 }
 async function onContentPageload(request, sender, sendResponse) {
     if (logging) console.log("bg onContentPageLoad", bg, request, sender);
