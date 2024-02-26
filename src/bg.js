@@ -154,7 +154,7 @@ async function setup() {
             bg.superpw = superpw;
             if (logging) console.log("bg got ssp", isSuperPw(superpw));
             if (request.cmd === "getMetadata") {
-                getMetadata(request, sender, sendResponse);
+                await getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "resetIcon") {
                 // Don't worry about ordering or waiting for theses to finish
                 chrome.storage.local.set({"onClipboard": false});
@@ -167,7 +167,7 @@ async function setup() {
                 database.clearsuperpw = request.clearsuperpw;
                 database.hidesitepw = request.hidesitepw;
                 superpw = bg.superpw || "";
-                persistMetadata(sendResponse);
+                await persistMetadata(sendResponse);
             } else if (request.cmd === "getPassword") {                
                 let domainname = getdomainname(sender.origin || sender.url);
                 bg.settings = bgsettings(domainname);
@@ -176,7 +176,7 @@ async function setup() {
                 if (database.clearsuperpw) {
                     superpw = "";
                     bg.superpw = "";
-                    persistMetadata(sendResponse);
+                    await persistMetadata(sendResponse);
                 }
                 if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
                 sendResponse(p);
@@ -194,7 +194,7 @@ async function setup() {
                 database = clone(databaseDefault);
                 if (testLogging) console.log("bg removing bookmarks folder for testing", defaultSettings.pwlength);
                 rootFolder = await getRootFolder(sendResponse);
-                let promise = new Promise((resolve, reject) => {
+                await new Promise((resolve, reject) => {
                     chrome.bookmarks.removeTree(rootFolder[0].id, () => {
                         createBookmarksFolder = true;
                         if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0].title, defaultSettings.pwlength);
@@ -202,7 +202,6 @@ async function setup() {
                         resolve("reset");
                     });
                 });
-                await promise;
             } else if (request.cmd === "newDefaults") {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
                 defaultSettings = request.newDefaults;
