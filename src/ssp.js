@@ -22,16 +22,18 @@ var bg = bgDefault;
 
 chrome.storage.local.get("onClipboard", (v) => {
     if (v.onClipboard) {
-        chrome.action.setTitle({title: "A site password may be on the clipboard."});
         get("logopw").title = "A site password may be on the clipboard."
         get("logo").style.display = "none";
         get("logopw").style.display = "block";
+        // Don't worry about waiting for these to complete
+        chrome.action.setTitle({title: "A site password may be on the clipboard."});
         chrome.action.setIcon({"path": "icon128pw.png"});
     } else {
-        chrome.action.setTitle({title: defaultTitle});
         get("logo").title = defaultTitle;
         get("logo").style.display = "block";
         get("logopw").style.display = "none";
+        // Don't worry about waiting for these to complete
+        chrome.action.setTitle({title: defaultTitle});
         chrome.action.setIcon({"path": "icon128.png"});
     }
 });
@@ -44,35 +46,38 @@ if (logging) console.log("popup starting");
 // outside the popup window.  I can't use window.onblur because the 
 // popup window closes before the message it sends gets delivered.
 
-window.onload = function () {
+window.onload = async function () {
     // Hide some instructions if the browser doesn't support the bookmarks API
     let tohide = document.getElementsByName("hideifnobookmarks");
     for (let element of tohide) {
         if (!chrome.bookmarks) element.classList.add("nodisplay");
     }
     if (logging) console.log("popup getting active tab");
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
-        let timeout = testMode ? 1000 : 0;     
-        setTimeout(async () => {
-            debugger; // Doesn't fire if timeout is 0
-            activetab = tabs[0];
-            if (logging) console.log("popup tab", activetab);
-            let protocol = activetab.url.split(":")[0];
-            if ( protocol === "file") {
-                domainname = activetab.url.split("///")[1];
-            } else if (protocol === "mailto") {
-                domainname = activetab.url.split(":")[1];
-            } else {
-                domainname = activetab.url.split("/")[2]
-            }
-            get("domainname").value = domainname;
-            // Ignore the page domain name when testing
-            get("sitepw").value = "";
-            if (logging) console.log("popup got tab", domainname, activetab);
-            if (logging) console.log("popup getting metadata");
-            instructionSetup();
-            await getsettings(domainname);
-        }, timeout);
+    await new Promise((resolve, reject) => {
+        chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
+            let timeout = testMode ? 1000 : 0;     
+            setTimeout(async () => {
+                debugger; // Doesn't fire if timeout is 0
+                activetab = tabs[0];
+                if (logging) console.log("popup tab", activetab);
+                let protocol = activetab.url.split(":")[0];
+                if ( protocol === "file") {
+                    domainname = activetab.url.split("///")[1];
+                } else if (protocol === "mailto") {
+                    domainname = activetab.url.split(":")[1];
+                } else {
+                    domainname = activetab.url.split("/")[2]
+                }
+                get("domainname").value = domainname;
+                // Ignore the page domain name when testing
+                get("sitepw").value = "";
+                if (logging) console.log("popup got tab", domainname, activetab);
+                if (logging) console.log("popup getting metadata");
+                instructionSetup();
+                await getsettings(domainname);
+                resolve("onloadPromise");
+            }, timeout);
+        });
     });
 }
 async function init() {
@@ -171,7 +176,7 @@ get("root").onmouseleave = function (event) {
         }, 750);
     }
 }
-get("mainpanel").onmouseleave = function () {
+get("mainpanel").onmouseleave = async function () {
     if (logging) console.log("popup mainpanel mousleave", bg);
     if (warningMsg) {   
         autoclose = false;
@@ -184,6 +189,7 @@ get("mainpanel").onmouseleave = function () {
     if (phishing) {
         if (logging) console.log("popup phishing mouseleave resolve mouseleaveResolver", phishing, resolvers);
         if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
+        return;
     }
     // window.onblur fires before I even have a chance to see the window, much less focus it
     if (bg && bg.settings) {
@@ -198,15 +204,18 @@ get("mainpanel").onmouseleave = function () {
         let sitename = get("sitename").value;
         changePlaceholder();
         if (logging) console.log("popup sending siteData", bg.settings, database);
-        chrome.runtime.sendMessage({
-            "cmd": "siteData",
-            "sitename": sitename,
-            "clearsuperpw": get("clearsuperpw").checked,
-            "hidesitepw": get("hidesitepw").checked,
-            "bg": bg,
-        }, (response) => {
-            if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
-            if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
+        await new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage({
+                "cmd": "siteData",
+                "sitename": sitename,
+                "clearsuperpw": get("clearsuperpw").checked,
+                "hidesitepw": get("hidesitepw").checked,
+                "bg": bg,
+            }, (response) => {
+                if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
+                resolve("mouseleave");
+                if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
+            });
         });
     } else {
         if (logging) console.log("popup no bg.settings mouseleave resolve", resolvers);
@@ -260,13 +269,17 @@ get("domainnamehelptextmore").onclick = function (e) {
 const $superpw = get("superpw");
 get("superpw").onkeyup = async function (e) {
     // Start the reminder clock ticking
-    chrome.storage.local.set({"reminder": Date.now()});
-    bg.superpw = $superpw.value || "";
-    await ask2generate()
-    setMeter("superpw");
-    setMeter("sitepw");
-    await handleblur("superpw", "superpw");
-    if (resolvers.superpwkeyupResolver) resolvers.superpwkeyupResolver("superpwkeyupPromise"); 
+    await new Promise((resolve, reject) => {
+        chrome.storage.local.set({"reminder": Date.now()}, async () => {
+            bg.superpw = $superpw.value || "";
+            await ask2generate()
+            setMeter("superpw");
+            setMeter("sitepw");
+            await handleblur("superpw", "superpw");
+            resolve("setreimnder");
+            if (resolvers.superpwkeyupResolver) resolvers.superpwkeyupResolver("superpwkeyupPromise");
+        }); 
+    });
 }
 get("superpw").onblur = async function (e) {
     if (logging) console.log("popup superpw onmouseout");
@@ -502,10 +515,11 @@ get("sitepwmenucopy").onclick = function(e) {
     if (!sitepw) return;
     navigator.clipboard.writeText(sitepw).then(() => {
         if (logging) console.log("popup wrote to clipboard", sitepw);
-        chrome.action.setTitle({title: "A site password may be on the clipboard."});
         get("logopw").title = "A site password may be on the clipboard."
         get("logo").style.display = "none";
         get("logopw").style.display = "block";
+        // Don't worry about waiting for these to complete
+        chrome.action.setTitle({title: "A site password may be on the clipboard."});
         chrome.action.setIcon({"path": "icon128pw.png"});
         chrome.storage.local.set({"onClipboard": true})
         copied("sitepw");
@@ -537,13 +551,17 @@ get("sitepwmenuhide").onclick = function () {
 get("settingsshow").onclick = showsettings;
 get("clearclipboard").onclick = function() {
     if (logging) console.log("popup clear clipboard");
-    navigator.clipboard.writeText("");
-    chrome.action.setTitle({title: defaultTitle});
-    get("logo").title = defaultTitle;
-    chrome.storage.local.set({"onClipboard": false});
-    get("logo").style.display = "block";
-    get("logopw").style.display = "none";
-    chrome.action.setIcon({"path": "icon128.png"});
+    navigator.clipboard.writeText("").then(() => {
+        get("logo").title = defaultTitle;
+        get("logo").style.display = "block";
+        get("logopw").style.display = "none";
+        // Don't worry about waiting for these to complete
+        chrome.action.setTitle({title: defaultTitle});
+        chrome.storage.local.set({"onClipboard": false});
+        chrome.action.setIcon({"path": "icon128.png"});
+    }).catch((e) => {
+        if (logging) console.log("popup clear clipboard failed", e);
+    });
 }
 document.oncopy = get("clearclipboard").onclick;
 get("settingssave").onclick = hidesettings;
@@ -649,7 +667,7 @@ get("specials").onblur = async function() {
     await handlekeyup("specials");
     if (resolvers.specialsblurResolver) resolvers.specialsblurResolver("specialsblurPromise");
 }
-get("makedefaultbutton").onclick = function () {
+get("makedefaultbutton").onclick = async function () {
     let newDefaults = {
         sitename: "",
         username: "",
@@ -670,10 +688,13 @@ get("makedefaultbutton").onclick = function () {
         minspecial: get("minspecial").value,
         specials: get("specials").value,
     }
-    chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults}, () => {
-        if (logging) console.log("popup newDefaults sent", newDefaults);
-        if (resolvers.makedefaultResolver) resolvers.makedefaultResolver("makedefaultbuttonPromise");
-    })
+    await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults}, () => {
+            if (logging) console.log("popup newDefaults sent", newDefaults);
+            resolve("makedefaultbutton");
+            if (resolvers.makedefaultResolver) resolvers.makedefaultResolver("makedefaultbuttonPromise");
+        });
+    });
 }
 get("sitedatagetbutton").onclick = sitedataHTML;
 get("exportbutton").onclick = exportPasswords;
@@ -687,14 +708,19 @@ get("maininfo").onclick = function () {
     }
     autoclose = false;
 }
-get("cancelwarning").onclick = function () {
+get("cancelwarning").onclick = async function () {
     phishing = true;
     msgoff("phishing");
     get("domainname").value = "";
     get("sitename").value = "";
     get("username").value = "";
     if (!testMode) {
-        chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
+        await new Promise((resolve, reject) => {
+            chrome.tabs.update(activetab.id, { url: "chrome://newtab" }, () => {
+                resolve("cancelwarning");
+                if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver("cancelwarningPromise");
+            });
+        });
         window.close();
     }
 }
@@ -719,7 +745,7 @@ get("nicknamebutton").onclick = function () {
     msgoff("phishing");
     autoclose = false;
 }
-get("forgetbutton").onclick = function () {
+get("forgetbutton").onclick = async function () {
     if (logging) console.log("popup forgetbutton");
     let list = [];
     let children = get("toforgetlist").children;
@@ -730,12 +756,13 @@ get("forgetbutton").onclick = function () {
     get("username").value = "";
     bg = bgDefault;
     if (logging) console.log("popup forgetbutton sending forget", list);
-    chrome.runtime.sendMessage({"cmd": "forget", "toforget": list}, (response) => {
-        if (logging) console.log("popup forget response", response);
-        if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
-        if (logging) console.log("popup forgetbutton resolve forgetclickResolver", resolvers);
-        if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
-        if (logging) console.log("popup forgetbutton resolved forgetclickResolver", resolvers);
+    await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({"cmd": "forget", "toforget": list}, (response) => {
+            if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
+            if (logging) console.log("popup forget response", response);
+            if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
+            resolve("forgetbutton");
+        });
     });
     get("cancelbutton").click();
 }
@@ -928,11 +955,15 @@ async function handleclick(which) {
     bg.settings.characters = characters(bg.settings, database)
     await ask2generate();
 }
-function changePlaceholder() {
+async function changePlaceholder() {
     let u = get("username").value || "";
     let readyForClick = false;
     if (get("superpw").value && u) readyForClick = true;
-    chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
+    await new Promise((resolve, reject) => {
+        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick }, () => {
+            resolve("changePlaceholder");
+        });
+    });
 }
 function setfocus(element) {
     element.focus();
@@ -1089,15 +1120,8 @@ function exportPasswords() {
     document.body.appendChild(link);
     link.click();    
     document.body.removeChild(link);
-    // chrome.tabs.create({ "url": url }).then((e) => {
-    //     if (logging) console.log("popup export passwords");
-    // }).catch((e) => {
-    //     // Can't SaveAs on Chrome
-    //     let w = window.open();
-    //     w.document.write(data);
-    // });
 }
-function sitedataHTML() {
+async function sitedataHTML() {
     var domainnames = database.domains
     var sorted = Object.keys(domainnames).sort(function (x, y) {
         if (x.toLowerCase() < y.toLowerCase()) return -1;
@@ -1108,12 +1132,16 @@ function sitedataHTML() {
     let doc = sitedataHTMLDoc(workingdoc, sorted);
     let sd = doc.outerHTML
     let url = "data:text/html," + encodeURIComponent(sd);
-    chrome.tabs.create({ "url": url }).then((e) => {
-        if (logging) console.log("popup downloaded settings");
-    }).catch((e) => {
-        // Can't SaveAs on Chrome
-        let w = window.open();
-        sitedataHTMLDoc(w.document, sorted);
+    await new Promise((resolve, reject) => {
+        chrome.tabs.create({ "url": url }).then((e) => {
+            if (logging) console.log("popup downloaded settings");
+            resolve("sitedataHTML");
+        }).catch((e) => {
+            // Can't SaveAs on Chrome
+            let w = window.open();
+            sitedataHTMLDoc(w.document, sorted);
+            resolve("sitedataHTML Chrome");
+        });
     });
     return sd;
 }
@@ -1153,7 +1181,6 @@ function sitedataHTMLDoc(doc, sorted) {
         }
     }
     function addColumnEntries(tr, settings) {
-        if ( settings[0] === "carbonite") { chrome.storage.local.set({"settings": settings})};
         for (let i = 0; i < settings.length; i++) {
             let td = addElement(tr, "td");
             let pre = addElement(td, "pre");

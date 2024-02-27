@@ -440,7 +440,7 @@ async function persistMetadata(sendResponse) {
             try {
                 chrome.bookmarks.update(commonSettings[0].id, { "url": url }, (_e) => {
                     if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
-                    console.log("bg updated bookmark", _e, commonSettings[0].id, url);
+                    if (logging) console.log("bg updated bookmark", _e, commonSettings[0].id, url);
                     resolve("updated");
                 });
             } catch {
