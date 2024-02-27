@@ -491,21 +491,24 @@ async function persistMetadata(sendResponse) {
                 let title = domainnames[i];
                 url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
                 if (logging) console.log("bg creating bookmark for", title);
-                await new Promise((resolve, reject) => {
-                    try {
+                try {
+                    await new Promise((resolve, reject) => {
                         chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url }, (e) => {
                             if (chrome.runtime.lastError) console.log("bg create bookmark lastError", chrome.runtime.lastError);
                             if (logging) console.log("bg created settings bookmark", e, title);
                             resolve("created");
                         });
-                    } catch {
-                        bkmksSafari[title] = {};
-                        bkmksSafari[title].title = title;
-                        bkmksSafari[title].url = url;
-                        chrome.storage.sync.set(bkmksSafari);
-                        resolve("created Safari");
-                    }
-                });
+                    });
+                } catch {
+                    bkmksSafari[title] = {};
+                    bkmksSafari[title].title = title;
+                    bkmksSafari[title].url = url;
+                    await new Promise((resolve, reject) => {
+                        chrome.storage.sync.set(bkmksSafari, () => {;
+                            resolve("created Safari");
+                        });
+                    });
+                }
             }
         }
     }
