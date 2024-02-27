@@ -537,7 +537,7 @@ async function retrieveMetadata(sendResponse, request, callback) {
             createBookmarksFolder = false;
             if (logging || testLogging) console.log("Creating SSP bookmark folder");
             let bkmk = - 1;
-            let promise = new Promise((resolve, reject) => {
+            await new Promise((resolve, reject) => {
                 try {
                     // If there's no bookmarks folder, but there are entries in sync storage,
                     // then copy those entries to bookmarks and clear sync storage.  This will
@@ -574,78 +574,79 @@ async function retrieveMetadata(sendResponse, request, callback) {
 }
 async function parseBkmk(rootFolderId, callback, sendResponse) {
     if (logging) console.log("bg parsing bookmark");
+    let children = [];
     try {
-        chrome.bookmarks.getChildren(rootFolderId, (children) => {cleanbkmks(children)});
-        if (chrome.runtime.lastError) console.log("bg parseBkmk lastError", chrome.runtime.lastError);
+        children = await new Promise((resolve, reject) => {
+            chrome.bookmarks.getChildren(rootFolderId, (children) => {
+                if (chrome.runtime.lastError) console.log("bg parseBkmk lastError", chrome.runtime.lastError);
+                resolve(children);
+            });
+        });
     } catch {
-        cleanbkmks(Object.values(bkmksSafari));
+        Object.values(bkmksSafari);
     }
-    async function cleanbkmks(children) {
-        if (logging) console.log("bg cleaning bookmarks", children);
-        let seenTitles = {};
-        let newdb = clone(databaseDefault);
-        for (let i = 0; i < children.length; i++) {
-            let title = children[i].title;
-            // Remove legacy bookmarks
-            if (!isNaN(title)) {
-                let promise = new Promise((resolve, reject) => {
-                    try {
+    if (logging) console.log("bg cleaning bookmarks", children);
+    let seenTitles = {};
+    let newdb = clone(databaseDefault);
+    for (let i = 0; i < children.length; i++) {
+        let title = children[i].title;
+        // Remove legacy bookmarks
+        if (!isNaN(title)) {
+            await new Promise((resolve, reject) => {
+                try {
+                    chrome.bookmarks.remove(children[i].id, () => {
+                        if (chrome.runtime.lastError) console.log("bg remove legacy lastError", chrome.runtime.lastError);
+                        resolve("removed");
+                    });
+                } catch {
+                    delete bkmksSafari[children[i]];
+                    chrome.storage.sync.set(bkmksSafari, () => {
+                        resolve("removed Safari");
+                    });
+                }
+            });
+        }
+        if (seenTitles[title]) {
+            let seen = JSON.parse(sspUrl(children[seenTitles[title]].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+            let dupl = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+            if (sameSettings(seen, dupl)) {
+                try {
+                    await new Promise((resolve, reject) => {
                         chrome.bookmarks.remove(children[i].id, () => {
-                            if (chrome.runtime.lastError) console.log("bg remove legacy lastError", chrome.runtime.lastError);
+                            if (chrome.runtime.lastError) console.log("bg duplicates lastError", chrome.runtime.lastError);
                             resolve("removed");
                         });
-                    } catch {
-                        delete bkmksSafari[children[i]];
-                        chrome.storage.sync.set(bkmksSafari, () => {
-                            resolve("removed Safari");
-                        });
-                    }
-                });
-                await promise;
-            }
-            if (seenTitles[title]) {
-                let seen = JSON.parse(sspUrl(children[seenTitles[title]].url).replace(/%22/g, "\"").replace(/%20/g, " "));
-                let dupl = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
-                if (sameSettings(seen, dupl)) {
-                    try {
-                        let promise = new Promise((resolve, reject) => {
-                            chrome.bookmarks.remove(children[i].id, () => {
-                                if (chrome.runtime.lastError) console.log("bg duplicates lastError", chrome.runtime.lastError);
-                                resolve("removed");
-                            });
-                        });
-                        await promise;
-                    } catch {
-                        delete bkmksSafari[children[i]];
-                    }
-               } else {
-                    sendResponse({"duplicate": children[i].title});
-                    continue;
+                    });
+                } catch {
+                    delete bkmksSafari[children[i]];
                 }
             } else {
-                seenTitles[title] = i;
+                sendResponse({"duplicate": children[i].title});
+                continue;
             }
-            if (title === commonSettingsTitle) {
-                let common = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
-                if (logging) console.log("bg common settings from bookmark", common.defaultSettings.pwlength);
-                newdb.clearsuperpw = common.clearsuperpw;
-                newdb.hidesitepw = common.hidesitepw;
-                defaultSettings = common.defaultSettings || defaultSettings;
-            } else {
-                let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
-                if ('string' !== typeof settings.specials) {
-                    let specials = array2string(settings.specials);
-                    settings.specials = specials;
-                }
-                if (settings.sitename) {
-                    newdb.domains[title] = normalize(settings.sitename);
-                    newdb.sites[normalize(settings.sitename)] = settings;
-                }
+        } else {
+            seenTitles[title] = i;
+        }
+        if (title === commonSettingsTitle) {
+            let common = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+            if (logging) console.log("bg common settings from bookmark", common.defaultSettings.pwlength);
+            newdb.clearsuperpw = common.clearsuperpw;
+            newdb.hidesitepw = common.hidesitepw;
+            defaultSettings = common.defaultSettings || defaultSettings;
+        } else {
+            let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+            if ('string' !== typeof settings.specials) {
+                let specials = array2string(settings.specials);
+                settings.specials = specials;
+            }
+            if (settings.sitename) {
+                newdb.domains[title] = normalize(settings.sitename);
+                newdb.sites[normalize(settings.sitename)] = settings;
             }
         }
-        database = newdb;
-        retrieved(callback);
     }
+    database = newdb;
+    retrieved(callback);
 }
 async function getRootFolder(sendResponse) {
     if (logging) console.log("bg getRootFolder", sitedataBookmark);
