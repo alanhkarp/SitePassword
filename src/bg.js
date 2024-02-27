@@ -345,11 +345,10 @@ async function persistMetadata(sendResponse) {
     try {
         sessionStorage.setItem("superpw", superpw);
     } catch {
-        let promise = new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
             chrome.storage.session.set({"superpw": superpw});
             resolve("superpw");
         });
-        await promise;
     }
     let db = clone(database);
     let found = await getRootFolder(sendResponse);
@@ -391,13 +390,12 @@ async function persistMetadata(sendResponse) {
     // and a bookmark for each domain name.
     let allchildren;
     try {
-        let promise = new Promise((resolve, reject) => {
+        allchildren = await new Promise((resolve, reject) => {
             chrome.bookmarks.getChildren(rootFolder.id, (allchildren) => {
                 if (chrome.runtime.lastError) console.log("bg getChildren lastError", chrome.runtime.lastError);
                 resolve(allchildren);
             }); // Deleted some so recreate list
         });
-        allchildren = await promise;
     } catch {
         allchildren = Object.values(bkmksSafari);
     }
@@ -419,7 +417,7 @@ async function persistMetadata(sendResponse) {
     // No merge for now
     if (commonSettings.length === 0) {
         let url = "ssp://" + JSON.stringify(common);
-        let promise = new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
             try {
                 chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url }, (commonBkmk) => {
                     if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
@@ -435,11 +433,10 @@ async function persistMetadata(sendResponse) {
                 });
             }
         });
-        await promise;
     }
     let url = "ssp://" + JSON.stringify(common);
     if (commonSettings.length > 0 && url !== commonSettings[0].url.replace(/%22/g, "\"").replace(/%20/g, " ")) {
-        let promise = new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
             try {
                 chrome.bookmarks.update(commonSettings[0].id, { "url": url }, (_e) => {
                     if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
@@ -453,7 +450,6 @@ async function persistMetadata(sendResponse) {
                 });
             }
         });
-        await promise;
     }
     // Persist changes to domain settings
     let domainnames = Object.keys(db.domains);
@@ -470,7 +466,7 @@ async function persistMetadata(sendResponse) {
             let foundSettings = JSON.parse(sspUrl(found.url).replace(/%22/g, "\"").replace(/%20/g, " "));
             if (!sameSettings(settings, foundSettings) || found.url.substr(0,6) === "ssp://") {
                 url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
-                let promise = new Promise((resolve, reject) => {
+                await new Promise((resolve, reject) => {
                     try {
                         chrome.bookmarks.update(found.id, { "url": url }, (_e) => {
                             if (chrome.runtime.lastError) console.log("bg update lastError", chrome.runtime.lastError, found);
@@ -487,7 +483,6 @@ async function persistMetadata(sendResponse) {
                         }
                     }
                 });
-                await promise;
             }
         } else {
             if (bg.settings.sitename && 
@@ -496,7 +491,7 @@ async function persistMetadata(sendResponse) {
                 let title = domainnames[i];
                 url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
                 if (logging) console.log("bg creating bookmark for", title);
-                let promise = new Promise((resolve, reject) => {
+                await new Promise((resolve, reject) => {
                     try {
                         chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url }, (e) => {
                             if (chrome.runtime.lastError) console.log("bg create bookmark lastError", chrome.runtime.lastError);
@@ -511,7 +506,6 @@ async function persistMetadata(sendResponse) {
                         resolve("created Safari");
                     }
                 });
-                await promise;
             }
         }
     }
