@@ -654,7 +654,7 @@ async function getRootFolder(sendResponse) {
     // search string, but I need to find one with an exact match.  I
     // also only want to include those in the bookmarks bar.
     try {
-        let promise = new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             chrome.bookmarks.search({ "title": sitedataBookmark }, (candidates) => {
                 if (logging) console.log("bg search candidates", candidates);
                 if (chrome.runtime.lastError) console.log("bg search lastError", chrome.runtime.lastError);
@@ -673,20 +673,19 @@ async function getRootFolder(sendResponse) {
                 resolve(folders);
             });
         });
-        return await promise;
     } catch (e){
         return [bkmksSafari];
     }
 }
-function retrieved(callback) {
+async function retrieved(callback) {
     if (logging) console.log("bg retrieved", database);
     if (!domainname) {
-        callback();
+        await callback();
         return;
     };
     if (!database || !database.sites) {
         console.log("stop here please");
-        callback();
+        await callback();
     }
     let sitename = database.domains[domainname];
     let settings;
@@ -699,7 +698,7 @@ function retrieved(callback) {
     if (!bg.settings) bg.settings = settings; 
     bg.superpw = superpw || "";
     if (logging) console.log("bg leaving retrieived", bg, database);
-    callback();
+    await callback();
 }
 function bgsettings(domainname) {
     if (database.domains[domainname]) {
@@ -717,7 +716,7 @@ async function forget(toforget, rootFolder, sendResponse) {
     for (const item of toforget)  {
         if (logging) console.log("bg forget item", item);
         delete database.domains[item];
-        let promise = new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
             if (logging) console.log("bg forget getting children", item, rootFolder);
             chrome.bookmarks.getChildren(rootFolder.id, (allchildren) => {
                 if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
@@ -740,7 +739,6 @@ async function forget(toforget, rootFolder, sendResponse) {
             });
         });
         if (logging) console.log("bg forget await promise", item, promise);
-        await promise;
         if (logging) console.log("bg forget done", item);
     }
     sendResponse("forgot");
