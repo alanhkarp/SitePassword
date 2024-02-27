@@ -72,10 +72,13 @@ function searchShadowRoots(element) {
 }
 // Tell the service worker that the user has copied something to the clipboard
 // so it can clear the icon
-document.oncopy = function () {
-    chrome.runtime.sendMessage({"cmd": "resetIcon"}, () => {
-        if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
-    });
+document.oncopy = async function () {
+    await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({"cmd": "resetIcon"}, () => {
+            if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
+            resolve(oncopy);
+        });
+});
 }
 function startup(sendPageInfo) {
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
@@ -89,13 +92,16 @@ function startup(sendPageInfo) {
         // the service worker.  Sending periodic messages keeps it
         // alive, but there's no reason to send them if I'm using
         // storage.session.
-        let keepAlive = setInterval(() => {
-            chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
-                if (chrome.runtime.lastError) {
-                    console.log("findpw keepAlive error", chrome.runtime.lastError.message);
-                    clearInterval(keepAlive);
-                }
-                if (!alive.duplicate || !alive.keepAlive) clearInterval(keepAlive);
+        let keepAlive = setInterval(async () => {
+            await new Promise((resolve, reject) => {
+                chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
+                    if (chrome.runtime.lastError) {
+                        console.log("findpw keepAlive error", chrome.runtime.lastError);
+                        clearInterval(keepAlive);
+                    }
+                    if (!alive.duplicate || !alive.keepAlive) clearInterval(keepAlive);
+                    resolve("keepAlive");
+                });
             });
         }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button
@@ -118,7 +124,7 @@ function startup(sendPageInfo) {
                     fillfield(cpi.idfield, userid);
                     fillfield(cpi.pwfields[0], request.p);
                     setPlaceholder(userid);
-                    sendResponse();
+                    sendResponse("fillfields");
                     break;
                 case "count":
                     cpi = countpwid();
@@ -134,11 +140,11 @@ function startup(sendPageInfo) {
                         cpi.pwfields[i].value = "";
                     }
                     setPlaceholder("");
-                    sendResponse();
+                    sendResponse("clear");
                     break;
                 default:
                     if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
-                    sendResponse();
+                    sendResponse("default");
             }
             let myMutations = mutationObserver.takeRecords();
             if (logging) console.log("findpw listener fillfields my mutations", myMutations);
@@ -189,39 +195,44 @@ function makeEvent(field, type) {
     let event = new Event(type, { bubbles: true, view: window, cancelable: true });
     field.dispatchEvent(event);
 }
-function sendpageinfo(cpi, clicked, onload) {
+async function sendpageinfo(cpi, clicked, onload) {
     // No need to send page info if no password fields found.  User will have to open
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length);
-    chrome.runtime.sendMessage({
-        "count": cpi.pwfields.length,
-        "clicked": clicked,
-        "onload": onload
-    }, (response) => {
-        if (response === "multiple") {
-            alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
-            return;
-        }
-        if (response === "duplicate" && !dupNotified) {
-            dupNotified = true;
-            let alertString = "You have one or more duplicate bookmarks in your SitePasswordData bookmark folder.  ";
-            alertString += "Open the Bookmark Manager and delete the ones in the SitePasswordData folder ";
-            alertString +- "that you don't want.  Then reload this page.";
-            alert(alertString);
-            return;
-        }
-        if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
-        if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
-        readyForClick = response.readyForClick;
-        userid = response.u;
-        let mutations = mutationObserver.takeRecords();
-        fillfield(cpi.idfield, userid);
-        setPlaceholder(userid, response.p);
-         if (userid) fillfield(cpi.pwfields[0], "");
-        let myMutations = mutationObserver.takeRecords();
-        if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
-        handleMutations(mutations);
+    await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({
+            "count": cpi.pwfields.length,
+            "clicked": clicked,
+            "onload": onload
+        }, (response) => {
+            if (response === "multiple") {
+                alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
+                resolve("multiple");
+                return;
+            }
+            if (response === "duplicate" && !dupNotified) {
+                dupNotified = true;
+                let alertString = "You have one or more duplicate bookmarks in your SitePasswordData bookmark folder.  ";
+                alertString += "Open the Bookmark Manager and delete the ones in the SitePasswordData folder ";
+                alertString +- "that you don't want.  Then reload this page.";
+                alert(alertString);
+                resolve("duplicate");
+                return;
+            }
+            if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
+            if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
+            readyForClick = response.readyForClick;
+            userid = response.u;
+            let mutations = mutationObserver.takeRecords();
+            fillfield(cpi.idfield, userid);
+            setPlaceholder(userid, response.p);
+            if (userid) fillfield(cpi.pwfields[0], "");
+            let myMutations = mutationObserver.takeRecords();
+            if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
+            handleMutations(mutations);
+            resolve("sendpageinfo");
+        });
     });
 }
 function setPlaceholder(userid) {
@@ -256,16 +267,19 @@ function setPlaceholder(userid) {
         }
     }
 }
-function pwfieldOnclick(event) {
+async function pwfieldOnclick(event) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
     if ((!this.placeholder) || this.placeholder === clickHere) {
-        chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
-            sitepw = response;
-            let mutations = mutationObserver.takeRecords();
-            fillfield(this, response);
-            let myMutations = mutationObserver.takeRecords();
-            if (logging) console.log(document.URL, Date.now() - start, "findpw got password", this, response, myMutations);
-            handleMutations(mutations);
+        await new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
+                sitepw = response;
+                let mutations = mutationObserver.takeRecords();
+                fillfield(this, response);
+                let myMutations = mutationObserver.takeRecords();
+                if (logging) console.log(document.URL, Date.now() - start, "findpw got password", this, response, myMutations);
+                handleMutations(mutations);
+                resolve("pwfieldOnclick");
+            });
         });
     } else {
         // Because people don't always pay attention
@@ -365,12 +379,6 @@ function overlaps(field, label) {
     if (floc.left >= lloc.right) return false;
     return true;
 }
-/*
-    https://bugs.chromium.org/p/chromium/issues/detail?id=1342046 shows
-    how this content script can learn the user's super password that's
-    stored in session storage even though it's not supposed to.  The
-    solution is to not use chrome.storage.addListener.
-*/
 /* 
 This code is a major modification of the code released with the
 following licence.  Neither Hewlett-Packard Company nor Hewlett-Packard
