@@ -122,6 +122,7 @@ function clearDatalist(listid) {
     get("main").classList.remove("datalist-open");
     get("main").classList.add("datalist-closed");
 }
+let retry = true;
 export async function getsettings(testdomainname) {
     if (testMode) domainname = testdomainname;
     if (logging) console.log("popup getsettings", domainname);
@@ -130,12 +131,21 @@ export async function getsettings(testdomainname) {
             "cmd": "getMetadata",
             "domainname": domainname,
             "activetab": activetab
-        }, (response) => {
-            if (logging) console.log("popup getsettings response", response);
+        }, async (response) => {
+            console.log("popup getsettings response", response);
             if (!response) {
-                alert("SitePassword could not get the metadata for " + domainname);
+                if (retry) {
+                    retry = false; // Don't retry forever in case the service worker crashes
+                    // I get here when the service worker is not running, see https://issues.chromium.org/issues/40107353
+                    await getsettings(domainname);
+                    resolve("getsettings failed");
+                } else {
+                    alert("The SitePassword encountered a problem.  Reload the page and try again.");
+                    resolve("getsettings failed retry");
+                    return;
+                }
             }
-            if (response.duplicate) {
+            if (response && response.duplicate) {
                 let msg = "You have two bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.";
                 alert(msg);
                 return;
