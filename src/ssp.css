@@ -122,7 +122,7 @@ li {
   display: block;
   margin: 0;
   transition: opacity 2s;
-  background-color: rgb(136, 204, 255, 20%); 
+  background-color: rgb(136, 204, 255, 0%); 
 }
 #content {
   display: flex;
@@ -132,7 +132,7 @@ li {
 #mainpanel {
   flex: 0 0 auto;
   display: flex; 
-  background-color: rgb(136, 204, 255, 20%); 
+  background-color: rgb(136, 204, 255, 0%); 
   overflow-x: auto ; 
   width: auto;
   padding: 0;
@@ -163,7 +163,7 @@ li {
   width: 24em;
 }
 .datalist-open {
-  background-color: rgb(136, 204, 255, 20%);
+  background-color: rgb(136, 204, 255, 12%);
   transition: background-color 1s;
 }
 .datalist-closed {
@@ -329,7 +329,7 @@ button:enabled:active {
   height: 16px;
 }
 .boxed {
-  background-color: rgb(136, 204, 255, 30%);
+  background-color: rgb(136, 204, 255, 20%);
 }
 .setting-row {
   margin: 1.2ex 5px;
