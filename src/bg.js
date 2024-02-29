@@ -153,7 +153,9 @@ async function setup() {
             superpw = superpw || "";
             bg.superpw = superpw;
             if (logging) console.log("bg got ssp", isSuperPw(superpw));
-            if (request.cmd === "getMetadata") {
+            if (request.cmd === "wakeup") {
+                sendResponse("awake");
+            } else if (request.cmd === "getMetadata") {
                 await getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "resetIcon") {
                 // Don't worry about ordering or waiting for theses to finish

@@ -122,29 +122,17 @@ function clearDatalist(listid) {
     get("main").classList.remove("datalist-open");
     get("main").classList.add("datalist-closed");
 }
-let retry = true;
 export async function getsettings(testdomainname) {
     if (testMode) domainname = testdomainname;
     if (logging) console.log("popup getsettings", domainname);
+    await wakeup();
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({
             "cmd": "getMetadata",
             "domainname": domainname,
             "activetab": activetab
         }, async (response) => {
-            console.log("popup getsettings response", response);
-            if (!response) {
-                if (retry) {
-                    retry = false; // Don't retry forever in case the service worker crashes
-                    // I get here when the service worker is not running, see https://issues.chromium.org/issues/40107353
-                    await getsettings(domainname);
-                    resolve("getsettings failed");
-                } else {
-                    alert("The SitePassword encountered a problem.  Reload the page and try again.");
-                    resolve("getsettings failed retry");
-                    return;
-                }
-            }
+            if (logging) console.log("popup getsettings response", response);
             if (response && response.duplicate) {
                 let msg = "You have two bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.";
                 alert(msg);
@@ -214,6 +202,7 @@ get("mainpanel").onmouseleave = async function () {
         let sitename = get("sitename").value;
         changePlaceholder();
         if (logging) console.log("popup sending siteData", bg.settings, database);
+        await wakeup();
         await new Promise((resolve, reject) => {
             chrome.runtime.sendMessage({
                 "cmd": "siteData",
@@ -698,6 +687,7 @@ get("makedefaultbutton").onclick = async function () {
         minspecial: get("minspecial").value,
         specials: get("specials").value,
     }
+    await wakeup();
     await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults}, () => {
             if (logging) console.log("popup newDefaults sent", newDefaults);
@@ -766,6 +756,7 @@ get("forgetbutton").onclick = async function () {
     get("username").value = "";
     bg = bgDefault;
     if (logging) console.log("popup forgetbutton sending forget", list);
+    await wakeup();
     await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({"cmd": "forget", "toforget": list}, (response) => {
             if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
@@ -969,6 +960,7 @@ async function changePlaceholder() {
     let u = get("username").value || "";
     let readyForClick = false;
     if (get("superpw").value && u) readyForClick = true;
+    await wakeup();
     await new Promise((resolve, reject) => {
         chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick }, () => {
             resolve("changePlaceholder");
@@ -1356,6 +1348,19 @@ function closeAllInstructions() {
         let section = instruction.id.replace("info", "");
         closeInstructionSection(section);
     }
+}
+// Make sure the service worker is running
+// Copied to findpw.js because I can't import it there
+async function wakeup() {
+    if (logging) console.log("popup sending wakeup", get("domainname").value);
+    await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
+            if (chrome.runtime.lastError) console.log("popup wakeup lastError", chrome.runtime.lastError);
+            if (logging) console.log("popup wakeup response", get("domainname").value, response);
+            if (!response) await wakeup();
+            resolve("wakeup");
+        });
+    });
 }
 /* 
 This code is a major modification of the code released with the

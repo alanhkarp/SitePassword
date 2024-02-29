@@ -73,6 +73,7 @@ function searchShadowRoots(element) {
 // Tell the service worker that the user has copied something to the clipboard
 // so it can clear the icon
 document.oncopy = async function () {
+    await wakeup();
     await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({"cmd": "resetIcon"}, () => {
             if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
@@ -93,6 +94,7 @@ function startup(sendPageInfo) {
         // alive, but there's no reason to send them if I'm using
         // storage.session.
         let keepAlive = setInterval(async () => {
+            await wakeup();
             await new Promise((resolve, reject) => {
                 chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
                     if (chrome.runtime.lastError) {
@@ -200,6 +202,7 @@ async function sendpageinfo(cpi, clicked, onload) {
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length);
+    await wakeup();
     await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({
             "count": cpi.pwfields.length,
@@ -270,8 +273,10 @@ function setPlaceholder(userid) {
 async function pwfieldOnclick(event) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
     if ((!this.placeholder) || this.placeholder === clickHere) {
+        await wakeup();
         await new Promise((resolve, reject) => {
             chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
+                if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
                 sitepw = response;
                 let mutations = mutationObserver.takeRecords();
                 fillfield(this, response);
@@ -378,6 +383,18 @@ function overlaps(field, label) {
     if (floc.top >= lloc.bottom) return false;
     if (floc.left >= lloc.right) return false;
     return true;
+}
+// Make sure the service worker is running
+// Copied from ssp.js because I can't import it
+async function wakeup() {
+    if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
+    await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
+            if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup response", response);
+            if (!response) await wakeup();
+            resolve("wakeup");
+        });
+    });
 }
 /* 
 This code is a major modification of the code released with the
