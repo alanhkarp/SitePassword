@@ -54,7 +54,7 @@ window.onload = async function () {
     }
     if (logging) console.log("popup getting active tab");
     await new Promise((resolve, reject) => {
-        chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             let timeout = testMode ? 1000 : 0;     
             setTimeout(async () => {
                 debugger; // Doesn't fire if timeout is 0
