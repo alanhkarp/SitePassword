@@ -397,7 +397,7 @@ button:enabled:active {
   padding : 1ex;
   border : 2pt solid #D51c24;
   border-radius: 8px;
-  background-color : white;
+  background-color : rgb(136, 204, 255, 0%);
   margin: 10px;
 }
 .warningtext {
