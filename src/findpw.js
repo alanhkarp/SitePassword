@@ -385,6 +385,8 @@ function overlaps(field, label) {
     return true;
 }
 // Make sure the service worker is running
+// Multiple events can be lost if they are triggered fast enough,
+// so each one needs to send its own wakeup message.
 // Copied from ssp.js because I can't import it
 async function wakeup() {
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
