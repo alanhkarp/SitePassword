@@ -132,6 +132,7 @@ export async function getsettings(testdomainname) {
             "domainname": domainname,
             "activetab": activetab
         }, async (response) => {
+            if (chrome.runtime.lastError) console.log("popup getsettings lastError", chrome.runtime.lastError);
             if (logging) console.log("popup getsettings response", response);
             if (response && response.duplicate) {
                 let msg = "You have two bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.";
@@ -147,7 +148,6 @@ export async function getsettings(testdomainname) {
             get("superpw").value = response.superpw || "";
             init();
             if (logging) console.log("popup got metadata", bg, database);
-            if (chrome.runtime.lastError) console.log("popup getsettings lastError", chrome.runtime.lastError);
             message("multiple", bg.pwcount > 1);
             message("zero", bg.pwcount == 0);
             if (!testMode && response.test) { // Only run tests once
@@ -211,6 +211,7 @@ get("mainpanel").onmouseleave = async function () {
                 "hidesitepw": get("hidesitepw").checked,
                 "bg": bg,
             }, (response) => {
+                if (chrome.runtime.lastError) console.log("popup mouseleave lastError", chrome.runtime.lastError);
                 if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
                 resolve("mouseleave");
                 if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
@@ -690,6 +691,7 @@ get("makedefaultbutton").onclick = async function () {
     await wakeup("defaultbutton");
     await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults}, () => {
+            if (chrome.runtime.lastError) console.log("popup makedefaultbutton lastError", chrome.runtime.lastError);
             if (logging) console.log("popup newDefaults sent", newDefaults);
             resolve("makedefaultbutton");
             if (resolvers.makedefaultResolver) resolvers.makedefaultResolver("makedefaultbuttonPromise");
@@ -963,6 +965,7 @@ async function changePlaceholder() {
     await wakeup("changePlaceholder");
     await new Promise((resolve, reject) => {
         chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick }, () => {
+            if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
             resolve("changePlaceholder");
         });
     });
