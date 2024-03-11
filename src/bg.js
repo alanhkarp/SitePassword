@@ -91,21 +91,16 @@ async function setup() {
     // Need to clear cache following an update
     chrome.runtime.onInstalled.addListener(async function(details) {
         if (logging) console.log("bg clearing browser cache because of", details)
-        await new Promise((resolve, reject) => {
-            chrome.browsingData.removeCache({}, function() {
-                if (logging) console.log("bg cleared the browser cache");
-                if (details.reason === "install") {
-                    chrome.windows.create({
-                        url: "./gettingStarted.html",
-                        type:"normal",
-                        height:800,
-                        width:800
-                    }, () => {
-                        resolve("installed");
-                    });
-                }
+        await chrome.browsingData.removeCache({});
+        if (logging) console.log("bg cleared the browser cache");
+        if (details.reason === "install") {
+            chrome.windows.create({
+                url: "./gettingStarted.html",
+                type:"normal",
+                height:800,
+                width:800
             });
-        });
+        }
     });
     // Add message listener
     if (logging) console.log("bg adding listener");
