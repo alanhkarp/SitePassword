@@ -6,7 +6,7 @@ import {isSuperPw, normalize,  string2array, array2string, stringXorArray, gener
 const testMode = false;
 const testLogging = false;
 const debugMode = false;
-const logging = false;
+const logging = true;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
 let sitedataBookmark = "SitePasswordData"; 
@@ -58,29 +58,15 @@ let bkmksId;
 let bkmksSafari = {};
 async function setup() {
     try {
-        bkmksId = await new Promise((resolve, reject) => {
-            chrome.bookmarks.getTree((nodes) => {
-                if (chrome.runtime.lastError) console.log("bg bkmksid lastError", chrome.runtime.lastError);
-                bkmksId = nodes[0].children[0].id;
-                resolve(bkmksId);
-            });
-        });
+        let nodes = await chrome.bookmarks.getTree();
+        if (chrome.runtime.lastError) console.log("bg bkmksid lastError", chrome.runtime.lastError);
+        bkmksId = nodes[0].children[0].id;
     } catch {
         // Safari
+        await Promise.resolve();
         bkmksId = -1;
-        bkmksSafari = await new Promise((resolve, reject) => {
-            if (chrome.runtime.lastError) console.log("bg bkmksSafarilastError", chrome.runtime.lastError);
-            chrome.storage.sync.get((value) => {
-                resolve(value);
-                if (logging) console.log("bg got Safari bookmarks", bkmksSafari);
-            });
-        });
-    }
-
-    // Make sure previous asynch calls have finished
-    setTimeout(() => {
-        if (logging) console.log("bg finished waiting");
-    }, 0);
+        if (logging) console.log("bg got Safari bookmarks", bkmksSafari);
+     }
 
     if (logging) console.log("bg clear superpw");
 
@@ -88,27 +74,20 @@ async function setup() {
 
     // Check reminder clock set in ssp.js.  If too much time has passed, 
     // clear superpw so user has to reenter it as an aid in not forgetting it.
-    await new Promise((resolve, reject) => {
-        chrome.storage.local.get("reminder", (value) => {
-            if (logging) console.log("bg got reminder", value);
-            if (value.reminder) {
-                let now = new Date();
-                let then = new Date(value.reminder);
-                let diff = now - then;
-                if (logging) console.log("bg reminder diff", diff);
-                if (diff > 604800000) {
-                    if (logging) console.log("bg clearing superpw because of reminder");
-                    superpw = "";
-                    chrome.storage.session.set({"superpw": ""}, () => {
-                        chrome.storage.local.set({"reminder": ""}, () => {
-                            resolve("cleared");
-                        });
-                    });
-                }
-            }
-            resolve("no reminder");
-        });
-    });
+    let value = await chrome.storage.local.get("reminder");
+    if (logging) console.log("bg got reminder", value);
+    if (value.reminder) {
+        let now = new Date();
+        let then = new Date(value.reminder);
+        let diff = now - then;
+        if (logging) console.log("bg reminder diff", diff);
+        if (diff > 604800000) {
+            if (logging) console.log("bg clearing superpw because of reminder");
+            superpw = "";
+            await chrome.storage.session.set({"superpw": ""});
+            await chrome.storage.local.set({"reminder": ""});
+        }
+    }
     // Need to clear cache following an update
     chrome.runtime.onInstalled.addListener(async function(details) {
         if (logging) console.log("bg clearing browser cache because of", details)
