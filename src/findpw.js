@@ -27,6 +27,7 @@ var observerOptions = {
     attributeOldValue: false,
     characterDataOldValue: false
 };
+console.log(document.URL, Date.now(), "findpw starting", mutationObserver);
 var start = Date.now();
 if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw starting");
 // Most pages work if I start looking for password fields as soon as the basic HTML is loaded

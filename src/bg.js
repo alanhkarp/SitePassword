@@ -6,7 +6,7 @@ import {isSuperPw, normalize,  string2array, array2string, stringXorArray, gener
 const testMode = false;
 const testLogging = false;
 const debugMode = false;
-const logging = true;
+const logging = false;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
 let sitedataBookmark = "SitePasswordData"; 
@@ -113,17 +113,14 @@ async function setup() {
             if (logging) console.log("bg listener back from retrieveMetadata", database);
             superpw = "";
             try {
-                sessionStorage.getItem("superpw", (value) => {
-                    if (logging) console.log("bg got superpw", value.superpw);
-                    superpw = value.superpw;
-               });
+                let value = sessionStorage.getItem("superpw");
+                superpw = value.superpw;
+                await Promise.resolve();
             } catch {
-                superpw = await new Promise((resolve, reject) => {
-                    chrome.storage.session.get(["superpw"], async (value) => {
-                        resolve(value.superpw);
-                    });
-                });
+                let value = await chrome.storage.session.get(["superpw"]);
+                superpw = value.superpw;
             }
+            if (logging) console.log("bg got superpw", superpw);
             superpw = superpw || "";
             bg.superpw = superpw;
             if (logging) console.log("bg got ssp", isSuperPw(superpw));
