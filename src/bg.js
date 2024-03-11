@@ -730,6 +730,7 @@ async function forget(toforget, rootFolder, sendResponse) {
                             if (chrome.runtime.lastError) console.log("bg remove child lastError", chrome.runtime.lastError);
                             if (logging) console.log("bg removed bookmark for", item);
                             chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" }, () => {
+                                if (chrome.runtime.lastError) console.log("bg forgetr lastError", chrome.runtime.lastError);
                                 if (logging) console.log("bg sent clear message");
                                 resolve("removed");
                             });
