@@ -76,6 +76,7 @@ document.oncopy = async function () {
     await wakeup();
     await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({"cmd": "resetIcon"}, () => {
+            if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
             if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
             resolve(oncopy);
         });
@@ -209,6 +210,7 @@ async function sendpageinfo(cpi, clicked, onload) {
             "clicked": clicked,
             "onload": onload
         }, (response) => {
+            if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
             if (response === "multiple") {
                 alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
                 resolve("multiple");
@@ -276,7 +278,7 @@ async function pwfieldOnclick(event) {
         await wakeup();
         await new Promise((resolve, reject) => {
             chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
-                if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
+                if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
                 sitepw = response;
                 let mutations = mutationObserver.takeRecords();
                 fillfield(this, response);
@@ -392,6 +394,7 @@ async function wakeup() {
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
     await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
+            if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
             if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup response", response);
             if (!response) await wakeup();
             resolve("wakeup");
