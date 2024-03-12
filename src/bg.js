@@ -54,14 +54,17 @@ export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "do
 var database = clone(databaseDefault);
 var bg = clone(bgDefault);
 
+var isFirefox = typeof chrome.storage.session === "undefined";
+var isSafari = typeof chrome.bookmarks === "undefined";
+
 let bkmksId;
 let bkmksSafari = {};
 async function setup() {
-    try {
+    if (!isSafari) {
         let nodes = await chrome.bookmarks.getTree();
         if (chrome.runtime.lastError) console.log("bg bkmksid lastError", chrome.runtime.lastError);
         bkmksId = nodes[0].children[0].id;
-    } catch {
+    } else {
         // Safari
         await Promise.resolve();
         bkmksId = -1;
@@ -110,15 +113,15 @@ async function setup() {
         database = clone(databaseDefault);
         bg = clone(bgDefault);
         retrieveMetadata(sendResponse, request, async () => {
+            await Promise.resolve(); // Because some branches have await and others don't
             if (logging) console.log("bg listener back from retrieveMetadata", database);
             superpw = "";
-            try {
-                let value = sessionStorage.getItem("superpw");
-                superpw = value.superpw;
-                await Promise.resolve();
-            } catch {
-                let value = await chrome.storage.session.get(["superpw"]);
-                superpw = value.superpw;
+            if (isFirefox) {
+                // For Firefox
+                superpw = sessionStorage.getItem("superpw").superpw;
+            } else {
+                // For Chrome
+                superpw = await chrome.storage.session.get(["superpw"]).superpw;
             }
             if (logging) console.log("bg got superpw", superpw);
             superpw = superpw || "";
@@ -129,10 +132,9 @@ async function setup() {
             } else if (request.cmd === "getMetadata") {
                 await getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "resetIcon") {
-                // Don't worry about ordering or waiting for theses to finish
-                chrome.storage.local.set({"onClipboard": false});
-                chrome.action.setTitle({title: "Site Password"});
-                chrome.action.setIcon({"path": "icon128.png"});
+                await chrome.storage.local.set({"onClipboard": false});
+                await chrome.action.setTitle({title: "Site Password"});
+                await chrome.action.setIcon({"path": "icon128.png"});
                 sendResponse("icon reset");        
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);
@@ -156,10 +158,10 @@ async function setup() {
             } else if (request.cmd === "keepAlive") {
                 // Firefox doesn't preserve session storage across restarts, but Chrome does.
                 // It's a good thing the keepAlive message works for Firefox but not for Chrome.
-                if (chrome.storage.session) {
-                    sendResponse({"keepAlive": false});
-                } else {
+                if (isFirefox) {
                     sendResponse({"keepAlive": true});
+                } else {
+                    sendResponse({"keepAlive": false});
                 }
             } else if (request.cmd === "reset") {
                 // Used for testing, can't be in test.js becuase it needs to set local variables 
@@ -167,14 +169,10 @@ async function setup() {
                 database = clone(databaseDefault);
                 if (testLogging) console.log("bg removing bookmarks folder for testing", defaultSettings.pwlength);
                 rootFolder = await getRootFolder(sendResponse);
-                await new Promise((resolve, reject) => {
-                    chrome.bookmarks.removeTree(rootFolder[0].id, () => {
-                        createBookmarksFolder = true;
-                        if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0].title, defaultSettings.pwlength);
-                        sendResponse("reset");
-                        resolve("reset");
-                    });
-                });
+                await chrome.bookmarks.removeTree(rootFolder[0].id);
+                createBookmarksFolder = true;
+                if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0].title, defaultSettings.pwlength);
+                sendResponse("reset");
             } else if (request.cmd === "newDefaults") {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
                 defaultSettings = request.newDefaults;
@@ -189,11 +187,11 @@ async function setup() {
                 domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
                 if (logging) console.log("bg clicked: sending response", bg);
-                sendResponse(bg);
                 if (database.clearsuperpw) {
                     superpw = "";
                     if (logging) console.log("bg clear superpw", isSuperPw(superpw));
                 }
+                sendResponse(bg);
             } else if (request.onload) {
                 await onContentPageload(request, sender, sendResponse);
                 await persistMetadata(sendResponse);
