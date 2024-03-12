@@ -6,7 +6,7 @@ import {isSuperPw, normalize,  string2array, array2string, stringXorArray, gener
 const testMode = false;
 const testLogging = false;
 const debugMode = false;
-const logging = false;
+const logging = true;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
 let sitedataBookmark = "SitePasswordData"; 
@@ -121,7 +121,8 @@ async function setup() {
                 superpw = sessionStorage.getItem("superpw").superpw;
             } else {
                 // For Chrome
-                superpw = await chrome.storage.session.get(["superpw"]).superpw;
+                let value = await chrome.storage.session.get(["superpw"]);
+                superpw = value.superpw;
             }
             if (logging) console.log("bg got superpw", superpw);
             superpw = superpw || "";
@@ -206,6 +207,7 @@ async function setup() {
 }
 setup();
 async function getMetadata(request, _sender, sendResponse) {
+    await Promise.resolve(); // Because some branches have await and others don't
     if (logging) console.log("bg getMetadata", bg, request);
     let sitename = database.domains[request.domainname];
     if (sitename) {
@@ -222,17 +224,13 @@ async function getMetadata(request, _sender, sendResponse) {
     let activetabUrl = activetab.url;
     if (logging) console.log("bg got active tab", activetab);
     let savedData = {};
-    try {
+    if (isFirefox) {
         let t = sessionStorage.getItem("savedData");
         savedData = JSON.parse(t) || {};
-    } catch {
-        await new Promise((resolve, reject) => {
-            chrome.storage.session.get(["savedData"], (s)=> {
-                if (logging) console.log("bg got saved data", s);
-                if (s && Object.keys(s).length > 0) savedData = s.savedData;
-                resolve("savedData");
-            });
-        });
+    } else {
+        let s = await chrome.storage.session.get(["savedData"]);
+        if (logging) console.log("bg got saved data", s);
+        if (s && Object.keys(s).length > 0) savedData = s.savedData;
     }
     // I don't create savedData in onContentPageLoad() for two reasons.
     //    1. Pages without a password field never send the message to trigger the save.
@@ -441,7 +439,6 @@ async function persistMetadata(sendResponse) {
                     try {
                         chrome.bookmarks.update(found.id, { "url": url }, (_e) => {
                             if (chrome.runtime.lastError) console.log("bg update lastError", chrome.runtime.lastError, found);
-                            if (logging) console.log("bg updated bookmark resolving promise");
                             resolve("updated");
                         });
                     } catch {
