@@ -251,6 +251,7 @@ async function getMetadata(request, _sender, sendResponse) {
     sendResponse({"test" : testMode, "superpw": superpw || "", "bg": bg, "database": db});
 }
 async function onContentPageload(request, sender, sendResponse) {
+    await Promise.resolve(); // Because some branches have await and others don't
     if (logging) console.log("bg onContentPageLoad", bg, request, sender);
     activetab = sender.tab;
     bg.pwcount = request.count;
@@ -261,12 +262,8 @@ async function onContentPageload(request, sender, sendResponse) {
         let t = sessionStorage.getItem("savedData");
         savedData = JSON.parse(t) || {};
     } catch {
-        savedData = await new Promise((resolve, reject) => {
-            chrome.storage.session.get(["savedData"], (s) => {
-                if (Object.keys(s).length > 0) savedData = s.savedData;
-                resolve(savedData);
-            });
-        });
+        let s = await chrome.storage.session.get(["savedData"]);
+        if (Object.keys(s).length > 0) savedData = s.savedData;
     }
     savedData[activetab.url] = pwcount;
     if (logging) console.log("bg saving data", savedData[activetab.url]);
@@ -274,10 +271,7 @@ async function onContentPageload(request, sender, sendResponse) {
         let s = JSON.stringify(savedData);
         sessionStorage.setItem("savedData", s);
     } catch {
-        await new Promise((resolve, reject) => {
-            chrome.storage.session.set({"savedData": savedData}); 
-            resolve("savedData");
-        });
+        await chrome.storage.session.set({"savedData": savedData}); 
     }    
     let domainname = getdomainname(activetab.url);
     if (logging) console.log("bg domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
