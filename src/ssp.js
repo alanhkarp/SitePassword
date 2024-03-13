@@ -553,6 +553,7 @@ get("clearclipboard").onclick = function() {
 document.oncopy = get("clearclipboard").onclick;
 get("settingssave").onclick = hidesettings;
 get("providesitepw").onclick = async function () {
+    await Promise.resolve(); // Because some branches have await and others don't
     if (!(get("sitename").value && get("username").value)) return;
     bg.settings.providesitepw = get("providesitepw").checked;
     if (get("providesitepw").checked) {
