@@ -198,20 +198,16 @@ get("mainpanel").onmouseleave = async function () {
         changePlaceholder();
         if (logging) console.log("popup sending siteData", bg.settings, database);
         await wakeup("mouseleave");
-        await new Promise((resolve, reject) => {
-            chrome.runtime.sendMessage({
+        let response = await chrome.runtime.sendMessage({
                 "cmd": "siteData",
                 "sitename": sitename,
                 "clearsuperpw": get("clearsuperpw").checked,
                 "hidesitepw": get("hidesitepw").checked,
                 "bg": bg,
-            }, (response) => {
-                if (chrome.runtime.lastError) console.log("popup mouseleave lastError", chrome.runtime.lastError);
-                if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
-                resolve("mouseleave");
-                if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
             });
-        });
+        if (chrome.runtime.lastError) console.log("popup mouseleave lastError", chrome.runtime.lastError);
+        if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
+        if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
     } else {
         if (logging) console.log("popup no bg.settings mouseleave resolve", resolvers);
         if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
