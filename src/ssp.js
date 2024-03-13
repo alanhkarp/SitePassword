@@ -125,37 +125,33 @@ export async function getsettings(testdomainname) {
     if (testMode) domainname = testdomainname;
     if (logging) console.log("popup getsettings", domainname);
     await wakeup("getsettings");
-    return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({
+    let response =  await chrome.runtime.sendMessage({
             "cmd": "getMetadata",
             "domainname": domainname,
             "activetab": activetab
-        }, async (response) => {
-            if (chrome.runtime.lastError) console.log("popup getsettings lastError", chrome.runtime.lastError);
-            if (logging) console.log("popup getsettings response", response);
-            if (response && response.duplicate) {
-                let msg = "You have two bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.";
-                alert(msg);
-                return;
-            }
-            bg = response.bg;
-            database = response.database;
-            hidesitepw();
-            if (!bg.settings.sitename) {
-                bg.settings.sitename = "";
-            }
-            get("superpw").value = response.superpw || "";
-            init();
-            if (logging) console.log("popup got metadata", bg, database);
-            message("multiple", bg.pwcount > 1);
-            message("zero", bg.pwcount == 0);
-            if (!testMode && response.test) { // Only run tests once
-                testMode = true;
-                runTests();
-            }
-            resolve("getsettings");
         });
-    });
+    if (chrome.runtime.lastError) console.log("popup getsettings lastError", chrome.runtime.lastError);
+    if (logging) console.log("popup getsettings response", response);
+    if (response && response.duplicate) {
+        let msg = "You have two bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.";
+        alert(msg);
+        return;
+    }
+    bg = response.bg;
+    database = response.database;
+    hidesitepw();
+    if (!bg.settings.sitename) {
+        bg.settings.sitename = "";
+    }
+    get("superpw").value = response.superpw || "";
+    init();
+    if (logging) console.log("popup got metadata", bg, database);
+    message("multiple", bg.pwcount > 1);
+    message("zero", bg.pwcount == 0);
+    if (!testMode && response.test) { // Only run tests once
+        testMode = true;
+        runTests();
+    }
 }
 //}
 // This function sends a message to the service worker when the mouse leaves the 
