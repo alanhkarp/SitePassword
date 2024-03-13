@@ -298,20 +298,13 @@ async function onContentPageload(request, sender, sendResponse) {
     });
 }
 async function persistMetadata(sendResponse) {
-    // localStorage[name] = JSON.stringify(value);
+    await Promise.resolve(); // Because some branches have await and others don't
     if (logging) console.log("bg persistMetadata", bg, database);
-    // There appears to be a race condition.  Every once in a while
-    // bg.settings is not defined when I get here.  I have no idea
-    // why.  I think it makes sense to just exit in this case.
-    if (!bg.settings) return;
     superpw = bg.superpw;
-    try {
+    if (isFirefox) {
         sessionStorage.setItem("superpw", superpw);
-    } catch {
-        await new Promise((resolve, reject) => {
-            chrome.storage.session.set({"superpw": superpw});
-            resolve("superpw");
-        });
+    } else {
+        await chrome.storage.session.set({"superpw": superpw});
     }
     let db = clone(database);
     let found = await getRootFolder(sendResponse);
@@ -352,15 +345,11 @@ async function persistMetadata(sendResponse) {
     // The databae is saved as one bookmark for the common settings
     // and a bookmark for each domain name.
     let allchildren;
-    try {
-        allchildren = await new Promise((resolve, reject) => {
-            chrome.bookmarks.getChildren(rootFolder.id, (allchildren) => {
-                if (chrome.runtime.lastError) console.log("bg getChildren lastError", chrome.runtime.lastError);
-                resolve(allchildren);
-            }); // Deleted some so recreate list
-        });
-    } catch {
+    if (isSafari) {
         allchildren = Object.values(bkmksSafari);
+    } else {
+        allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
+        if (chrome.runtime.lastError) console.log("bg getChildren lastError", chrome.runtime.lastError);
     }
     let commonSettings = [];
     let domains = [];
@@ -380,39 +369,27 @@ async function persistMetadata(sendResponse) {
     // No merge for now
     if (commonSettings.length === 0) {
         let url = "ssp://" + JSON.stringify(common);
-        await new Promise((resolve, reject) => {
-            try {
-                chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url }, (commonBkmk) => {
-                    if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
-                    if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonSettings.pwlength);
-                    resolve("created");
-                });
-            } catch {
-                bkmksSafari[commonSettingsTitle] = {};
-                bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
-                bkmksSafari[commonSettingsTitle].url = url;
-                chrome.storage.sync.set(bkmksSafari, () => {
-                    resolve("created Safari");
-                });
-            }
-        });
+        if (isSafari) {
+            bkmksSafari[commonSettingsTitle] = {};
+            bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
+            bkmksSafari[commonSettingsTitle].url = url;
+            await chrome.storage.sync.set(bkmksSafari);
+        } else {
+            let commonBkmk = await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url });
+            if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
+            if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonSettings.pwlength);
+        }
     }
     let url = "ssp://" + JSON.stringify(common);
     if (commonSettings.length > 0 && url !== commonSettings[0].url.replace(/%22/g, "\"").replace(/%20/g, " ")) {
-        await new Promise((resolve, reject) => {
-            try {
-                chrome.bookmarks.update(commonSettings[0].id, { "url": url }, (_e) => {
-                    if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
-                    if (logging) console.log("bg updated bookmark", _e, commonSettings[0].id, url);
-                    resolve("updated");
-                });
-            } catch {
-                bkmksSafari[commonSettingsTitle].url = url;
-                chrome.storage.sync.set(bkmksSafari, () => {
-                    resolve("updated");
-                });
-            }
-        });
+        if (isSafari) {
+            bkmksSafari[commonSettingsTitle].url = url;
+            await chrome.storage.sync.set(bkmksSafari);
+        } else {
+            await chrome.bookmarks.update(commonSettings[0].id, { "url": url });
+            if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
+            if (logging) console.log("bg updated bookmark", _e, commonSettings[0].id, url);
+        }
     }
     // Persist changes to domain settings
     let domainnames = Object.keys(db.domains);
@@ -429,22 +406,16 @@ async function persistMetadata(sendResponse) {
             let foundSettings = JSON.parse(sspUrl(found.url).replace(/%22/g, "\"").replace(/%20/g, " "));
             if (!sameSettings(settings, foundSettings) || found.url.substr(0,6) === "ssp://") {
                 url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
-                await new Promise((resolve, reject) => {
-                    try {
-                        chrome.bookmarks.update(found.id, { "url": url }, (_e) => {
-                            if (chrome.runtime.lastError) console.log("bg update lastError", chrome.runtime.lastError, found);
-                            resolve("updated");
-                        });
-                    } catch {
-                        // Handle Safari bookmarks
-                        if (bkmksSafari[found.title] && bkmksSafari[found.title].url !== url) {
-                            bkmksSafari[found.title].url = url;
-                            chrome.storage.sync.set(bkmksSafari, () => {
-                                resolve("updated Safari");
-                            });
-                        }
+                if (isSafari) {
+                    // Handle Safari bookmarks
+                    if (bkmksSafari[found.title] && bkmksSafari[found.title].url !== url) {
+                        bkmksSafari[found.title].url = url;
+                        await chrome.storage.sync.set(bkmksSafari);
                     }
-                });
+                } else {
+                    await chrome.bookmarks.update(found.id, { "url": url });
+                    if (chrome.runtime.lastError) console.log("bg update lastError", chrome.runtime.lastError, found);
+                }
             }
         } else {
             if (bg.settings.sitename && 
@@ -453,23 +424,15 @@ async function persistMetadata(sendResponse) {
                 let title = domainnames[i];
                 url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
                 if (logging) console.log("bg creating bookmark for", title);
-                try {
-                    await new Promise((resolve, reject) => {
-                        chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url }, (e) => {
-                            if (chrome.runtime.lastError) console.log("bg create bookmark lastError", chrome.runtime.lastError);
-                            if (logging) console.log("bg created settings bookmark", e, title);
-                            resolve("created");
-                        });
-                    });
-                } catch {
+                if (isSafari) {
                     bkmksSafari[title] = {};
                     bkmksSafari[title].title = title;
                     bkmksSafari[title].url = url;
-                    await new Promise((resolve, reject) => {
-                        chrome.storage.sync.set(bkmksSafari, () => {;
-                            resolve("created Safari");
-                        });
-                    });
+                    await chrome.storage.sync.set(bkmksSafari);
+                } else {
+                    let e = await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
+                    if (chrome.runtime.lastError) console.log("bg create bookmark lastError", chrome.runtime.lastError);
+                    if (logging) console.log("bg created settings bookmark", e, title);
                 }
             }
         }
