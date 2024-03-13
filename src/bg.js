@@ -561,28 +561,25 @@ async function getRootFolder(sendResponse) {
     // bookmarks.search finds any bookmark with a title containing the
     // search string, but I need to find one with an exact match.  I
     // also only want to include those in the bookmarks bar.
-    try {
-        return await new Promise((resolve, reject) => {
-            chrome.bookmarks.search({ "title": sitedataBookmark }, (candidates) => {
-                if (logging) console.log("bg search candidates", candidates);
-                if (chrome.runtime.lastError) console.log("bg search lastError", chrome.runtime.lastError);
-                let folders = [];
-                for (let i = 0; i < candidates.length; i++) {
-                    if (candidates[i].parentId === bkmksId &&
-                        candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
-                }
-                if (folders.length > 1) {
-                    if (logging) console.log("bg found multiple", sitedataBookmark, "folders", folders);
-                    if (sendResponse) sendResponse("multiple");
-                } else if (folders.length === 0) {
-                    if (logging) console.log("bg found no", sitedataBookmark, "folders");
-                }
-                if (logging) console.log("bg getRootFolder returning", folders);
-                resolve(folders);
-            });
-        });
-    } catch (e){
+    if (isSafari) {
         return [bkmksSafari];
+    } else {
+        let candidates = await chrome.bookmarks.search({ "title": sitedataBookmark });
+        if (chrome.runtime.lastError) console.log("bg search lastError", chrome.runtime.lastError);
+        if (logging) console.log("bg search candidates", candidates);
+        let folders = [];
+        for (let i = 0; i < candidates.length; i++) {
+            if (candidates[i].parentId === bkmksId &&
+                candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
+        }
+        if (folders.length > 1) {
+            if (logging) console.log("bg found multiple", sitedataBookmark, "folders", folders);
+            if (sendResponse) sendResponse("multiple");
+        } else if (folders.length === 0) {
+            if (logging) console.log("bg found no", sitedataBookmark, "folders");
+        }
+        if (logging) console.log("bg getRootFolder returning", folders);
+        return folders;
     }
 }
 async function retrieved(callback) {
