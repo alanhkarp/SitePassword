@@ -538,14 +538,14 @@ get("sitepwmenuhide").onclick = function () {
 get("settingsshow").onclick = showsettings;
 get("clearclipboard").onclick = function() {
     if (logging) console.log("popup clear clipboard");
-    navigator.clipboard.writeText("").then(() => {
+    navigator.clipboard.writeText("").then(async () => {
         get("logo").title = defaultTitle;
         get("logo").style.display = "block";
         get("logopw").style.display = "none";
         // Don't worry about waiting for these to complete
-        chrome.action.setTitle({title: defaultTitle});
-        chrome.storage.local.set({"onClipboard": false});
-        chrome.action.setIcon({"path": "icon128.png"});
+        await chrome.action.setTitle({title: defaultTitle});
+        await chrome.storage.local.set({"onClipboard": false});
+        await chrome.action.setIcon({"path": "icon128.png"});
     }).catch((e) => {
         if (logging) console.log("popup clear clipboard failed", e);
     });
