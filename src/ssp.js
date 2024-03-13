@@ -20,7 +20,11 @@ var phishing = false;
 var warningMsg = false;
 var bg = bgDefault;
 
-if (logging) console.log("popup clipboard checked");
+// I can't get the debugger statement to work unless I wait at least 1 second
+let timeout = testMode ? 1000 : 0;     
+setTimeout(() => {
+    debugger;
+}, timeout);
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
 var database = {};
@@ -56,32 +60,24 @@ window.onload = async function () {
         if (!chrome.bookmarks) element.classList.add("nodisplay");
     }
     if (logging) console.log("popup getting active tab");
-    await new Promise((resolve, reject) => {
-        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-            let timeout = testMode ? 1000 : 0;     
-            setTimeout(async () => {
-                debugger; // Doesn't fire if timeout is 0
-                activetab = tabs[0];
-                if (logging) console.log("popup tab", activetab);
-                let protocol = activetab.url.split(":")[0];
-                if ( protocol === "file") {
-                    domainname = activetab.url.split("///")[1];
-                } else if (protocol === "mailto") {
-                    domainname = activetab.url.split(":")[1];
-                } else {
-                    domainname = activetab.url.split("/")[2]
-                }
-                get("domainname").value = domainname;
-                // Ignore the page domain name when testing
-                get("sitepw").value = "";
-                if (logging) console.log("popup got tab", domainname, activetab);
-                if (logging) console.log("popup getting metadata");
-                instructionSetup();
-                await getsettings(domainname);
-                resolve("onloadPromise");
-            }, timeout);
-        });
-    });
+    let tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    activetab = tabs[0];
+    if (logging) console.log("popup tab", activetab);
+    let protocol = activetab.url.split(":")[0];
+    if ( protocol === "file") {
+        domainname = activetab.url.split("///")[1];
+    } else if (protocol === "mailto") {
+        domainname = activetab.url.split(":")[1];
+    } else {
+        domainname = activetab.url.split("/")[2]
+    }
+    get("domainname").value = domainname;
+    // Ignore the page domain name when testing
+    get("sitepw").value = "";
+    if (logging) console.log("popup got tab", domainname, activetab);
+    if (logging) console.log("popup getting metadata");
+    instructionSetup();
+    await getsettings(domainname);
 }
 async function init() {
     get("superpw").value = bg.superpw || "";
