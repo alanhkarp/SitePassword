@@ -621,30 +621,21 @@ async function forget(toforget, rootFolder, sendResponse) {
     for (const item of toforget)  {
         if (logging) console.log("bg forget item", item);
         delete database.domains[item];
-        await new Promise((resolve, reject) => {
-            if (logging) console.log("bg forget getting children", item, rootFolder);
-            chrome.bookmarks.getChildren(rootFolder.id, (allchildren) => {
+        if (logging) console.log("bg forget getting children", item, rootFolder);
+        let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
+        if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
+        if (logging) console.log("bg forget got children", allchildren);
+        for (let child of allchildren) {
+            if (child.title === item) {
+                if (logging) console.log("bg removing bookmark for", child.title);
+                await chrome.bookmarks.remove(child.id);
+                if (chrome.runtime.lastError) console.log("bg remove child lastError", chrome.runtime.lastError);
+                if (logging) console.log("bg removed bookmark for", item);
+                await chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
                 if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
-                if (logging) console.log("bg forget got children", allchildren);
-                for (let child of allchildren) {
-                    if (child.title === item) {
-                        if (logging) console.log("bg removing bookmark for", child.title);
-                        chrome.bookmarks.remove(child.id, () => {
-                            if (chrome.runtime.lastError) console.log("bg remove child lastError", chrome.runtime.lastError);
-                            if (logging) console.log("bg removed bookmark for", item);
-                            chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" }, () => {
-                                if (chrome.runtime.lastError) console.log("bg forgetr lastError", chrome.runtime.lastError);
-                                if (logging) console.log("bg sent clear message");
-                                resolve("removed");
-                            });
-                        });                       
-                    } else {
-                        resolve("not found");
-                    }
-                }
-            });
-        });
-        if (logging) console.log("bg forget await promise", item, promise);
+                if (logging) console.log("bg sent clear message");
+            }
+        }
         if (logging) console.log("bg forget done", item);
     }
     sendResponse("forgot");
