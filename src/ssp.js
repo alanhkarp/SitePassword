@@ -366,7 +366,7 @@ get("sitename3bluedots").onmouseover = function (e) {
     } else {
         get("sitenamemenuforget").style.opacity = "0.5";
     }
-        menuOn("sitename", e);
+    menuOn("sitename", e);
 }
 get("sitename3bluedots").onclick = get("sitename3bluedots").onmouseover;
 get("sitenamemenu").onmouseleave = function (e) {
@@ -416,10 +416,10 @@ get("username").onkeyup = async function () {
     get("username").onfocus();
     if (resolvers.usernamekeyupResolver) resolvers.usernamekeyupResolver("usernamekeyupPromise");
 }
-get("username").onblur = function (e) {
+get("username").onblur = async function (e) {
     handleblur("username", "username");
     clearDatalist("usernames");
-    changePlaceholder();
+    await changePlaceholder();
 }
 get("usernamemenu").onmouseleave = function (e) {
     menuOff("username", e);
@@ -433,7 +433,7 @@ get("username3bluedots").onmouseover = function (e) {
         get("usernamemenuforget").style.opacity = "0.5";
         get("usernamemenucopy").style.opacity = "0.5";
     }
-        menuOn("username", e);
+    menuOn("username", e);
 }
 get("username3bluedots").onclick = get("username3bluedots").onmouseover;
 get("usernamemenuforget").onclick = function (e) {
@@ -447,7 +447,7 @@ get("usernamemenuforget").onclick = function (e) {
         }
     }
 }
-get("usernamemenucopy").onclick = function(e) {
+get("usernamemenucopy").onclick = async function(e) {
     let username = get("username").value;
     if (!username) return;
     navigator.clipboard.writeText(username).then(() => {
@@ -501,15 +501,14 @@ get("sitepw3bluedots").onclick = get("sitepw3bluedots").onmouseover;
 get("sitepwmenucopy").onclick = function(e) {
     let sitepw = get("sitepw").value;
     if (!sitepw) return;
-    navigator.clipboard.writeText(sitepw).then(() => {
+    navigator.clipboard.writeText(sitepw).then(async () => {
         if (logging) console.log("popup wrote to clipboard", sitepw);
         get("logopw").title = "A site password may be on the clipboard."
         get("logo").style.display = "none";
         get("logopw").style.display = "block";
-        // Don't worry about waiting for these to complete
-        chrome.action.setTitle({title: "A site password may be on the clipboard."});
-        chrome.action.setIcon({"path": "icon128pw.png"});
-        chrome.storage.local.set({"onClipboard": true})
+        await chrome.action.setTitle({title: "A site password may be on the clipboard."});
+        await chrome.action.setIcon({"path": "icon128pw.png"});
+        await chrome.storage.local.set({"onClipboard": true})
         copied("sitepw");
     }).catch((e) => {
         if (logging) console.log("popup sitepw clipboard write failed", e);
