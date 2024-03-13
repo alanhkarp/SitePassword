@@ -60,13 +60,13 @@ var isSafari = typeof chrome.bookmarks === "undefined";
 let bkmksId;
 let bkmksSafari = {};
 async function setup() {
+    await Promise.resolve(); // Because some branches have await and others don't
     if (!isSafari) {
         let nodes = await chrome.bookmarks.getTree();
         if (chrome.runtime.lastError) console.log("bg bkmksid lastError", chrome.runtime.lastError);
         bkmksId = nodes[0].children[0].id;
     } else {
         // Safari
-        await Promise.resolve();
         bkmksId = -1;
         if (logging) console.log("bg got Safari bookmarks", bkmksSafari);
      }

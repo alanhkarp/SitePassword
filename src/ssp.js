@@ -271,7 +271,7 @@ get("superpw").onkeyup = async function (e) {
 get("superpw").onblur = async function (e) {
     if (logging) console.log("popup superpw onmouseout");
     await handleblur("superpw", "superpw");
-    changePlaceholder();
+    await changePlaceholder();
     if (resolvers.superpwblurResolve) resolvers.superpwblurResolver("superpwblurPromise");
 }
 get("superpwmenu").onmouseleave = function (e) {
@@ -336,6 +336,7 @@ get("sitename").onkeyup = async function () {
     if (resolvers.sitenamekeyupResolver) resolvers.sitenamekeyupResolver("sitenamekeyupPromise");
 }
 get("sitename").onblur = async function (e) {
+    await Promise.resolve(); // Because some branches have await and others don't
     let d = isphishing(bg.settings.sitename)
     if (d) {
         get("phishingtext0").innerText = get("sitename").value;
