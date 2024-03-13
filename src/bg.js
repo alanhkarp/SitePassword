@@ -388,7 +388,7 @@ async function persistMetadata(sendResponse) {
         } else {
             await chrome.bookmarks.update(commonSettings[0].id, { "url": url });
             if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
-            if (logging) console.log("bg updated bookmark", _e, commonSettings[0].id, url);
+            if (logging) console.log("bg updated bookmark", commonSettings[0].id, url);
         }
     }
     // Persist changes to domain settings
@@ -491,17 +491,14 @@ async function retrieveMetadata(sendResponse, request, callback) {
     }
 }
 async function parseBkmk(rootFolderId, callback, sendResponse) {
+    await Promise.resolve(); // Because some branches have await and others don't
     if (logging) console.log("bg parsing bookmark");
     let children = [];
-    try {
-        children = await new Promise((resolve, reject) => {
-            chrome.bookmarks.getChildren(rootFolderId, (children) => {
-                if (chrome.runtime.lastError) console.log("bg parseBkmk lastError", chrome.runtime.lastError);
-                resolve(children);
-            });
-        });
-    } catch {
+    if (isSafari) {
         Object.values(bkmksSafari);
+    } else {
+        children = await chrome.bookmarks.getChildren(rootFolderId);
+        if (chrome.runtime.lastError) console.log("bg parseBkmk lastError", chrome.runtime.lastError);
     }
     if (logging) console.log("bg cleaning bookmarks", children);
     let seenTitles = {};
@@ -510,49 +507,42 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         let title = children[i].title;
         // Remove legacy bookmarks
         if (!isNaN(title)) {
-            await new Promise((resolve, reject) => {
-                try {
-                    chrome.bookmarks.remove(children[i].id, () => {
-                        if (chrome.runtime.lastError) console.log("bg remove legacy lastError", chrome.runtime.lastError);
-                        resolve("removed");
-                    });
-                } catch {
-                    delete bkmksSafari[children[i]];
-                    chrome.storage.sync.set(bkmksSafari, () => {
-                        resolve("removed Safari");
-                    });
-                }
-            });
+            if (logging) console.log("bg removing legacy bookmark", children[i]);
+            if (isSafari) {
+                delete bkmksSafari[children[i]];
+                await chrome.storage.sync.set(bkmksSafari);
+                if (chrome.runtime.lastError) console.log("bg remove legacy Safari lastError", chrome.runtime.lastError);
+            } else {
+                await chrome.bookmarks.remove(children[i].id);
+                if (chrome.runtime.lastError) console.log("bg remove legacy lastError", chrome.runtime.lastError);
+            }
         }
         if (seenTitles[title]) {
+            if (logging) console.log("bg duplicate bookmark", children[i]);
             let seen = JSON.parse(sspUrl(children[seenTitles[title]].url).replace(/%22/g, "\"").replace(/%20/g, " "));
             let dupl = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
             if (sameSettings(seen, dupl)) {
-                try {
-                    await new Promise((resolve, reject) => {
-                        chrome.bookmarks.remove(children[i].id, () => {
-                            if (chrome.runtime.lastError) console.log("bg duplicates lastError", chrome.runtime.lastError);
-                            resolve("removed");
-                        });
-                    });
-                } catch {
+                if (isSafari) {
                     delete bkmksSafari[children[i]];
+                } else {
+                    sendResponse({"duplicate": children[i].title});
+                    continue;
                 }
-            } else {
-                sendResponse({"duplicate": children[i].title});
-                continue;
             }
         } else {
             seenTitles[title] = i;
         }
         if (title === commonSettingsTitle) {
+            if (logging) console.log("bg common settings from bookmark", children[i]);
             let common = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
             if (logging) console.log("bg common settings from bookmark", common.defaultSettings.pwlength);
             newdb.clearsuperpw = common.clearsuperpw;
             newdb.hidesitepw = common.hidesitepw;
             defaultSettings = common.defaultSettings || defaultSettings;
         } else {
+            if (logging && i < 3) console.log("bg settings from bookmark", children[i]);
             let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+            if (logging) console.log("bg settings from bookmark", children[i], settings);
             if ('string' !== typeof settings.specials) {
                 let specials = array2string(settings.specials);
                 settings.specials = specials;
@@ -564,7 +554,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         }
     }
     database = newdb;
-    retrieved(callback);
+    await retrieved(callback);
 }
 async function getRootFolder(sendResponse) {
     if (logging) console.log("bg getRootFolder", sitedataBookmark);
