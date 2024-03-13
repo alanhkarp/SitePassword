@@ -440,6 +440,7 @@ async function persistMetadata(sendResponse) {
     sendResponse("persisted");
 }
 async function retrieveMetadata(sendResponse, request, callback) {
+    await Promise.resolve(); // Because some branches have await and others don't
     database = clone(databaseDefault); // Start with an empty database
     bg = clone(bgDefault); // and settings
     if (logging) console.log("bg find SSP bookmark folder", request);
@@ -462,38 +463,30 @@ async function retrieveMetadata(sendResponse, request, callback) {
             createBookmarksFolder = false;
             if (logging || testLogging) console.log("Creating SSP bookmark folder");
             let bkmk = - 1;
-            await new Promise((resolve, reject) => {
-                try {
-                    // If there's no bookmarks folder, but there are entries in sync storage,
-                    // then copy those entries to bookmarks and clear sync storage.  This will
-                    // happen when the browser newly implements the bookmarks API.
-                    if (logging) console.log("bg creating bookmarks folder");
-                    chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark }, async (bkmk) => {
-                        if (chrome.runtime.lastError) console.log("bg sync lastError", chrome.runtime.lastError);
-                        await parseBkmk(bkmk.id, callback, sendResponse);
-                        resolve(bkmk);
-                    });
-                } catch {
-                    // Leaving the entries in sync storage protects against the case where a browser (Safari) 
-                    // starts supporting the bookmarks API, but users haven't updated the browser on all their machines.
-                    //chrome.storage.sync.clear();
-
-                    // Nothing in sync storage unless using Safari
-                    chrome.storage.sync.get((values) => {
-                        for (let title in values) {
-                            chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url}, async (bkmk) => {
-                                if (chrome.runtime.lastError) {
-                                    console.log("bg sync create lastError", chrome.runtime.lastError);
-                                } else {
-                                    if (testLogging) console.log("bg created bookmark", bkmk);
-                                }
-                                await parseBkmk(bkmk.id, callback, sendResponse);
-                                resolve(bkmk);
-                            });
-                        }
-                    });
+            if (isSafari) {
+                // Leaving the entries in sync storage protects against the case where a browser (Safari) 
+                // starts supporting the bookmarks API, but users haven't updated the browser on all their machines.
+                //chrome.storage.sync.clear();
+                // Nothing in sync storage unless using Safari
+                let values = await chrome.storage.sync.get();
+                for (let title in values) {
+                    let bkmk = await chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
+                    if (chrome.runtime.lastError) {
+                        console.log("bg sync create lastError", chrome.runtime.lastError);
+                    } else {
+                        if (testLogging) console.log("bg created bookmark", bkmk);
+                    }
+                    await parseBkmk(bkmk.id, callback, sendResponse);
                 }
-            });
+            } else {
+                // If there's no bookmarks folder, but there are entries in sync storage,
+                // then copy those entries to bookmarks and clear sync storage.  This will
+                // happen when the browser newly implements the bookmarks API.
+                if (logging) console.log("bg creating bookmarks folder");
+                let bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
+                if (chrome.runtime.lastError) console.log("bg sync lastError", chrome.runtime.lastError);
+                await parseBkmk(bkmk.id, callback, sendResponse);
+            }
         }
     }
 }
