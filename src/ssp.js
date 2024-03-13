@@ -260,17 +260,13 @@ get("domainnamehelptextmore").onclick = function (e) {
 const $superpw = get("superpw");
 get("superpw").onkeyup = async function (e) {
     // Start the reminder clock ticking
-    await new Promise((resolve, reject) => {
-        chrome.storage.local.set({"reminder": Date.now()}, async () => {
-            bg.superpw = $superpw.value || "";
-            await ask2generate()
-            setMeter("superpw");
-            setMeter("sitepw");
-            await handleblur("superpw", "superpw");
-            resolve("setreimnder");
-            if (resolvers.superpwkeyupResolver) resolvers.superpwkeyupResolver("superpwkeyupPromise");
-        }); 
-    });
+    await chrome.storage.local.set({"reminder": Date.now()});
+    bg.superpw = $superpw.value || "";
+    await ask2generate()
+    setMeter("superpw");
+    setMeter("sitepw");
+    await handleblur("superpw", "superpw");
+    if (resolvers.superpwkeyupResolver) resolvers.superpwkeyupResolver("superpwkeyupPromise");
 }
 get("superpw").onblur = async function (e) {
     if (logging) console.log("popup superpw onmouseout");
