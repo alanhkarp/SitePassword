@@ -3,7 +3,7 @@ import { bgDefault, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
-const debugMode = false;
+const debugMode = true;
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
 const logging = debugMode;
@@ -20,23 +20,7 @@ var phishing = false;
 var warningMsg = false;
 var bg = bgDefault;
 
-chrome.storage.local.get("onClipboard", (v) => {
-    if (v.onClipboard) {
-        get("logopw").title = "A site password may be on the clipboard."
-        get("logo").style.display = "none";
-        get("logopw").style.display = "block";
-        // Don't worry about waiting for these to complete
-        chrome.action.setTitle({title: "A site password may be on the clipboard."});
-        chrome.action.setIcon({"path": "icon128pw.png"});
-    } else {
-        get("logo").title = defaultTitle;
-        get("logo").style.display = "block";
-        get("logopw").style.display = "none";
-        // Don't worry about waiting for these to complete
-        chrome.action.setTitle({title: defaultTitle});
-        chrome.action.setIcon({"path": "icon128.png"});
-    }
-});
+if (logging) console.log("popup clipboard checked");
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
 var database = {};
@@ -47,7 +31,26 @@ if (logging) console.log("popup starting");
 // popup window closes before the message it sends gets delivered.
 
 window.onload = async function () {
-    // Hide some instructions if the browser doesn't support the bookmarks API
+    if (logging) console.log("popup check clipboard");
+    let v = await chrome.storage.local.get("onClipboard");
+    if (v.onClipboard) {
+        if (logging) console.log("popup clipboard used");
+        get("logopw").title = "A site password may be on the clipboard."
+        get("logo").style.display = "none";
+        get("logopw").style.display = "block";
+        // Don't worry about waiting for these to complete
+        await chrome.action.setTitle({title: "A site password may be on the clipboard."});
+        await chrome.action.setIcon({"path": "icon128pw.png"});
+    } else {
+        if (logging) console.log("popup clipboard not used");
+        get("logo").title = defaultTitle;
+        get("logo").style.display = "block";
+        get("logopw").style.display = "none";
+        // Don't worry about waiting for these to complete
+        await chrome.action.setTitle({title: defaultTitle});
+        await chrome.action.setIcon({"path": "icon128.png"});
+        // Hide some instructions if the browser doesn't support the bookmarks API
+    }
     let tohide = document.getElementsByName("hideifnobookmarks");
     for (let element of tohide) {
         if (!chrome.bookmarks) element.classList.add("nodisplay");

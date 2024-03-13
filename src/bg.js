@@ -6,7 +6,7 @@ import {isSuperPw, normalize,  string2array, array2string, stringXorArray, gener
 const testMode = false;
 const testLogging = false;
 const debugMode = false;
-const logging = true;
+const logging = false;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
 let sitedataBookmark = "SitePasswordData"; 
