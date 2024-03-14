@@ -453,6 +453,7 @@ get("usernamemenucopy").onclick = async function(e) {
     navigator.clipboard.writeText(username).then(() => {
         if (logging) console.log("popup wrote to clipboard", username);
         copied("username");
+        get("clearclipboard").click();
     }).catch((e) => {
         if (logging) console.log("popup username clipboard write failed", e);
     });

@@ -370,6 +370,7 @@ button:enabled:active {
 .copied {
   color: #d51c24;
   top: 2px;
+  right: -5px;
   font-size: 10pt;
 }
 #sitepwcopy:active {
