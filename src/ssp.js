@@ -497,10 +497,11 @@ get("sitepw3bluedots").onmouseover = function (e) {
     menuOn("sitepw", e);
 }
 get("sitepw3bluedots").onclick = get("sitepw3bluedots").onmouseover;
-get("sitepwmenucopy").onclick = function(e) {
+get("sitepwmenucopy").onclick = async function(e) {
     let sitepw = get("sitepw").value;
     if (!sitepw) return;
-    navigator.clipboard.writeText(sitepw).then(async () => {
+    try {
+        await navigator.clipboard.writeText(sitepw);
         if (logging) console.log("popup wrote to clipboard", sitepw);
         get("logopw").title = "A site password may be on the clipboard."
         get("logo").style.display = "none";
@@ -509,9 +510,9 @@ get("sitepwmenucopy").onclick = function(e) {
         await chrome.action.setIcon({"path": "icon128pw.png"});
         await chrome.storage.local.set({"onClipboard": true})
         copied("sitepw");
-    }).catch((e) => {
+    } catch(e) {
         if (logging) console.log("popup sitepw clipboard write failed", e);
-    });
+    }
     menuOff("sitepw", e);
 }
 get("sitepwmenuhelp").onclick = function (e) {
