@@ -536,9 +536,10 @@ get("sitepwmenuhide").onclick = function () {
     get("sitepwmenuhide").classList.toggle("nodisplay");
 }
 get("settingsshow").onclick = showsettings;
-get("clearclipboard").onclick = function() {
+get("clearclipboard").onclick = async function() {
     if (logging) console.log("popup clear clipboard");
-    navigator.clipboard.writeText("").then(async () => {
+    try {
+        await navigator.clipboard.writeText("");
         get("logo").title = defaultTitle;
         get("logo").style.display = "block";
         get("logopw").style.display = "none";
@@ -546,9 +547,9 @@ get("clearclipboard").onclick = function() {
         await chrome.action.setTitle({title: defaultTitle});
         await chrome.storage.local.set({"onClipboard": false});
         await chrome.action.setIcon({"path": "icon128.png"});
-    }).catch((e) => {
+    } catch(e) {
         if (logging) console.log("popup clear clipboard failed", e);
-    });
+    }
 }
 document.oncopy = get("clearclipboard").onclick;
 get("settingssave").onclick = hidesettings;
