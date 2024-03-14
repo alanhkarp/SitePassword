@@ -1109,17 +1109,14 @@ async function sitedataHTML() {
     let doc = sitedataHTMLDoc(workingdoc, sorted);
     let sd = doc.outerHTML
     let url = "data:text/html," + encodeURIComponent(sd);
-    await new Promise((resolve, reject) => {
-        chrome.tabs.create({ "url": url }).then((e) => {
-            if (logging) console.log("popup downloaded settings");
-            resolve("sitedataHTML");
-        }).catch((e) => {
-            // Can't SaveAs on Chrome
-            let w = window.open();
-            sitedataHTMLDoc(w.document, sorted);
-            resolve("sitedataHTML Chrome");
-        });
-    });
+    try {
+        let e = await chrome.tabs.create({ "url": url });
+        if (logging) console.log("popup downloaded settings");
+    } catch(e) {
+        // Can't SaveAs on Chrome
+        let w = window.open();
+        sitedataHTMLDoc(w.document, sorted);
+    }
     return sd;
 }
 function sitedataHTMLDoc(doc, sorted) {
