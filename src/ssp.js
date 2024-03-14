@@ -703,14 +703,10 @@ get("cancelwarning").onclick = async function () {
     get("sitename").value = "";
     get("username").value = "";
     if (!testMode) {
-        await new Promise((resolve, reject) => {
-            chrome.tabs.update(activetab.id, { url: "chrome://newtab" }, () => {
-                resolve("cancelwarning");
-                if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver("cancelwarningPromise");
-            });
-        });
+        await chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
         window.close();
     }
+    if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver("cancelwarningPromise");
 }
 get("warningbutton").onclick = async function () {
     phishing = false;
