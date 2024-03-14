@@ -679,14 +679,10 @@ get("makedefaultbutton").onclick = async function () {
         specials: get("specials").value,
     }
     await wakeup("defaultbutton");
-    await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults}, () => {
-            if (chrome.runtime.lastError) console.log("popup makedefaultbutton lastError", chrome.runtime.lastError);
-            if (logging) console.log("popup newDefaults sent", newDefaults);
-            resolve("makedefaultbutton");
-            if (resolvers.makedefaultResolver) resolvers.makedefaultResolver("makedefaultbuttonPromise");
-        });
-    });
+    await chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults});
+    if (chrome.runtime.lastError) console.log("popup makedefaultbutton lastError", chrome.runtime.lastError);
+    if (logging) console.log("popup newDefaults sent", newDefaults);
+    if (resolvers.makedefaultResolver) resolvers.makedefaultResolver("makedefaultbuttonPromise");
 }
 get("sitedatagetbutton").onclick = sitedataHTML;
 get("exportbutton").onclick = exportPasswords;
