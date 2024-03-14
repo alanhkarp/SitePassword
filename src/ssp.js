@@ -3,7 +3,7 @@ import { bgDefault, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
-const debugMode = true;
+const debugMode = false;
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
 const logging = debugMode;
@@ -475,7 +475,6 @@ get("sitepw").onblur = async function (e) {
     let provided = get("sitepw").value;
     let computed = await ask2generate(bg)
     bg.settings.xor = xorStrings(provided, computed);
-    get("sitepw").value = provided; 
     if (resolvers.sitepwblurResolver) resolvers.sitepwblurResolver("sitepwblurPromise"); 
 }
 get("sitepw").onkeyup = function () {
@@ -985,7 +984,7 @@ async function ask2generate() {
     function remainder(computed) {
         let provided = stringXorArray(computed, bg.settings.xor);
         if (logging) console.log("popup filling sitepw field", computed, provided, bg.settings.xor);
-        get("sitepw").value = provided;
+        if (document.activeElement !== get("sitepw")) get("sitepw").value = provided;
         hidesitepw();
         setMeter("sitepw");
         return computed;
