@@ -779,7 +779,7 @@ get("exportref").onclick = function (e) {
     e.stopPropagation();
     sectionClick("export");
 }
-get("phishingcheck").onclick = function (e) {
+get("phishingcheck").onclick = async function (e) {
     e.stopPropagation();
     await chrome.tabs.create({url: this.href});
 }
@@ -941,12 +941,8 @@ async function changePlaceholder() {
     let readyForClick = false;
     if (get("superpw").value && u) readyForClick = true;
     await wakeup("changePlaceholder");
-    await new Promise((resolve, reject) => {
-        chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick }, () => {
-            if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
-            resolve("changePlaceholder");
-        });
-    });
+    await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
+    if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
 }
 function setfocus(element) {
     element.focus();
