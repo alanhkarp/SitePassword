@@ -741,14 +741,10 @@ get("forgetbutton").onclick = async function () {
     bg = bgDefault;
     if (logging) console.log("popup forgetbutton sending forget", list);
     await wakeup("foregetbutton");
-    await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({"cmd": "forget", "toforget": list}, (response) => {
-            if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
-            if (logging) console.log("popup forget response", response);
-            if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
-            resolve("forgetbutton");
-        });
-    });
+    let response = await chrome.runtime.sendMessage({"cmd": "forget", "toforget": list});
+    if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
+    if (logging) console.log("popup forget response", response);
+    if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
     get("cancelbutton").click();
 }
 get("cancelbutton").onclick = function () {
