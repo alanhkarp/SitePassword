@@ -781,7 +781,7 @@ get("exportref").onclick = function (e) {
 }
 get("phishingcheck").onclick = function (e) {
     e.stopPropagation();
-    chrome.tabs.create({url: this.href});
+    await chrome.tabs.create({url: this.href});
 }
 // Generic code for menus
 function copied(which) {
