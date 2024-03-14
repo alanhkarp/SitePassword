@@ -953,9 +953,10 @@ function defaultfocus() {
     if (!get("superpw").value) setfocus(get("superpw"));
 }
 async function ask2generate() {
+    Promise.resolve(); // Because some branches have await and others don't
     if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
         msgon("nopw");
-        return remainder("");
+        computed = "";
     } else {
         message("nopw", false); // I don't want to hide any other open messages
         const computed = await generatePassword(bg);
@@ -966,9 +967,6 @@ async function ask2generate() {
                 msgon("nopw");
             }
         }
-        return remainder(computed);
-    }
-    function remainder(computed) {
         let provided = stringXorArray(computed, bg.settings.xor);
         if (logging) console.log("popup filling sitepw field", computed, provided, bg.settings.xor);
         if (document.activeElement !== get("sitepw")) get("sitepw").value = provided;
