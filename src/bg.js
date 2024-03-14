@@ -1,8 +1,8 @@
 'use strict';
 import {isSuperPw, normalize,  string2array, array2string, stringXorArray, generatePassword } from "./generate.js";
 // Set to true to run the tests in test.js then reload the extension.
-// Using any kind of storage (session, local, sync) is awkward because 
-// accessing the value is an async operation.
+// Tests must be run on a page that has the content script, specifically,
+// http or https whether it has a password field or not.
 const testMode = false;
 const testLogging = false;
 const debugMode = false;

@@ -137,7 +137,7 @@ export async function runTests() {
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         if (loggingProvide) console.log("testProvidedpw saved", $sitepw.value);
         // See if it remembers
-        await clearForm();
+        clearForm();
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
         await triggerEvent("blur", $domainname, "domainnameblurResolver");
         if (loggingProvide) console.log("testProvidedpw domainname blur", $sitepw.value, $providesitepw.checked);
@@ -192,7 +192,7 @@ export async function runTests() {
             console.warn("Failed: Phishing same account");
             failed += 1;
         }
-        await clearForm();
+        clearForm();
         await fillForm("", "allantheguru.alanhkarp.com", "", "");
         await triggerEvent("blur", $domainname, "domainnameblurResolver");
         test = $sitename.value === normalize("Guru") && $username.value === "alan";
