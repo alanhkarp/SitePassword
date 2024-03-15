@@ -75,13 +75,9 @@ function searchShadowRoots(element) {
 // so it can clear the icon
 document.oncopy = async function () {
     await wakeup();
-    await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({"cmd": "resetIcon"}, () => {
-            if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw document.oncopy error", chrome.runtime.lastError);
-            if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
-            resolve(oncopy);
-        });
-});
+    await chrome.runtime.sendMessage({"cmd": "resetIcon"});
+    if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw document.oncopy error", chrome.runtime.lastError);
+    if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
 }
 function startup(sendPageInfo) {
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
