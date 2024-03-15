@@ -267,18 +267,14 @@ async function pwfieldOnclick(event) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
     if ((!this.placeholder) || this.placeholder === clickHere) {
         await wakeup();
-        await new Promise((resolve, reject) => {
-            chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
-                if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw pwfieldOnclick error", chrome.runtime.lastError);
-                sitepw = response;
-                let mutations = mutationObserver.takeRecords();
-                fillfield(this, response);
-                let myMutations = mutationObserver.takeRecords();
-                if (logging) console.log(document.URL, Date.now() - start, "findpw got password", this, response, myMutations);
-                handleMutations(mutations);
-                resolve("pwfieldOnclick");
-            });
-        });
+        let response = await chrome.runtime.sendMessage({ "cmd": "getPassword" });
+        if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw pwfieldOnclick error", chrome.runtime.lastError);
+        sitepw = response;
+        let mutations = mutationObserver.takeRecords();
+        fillfield(this, response);
+        let myMutations = mutationObserver.takeRecords();
+        if (logging) console.log(document.URL, Date.now() - start, "findpw got password", this, response, myMutations);
+        handleMutations(mutations);
     } else {
         // Because people don't always pay attention
         if (!this.placeholder || this.placeholder === clickSitePassword) alert(clickSitePassword);
