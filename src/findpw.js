@@ -199,41 +199,37 @@ async function sendpageinfo(cpi, clicked, onload) {
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length);
     await wakeup();
-    await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({
-            "count": cpi.pwfields.length,
-            "clicked": clicked,
-            "onload": onload
-        }, (response) => {
-            if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw senpageinfo error", chrome.runtime.lastError);
-            if (response === "multiple") {
-                alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
-                resolve("multiple");
-                return;
-            }
-            if (response === "duplicate" && !dupNotified) {
-                dupNotified = true;
-                let alertString = "You have one or more duplicate bookmarks in your SitePasswordData bookmark folder.  ";
-                alertString += "Open the Bookmark Manager and delete the ones in the SitePasswordData folder ";
-                alertString +- "that you don't want.  Then reload this page.";
-                alert(alertString);
-                resolve("duplicate");
-                return;
-            }
-            if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
-            if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
-            readyForClick = response.readyForClick;
-            userid = response.u;
-            let mutations = mutationObserver.takeRecords();
-            fillfield(cpi.idfield, userid);
-            setPlaceholder(userid, response.p);
-            if (userid) fillfield(cpi.pwfields[0], "");
-            let myMutations = mutationObserver.takeRecords();
-            if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
-            handleMutations(mutations);
-            resolve("sendpageinfo");
+    let response = await chrome.runtime.sendMessage({
+        "count": cpi.pwfields.length,
+        "clicked": clicked,
+        "onload": onload
         });
-    });
+    if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw senpageinfo error", chrome.runtime.lastError);
+    if (response === "multiple") {
+        alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
+        resolve("multiple");
+        return;
+    }
+    if (response === "duplicate" && !dupNotified) {
+        dupNotified = true;
+        let alertString = "You have one or more duplicate bookmarks in your SitePasswordData bookmark folder.  ";
+        alertString += "Open the Bookmark Manager and delete the ones in the SitePasswordData folder ";
+        alertString +- "that you don't want.  Then reload this page.";
+        alert(alertString);
+        resolve("duplicate");
+        return;
+    }
+    if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
+    if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
+    readyForClick = response.readyForClick;
+    userid = response.u;
+    let mutations = mutationObserver.takeRecords();
+    fillfield(cpi.idfield, userid);
+    setPlaceholder(userid, response.p);
+    if (userid) fillfield(cpi.pwfields[0], "");
+    let myMutations = mutationObserver.takeRecords();
+    if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
+    handleMutations(mutations);
 }
 function setPlaceholder(userid) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", userid, readyForClick, cpi.pwfields);
