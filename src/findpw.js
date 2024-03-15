@@ -93,16 +93,12 @@ function startup(sendPageInfo) {
         // storage.session.
         let keepAlive = setInterval(async () => {
             await wakeup();
-            await new Promise((resolve, reject) => {
-                chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
-                    if (chrome.runtime.lastError) {
-                        console.log("findpw keepAlive error", chrome.runtime.lastError);
-                        clearInterval(keepAlive);
-                    }
-                    if (!alive.duplicate || !alive.keepAlive) clearInterval(keepAlive);
-                    resolve("keepAlive");
-                });
-            });
+            let alive = await chrome.runtime.sendMessage({"cmd": "keepAlive"});
+            if (chrome.runtime.lastError) {
+                console.log("findpw keepAlive error", chrome.runtime.lastError);
+                clearInterval(keepAlive);
+            }
+            if (!alive.duplicate || !alive.keepAlive) clearInterval(keepAlive);
         }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button
         document.body.onclick = function () {
@@ -187,6 +183,8 @@ function fixfield(field, text) {
     makeEvent(field, "keydown");
     makeEvent(field, "keypress");
     makeEvent(field, "keyup");
+    makeEvent(field, "cut");
+    makeEvent(field, "paste");
     // Is there a better test for telling if the page knows the value has been set?
     if (logging) console.log(document.URL, Date.now() - start, "findpw focus test", field.value, text);
 }
