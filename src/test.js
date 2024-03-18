@@ -313,25 +313,15 @@ export async function runTests() {
 
     // I want to start with a clean slate for each set of tests.
     async function resetState() {
-        if (loggingReset) console.log("resetState clear form");
-        return new Promise((resolve, reject) => {
-            if (loggingReset) console.log("resetState clear storage");
-            chrome.storage.sync.clear(() => {;
-                if (loggingReset) console.log("resetState send reset message");
-                chrome.runtime.sendMessage({"cmd": "reset"}, async (response) => {
-                    if (chrome.runtime.lastError) {
-                        if (loggingReset) console.error("resetState reset message error", chrome.runtime.lastError);
-                        reject(chrome.runtime.lastError);
-                    } else {
-                        if (loggingReset) console.log("resetState reset message response", response);
-                        clearForm();
-                        await getsettings("");
-                        if (loggingClear) console.log("clearForm getsettings done", $pwlength.value);
-                                        resolve(response);
-                    }
-                });
-            })
-        });
+        if (loggingReset) console.log("resetState");
+        await chrome.storage.sync.clear();
+        if (loggingReset) console.log("resetState send reset message");
+        let response = chrome.runtime.sendMessage({"cmd": "reset"}, );
+        if (chrome.runtime.lastError) console.error("resetState reset message error", chrome.runtime.lastError);
+        if (loggingReset) console.log("resetState reset message response", response);
+        clearForm();
+        await getsettings("");
+        if (loggingClear) console.log("resetState done", $pwlength.value);
     }
     function clearForm() {
         if (loggingClear) console.log("clearForm", defaultSettings.pwlength);
