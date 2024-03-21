@@ -1136,6 +1136,7 @@ function sitedataHTMLDoc(doc, sorted) {
     tableHeader(table, headings);
     for (let i = 0; i < sorted.length; i++) {
         let tr = addElement(table, "tr");
+        if (i % 2) tr.style.backgroundColor = "rgb(136, 204, 255, 30%)";
         addRow(tr, sorted[i]);
     }
     return doc.documentElement;
