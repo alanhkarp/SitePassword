@@ -22,7 +22,7 @@ var protocol; // VSCode says this is unused, but it is in function retrieved() b
 var rootFolder = {id: -1};
 var pwcount = 0;
 var createBookmarksFolder = true;
-export const webpage = "https://sitepassword.info/index.html";
+export const webpage = "https://sitepassword.info";
 export const config = {
     lower: "abcdefghijklmnopqrstuvwxyz",
     upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",

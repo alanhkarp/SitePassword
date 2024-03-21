@@ -1120,6 +1120,13 @@ async function sitedataHTML() {
     return sd;
 }
 function sitedataHTMLDoc(doc, sorted) {
+    let header = doc.getElementsByTagName("head")[0];
+    let title = doc.createElement("title");
+    title.innerText = "SitePassword Data";
+    header.appendChild(title);
+    let style = doc.createElement("style");
+    header.appendChild(style);
+    style.innerText = "th {text-align: left;}";
     let body = doc.getElementsByTagName("body")[0];
     let table = addElement(body, "table");
     tableCaption(table);
