@@ -27,7 +27,7 @@ export const config = {
     lower: "abcdefghijklmnopqrstuvwxyz",
     upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     digits: "0123456789",
-    specials: "/!=@?._-",
+    specials: "$/!=@?._-",
 };
 const baseDefaultSettings = {
     sitename: "",
