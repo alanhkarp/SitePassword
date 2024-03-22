@@ -1070,7 +1070,6 @@ async function exportPasswords() {
     // back to true in message(), which is called from ask2generate().
     let rootmouseleave = get("root").onmouseleave;
     get("root").onmouseleave = function () {};
-    console.log("popup exportPasswords autclose", autoclose);
     let exportbutton = get("exportbutton");
     exportbutton.innerText = "Exporting...";
     let domainnames = database.domains;
