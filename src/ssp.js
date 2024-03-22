@@ -1107,17 +1107,13 @@ async function sitedataHTML() {
     });
     let workingdoc = document.implementation.createHTMLDocument("SitePassword Data");
     let doc = sitedataHTMLDoc(workingdoc, sorted);
-    let sd = doc.outerHTML
-    let url = "data:text/html," + encodeURIComponent(sd);
-    try {
-        let e = await chrome.tabs.create({ "url": url });
-        if (logging) console.log("popup downloaded settings");
-    } catch(e) {
-        // Can't SaveAs on Chrome
-        let w = window.open();
-        sitedataHTMLDoc(w.document, sorted);
-    }
-    return sd;
+    let html = new XMLSerializer().serializeToString(doc);
+    let blob = new Blob([html], {type: "text/html"});
+    let url = URL.createObjectURL(blob);
+    const $data = get("data");
+    $data.href = url;
+    $data.click();
+    return;
 }
 function sitedataHTMLDoc(doc, sorted) {
     let header = doc.getElementsByTagName("head")[0];
