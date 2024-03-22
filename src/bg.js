@@ -365,6 +365,7 @@ async function persistMetadata(sendResponse) {
     delete common.domains;
     delete common.sites;
     common.defaultSettings = defaultSettings;
+    common.defaultSettings.specials = string2array(defaultSettings.specials);
     if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
     if (commonSettings.length === 0) {
