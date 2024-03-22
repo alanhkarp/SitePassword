@@ -1091,8 +1091,7 @@ async function exportPasswords() {
         get("sitename").value = sitename;
         get("username").value = username;
         try {
-            await ask2generate();
-            let sitepw = get("sitepw").value;
+            let sitepw = await ask2generate();
             data += '"' + domainname + '"' + "," + '"' + sitename + '"' + "," + '"' + username + '"' + "," + '"' + sitepw + '"' + "\n";
         } catch (e) {
             console.log("popup exportPasswords error", e);
