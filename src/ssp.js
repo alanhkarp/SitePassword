@@ -1064,10 +1064,16 @@ function updateExportButton() {
         get("exportbutton").title = "Enter your super password to export site data";
     }
 }
-function exportPasswords() {
+async function exportPasswords() {
     if (!get("superpw").value) return;
+    // I would normally set autoclose to false, but it gets turned 
+    // back to true in message(), which is called from ask2generate().
+    let rootmouseleave = get("root").onmouseleave;
+    get("root").onmouseleave = function () {};
+    console.log("popup exportPasswords autclose", autoclose);
+    let exportbutton = get("exportbutton");
+    exportbutton.innerText = "Exporting...";
     let domainnames = database.domains;
-    let sitenames = database.sites;
     let sorted = Object.keys(domainnames).sort(function (x, y) {
         if (x.toLowerCase() < y.toLowerCase()) return -1;
         if (x.toLowerCase() == y.toLowerCase()) return 0;
@@ -1083,20 +1089,30 @@ function exportPasswords() {
         let username = settings.username;
         bg.settings.sitename = sitename;
         bg.settings.username = username;
-        ask2generate().then(() => {
+        get("sitename").value = sitename;
+        get("username").value = username;
+        try {
+            await ask2generate();
             let sitepw = get("sitepw").value;
             data += '"' + domainname + '"' + "," + '"' + sitename + '"' + "," + '"' + username + '"' + "," + '"' + sitepw + '"' + "\n";
-        });
+        } catch (e) {
+            console.log("popup exportPasswords error", e);
+        }
     }
     bg.settings.sitename = oldsitename;
     bg.settings.username = oldusername;
-    let url = "data:text/csv," + encodeURIComponent(data);
+    get("sitename").value = oldsitename;
+    get("username").value = oldusername;
+    let blob = new Blob([data], {type: "text/csv"});
+    let url = URL.createObjectURL(blob);
     let link = document.createElement("a");
-    link.setAttribute("href", url);
+    link.href = url;
     link.download = "SitePasswordExport.csv";
     document.body.appendChild(link);
     link.click();    
     document.body.removeChild(link);
+    exportbutton.innerText = "Export passwords";
+    get("root").onmouseleave = rootmouseleave;
 }
 async function sitedataHTML() {
     var domainnames = database.domains
