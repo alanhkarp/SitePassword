@@ -536,6 +536,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         if (title === commonSettingsTitle) {
             if (logging) console.log("bg common settings from bookmark", children[i]);
             let common = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+            common.defaultSettings.specials = array2string(common.defaultSettings.specials);
             if (logging) console.log("bg common settings from bookmark", common.defaultSettings.pwlength);
             newdb.clearsuperpw = common.clearsuperpw;
             newdb.hidesitepw = common.hidesitepw;
