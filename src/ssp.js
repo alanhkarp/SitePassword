@@ -5,20 +5,21 @@ import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xor
 
 const debugMode = false;
 // testMode must start as false.  Its value will come in a message from bg.js.
-let testMode = false;
+const testMode = false;
 const logging = debugMode;
 if (logging) console.log("Version 2.0");
-var activetab;
-var domainname;
-var mainPanelTimer;
-var autoclose = true;
+let activetab;
+let domainname;
+let mainPanelTimer;
+let autoclose = true;
+let exporting = false;
 const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
-var defaultTitle = "SitePassword";
+const defaultTitle = "SitePassword";
 
-var phishing = false;
-var warningMsg = false;
-var bg = bgDefault;
+let phishing = false;
+let warningMsg = false;
+let bg = bgDefault;
 
 // I can't get the debugger statement to work unless I wait at least 1 second
 let timeout = testMode ? 1000 : 0;     
@@ -27,7 +28,7 @@ setTimeout(() => {
 }, timeout);
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
-var database = {};
+let database = {};
 if (logging) console.log("popup starting");
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
@@ -162,7 +163,7 @@ export async function getsettings(testdomainname) {
 // this race is the source of any problems related to loss of the message sent here.
 get("root").onmouseleave = function (event) {
     // If I close the window immediately, then messages in flight get lost
-    if (autoclose && !document.elementFromPoint(event.pageX, event.pageY)) {
+    if (autoclose && !exporting && !document.elementFromPoint(event.pageX, event.pageY)) {
         if (!debugMode) get("root").style.opacity = 0.1;
         mainPanelTimer = setTimeout(() => {
             if (!debugMode) window.close();
@@ -179,7 +180,7 @@ get("mainpanel").onmouseleave = async function () {
     // user clicks the same account button.
     get("superpw").focus(); // Force phishing test in case focus is on sitename
     if (logging) console.log("popup phishing mouseleave phishing", phishing);
-    if (phishing) {
+    if (phishing || exporting) {
         if (logging) console.log("popup phishing mouseleave resolve mouseleaveResolver", phishing, resolvers);
         if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
         return;
@@ -1068,49 +1069,58 @@ async function exportPasswords() {
     if (!get("superpw").value) return;
     // I would normally set autoclose to false, but it gets turned 
     // back to true in message(), which is called from ask2generate().
-    let rootmouseleave = get("root").onmouseleave;
-    get("root").onmouseleave = function () {};
-    let exportbutton = get("exportbutton");
-    exportbutton.innerText = "Exporting...";
-    let domainnames = database.domains;
-    let sorted = Object.keys(domainnames).sort(function (x, y) {
-        if (x.toLowerCase() < y.toLowerCase()) return -1;
-        if (x.toLowerCase() == y.toLowerCase()) return 0;
-        return 1;
-    });
-    let oldsitename = get("sitename").value;
-    let oldusername = get("username").value;
-    let data = "Domain Name, Site Name, User Name, Site Password\n";
-    for (let i = 0; i < sorted.length; i++) {
-        let domainname = sorted[i];
-        let sitename = database.domains[domainname];
-        let settings = database.sites[sitename];
-        let username = settings.username;
-        bg.settings.sitename = sitename;
-        bg.settings.username = username;
-        get("sitename").value = sitename;
-        get("username").value = username;
-        try {
-            let sitepw = await ask2generate();
-            data += '"' + domainname + '"' + "," + '"' + sitename + '"' + "," + '"' + username + '"' + "," + '"' + sitepw + '"' + "\n";
-        } catch (e) {
-            console.log("popup exportPasswords error", e);
+    exporting = true;
+    // I need the try block to put exporting back to false if there is an error
+    try {
+        let exportbutton = get("exportbutton");
+        exportbutton.innerText = "Exporting...";
+        let domainnames = database.domains;
+        let sorted = Object.keys(domainnames).sort(function (x, y) {
+            if (x.toLowerCase() < y.toLowerCase()) return -1;
+            if (x.toLowerCase() == y.toLowerCase()) return 0;
+            return 1;
+        });
+        let olddomainname = get("domainname").value;
+        let oldsitename = get("sitename").value;
+        let oldusername = get("username").value;
+        let data = "Domain Name, Site Name, User Name, Site Password\n";
+        for (let i = 0; i < sorted.length; i++) {
+            let domainname = sorted[i];
+            let sitename = database.domains[domainname];
+            let settings = database.sites[sitename];
+            let username = settings.username;
+            bg.settings.sitename = sitename;
+            bg.settings.username = username;
+            get("domainname").value = domainname;
+            get("sitename").value = sitename;
+            get("username").value = username;
+            try {
+                let sitepw = await ask2generate();
+                data += '"' + domainname + '"' + "," + '"' + sitename + '"' + "," + '"' + username + '"' + "," + '"' + sitepw + '"' + "\n";
+            } catch (e) {
+                console.log("popup exportPasswords error", e);
+            }
         }
+        bg.settings.sitename = oldsitename;
+        bg.settings.username = oldusername;
+        get("sitename").value = oldsitename;
+        get("username").value = oldusername;
+        get("domainname").value = olddomainname;
+        let blob = new Blob([data], {type: "text/csv"});
+        let url = URL.createObjectURL(blob);
+        let link = document.createElement("a");
+        link.href = url;
+        link.download = "SitePasswordExport.csv";
+        document.body.appendChild(link);
+        link.click();    
+        document.body.removeChild(link);
+        exporting = false;
+    } catch (e) {
+        alert("Export error: Close SitePassword and try again.");
+        console.log("popup exportPasswords error", e);
+        exportbutton.innerText = "Export passwords";
+        exporting = false;
     }
-    bg.settings.sitename = oldsitename;
-    bg.settings.username = oldusername;
-    get("sitename").value = oldsitename;
-    get("username").value = oldusername;
-    let blob = new Blob([data], {type: "text/csv"});
-    let url = URL.createObjectURL(blob);
-    let link = document.createElement("a");
-    link.href = url;
-    link.download = "SitePasswordExport.csv";
-    document.body.appendChild(link);
-    link.click();    
-    document.body.removeChild(link);
-    exportbutton.innerText = "Export passwords";
-    get("root").onmouseleave = rootmouseleave;
 }
 async function sitedataHTML() {
     var domainnames = database.domains
