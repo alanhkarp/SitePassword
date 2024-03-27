@@ -1083,14 +1083,13 @@ async function exportPasswords() {
         let olddomainname = get("domainname").value;
         let oldsitename = get("sitename").value;
         let oldusername = get("username").value;
+        let oldsettings = clone(bg.settings);
         let data = "Domain Name, Site Name, User Name, Site Password\n";
-        for (let i = 0; i < sorted.length; i++) {
-            let domainname = sorted[i];
+        for (let domainname of sorted) {
             let sitename = database.domains[domainname];
             let settings = database.sites[sitename];
             let username = settings.username;
-            bg.settings.sitename = sitename;
-            bg.settings.username = username;
+            bg.settings = settings;
             get("domainname").value = domainname;
             get("sitename").value = sitename;
             get("username").value = username;
@@ -1101,8 +1100,7 @@ async function exportPasswords() {
                 console.log("popup exportPasswords error", e);
             }
         }
-        bg.settings.sitename = oldsitename;
-        bg.settings.username = oldusername;
+        bg.settings = oldsettings;
         get("sitename").value = oldsitename;
         get("username").value = oldusername;
         get("domainname").value = olddomainname;
@@ -1115,6 +1113,7 @@ async function exportPasswords() {
         link.click();    
         document.body.removeChild(link);
         exporting = false;
+        get("superpw").blur(); // To get the right password to show up
     } catch (e) {
         alert("Export error: Close SitePassword and try again.");
         console.log("popup exportPasswords error", e);
