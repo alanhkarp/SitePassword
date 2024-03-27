@@ -260,7 +260,7 @@ get("superpw").onkeyup = async function (e) {
     await ask2generate()
     setMeter("superpw");
     setMeter("sitepw");
-    await handleblur("superpw", "superpw");
+    await handlekeyup("superpw", "superpw");
     if (resolvers.superpwkeyupResolver) resolvers.superpwkeyupResolver("superpwkeyupPromise");
 }
 get("superpw").onblur = async function (e) {
