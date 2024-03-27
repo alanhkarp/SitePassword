@@ -122,6 +122,19 @@ function startup(sendPageInfo) {
                     setPlaceholder(userid);
                     sendResponse("fillfields");
                     break;
+                case "update":
+                    // If the user changes a setting in the popup, the password
+                    // on the page may not be what the user thinks it is.  However,
+                    // I can't just fill the form if the password field is empty.
+                    userid = request.u;
+                    fillfield(cpi.idfield, userid);
+                    sitepw = request.p;
+                    if (cpi.pwfields[0] && cpi.pwfields[0].value) {
+                        fillfield(cpi.pwfields[0], sitepw);
+                        setPlaceholder(userid);
+                        sendResponse("update");
+                    }
+                    break;
                 case "count":
                     cpi = countpwid();
                     let pwdomain = document.location.hostname;
@@ -166,8 +179,8 @@ function handleMutations(mutations) {
     if (logging) console.log("findpw handleMutations my mutations", myMutations);
 }
 function fillfield(field, text) {
-    // Don't change if there is a value to avoid mutationObserver cycling
-    if (field && text && !field.value) {
+    // Don't change unless there is a different value to avoid mutationObserver cycling
+    if (field && text && text !== field.value) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
         field.value = text.trim();
         fixfield(field, text.trim());

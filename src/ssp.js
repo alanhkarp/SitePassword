@@ -916,10 +916,15 @@ async function handleblur(element, field) {
         get("providesitepw").disabled = true;
     }
     bg.settings.characters = characters(bg.settings, database);
-    await ask2generate()
+    let pw = await ask2generate()
     setMeter("superpw");
     setMeter("sitepw");
-    updateExportButton();    
+    updateExportButton(); 
+    let u = get("username").value || "";
+    let readyForClick = false;
+    if (get("superpw").value && u) readyForClick = true;
+    await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
+    if (chrome.runtime.lastError) console.log("popup handleblur lastError", chrome.runtime.lastError);
 }
 async function handleclick(which) {
     bg.settings["allow" + which] = get("allow" + which + "checkbox").checked;
