@@ -1113,7 +1113,7 @@ async function exportPasswords() {
         link.click();    
         document.body.removeChild(link);
         exporting = false;
-        get("superpw").blur(); // To get the right password to show up
+        await ask2generate(); // To get the right password to show up
     } catch (e) {
         alert("Export error: Close SitePassword and try again.");
         console.log("popup exportPasswords error", e);
