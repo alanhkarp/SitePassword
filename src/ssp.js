@@ -222,13 +222,7 @@ get("title").onclick = function () {
     window.open("https://sitepassword.info");
 }
 // Domain Name
-get("domainname").onblur = async function (e) {
-    get("sitename").value = "";
-    if (testMode) domainname = get("domainname").value;
-    await getsettings(domainname);
-    await fill();
-    if (resolvers.domainnameblurResolver) resolvers.domainnameblurResolver("domainnameblurPromise");
-}
+// There are no actions the user can take on the domain name field.
 get("domainnamemenu").onmouseleave = function (e) {
     menuOff("domainname", e);
 }
