@@ -889,7 +889,7 @@ function setMeter(which) {
     let guesses = getGuesses(which);
     // 10^9 guesses per second, 3*10^7 seconds per year, average success in 1/2 the tries
     let years = guesses/(1e9*3e7*2);
-    if (which === "superpw") years /= 16*1024; // So the superpw will have more entropy than the site password
+    if (which === "superpw") years /= 256*1024; // So the superpw will have more entropy than the site password
     let score = getScore(years);
     let index = Math.floor(score/5);
     $meter.value = score;
@@ -897,20 +897,21 @@ function setMeter(which) {
     $meter.title = strengthText[index] + guessLabel(years);
     $input.style.color = strengthColor[index];
     function getScore(years) {
-        let strong = 500;
-        let good = 5;
-        let weak = 0.1;
-        let veryweak = 0.01;
-        if (years > strong) {
+        let strong = Math.log10(1000);
+        let good = Math.log10(1);
+        let weak = Math.log10(1/12);
+        let veryweak = Math.log10(1/365);
+        let logYears = Math.log10(years);
+        if (logYears > strong) {
             return 20;
-        } else if (years > good) {
-            return 15 + (years - good) * (20 - 15) / (strong - good);
-        } else if (years > weak) {
-            return 10 + (years - weak) * (15 - 10) / (good - weak);
-        } else if (years > veryweak) {
-            return 5 + (years - veryweak) * (10 - 5) / (weak - veryweak);
+        } else if (logYears > good) {
+            return 15 + (logYears - good) * (20 - 15) / (strong - good);
+        } else if (logYears > weak) {
+            return 10 + (logYears - weak) * (15 - 10) / (good - weak);
+        } else if (logYears > veryweak) {
+            return 5 + (logYears - veryweak) * (10 - 5) / (weak - veryweak);
         } else {
-            return years * 5 / veryweak;
+            return 0;
         }
     }
     function getGuesses(which) {
