@@ -1,5 +1,5 @@
 'use strict';
-import { bgDefault, webpage } from "./bg.js";
+import { bgDefault, config, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
@@ -886,19 +886,47 @@ function setMeter(which) {
     const $meter = get(which + "-strength-meter");
     const $input = get(which);
     const report = zxcvbn($input.value);
-    let score = getScore();
-    let index = Math.min(4, Math.floor(score / 5));
+    let guesses = getGuesses(which);
+    // 10^9 guesses per second, 3*10^7 seconds per year, average success in 1/2 the tries
+    let years = guesses/(1e9*3e7*2);
+    if (which === "superpw") years /= 16*1024; // So the superpw will have more entropy than the site password
+    let score = getScore(years);
+    let index = Math.floor(score/5);
     $meter.value = score;
     $meter.style.setProperty("--meter-value-color", strengthColor[index]);
-    $meter.title = strengthText[index];
+    $meter.title = strengthText[index] + guessLabel(years);
     $input.style.color = strengthColor[index];
-    function getScore(which) {
-        if (which === "superpw") return Math.min(20, report.guesses_log10);
+    function getScore(years) {
+        let strong = 500;
+        let good = 5;
+        let weak = 0.1;
+        let veryweak = 0.01;
+        if (years > strong) {
+            return 20;
+        } else if (years > good) {
+            return 15 + (years - good) * (20 - 15) / (strong - good);
+        } else if (years > weak) {
+            return 10 + (years - weak) * (15 - 10) / (good - weak);
+        } else if (years > veryweak) {
+            return 5 + (years - veryweak) * (10 - 5) / (weak - veryweak);
+        } else {
+            return years * 5 / veryweak;
+        }
+    }
+    function getGuesses(which) {
         let alphabetSize = 0;
-        if (get("allowlowercheckbox").checked) alphabetSize += 26;
-        if (get("allowuppercheckbox").checked) alphabetSize += 26;
-        if (get("allownumbercheckbox").checked) alphabetSize += 10;
-        if (get("allowspecialcheckbox").checked) alphabetSize += $specials.value.length;
+        if (which === "superpw") {
+            let chars = $superpw.value.split("");
+            if (chars.some(char => config.lower.includes(char))) alphabetSize += 26;
+            if (chars.some(char => config.upper.includes(char))) alphabetSize += 26;
+            if (chars.some(char => config.digits.includes(char))) alphabetSize += 10;
+            if (chars.some(char => "~!@#$%^&*()_+-=[]\\{}|;':\",./<>? ".includes(char))) alphabetSize += 32;
+        } else {
+            if (get("allowlowercheckbox").checked) alphabetSize += 26;
+            if (get("allowuppercheckbox").checked) alphabetSize += 26;
+            if (get("allownumbercheckbox").checked) alphabetSize += 10;
+            if (get("allowspecialcheckbox").checked) alphabetSize += $specials.value.length;
+        }
         let sequence = report.sequence;
         let guesses = 1;
         for (let i = 0; i < sequence.length; i++) {
@@ -908,7 +936,28 @@ function setMeter(which) {
                 guesses *= sequence[i].guesses;
             }
         }
-        return Math.min(20, Math.log10(guesses));
+        return guesses;
+    }
+    function guessLabel(years) {
+        let labels = {
+            "years": Math.floor(years),
+            "months": Math.floor(years*12),
+            "days": Math.floor(years*365),
+            "hours": Math.floor(years*365*24),
+            "minutes": Math.floor(years*365*24*60)
+        }
+        if (labels.years > 1000) return " (more than 1,000 years to guess)";
+        if (labels.years > 1) return " (" + labels.years + " years to guess)";
+        if (labels.years === 1) return " (1 year to guess)";
+        if (labels.months > 1) return " (" + labels.months + " months to guess)";
+        if (labels.months == 1) return " (" + labels.months + " month to guess)";
+        if (labels.days > 1) return " (" + labels.days + " days to guess)";
+        if (labels.days == 1) return " (" + labels.days + " day to guess)";
+        if (labels.hours > 1) return " (" + labels.hours + " hours to guess)";
+        if (labels.hours == 1) return " (" + labels.hours + " hour to guess)";
+        if (labels.minutes > 1) return " (" + labels.minutes + " minutes to guess)";
+        if (labels.minutes == 1) return " (" + labels.minutes + " minute to guess)";
+        if (labels.minutes < 1) return " (less than a minute to guess)";
     }
 }
 
