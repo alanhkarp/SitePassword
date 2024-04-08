@@ -54,8 +54,8 @@ export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "do
 var database = clone(databaseDefault);
 var bg = clone(bgDefault);
 
-var isFirefox = typeof chrome.storage.session === "undefined";
-var isSafari = typeof chrome.bookmarks === "undefined";
+export const isSafari = typeof chrome.bookmarks === "undefined";
+console.log("bg isSafari", isSafari);
 
 let bkmksId;
 let bkmksSafari = {};
@@ -116,14 +116,8 @@ async function setup() {
             await Promise.resolve(); // Because some branches have await and others don't
             if (logging) console.log("bg listener back from retrieveMetadata", database);
             superpw = "";
-            if (isFirefox) {
-                // For Firefox
-                superpw = sessionStorage.getItem("superpw").superpw;
-            } else {
-                // For Chrome
-                let value = await chrome.storage.session.get(["superpw"]);
-                superpw = value.superpw;
-            }
+            let value = await chrome.storage.session.get(["superpw"]);
+            superpw = value.superpw;
             if (logging) console.log("bg got superpw", superpw);
             superpw = superpw || "";
             bg.superpw = superpw;
@@ -156,14 +150,6 @@ async function setup() {
                 }
                 if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
                 sendResponse(p);
-            } else if (request.cmd === "keepAlive") {
-                // Firefox doesn't preserve session storage across restarts, but Chrome does.
-                // It's a good thing the keepAlive message works for Firefox but not for Chrome.
-                if (isFirefox) {
-                    sendResponse({"keepAlive": true});
-                } else {
-                    sendResponse({"keepAlive": false});
-                }
             } else if (request.cmd === "reset") {
                 // Used for testing, can't be in test.js becuase it needs to set local variables 
                 defaultSettings = clone(baseDefaultSettings);
@@ -224,14 +210,9 @@ async function getMetadata(request, _sender, sendResponse) {
     let activetabUrl = activetab.url;
     if (logging) console.log("bg got active tab", activetab);
     let savedData = {};
-    if (isFirefox) {
-        let t = sessionStorage.getItem("savedData");
-        savedData = JSON.parse(t) || {};
-    } else {
-        let s = await chrome.storage.session.get(["savedData"]);
-        if (logging) console.log("bg got saved data", s);
-        if (s && Object.keys(s).length > 0) savedData = s.savedData;
-    }
+    let s = await chrome.storage.session.get(["savedData"]);
+    if (logging) console.log("bg got saved data", s);
+    if (s && Object.keys(s).length > 0) savedData = s.savedData;
     // I don't create savedData in onContentPageLoad() for two reasons.
     //    1. Pages without a password field never send the message to trigger the save.
     //    2. file:/// pages don't get a content script to send that message.
@@ -301,11 +282,7 @@ async function persistMetadata(sendResponse) {
     await Promise.resolve(); // Because some branches have await and others don't
     if (logging) console.log("bg persistMetadata", bg, database);
     superpw = bg.superpw;
-    if (isFirefox) {
-        sessionStorage.setItem("superpw", superpw);
-    } else {
-        await chrome.storage.session.set({"superpw": superpw});
-    }
+    await chrome.storage.session.set({"superpw": superpw});
     let db = clone(database);
     let found = await getRootFolder(sendResponse);
     if (found.length > 1) return;
@@ -431,7 +408,7 @@ async function persistMetadata(sendResponse) {
                     bkmksSafari[title].url = url;
                     await chrome.storage.sync.set(bkmksSafari);
                 } else {
-                    let e = await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
+                    await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
                     if (chrome.runtime.lastError) console.log("bg create bookmark lastError", chrome.runtime.lastError);
                     if (logging) console.log("bg created settings bookmark", e, title);
                 }

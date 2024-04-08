@@ -21,7 +21,7 @@ let phishing = false;
 let warningMsg = false;
 let bg = bgDefault;
 
-// I can't get the debugger statement to work unless I wait at least 1 second
+// I can't get the debugger statement to work unless I wait at least 1 second on Chrome
 let timeout = testMode ? 1000 : 0;     
 setTimeout(() => {
     debugger;
@@ -434,7 +434,6 @@ get("username3bluedots").onclick = get("username3bluedots").onmouseover;
 get("usernamemenuforget").onclick = function (e) {
     msgon("forget");
     let toforget = normalize(get("username").value);
-    let $list = get("toforgetlist");
     for (let domain in database.domains) {
         let sitename = normalize(database.domains[domain]);
         if (normalize(database.sites[sitename].username) === toforget) {
@@ -926,7 +925,7 @@ function setMeter(which) {
             if (get("allowlowercheckbox").checked) alphabetSize += 26;
             if (get("allowuppercheckbox").checked) alphabetSize += 26;
             if (get("allownumbercheckbox").checked) alphabetSize += 10;
-            if (get("allowspecialcheckbox").checked) alphabetSize += $specials.value.length;
+            if (get("allowspecialcheckbox").checked) alphabetSize += get("specials").value.length;
         }
         let sequence = report.sequence;
         let guesses = 1;
