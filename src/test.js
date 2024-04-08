@@ -73,9 +73,8 @@ export async function runTests() {
         await testProvidedpw();
         await testPhishing();
         await testForget();
-        let pending = restart ? 1 : 0;
-        console.log("Tests complete: " + passed + " passed, " + failed + " failed, " + pending + " pending");
-        alert("Tests restart complete: " + passed + " passed, " + failed + " failed, " + pending + " pending");
+        console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
+        alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {

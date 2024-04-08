@@ -441,8 +441,12 @@ button:enabled:active {
   background: none;
   background-color: rgba(0, 0, 0, 0.1);
 }
+/* Firefox */
+meter::-moz-meter-bar {
+  background: var(--meter-value-color);
+}
+/* Chrome, Safari, and new versions of Opera */
 meter::-webkit-meter-optimum-value {
-  /* This will work in Chrome, Safari, and new versions of Opera */
   background: var(--meter-value-color);
 }
 meter::-webkit-meter-bar {
