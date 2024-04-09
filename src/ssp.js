@@ -5,7 +5,7 @@ import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xor
 
 const debugMode = false;
 // testMode must start as false.  Its value will come in a message from bg.js.
-const testMode = false;
+let testMode = false;
 const logging = debugMode;
 if (logging) console.log("Version 2.0");
 let activetab;
@@ -24,7 +24,7 @@ let bg = bgDefault;
 // I can't get the debugger statement to work unless I wait at least 1 second on Chrome
 let timeout = testMode ? 1000 : 0;     
 setTimeout(() => {
-    debugger;
+    if (debugMode) debugger;
 }, timeout);
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
@@ -1413,6 +1413,7 @@ function closeAllInstructions() {
 // Copied to findpw.js because I can't import it there
 async function wakeup(caller) {
     if (logging) console.log("popup sending wakeup", caller, get("domainname").value);
+    setTimeout(async () => {
     await new Promise((resolve) => {
         chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
             if (chrome.runtime.lastError) console.log("popup wakeup lastError", caller, chrome.runtime.lastError);
@@ -1421,6 +1422,7 @@ async function wakeup(caller) {
             resolve("wakeup");
         });
     });
+}, 1000);
 }
 /* 
 This code is a major modification of the code released with the
