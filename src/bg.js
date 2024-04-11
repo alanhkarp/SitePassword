@@ -55,7 +55,7 @@ var database = clone(databaseDefault);
 var bg = clone(bgDefault);
 
 export const isSafari = typeof chrome.bookmarks === "undefined";
-console.log("bg isSafari", isSafari);
+if (logging) console.log("bg isSafari", isSafari);
 
 let bkmksId;
 let bkmksSafari = {};
@@ -109,6 +109,12 @@ async function setup() {
     if (logging) console.log("bg adding listener");
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         if (logging || testLogging) console.log("bg got message request, sender", request, sender);
+        // No need to retrieve metadata for a wakeup message
+        if (request.cmd === "wakeup") {
+            if (logging) console.log("bg sending awake");
+            sendResponse("awake");
+            return true;
+        }
         // Start with a new database in case something changed while the service worker stayed open
         database = clone(databaseDefault);
         bg = clone(bgDefault);
@@ -122,9 +128,7 @@ async function setup() {
             superpw = superpw || "";
             bg.superpw = superpw;
             if (logging) console.log("bg got ssp", isSuperPw(superpw));
-            if (request.cmd === "wakeup") {
-                sendResponse("awake");
-            } else if (request.cmd === "getMetadata") {
+            if (request.cmd === "getMetadata") {
                 await getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "resetIcon") {
                 await chrome.storage.local.set({"onClipboard": false});
@@ -239,19 +243,19 @@ async function onContentPageload(request, sender, sendResponse) {
     pwcount = request.count;
     // Save data that service worker needs after it restarts
     let savedData = {};
-    try {
+    if (isSafari) {
         let t = sessionStorage.getItem("savedData");
         savedData = JSON.parse(t) || {};
-    } catch {
+    } else {
         let s = await chrome.storage.session.get(["savedData"]);
         if (Object.keys(s).length > 0) savedData = s.savedData;
     }
     savedData[activetab.url] = pwcount;
     if (logging) console.log("bg saving data", savedData[activetab.url]);
-    try {
+    if (isSafari) {
         let s = JSON.stringify(savedData);
         sessionStorage.setItem("savedData", s);
-    } catch {
+    } else {
         await chrome.storage.session.set({"savedData": savedData}); 
     }    
     let domainname = getdomainname(activetab.url);
@@ -521,7 +525,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         } else {
             if (logging && i < 3) console.log("bg settings from bookmark", children[i]);
             let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
-            if (logging) console.log("bg settings from bookmark", children[i], settings);
+            if (logging) console.log("bg settings from bookmark", settings);
             if ('string' !== typeof settings.specials) {
                 let specials = array2string(settings.specials);
                 settings.specials = specials;

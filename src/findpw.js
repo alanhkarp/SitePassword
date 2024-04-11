@@ -27,7 +27,7 @@ var observerOptions = {
     attributeOldValue: false,
     characterDataOldValue: false
 };
-console.log(document.URL, Date.now(), "findpw starting", mutationObserver);
+if (logging) console.log(document.URL, Date.now(), "findpw starting", mutationObserver);
 var start = Date.now();
 if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw starting");
 // Most pages work if I start looking for password fields as soon as the basic HTML is loaded
@@ -378,6 +378,7 @@ function overlaps(field, label) {
 async function wakeup() {
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
     await new Promise((resolve, reject) => {
+        if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
         chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
             if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw wakeup error", chrome.runtime.lastError);
             if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup response", response);

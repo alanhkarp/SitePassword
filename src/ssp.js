@@ -3,11 +3,11 @@ import { bgDefault, config, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
-const debugMode = false;
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
-const logging = debugMode;
-if (logging) console.log("Version 2.0");
+const debugMode = false;
+const logging = false;
+if (logging) console.log("Version 3.0");
 let activetab;
 let domainname;
 let mainPanelTimer;
