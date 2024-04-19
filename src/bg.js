@@ -462,7 +462,7 @@ async function retrieveMetadata(sendResponse, request, callback) {
         // use a flag to make sure I only create it once.
         if (createBookmarksFolder) {
             createBookmarksFolder = false;
-            if (logging || testLogging) console.log("Creating SSP bookmark folder");
+            if (logging || testLogging) console.log("bg creating SSP bookmark folder");
             let bkmk = - 1;
             if (isSafari) {
                 // Leaving the entries in sync storage protects against the case where a browser (Safari) 

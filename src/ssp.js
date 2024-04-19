@@ -5,7 +5,7 @@ import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xor
 
 const debugMode = false;
 // testMode must start as false.  Its value will come in a message from bg.js.
-const testMode = false;
+let testMode = false;
 const logging = debugMode;
 if (logging) console.log("Version 2.0");
 let activetab;
@@ -222,7 +222,15 @@ get("title").onclick = function () {
     window.open("https://sitepassword.info");
 }
 // Domain Name
-// There are no actions the user can take on the domain name field.
+// There are no actions the user can take on the domain name field,
+// but I need this handler for testing.
+get("domainname").onblur = async function (e) {
+    get("sitename").value = "";
+    if (testMode) domainname = get("domainname").value;
+    await getsettings(domainname);
+    await fill();
+    if (resolvers.domainnameblurResolver) resolvers.domainnameblurResolver("domainnameblurPromise");
+}
 get("domainnamemenu").onmouseleave = function (e) {
     menuOff("domainname", e);
 }
@@ -926,7 +934,7 @@ function setMeter(which) {
             if (get("allowlowercheckbox").checked) alphabetSize += 26;
             if (get("allowuppercheckbox").checked) alphabetSize += 26;
             if (get("allownumbercheckbox").checked) alphabetSize += 10;
-            if (get("allowspecialcheckbox").checked) alphabetSize += $specials.value.length;
+            if (get("allowspecialcheckbox").checked) alphabetSize += get("specials").value.length;
         }
         let sequence = report.sequence;
         let guesses = 1;
