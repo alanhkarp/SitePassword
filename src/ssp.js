@@ -3,11 +3,11 @@ import { bgDefault, config, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
-const debugMode = false;
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
-const logging = debugMode;
-if (logging) console.log("Version 2.0");
+const debugMode = false;
+const logging = false;
+if (logging) console.log("Version 3.0");
 let activetab;
 let domainname;
 let mainPanelTimer;
@@ -21,10 +21,10 @@ let phishing = false;
 let warningMsg = false;
 let bg = bgDefault;
 
-// I can't get the debugger statement to work unless I wait at least 1 second
+// I can't get the debugger statement to work unless I wait at least 1 second on Chrome
 let timeout = testMode ? 1000 : 0;     
 setTimeout(() => {
-    debugger;
+    if (debugMode) debugger;
 }, timeout);
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
@@ -442,7 +442,6 @@ get("username3bluedots").onclick = get("username3bluedots").onmouseover;
 get("usernamemenuforget").onclick = function (e) {
     msgon("forget");
     let toforget = normalize(get("username").value);
-    let $list = get("toforgetlist");
     for (let domain in database.domains) {
         let sitename = normalize(database.domains[domain]);
         if (normalize(database.sites[sitename].username) === toforget) {
@@ -1422,6 +1421,7 @@ function closeAllInstructions() {
 // Copied to findpw.js because I can't import it there
 async function wakeup(caller) {
     if (logging) console.log("popup sending wakeup", caller, get("domainname").value);
+    setTimeout(async () => {
     await new Promise((resolve) => {
         chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
             if (chrome.runtime.lastError) console.log("popup wakeup lastError", caller, chrome.runtime.lastError);
@@ -1430,6 +1430,7 @@ async function wakeup(caller) {
             resolve("wakeup");
         });
     });
+}, 1000);
 }
 /* 
 This code is a major modification of the code released with the

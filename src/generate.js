@@ -242,6 +242,7 @@ export function stringXorArray(sitepw, array) {
     return result;
 }
 export function string2array(str) {
+    if (typeof str !== "string") return str;
     let array = [];
     for (let i = 0; i < str.length; i++) {
         array.push(str[i].charCodeAt());
@@ -249,6 +250,7 @@ export function string2array(str) {
     return array;
 }
 export function array2string(array) {
+    if (typeof array !== "string") return array;
     let str = "";
     for (let i = 0; i < array.length; i++) {
         str += String.fromCharCode(array[i]);

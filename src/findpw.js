@@ -27,7 +27,7 @@ var observerOptions = {
     attributeOldValue: false,
     characterDataOldValue: false
 };
-console.log(document.URL, Date.now(), "findpw starting", mutationObserver);
+if (logging) console.log(document.URL, Date.now(), "findpw starting", mutationObserver);
 var start = Date.now();
 if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw starting");
 // Most pages work if I start looking for password fields as soon as the basic HTML is loaded
@@ -87,19 +87,6 @@ function startup(sendPageInfo) {
     // The code in this function used to be called once, but now it's called several times.
     // There is no reason to declare new mutation observers and listeners on every call.
     if (!mutationObserver) {
-        // Firefox doesn't preserve sessionStorage across restarts of
-        // the service worker.  Sending periodic messages keeps it
-        // alive, but there's no reason to send them if I'm using
-        // storage.session.
-        let keepAlive = setInterval(async () => {
-            await wakeup();
-            let alive = await chrome.runtime.sendMessage({"cmd": "keepAlive"});
-            if (chrome.runtime.lastError) {
-                console.log("findpw keepAlive error", chrome.runtime.lastError);
-                clearInterval(keepAlive);
-            }
-            if (!alive.duplicate || !alive.keepAlive) clearInterval(keepAlive);
-        }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button
         document.body.onclick = function () {
             if (logging) console.log("findpw click on body");
@@ -219,7 +206,6 @@ async function sendpageinfo(cpi, clicked, onload) {
     if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw senpageinfo error", chrome.runtime.lastError);
     if (response === "multiple") {
         alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
-        resolve("multiple");
         return;
     }
     if (response === "duplicate" && !dupNotified) {
@@ -228,7 +214,6 @@ async function sendpageinfo(cpi, clicked, onload) {
         alertString += "Open the Bookmark Manager and delete the ones in the SitePasswordData folder ";
         alertString +- "that you don't want.  Then reload this page.";
         alert(alertString);
-        resolve("duplicate");
         return;
     }
     if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
@@ -392,6 +377,7 @@ function overlaps(field, label) {
 async function wakeup() {
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
     await new Promise((resolve, reject) => {
+        if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
         chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
             if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw wakeup error", chrome.runtime.lastError);
             if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup response", response);

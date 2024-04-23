@@ -2,7 +2,7 @@
 // the extension.  Then open any https page, e.g., https://alanhkarp.com. 
 // Right click on the SitePassword icon and select "Inspect".  You will 
 // see an alert "Starting tests".  Click OK and check the console for results.
-import { defaultSettings } from "./bg.js";
+import { defaultSettings, isSafari } from "./bg.js";
 import { normalize } from "./generate.js";
 import { getsettings } from "./ssp.js";
 
@@ -313,9 +313,9 @@ export async function runTests() {
     // I want to start with a clean slate for each set of tests.
     async function resetState() {
         if (loggingReset) console.log("resetState");
-        await chrome.storage.sync.clear();
+        if (isSafari) await chrome.storage.sync.clear();
         if (loggingReset) console.log("resetState send reset message");
-        let response = chrome.runtime.sendMessage({"cmd": "reset"}, );
+        let response = await chrome.runtime.sendMessage({"cmd": "reset"}, );
         if (chrome.runtime.lastError) console.error("resetState reset message error", chrome.runtime.lastError);
         if (loggingReset) console.log("resetState reset message response", response);
         clearForm();
