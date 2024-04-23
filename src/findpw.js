@@ -145,7 +145,6 @@ function startup(sendPageInfo) {
             let myMutations = mutationObserver.takeRecords();
             if (logging) console.log("findpw listener fillfields my mutations", myMutations);
             handleMutations(mutations);
-            return true;
         });
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
