@@ -1421,7 +1421,6 @@ function closeAllInstructions() {
 // Copied to findpw.js because I can't import it there
 async function wakeup(caller) {
     if (logging) console.log("popup sending wakeup", caller, get("domainname").value);
-    setTimeout(async () => {
     await new Promise((resolve) => {
         chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
             if (chrome.runtime.lastError) console.log("popup wakeup lastError", caller, chrome.runtime.lastError);
@@ -1430,7 +1429,6 @@ async function wakeup(caller) {
             resolve("wakeup");
         });
     });
-}, 1000);
 }
 /* 
 This code is a major modification of the code released with the
