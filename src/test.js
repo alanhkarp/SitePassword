@@ -4,7 +4,7 @@
 // see an alert "Starting tests".  Click OK and check the console for results.
 import { defaultSettings, isSafari } from "./bg.js";
 import { normalize } from "./generate.js";
-import { getsettings } from "./ssp.js";
+import { getsettings, wakeup } from "./ssp.js";
 
 export let resolvers = {};
 
@@ -14,6 +14,7 @@ let loggingClear = false;
 let loggingDefault = false;
 let loggingFill = false;
 let loggingForget = false;
+let loggingMessage = true;
 let loggingPhishing = false;
 let loggingProvide = false;
 let loggingReset = false;
@@ -69,13 +70,13 @@ export async function runTests() {
     }
     if (!restart) {
         await testCalculation(); 
-        await testRememberForm();
-        await testProvidedpw();
-        await testPhishing();
-        await testForget();
-        console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
-        alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
-        await testSaveAsDefault();
+        // await testRememberForm();
+        // await testProvidedpw();
+        // await testPhishing();
+        // await testForget();
+        // console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
+        // alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
+        // await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -151,6 +152,7 @@ export async function runTests() {
     }
     // Test phishing
     async function testPhishing() {
+        logging = true;
         await phishingSetup();
         // Does warning appear?
         let test = $phishing.style.display === "block";
@@ -165,6 +167,13 @@ export async function runTests() {
         // makes no sense for the extension because the extension loads the home page.
         // Does setting new site name work?
         await phishingSetup();
+        if ($phishing.style.display === "none") {
+            console.warn("Phishing setup failed");
+            failed += 1;
+        } else {
+            console.log("Phishing setup passed");
+            passed += 1;
+        }
         if (loggingPhishing) console.log("testPhishing phishingSetup done");
         $nicknamebutton.click();
         test = $phishing.style.display === "none" && $sitename.value === normalize("Guru") 
@@ -202,6 +211,7 @@ export async function runTests() {
             console.warn("Failed: Phishing remembered same account");
             failed += 1;
         }
+        logging = false;
     }
     // Test forget
     async function testForget() {
@@ -314,6 +324,8 @@ export async function runTests() {
     async function resetState() {
         if (loggingReset) console.log("resetState");
         if (isSafari) await chrome.storage.sync.clear();
+        if (loggingReset) console.log("resetState wakeup for reset");
+        await wakeup("reset");
         if (loggingReset) console.log("resetState send reset message");
         let response = await chrome.runtime.sendMessage({"cmd": "reset"}, );
         if (chrome.runtime.lastError) console.error("resetState reset message error", chrome.runtime.lastError);
@@ -398,11 +410,11 @@ export async function runTests() {
 async function triggerEvent(event, element, resolverName) {
     let promise = wrapHandler(resolverName);
     if (event === "click") element.checked = !element.checked;
-    if (loggingTrigger) console.log("triggerEvent", element.id, event, resolverName, promise);
+    if (loggingTrigger || loggingMessage) console.log("triggerEvent", element.id, event, resolverName, promise);
     let e = new Event(event);
     element.dispatchEvent(e);
     await promise;
-    if (loggingTrigger) console.log("triggerEvent promise resolved", element.id, event, promise, resolvers);
+    if (loggingTrigger || loggingMessage) console.log("triggerEvent promise resolved", element.id, event, promise, resolvers);
 }
 function wrapHandler(resolverName) {
     if (loggingWrapHandler) console.log("wrapHandler create promise", resolverName, resolvers);

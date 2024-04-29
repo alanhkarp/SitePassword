@@ -3,10 +3,11 @@ import {isSuperPw, normalize,  string2array, array2string, stringXorArray, gener
 // Set to true to run the tests in test.js then reload the extension.
 // Tests must be run on a page that has the content script, specifically,
 // http or https whether it has a password field or not.
-const testMode = false;
+const testMode = true;
 const testLogging = false;
 const debugMode = false;
 const logging = false;
+const loggingMessage = true;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
 let sitedataBookmark = "SitePasswordData"; 
@@ -108,10 +109,10 @@ async function setup() {
     // Add message listener
     if (logging) console.log("bg adding listener");
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-        if (logging || testLogging) console.log("bg got message request, sender", request, sender);
+        if (logging || testLogging || loggingMessage) console.log("bg got message request, sender", request, sender);
         // No need to retrieve metadata for a wakeup message
         if (request.cmd === "wakeup") {
-            if (logging) console.log("bg sending awake");
+            if (logging || loggingMessage) console.log("bg sendResponse awake");
             sendResponse("awake");
             return true;
         }
@@ -134,6 +135,7 @@ async function setup() {
                 await chrome.storage.local.set({"onClipboard": false});
                 await chrome.action.setTitle({title: "Site Password"});
                 await chrome.action.setIcon({"path": "icon128.png"});
+                if (logging || loggingMessage) console.log("bg sendRespoonse reset icon");
                 sendResponse("icon reset");        
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);
@@ -153,6 +155,7 @@ async function setup() {
                     await persistMetadata(sendResponse);
                 }
                 if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
+                if (loggingMessage) console.log("bg sendResponse", p);
                 sendResponse(p);
             } else if (request.cmd === "reset") {
                 // Used for testing, can't be in test.js becuase it needs to set local variables 
@@ -163,6 +166,7 @@ async function setup() {
                 await chrome.bookmarks.removeTree(rootFolder[0].id);
                 createBookmarksFolder = true;
                 if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0].title, defaultSettings.pwlength);
+                if (loggingMessage) console.log("bg sendResponse reset");
                 sendResponse("reset");
             } else if (request.cmd === "newDefaults") {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
@@ -182,12 +186,14 @@ async function setup() {
                     superpw = "";
                     if (logging) console.log("bg clear superpw", isSuperPw(superpw));
                 }
+                if (loggingMessage) console.log("bg sendResponse", bg);
                 sendResponse(bg);
             } else if (request.onload) {
                 await onContentPageload(request, sender, sendResponse);
                 await persistMetadata(sendResponse);
             } else {
                 if (logging) console.log("bg got unknown request", request);
+                if (loggingMessage) console.log("bg sendResponse", "unknown request");
                 sendResponse("unknown request");
             }
             if (logging) console.log("bg addListener returning", isSuperPw(superpw));
@@ -233,6 +239,7 @@ async function getMetadata(request, _sender, sendResponse) {
     domainname = getdomainname(activetabUrl);
     if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
     if (logging) console.log("bg sending metadata", pwcount, bg, db);
+    if (loggingMessage) console.log("bg sendResponse", {"test" : testMode, "superpw": superpw || "", "bg": bg, "database": db});
     sendResponse({"test" : testMode, "superpw": superpw || "", "bg": bg, "database": db});
 }
 async function onContentPageload(request, sender, sendResponse) {
@@ -269,11 +276,11 @@ async function onContentPageload(request, sender, sendResponse) {
     }
     bg.settings.domainname = domainname;
     bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
-    let readyForClick = false;
-    if (superpw && bg.settings.sitename && bg.settings.username) {
-        readyForClick = true;
-    }
-    if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "readyForClick": readyForClick });
+    let readyForClick = superpw && bg.settings.sitename && bg.settings.username;
+    // if (superpw && bg.settings.sitename && bg.settings.username) {
+    //     readyForClick = true;
+    // }
+    if (logging || loggingMessage) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "readyForClick": readyForClick });
     sendResponse({ "cmd": "fillfields", 
         "u": bg.settings.username || "", 
         "p": "", 
@@ -330,7 +337,10 @@ async function persistMetadata(sendResponse) {
         allchildren = Object.values(bkmksSafari);
     } else {
         allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
-        if (chrome.runtime.lastError) console.log("bg getChildren lastError", chrome.runtime.lastError);
+        if (chrome.runtime.lastError) {
+            console.log("bg getChildren lastError", chrome.runtime.lastError);
+            debugger;
+        }
     }
     let commonSettings = [];
     let domains = [];
@@ -345,7 +355,7 @@ async function persistMetadata(sendResponse) {
     let common = clone(db);
     delete common.domains;
     delete common.sites;
-    common.defaultSettings = defaultSettings;
+    common.defaultSettings = clone(defaultSettings);
     common.defaultSettings.specials = string2array(defaultSettings.specials);
     if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
@@ -396,7 +406,10 @@ async function persistMetadata(sendResponse) {
                     }
                 } else {
                     await chrome.bookmarks.update(found.id, { "url": url });
-                    if (chrome.runtime.lastError) console.log("bg update lastError", chrome.runtime.lastError, found);
+                    if (chrome.runtime.lastError) {
+                        console.log("bg update lastError", chrome.runtime.lastError, found);
+                        debugger;
+                    }
                 }
             }
         } else {
@@ -414,7 +427,7 @@ async function persistMetadata(sendResponse) {
                 } else {
                     await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
                     if (chrome.runtime.lastError) console.log("bg create bookmark lastError", chrome.runtime.lastError);
-                    if (logging) console.log("bg created settings bookmark", e, title);
+                    if (logging) console.log("bg created settings bookmark", title);
                 }
             }
         }
@@ -507,6 +520,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 if (isSafari) {
                     delete bkmksSafari[children[i]];
                 } else {
+                    if (loggingMessage) console.log("bg sendResponse", {"duplicate": children[i].title});
                     sendResponse({"duplicate": children[i].title});
                     continue;
                 }
@@ -557,6 +571,7 @@ async function getRootFolder(sendResponse) {
         }
         if (folders.length > 1) {
             if (logging) console.log("bg found multiple", sitedataBookmark, "folders", folders);
+            if (loggingMessage) console.log("bg sendResponse", "multiple");
             if (sendResponse) sendResponse("multiple");
         } else if (folders.length === 0) {
             if (logging) console.log("bg found no", sitedataBookmark, "folders");
@@ -621,6 +636,7 @@ async function forget(toforget, rootFolder, sendResponse) {
         }
         if (logging) console.log("bg forget done", item);
     }
+    if (loggingMessage) console.log("bg sendResponse", "forgot");
     sendResponse("forgot");
 }
 function sameSettings(a, b) {

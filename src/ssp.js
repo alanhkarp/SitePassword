@@ -7,6 +7,7 @@ import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xor
 let testMode = false;
 const debugMode = false;
 const logging = false;
+const loggingMessage = true;
 if (logging) console.log("Version 3.0");
 let activetab;
 let domainname;
@@ -124,8 +125,9 @@ function clearDatalist(listid) {
 }
 export async function getsettings(testdomainname) {
     if (testMode) domainname = testdomainname;
-    if (logging) console.log("popup getsettings", domainname);
+    if (loggingMessage) console.log("popup wakeup for getsettings");
     await wakeup("getsettings");
+    if (logging || loggingMessage) console.log("popup getsettings", domainname);
     let response =  await chrome.runtime.sendMessage({
             "cmd": "getMetadata",
             "domainname": domainname,
@@ -150,6 +152,7 @@ export async function getsettings(testdomainname) {
     message("multiple", bg.pwcount > 1);
     message("zero", bg.pwcount == 0);
     if (!testMode && response.test) { // Only run tests once
+        if (logging) console.log("popup running tests");
         testMode = true;
         runTests();
     }
@@ -192,13 +195,14 @@ get("mainpanel").onmouseleave = async function () {
         bg.settings.sitename = get("sitename").value || "";
         bg.settings.username = get("username").value || "";
         if (bg.settings.sitename) {
-            database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
+            database.sites[normalize(bg.settings.sitename)] = clone(bg.settings, "mainpanel mouseleave");
             database.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
         }
         let sitename = get("sitename").value;
         changePlaceholder();
-        if (logging) console.log("popup sending siteData", bg.settings, database);
+        if (loggingMessage) console.log("popup wakeup for siteData");
         await wakeup("mouseleave");
+        if (logging || loggingMessage) console.log("popup sending siteData", bg.settings, database);
         let response = await chrome.runtime.sendMessage({
                 "cmd": "siteData",
                 "sitename": sitename,
@@ -680,7 +684,9 @@ get("makedefaultbutton").onclick = async function () {
         minspecial: get("minspecial").value,
         specials: get("specials").value,
     }
+    if (loggingMessage) console.log("popup wakeup for makedefaultbutton");
     await wakeup("defaultbutton");
+    if (logging || loggingMessage) console.log("popup makedefaultbutton sending newDefaults", newDefaults);
     await chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults});
     if (chrome.runtime.lastError) console.log("popup makedefaultbutton lastError", chrome.runtime.lastError);
     if (logging) console.log("popup newDefaults sent", newDefaults);
@@ -741,8 +747,9 @@ get("forgetbutton").onclick = async function () {
     get("sitename").value = "";
     get("username").value = "";
     bg = bgDefault;
-    if (logging) console.log("popup forgetbutton sending forget", list);
+    if (loggingMessage) console.log("popup wakeup for forgetbutton");
     await wakeup("foregetbutton");
+    if (logging || loggingMessage) console.log("popup forgetbutton sending forget", list);
     let response = await chrome.runtime.sendMessage({"cmd": "forget", "toforget": list});
     if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
     if (logging) console.log("popup forget response", response);
@@ -991,6 +998,9 @@ async function handleblur(element, field) {
     let u = get("username").value || "";
     let readyForClick = false;
     if (get("superpw").value && u) readyForClick = true;
+    if (loggingMessage) console.log("popup wakeup for handleblur", element);
+    await wakeup("handleblur " + element);
+    if (logging || loggingMessage) console.log("popup handleblur sending update", u, pw, readyForClick);
     await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
     if (chrome.runtime.lastError) console.log("popup handleblur lastError", chrome.runtime.lastError);
 }
@@ -1008,7 +1018,9 @@ async function changePlaceholder() {
     let u = get("username").value || "";
     let readyForClick = false;
     if (get("superpw").value && u) readyForClick = true;
+    if (loggingMessage) console.log("popup wakeup for changePlaceholder");
     await wakeup("changePlaceholder");
+    if (logging || loggingMessage) console.log("popup changePlaceholder sending fillfields", u, readyForClick);
     await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
     if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
 }
@@ -1150,7 +1162,7 @@ async function exportPasswords() {
         let olddomainname = get("domainname").value;
         let oldsitename = get("sitename").value;
         let oldusername = get("username").value;
-        let oldsettings = clone(bg.settings);
+        let oldsettings = clone(bg.settings, "exportPasswords");
         let data = "Domain Name, Site Name, User Name, Site Password\n";
         for (let domainname of sorted) {
             let sitename = database.domains[domainname];
@@ -1300,8 +1312,14 @@ function get(element) {
 function getlowertrim(element) {
     return (document.getElementById(element).value || "").toLowerCase().trim();
 }
-function clone(object) {
-    return JSON.parse(JSON.stringify(object))
+function clone(object, where) {
+    if (!object) debugger;
+    try {
+        return JSON.parse(JSON.stringify(object));
+    } catch (e) {
+        console.log("popup clone error", e, "from", where);
+        debbuger;
+    }
 }
 // Messages in priority order high to low
 var messages = [
@@ -1419,18 +1437,17 @@ function closeAllInstructions() {
 // Multiple events can be lost if they are triggered fast enough,
 // so each one needs to send its own wakeup message.
 // Copied to findpw.js because I can't import it there
-async function wakeup(caller) {
+export async function wakeup(caller) {
+    if (!caller) debugger;
     if (logging) console.log("popup sending wakeup", caller, get("domainname").value);
-    setTimeout(async () => {
-    await new Promise((resolve) => {
-        chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
-            if (chrome.runtime.lastError) console.log("popup wakeup lastError", caller, chrome.runtime.lastError);
-            if (logging) console.log("popup wakeup response", caller, get("domainname").value, response);
-            if (!response) await wakeup(caller);
-            resolve("wakeup");
-        });
+    await new Promise(async (resolve) => {
+        if (loggingMessage) console.log("popup wakeup sending wakeup", caller, get("domainname").value);
+        let response = await chrome.runtime.sendMessage({ "cmd": "wakeup", "caller": caller });
+        if (chrome.runtime.lastError) console.log("popup wakeup lastError", caller, chrome.runtime.lastError);
+        if (logging || loggingMessage) console.log("popup wakeup response", caller, get("domainname").value, response);
+        if (!response) await wakeup(caller);
+        resolve("wakeup ", caller);
     });
-}, 1000);
 }
 /* 
 This code is a major modification of the code released with the

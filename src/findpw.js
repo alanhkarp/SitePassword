@@ -1,6 +1,7 @@
 // Content script for ssp
 'use strict';
 var logging = false;
+var loggingMessage = true;
 var hideLabels = true; // Make it easy to turn off label hiding
 var clickSitePassword = "Click SitePassword";
 var clickSitePasswordTitle = "Click on the SitePassword icon"
@@ -74,7 +75,9 @@ function searchShadowRoots(element) {
 // Tell the service worker that the user has copied something to the clipboard
 // so it can clear the icon
 document.oncopy = async function () {
-    await wakeup();
+    if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup for resetIcon");
+    await wakeup("document.oncopy");
+    if (logging) console.log(document.URL, Date.now() - start, "findpw sending resetIcon");
     await chrome.runtime.sendMessage({"cmd": "resetIcon"});
     if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw document.oncopy error", chrome.runtime.lastError);
     if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
@@ -107,6 +110,7 @@ function startup(sendPageInfo) {
                     fillfield(cpi.idfield, userid);
                     fillfield(cpi.pwfields[0], request.p);
                     setPlaceholder(userid);
+                    if (loggingMessage) console.log(document.URL, Date.now() - start, "findpw sendResponse fillfields");
                     sendResponse("fillfields");
                     break;
                 case "update":
@@ -119,6 +123,7 @@ function startup(sendPageInfo) {
                     if (cpi.pwfields[0] && cpi.pwfields[0].value) {
                         fillfield(cpi.pwfields[0], sitepw);
                         setPlaceholder(userid);
+                        if (loggingMessage) console.log(document.URL, Date.now() - start, "findpw sendResponse update");
                         sendResponse("update");
                     }
                     break;
@@ -127,6 +132,7 @@ function startup(sendPageInfo) {
                     let pwdomain = document.location.hostname;
                     let count = cpi.pwfields.length;
                     if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", count, pwdomain);
+                    if (loggingMessage) console.log(document.URL, Date.now() - start, "findpw sendResponse count", count, pwdomain);
                     sendResponse({ "pwcount": count, "pwdomain": pwdomain });
                     break;
                 case "clear":
@@ -136,10 +142,12 @@ function startup(sendPageInfo) {
                         cpi.pwfields[i].value = "";
                     }
                     setPlaceholder("");
+                    if (loggingMessage) console.log(document.URL, Date.now() - start, "findpw sendResponse clear");
                     sendResponse("clear");
                     break;
                 default:
                     if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
+                    if (loggingMessage) console.log(document.URL, Date.now() - start, "findpw sendResponse default");
                     sendResponse("default");
             }
             let myMutations = mutationObserver.takeRecords();
@@ -196,8 +204,9 @@ async function sendpageinfo(cpi, clicked, onload) {
     // No need to send page info if no password fields found.  User will have to open
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
+    if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup for page info");
+    await wakeup("sendpageinfo");
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length);
-    await wakeup();
     let response = await chrome.runtime.sendMessage({
         "count": cpi.pwfields.length,
         "clicked": clicked,
@@ -263,7 +272,9 @@ function setPlaceholder(userid) {
 async function pwfieldOnclick(event) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
     if ((!this.placeholder) || this.placeholder === clickHere) {
-        await wakeup();
+        if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup for get sitepass");
+        await wakeup("pwfieldOnclick");
+        if (logging) console.log(document.URL, Date.now() - start, "findpw sending get sitepass");
         let response = await chrome.runtime.sendMessage({ "cmd": "getPassword" });
         if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw pwfieldOnclick error", chrome.runtime.lastError);
         sitepw = response;
@@ -374,14 +385,15 @@ function overlaps(field, label) {
 // Multiple events can be lost if they are triggered fast enough,
 // so each one needs to send its own wakeup message.
 // Copied from ssp.js because I can't import it
-async function wakeup() {
-    if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
+async function wakeup(caller) {
+    if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup", caller);
     await new Promise((resolve, reject) => {
-        if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
+        if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup", caller);
         chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
             if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw wakeup error", chrome.runtime.lastError);
-            if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup response", response);
+            if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup response", caller, response);
             if (!response) await wakeup();
+            if (loggingMessage) console.log(document.URL, Date.now() - start, "findpw wakeup resolved", caller);
             resolve("wakeup");
         });
     });
