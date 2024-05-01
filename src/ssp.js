@@ -1,5 +1,5 @@
 'use strict';
-import { bgDefault, config, webpage } from "./bg.js";
+import { bgDefault, config, isSafari, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
@@ -1368,16 +1368,16 @@ function instructionSetup() {
     if (logging) console.log("popup instructions", instructions);
     for (let instruction of instructions) {
         let section = instruction.id.replace("info", "");
-        if (section === "shared" && !chrome.bookmarks) {
+        if (section === "shared" && isSafari) {
             get("sharedinfo").style.display = "none";
         } else if (section === "sync") {
-            if (chrome.bookmarks) {
+            if (!isSafari) {
                 instruction.onclick = function () { sectionClick("sync"); }
             } else {
                 instruction.onclick = function () { sectionClick("syncSafari"); }
             }
         } else if (section === "extension") {
-            if (chrome.bookmarks) {
+            if (!isSafari) {
                 instruction.onclick = function () { sectionClick("extension"); }
             } else {
                 instruction.onclick = function () { sectionClick("extensionSafari"); }
@@ -1396,6 +1396,7 @@ function sectionClick(which) {
         element.style.display = "block";
         get("open" + which).style.display = "none";
         get("close" + which).style.display = "block";
+        get(which + "info").scrollIntoView();
     } else {
         element.style.display = "none";
         get("open" + which).style.display = "block";

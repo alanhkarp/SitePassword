@@ -77,7 +77,7 @@ h1 {
   font-weight: 300;
   line-height: 36px; 
   letter-spacing: -0.42px;
-  text-transform: capitalize;
+  text-transform: none;
   margin-top: 1ex;
   margin-left: 8px;
   text-align: center;
@@ -90,7 +90,7 @@ h3 {
   line-height: 20px;
   letter-spacing: 0.22px;
   margin-left: 8px;
-  text-transform: capitalize;
+  text-transform: none;
 }
 p {
   margin: 1ex;
