@@ -777,6 +777,10 @@ get("changeref").onclick = function (e) {
     e.stopPropagation();
     sectionClick("change");
 }
+get("settingsref").onclick = function (e) {
+    e.stopPropagation();
+    sectionClick("settings");
+}
 get("exportref").onclick = function (e) {
     e.stopPropagation();
     sectionClick("export");
@@ -785,6 +789,13 @@ get("phishingcheck").onclick = async function (e) {
     e.stopPropagation();
     await chrome.tabs.create({url: this.href});
 }
+// Handle external links in the instructions and help
+document.addEventListener("DOMContentLoaded", function() {
+    get("sitepassword-link").addEventListener("click", function(e) {
+        e.preventDefault();
+        chrome.tabs.create({url: this.href});
+    });
+});
 // Generic code for menus
 function copied(which) {
     get(which + "copied").classList.remove("nodisplay");

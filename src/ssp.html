@@ -213,7 +213,7 @@
                 icon
                 <img src="icon128.png" style="height: 16px">, you'll see a form with the domain name field filled in.
                 Enter your super password, an easy to remember nickname for the
-                account and your user name for the account. You will see your site
+                account, and your user name for the account. You will see your site
                 password being calculated as you type.
               </p>
               <p>
@@ -259,12 +259,8 @@
               </p>
               <p>
                 You may have more than one domain name for a given account because some web sites
-                use more than one domain name for the same login page. You'll get the same password
+                use more than one domain name for logging into the same account. You'll get the same password
                 for all of the domain names as long as they are all associated with the same nickname.
-              </p>
-              <p>
-                You can forget this domain name
-                and all settings associated with it by clicking the Forget menu icon or by deleting the bookmark.
               </p>
             </div>
           </section>
@@ -303,7 +299,8 @@
                 SitePassword doesn't prevent you from using a weak super password,
                 but it does warn you. There is a strength indicator directly above
                 the super password field. It uses a meter and color to
-                let you know how strong your super password is.
+                let you know how strong your super password is.  The tooltip tells 
+                you how long it would take a determined adversary to guess your super password.
               </p>
               <p>
                 You'll notice that your super password is not usually marked Strong until it is 
@@ -336,17 +333,18 @@
             <h3>Your Site Nickname</h3>
             <div id="sitenamediv" style="display: none;">
               <p>
-                Your nickname is the way you refer to this account. It should be easy to remember,
-                such as 'amazon' for amazon.com, but it doesn't have to be that simple.
+                You refer to an account by assigning it a nickname that should be easy to remember,
+                such as 'amazon' for amazon.com, but it doesn't have to be that simple.  For example, 
+                you might want to append the year if you must change your password every year.  
               </p>
               <p>
-                Your additional settings,
+                <span id="settingsref"><a href="#settingsinfo">Additional settings</a></span>,
                 such as the site password length and whether your
                 site password contains special characters are associated with this nickname.
               </p>
               <p>
-                <span id="changeref"><a href="#changeinfo">Changing a Site Password</a></span> 
-                tells you how to do that.
+                You <span id="changeref"><a href="#changeinfo">change a site password</a></span> by changing the nickname.
+                All your settings will then be associated with the new nickname.
               </p>
             </div>
           </section>
@@ -364,7 +362,7 @@
             <h3>Your User Name</h3>
             <div id="usernamediv" style="display: none;">
               <p>
-                Your user name is the name you use to log in to the site. It is
+                Your user name is the name you use to log in to the account. It is
                 associated with the nickname for the account and is used to 
                 calculate your site password.  That means you can only have a 
                 single user name for a given nickname.  If you want to use different 
@@ -388,7 +386,9 @@
               <p>
                 In the last two cases,
                 you'll have to fill in your userid manually, which you can do by copying 
-                it to the clipboard using the Copy menu icon in the userid field.
+                it to the clipboard using the 
+                <img src="clipboard.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/>
+                icon in the userid field.
               </p>
             </div>
           </section>
@@ -413,7 +413,10 @@
                 You only need to open SitePassword to enter your super password, to
                 set up a new site, or when you have to paste your site password. Most
                 of the time, you can just click on the login
-                form's password field. You'll know which to do because the password field will
+                form's password field. 
+              </p>
+              <p>
+                You'll know which to do because the password field will
                 say either <em>Click SitePassword</em> or <em>Click here for password</em>. If
                 the password field says neither, just click on the password field and see if
                 your password gets filled in. If it wasn't, you should see an alert telling
@@ -425,7 +428,8 @@
                 SitePassword could generate a weak site password just by chance.
                 To let you know that has happened, it uses the same strength
                 meter that appears above your super password
-                to tell you how strong your site password is.
+                to tell you how strong your site password is.  A tooltip tells you how long it 
+                would take a determined adversary to guess your site password.
               </p>
               <p>
                 When the generated password can't be used, say if you've been given one that
@@ -443,7 +447,7 @@
               </p>
               <p>
                 You can also get your passwords without the extension. Go to
-                <a href="https://sitepassword.info">SitePassword.info</a> and fill
+                <a id="sitepassword-link" href="https://sitepassword.info">https://sitepassword.info</a> and fill
                 in the form.
               </p>
             </div>
