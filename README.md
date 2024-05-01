@@ -419,4 +419,4 @@ install the extension using the mechanism provided by your browser.
 You may find a need to debug the extension.  The service worker, bg.js, and the content script, findpw.js, work normally, but the popup, ssp.js, won't stop at breakpoints hit early in its startup on Chrome.  Setting the constant *debugMode* to true will make the popup stop at a *debugger* statement early in the load process.
 
 A number of tests are included with the distribution.  In keeping with the
-philosophy of avoiding dependencies, the tests don't use any frameworks.  To run the tests, edit bg.js and set the constant *testMode* to true.  Then reload the extension.  Go to a new page, and Inspect the popup.  You'll get an alert that tests are running to make it harder for you to forget to turn off testing.  Test results appear on the console.
+philosophy of avoiding dependencies, the tests don't use any frameworks.  To run the tests, edit bg.js and set the constant *testMode* to true.  Then reload the extension, go to a new page, and Inspect the popup.  You'll get an alert that tests are running to make it harder for you to forget to turn off testing.  Test results appear on the console.
