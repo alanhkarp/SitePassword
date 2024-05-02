@@ -14,23 +14,10 @@ you remember those three things. (Some sites require that you remember more thin
 you don't have to remember them.
 
 Clicking the 
-    <svg id="instructionopen" class="" width="16px" height="16px"
-     style="vertical-align: middle;"
-     viewBox="0 0 24 24" 
-        xmlns="http://www.w3.org/2000/svg" fill="none">
-        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-        stroke-width="2" />
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M12 15v-3m0-3v0" />
-    </svg>
+<img src="instructionsopen.png" style="width: 16px; height: 16px; vertical-align: middle;">
 icon on the SitePassword window opens the
 instructions.  Clicking
-            <svg id="instructionclose" class="nodisplay" width="16" height="16" 
-            style="vertical-align: middle;"
-            viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="9" stroke="black" stroke-width="2" fill="transparent"/>
-              <path d="M8,8 L16,16 M8,16 L16,8" stroke="black" stroke-width="2"/>
-            </svg>
+<img src="instructionsclose.bmp" style="width: 16px; height: 16px; vertical-align: middle;">
 closes them.
 
 [Using the Extension](#basic)
@@ -168,23 +155,11 @@ determined attacker to guess your site password.
 
 Many sites have rules for what constitutes a valid password.  Clicking
 on  
-            <svg class="icon" width="16px" height="16px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-              style="align: middle;"
-              fill="none">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
-              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
-            </svg>
+<img src="src/gear.png" style="width: 16px; height: 16px; vertical-align: middle;">
 at the bottom left of the SitePassword popup opens
 a menu that lets you tell SitePassword the rules for the site you're on.
 Clicking 
-            <svg class="icon" width="16px" height="16px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-              fill="none" style="align: middle;">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.994 6.994 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.992 6.992 0 0 1-1.819 1.052L14 21z" />
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="m9 12 2 2 4-4" />
-            </svg>
+<img src="src/gear2.png" style="width: 16px; height: 16px; vertical-align: middle;">
 closes the settings.
 
 On the rare occurrences when SitePassword can't generate a password acceptable to the site, it can remember a password 
