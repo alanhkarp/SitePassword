@@ -790,13 +790,15 @@ get("phishingcheck").onclick = async function (e) {
     await chrome.tabs.create({url: this.href});
 }
 // Handle external links in the instructions and help
-document.addEventListener("DOMContentLoaded", function() {
-    get("sitepassword-link").addEventListener("click", function(e) {
-        e.preventDefault();
-        chrome.tabs.create({url: this.href});
+document.addEventListener('DOMContentLoaded', function () {
+    var links = document.querySelectorAll('.external-link');
+    links.forEach(function(link) {
+        link.addEventListener('click', function(event) {
+            event.preventDefault();
+            chrome.tabs.create({url: this.href});
+        });
     });
-});
-// Generic code for menus
+});// Generic code for menus
 function copied(which) {
     get(which + "copied").classList.remove("nodisplay");
     setTimeout(() => {

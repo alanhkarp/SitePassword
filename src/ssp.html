@@ -416,15 +416,6 @@
                 form's password field. 
               </p>
               <p>
-                You'll know which to do because the password field will
-                say either <em>Click SitePassword</em> or <em>Click here for password</em>. If
-                the password field says neither, just click on the password field and see if
-                your password gets filled in. If it wasn't, you should see an alert telling
-                you to open SitePassword. If neither of those happens, SitePassword could
-                not find the password field. In that case, open SitePassword and copy your
-                site password to the clipboard.
-              </p>
-              <p>
                 SitePassword could generate a weak site password just by chance.
                 To let you know that has happened, it uses the same strength
                 meter that appears above your super password
@@ -447,7 +438,7 @@
               </p>
               <p>
                 You can also get your passwords without the extension. Go to
-                <a id="sitepassword-link" href="https://sitepassword.info">https://sitepassword.info</a> and fill
+                <a class="external-link" href="https://sitepassword.info">https://sitepassword.info</a> and fill
                 in the form.
               </p>
             </div>
@@ -467,16 +458,15 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Input Field Menus</h3>
+            <h3>Input Field Menus (<img src="3bluedots.png" style="height: 16px; width: 6px">)</h3>
             <div id="menusdiv" style="display:none">
               <p>
                 Each of the input fields has a menu that shows up when you mouse over 
                 (or tap on a touchscreen) the 3 dots in the right side of the field.  Each field has a 
                 particular set of menu items.  
-                If an icon is grayed out, it is not available for that field.  For example, you can't show  
+                If an icon is grayed out, that function is not available for that field.  For example, you can't show  
                 your super password if the field is empty.
               </p>
-              <br />
               <p>
                 <img src="help.png" alt="help" style="width: 16px; height: 16px; vertical-align: middle;"/> &nbsp; 
                 Every field has a help option, 
@@ -484,7 +474,7 @@
               </p>
               <p>
                 <img src="forget.png" alt="forget" style="width: 16px; height: 16px; vertical-align: middle;"/> &nbsp;
-                The domain name, sitename and username fields have a Forget option.  For example, if you click this icon in the site nickname 
+                The domain name, sitename, and username fields have a Forget option.  For example, if you click this icon in the site nickname 
                 field, you will be given the opportunity to permanently forget the settings for all domain names associated 
                 with that site nickname.
               </p>
@@ -508,8 +498,6 @@
                 </svg>  
                 &nbsp; 
                 The super and site password fields give you the option of showing or hiding the contents of the field.
-                By default, your super password is hidden, and your site password is not.  You can change the default behavior of 
-                the site password field by clicking the <em>Hide site password by default</em> option in the settings panel.
               </p>
             </div>
           </section>
@@ -574,10 +562,10 @@
                 enter your super password every time you use SitePassword.
               </p>
               <p>
-                Your site password is not hidden by default for two reasons.  One is that it helps 
-                see how different the site password are for different inputs.  The second is that it's fun watching
-                the site password change as you type in the form.  Check the <em>Hide site password
-                by default</em> to hide it.
+                Your site password is not hidden by default. Surprisingly, people 
+                develop the ability to recognize their site passwords, allowing them 
+                detect typos when re-entering their super passwords.
+                Check the <em>Hide site password by default</em> button to hide it.
               </p>
               <p>
                 The next section controls how SitePassword computes your site password and is 
@@ -618,7 +606,7 @@
                   <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
                 </svg>
                 and change the appropriate menu entries. SitePassword
-                was tested on hundreds of web sites to make sure it can always
+                was tested on hundreds of web sites to make sure it can almost always
                 compute a valid password.
               </p>
               <p>
@@ -686,8 +674,10 @@
                 <em>Click SitePassword</em> in the password field. You'll know for
                 sure that happened if neither of them shows up as a tooltip after
                 holding your mouse over the login form's password field for a couple of
-                seconds. In that case, click on the SitePassword icon and copy
-                your site password to the clipboard
+                seconds. In that case, click on the SitePassword icon 
+                <img src="icon128.png" alt="SitePassword" style="width: 16px; height: 16px; vertical-align: middle;"/>
+                and copy your site password to the clipboard by clicking on 
+                <img src="clipboard.png" alt="Clipboard", style="width: 16px; height: 16px; vertical-align: middle;">.
               </p>
               <p>
                 The other time you'll use the clipboard is on pages that have more than
@@ -700,10 +690,13 @@
               <p>
                 Leaving your site password on the clipboard for any length of time
                 can be dangerous. SitePassword will alert you to this danger by
-                changing its icon when you use the clipboard icon. SitePassword can
-                often tell if you pasted something else to the clipboard. You can always 
+                changing its icon to  
+                <img src="icon128pw.png" alt="SitePassword" style="width: 16px; height: 16px; vertical-align: middle;"/>
+                when you use the clipboard icon. You can always 
                 clear the clipbord and reset
-                the warning by using the SitePassword <em>Clear Clipboard</em> button.
+                the warning by using the SitePassword <em>Clear Clipboard</em> button or by copying 
+                something else to the clipboard.  
+                (These steps only clear the top item if the clipboard provides a stack of items.)
               </p>
             </div>
           </section>
@@ -763,8 +756,11 @@
                 stores your settings in a bookmark folder called
                 <em>SitePasswordData</em>. The extension uses the bookmark named
                 CommonSettings for its own use. The
-                bookmarks with domain names for titles can be used on the
-                <a href="https://sitepassword.info">SitePassword.info</a> page.
+                bookmarks with domain names for titles can be used at
+                <a class="external-link" href="https://sitepassword.info">https://sitepassword.info</a> .
+              </p>
+              <p>
+                <b>You must turn on synchronization in your browser to use this feature.</b>
               </p>
             </div>
             <div id="syncSafaridiv" style="display:none">
@@ -803,8 +799,7 @@
               </p>
               <p>
                 SitePassword accomodates those uses with a feature provided by
-                your browser called <em>profiles</em>. Each profile gets its own
-                bookmarks. Simply create one profile for the
+                your browser called <em>profiles</em>. Simply create one profile for the
                 shared account and one for each individual.
               </p>
             </div>
@@ -897,15 +892,17 @@
                 There will be times when you are on a device that doesn't have
                 SitePassword installed, such as at a friend's house or on your mobile
                 device. You can still get your passwords by going to
-                <a href="https://sitepassword.info">sitepassword.info</a> or
-                <a href="https://github.com/alanhkarp/SitePasswordWeb">the page on Github</a>.
+                <a class="external-link" href="https://sitepassword.info">https://sitepassword.info</a> or
+                <a class="external-link" href="https://alanhkarp.github.io/SitePasswordWeb/">the page on Github</a>.
+              </p>
+              <p>
                 If you have synched your bookmarks to the device you are
                 using, you can get your settings for the site by clicking on the appropriate bookmark to open
-                <a href="https://sitepassword.info">sitepassword.info</a>,
+                the SitePassword web page,  
                 or you can paste the appropriate bookmark into the form if the page is already open.
               </p>
               <p>
-                See the instructions on the <a href="https://sitepassword.info">sitepassword.info</a>
+                See the instructions on the <a class="external-link" href="https://sitepassword.info">https://sitepassword.info</a>
                 web page for more information.
               </p>
             </div>
@@ -914,11 +911,11 @@
                 There will be times when you are on a device that doesn't have
                 SitePassword installed, such as at a friend's house or on your mobile
                 device. You can still get your passwords by going to
-                <a href="https://sitepassword.info">sitepassword.info</a> or
-                <a href="https://github.com/alanhkarp/SitePasswordWeb">the page on Github</a>.
+                <a class="external-link" href="https://sitepassword.info">https://sitepassword.info</a> or
+                <a class="external-link" href="https://github.com/alanhkarp/SitePasswordWeb">the page on Github</a>.
               </p>
               <p>
-                See the instructions on the <a href="https://sitepassword.info">sitepassword.info</a>
+                See the instructions on the <a class="external-link" href="https://sitepassword.info">https://sitepassword.info</a>
                 web page for more information.
               </p>
             </div>
@@ -943,10 +940,10 @@
               <p>
                 If you are worried that SitePassword might go away, you can
                 download the source code for the extension from the
-                <a href="https://github.com/alanhkarp/SitePassword">
+                <a class="external-link" href="https://github.com/alanhkarp/SitePassword">
                   SitePassword</a>
                 project and that of the web page version from the
-                <a href="https://github.com/alanhkarp/SitePasswordWeb">
+                <a class="external-link" href="https://github.com/alanhkarp/SitePasswordWeb">
                   SitePasswordWeb</a>
                 project. (For historical reasons, these are separate projects with
                 a lot of duplicated code.)
@@ -972,7 +969,7 @@
             <div id="paymentdiv" style="display: none">
               <p>
                 If you like SitePassword, please make a contribution to the
-                <a href="https://giving.umd.edu/giving/fund.php?name=nancy-lee-hurtt-70-maryland-promise-scholarship">
+                <a class="external-link" href="https://giving.umd.edu/giving/fund.php?name=nancy-lee-hurtt-70-maryland-promise-scholarship">
                   Nancy Lee Hurtt '70 Maryland Promise Scholarship
                 </a>
                 or your favorite charity.
@@ -1108,7 +1105,7 @@
           <p>
             Check the domain name carefully; it may not be for your account.
             You can check for known bad web pages at 
-            <a id="phishingcheck" href="https://www.scamadviser.com/">ScamAdvisor</a>
+            <a class="external-link" id="phishingcheck" href="https://www.scamadviser.com/">ScamAdvisor</a>
             or other sites that check for phishing.
           </p>
           <button id="cancelwarning" type="button"
