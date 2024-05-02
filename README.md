@@ -60,9 +60,6 @@ You may have more than one domain name for a given account because some web site
 use more than one domain name for logging into that account. You'll get the same password
 for all of the domain names as long as they are all associated with the same nickname.
 
-You can forget this domain name
-and all settings associated with it by clicking the Forget menu icon or by deleting the bookmark.
-
 [Your Super Password](#superpassword)
 ---------------------------------------
 
@@ -154,7 +151,7 @@ long it would take a
 determined attacker to guess your site password.
 
 Many sites have rules for what constitutes a valid password.  Clicking
-on  
+on
 <img src="src/gear.png" style="width: 16px; height: 16px; vertical-align: middle;">
 at the bottom left of the SitePassword popup opens
 a menu that lets you tell SitePassword the rules for the site you're on.
@@ -163,11 +160,7 @@ Clicking
 closes the settings.
 
 On the rare occurrences when SitePassword can't generate a password acceptable to the site, it can remember a password 
-you provide.  This password is stored in your settings encrypted with the computed
-password for the site as a key.  That means you must fill in the form before entering 
-your password. After you fill in the form, open the setttings and
-click the <em>Provide your own site password</em> 
-check box.  You can then enter your password into the site password field. 
+you provide as described in [Additional Settings](#additional-settings). 
 
 You can also get your passwords without the extension. Go to
 [https://sitepassword.info](https://sitepassword.info) or 
@@ -223,10 +216,10 @@ that on a shared machine.  Check the <em>Clear super password on use</em> to cle
 your super password every time you use the calculated site password.  You'll have to
 enter your super password every time you use SitePassword.
 
-Your site password is not hidden by default for two reasons.  One is that it helps 
-see how different the site password are for different inputs.  The second is that it's fun watching
-the site password change as you type in the form.  Check the <em>Hide site password
-by default</em> to hide it.
+Your site password is not hidden by default. Surprisingly, people 
+develop the ability to recognize their site passwords, allowing them 
+detect typos when re-entering their super passwords.
+Check the <em>Hide site password by default</em> button to hide it.
 
 The next section controls how SitePassword computes your site password and is 
 explained in [Computing an Acceptable Password](#computing-an-acceptable-password).
@@ -250,10 +243,8 @@ compute a valid password.
 
 The defaults 
 were chosen because SitePassword can calculate a password that is acceptable to most
-sites with them.  You can change these settings if you run into a site that doesn't accept the
-calculated password. 
-
-Although these settings produce valid passwords for most sites, you might feel more comfortable generating
+sites with them. 
+Although the default settings produce valid passwords for most sites, you might feel more comfortable generating
 stronger site passwords by making them longer or by including special characters.  Click
 <em>Save as default</em> to make these settings the default for all new accounts.
 
@@ -274,7 +265,7 @@ from the old one.
 There are two times when you will use the clipboard, when SitePassword can't find the password field, and when there are multiple password fields on the page.
 
 Although SitePassword 
-finds the password field on a large number of web sites, 
+finds the password field on almost all web sites, 
 there are likely some where it won't.  Your first clue that happened
 is that you don't see either *Click here for password* or
 *Click SitePassword* in the password field.  You'll know for 
@@ -336,7 +327,7 @@ device.  You can still get your passwords by going to
 If you have synched your bookmarks to the device you are 
 using, you can either paste the appropriate bookmark into the form or click on the bookmark to get your settings for the site.
 
-See the instructions on the [sitepassword.info](https://sitepassword.info) web page for more information.
+See the instructions on the [https://sitepassword.info](https://sitepassword.info) web page for more information.
 
 [Shared Machines](#sharedinfo)
 --------------------------
@@ -354,7 +345,7 @@ one for each individual user.
 --------------------------
 
 There is a <em>Download Site Data</em> button at the bottom of
-the popup window after you click the gear icon.
+the settings.
 Clicking this button lets you save your settings in a file you
 can reference if you need to look them up.  All settings created on machines that 
 synch your bookmarks are included.
@@ -368,8 +359,8 @@ the settings.
 Enter your super password then click this button to create a file with your passwords.  You can see a readable form 
 of the data in the file by opening it in a spreadsheet.
  
-<b>Be very careful with this file.</b>  Completely delete it from your machine, including
-emptying the trash, after you use it.  If you don't, anyone who gets access to your machine
+<b>Be very careful with this file.</b>  Completely delete it from your machine after you use it, including
+emptying the trash.  If you don't, anyone who gets access to your machine
 can get your passwords.
 
 [Source Code](#source)
