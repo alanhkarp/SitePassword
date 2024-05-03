@@ -53,7 +53,7 @@ window.onload = async function () {
         get("logopw").style.display = "none";
         // Don't worry about waiting for these to complete
         await chrome.action.setTitle({title: defaultTitle});
-        await chrome.action.setIcon({"path": "icon128.png"});
+        await chrome.action.setIcon({"path": "../images/icon128.png"});
         // Hide some instructions if the browser doesn't support the bookmarks API
     }
     let tohide = document.getElementsByName("hideifnobookmarks");
@@ -549,7 +549,7 @@ get("clearclipboard").onclick = async function() {
         // Don't worry about waiting for these to complete
         await chrome.action.setTitle({title: defaultTitle});
         await chrome.storage.local.set({"onClipboard": false});
-        await chrome.action.setIcon({"path": "icon128.png"});
+        await chrome.action.setIcon({"path": "../images/icon128.png"});
     } catch(e) {
         if (logging) console.log("popup clear clipboard failed", e);
     }

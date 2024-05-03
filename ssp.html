@@ -5,15 +5,11 @@
   <meta charset="utf-8">
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
   <title>Site Password</title>
-  <script language="javascript" type="module" src="sha256.js"></script>
-  <script language="javascript" type="module" src="generate.js"></script>
-  <script language="javascript" type="module" src="ssp.js"></script>
-  <script language="javascript" type="module" src="zxcvbn.js"></script>
-  <link type="text/css" href="ssp.css" rel="stylesheet" />
-  <!--
-<style type="text/css" media="all">
-</style>
--->
+  <script language="javascript" type="module" src="src/sha256.js"></script>
+  <script language="javascript" type="module" src="src/generate.js"></script>
+  <script language="javascript" type="module" src="src/ssp.js"></script>
+  <script language="javascript" type="module" src="src/zxcvbn.js"></script>
+  <link type="text/css" href="src/ssp.css" rel="stylesheet" />
 </head>
 
 <body id="root">
@@ -173,18 +169,9 @@
               </p>
               <p>
                 The
-                <svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
-                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                    stroke-width="2" />
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 15v-3m0-3v0" />
-                </svg>
-                icon on the SitePassword window opens these
-                instructions, and the 
-                <svg width="12" height="12" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="9" stroke="black" stroke-width="2" fill="transparent"/>
-                  <path d="M8,8 L16,16 M8,16 L16,8" stroke="black" stroke-width="2"/>
-                </svg>          
+                <img src="images/instructionsopen.png" style="width: 16px; height: 16px; vertical-align: middle;">    
+                icon opens the instructions, and the 
+                <img src="images/instructionsclose.bmp" style="width: 16px; height: 16px; vertical-align: middle;">                
                 icon closes them.
               </p>
             </div>
@@ -211,7 +198,7 @@
                 login form, you'll see that the password field tells you to
                 <em>Click SitePassword</em>. When you click on the SitePassword
                 icon
-                <img src="icon128.png" style="height: 16px">, you'll see a form with the domain name field filled in.
+                <img src="images/icon128.png" style="height: 16px">, you'll see a form with the domain name field filled in.
                 Enter your super password, an easy to remember nickname for the
                 account, and your user name for the account. You will see your site
                 password being calculated as you type.
@@ -675,7 +662,7 @@
                 sure that happened if neither of them shows up as a tooltip after
                 holding your mouse over the login form's password field for a couple of
                 seconds. In that case, click on the SitePassword icon 
-                <img src="icon128.png" alt="SitePassword" style="width: 16px; height: 16px; vertical-align: middle;"/>
+                <img src="images/icon128.png" alt="SitePassword" style="width: 16px; height: 16px; vertical-align: middle;"/>
                 and copy your site password to the clipboard by clicking on 
                 <img src="clipboard.png" alt="Clipboard", style="width: 16px; height: 16px; vertical-align: middle;">.
               </p>
@@ -1199,7 +1186,7 @@
         </div>
         <div id="multiple" class="warning nodisplay" style="width: 18em">
           <span id="multipletext">
-            <img src="warning.png" class="icon warning-icon">
+            <img src="images/warning.png" class="icon warning-icon">
             <span class="warningtext">Warning: Multiple Passwords</span>
             <p>
               There is more than one password field
@@ -1212,15 +1199,15 @@
       </div>
       <div id="main" class="sticky main datalist-closed" style="flex: auto; position: sticky; top: 0;">
         <div id="top" class="form-row">
-          <img id="logo" class="logo" src="icon128.png" />
-          <img id="logopw" class="logo" src="icon128pw.png" style="display: none;">
+          <img id="logo" class="logo" src="images/icon128.png" />
+          <img id="logopw" class="logo" src="images/icon128pw.png" style="display: none;">
           <span style="flex: 1"></span>
           <button id="title" onclick="window.location='https://sitepassword.info'"
             title="Use https://sitepassword.info when you can't use the extension.">
             <span class="btn-txt" style="text-decoration: underline;">SitePassword.info</span>
           </button>
           <span style="flex:1"></span>
-          <img id="logo" class="logo" style="visibility: hidden;" src="ssplogo.png" />
+          <img id="logo" class="logo" style="visibility: hidden;" src="images/ssplogo.png" />
           <span style="flex:1"></span>
         </div>
         <div class="form-row">
@@ -1231,18 +1218,18 @@
             type="text" title="Domain Name" value="" placeholder="Domain name" />
           <div id="domainname3bluedots" class="icon inner-icon-1" 
             title=" Click for menu" style="display: block">
-            <img src="3bluedots.png" class="dots">
+            <img src="images/3bluedots.png" class="dots">
           </div>
           <div id="domainnamemenu" class="nodisplay menu inner-icon-1">
             <div id="domainnamemenuforget"
               title="Click to enable forgetting the settings associated with this domain name.">
-              <img src="forget.png" class="icon menu-icon menu-icon-blue";"
+              <img src="images/forget.png" class="icon menu-icon menu-icon-blue";"
               >
             </div>
             <div
               id="domainnamemenuhelp"
               title="Learn more about how SitePassword uses the domain name.">
-              <img src="help.png" class="icon menu-icon menu-icon-blue">
+              <img src="images/help.png" class="icon menu-icon menu-icon-blue">
             </div>
           </div>
         </div>
@@ -1256,7 +1243,7 @@
             placeholder="A strong super password" title="Choose a strong super password" />
           <div id="superpw3bluedots" class="icon inner-icon-1" 
             title=" Click for menu" style="display: block">
-            <img src="3bluedots.png" class="dots">
+            <img src="images/3bluedots.png" class="dots">
           </div>
           <div id="superpwmenu" class="nodisplay menu inner-icon-1">
             <div id="superpwmenushow" title="Show your super password">
@@ -1274,7 +1261,7 @@
               </svg>
             </div>
             <div id="superpwmenuhelp" title="Find out more about choosing a strong super password.">
-              <img src="help.png" class="icon menu-icon">
+              <img src="images/help.png" class="icon menu-icon">
             </div>
           </div>
         </div>
@@ -1287,16 +1274,16 @@
             value="" placeholder="A unique nickname for this account" />
           <div id="sitename3bluedots" class="icon inner-icon-1" 
             title=" Click for menu" style="display: block">
-            <img src="3bluedots.png" class="dots">
+            <img src="images/3bluedots.png" class="dots">
           </div>
           <div id="sitenamemenu" class="nodisplay menu inner-icon-1">
             <div id="sitenamemenuforget"
               title="Click to enable forgetting all domain names associated with this nickname.">
-              <img src="forget.png" class="icon menu-icon">
+              <img src="images/forget.png" class="icon menu-icon">
             </div>
             <div id="sitenamemenuhelp"
               title="Find out more about how your nickname for a site is used to compute your site password.">
-              <img src="help.png" class="icon menu-icon">
+              <img src="images/help.png" class="icon menu-icon">
             </div>
           </div>
           <datalist id="sitenames"></datalist>
@@ -1309,12 +1296,12 @@
           <div id="usernamecopied" class="inner-icon-2 copied nodisplay">copied!</div>
           <div id="username3bluedots" class="icon inner-icon-1" 
             title=" Click for menu" style="display: block">
-            <img src="3bluedots.png" class="dots">
+            <img src="images/3bluedots.png" class="dots">
           </div>
           <div id="usernamemenu" class="nodisplay menu inner-icon-2">
             <div id="usernamemenuforget" display="block"
               title="Click to enable forgetting all domain names associated with this userid.">
-              <img src="forget.png" class="icon menu-icon">
+              <img src="images/forget.png" class="icon menu-icon">
             </div>
             <div id="usernamemenucopy" display="block" title="Copy your user name to the clipboard.">
               <svg class="icon menu-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
@@ -1323,7 +1310,7 @@
               </svg>
             </div>
             <div id="usernamemenuhelp" title="Find out more about how SitePassword uses your user name for this account.">
-              <img src="help.png" class="icon menu-icon">
+              <img src="images/help.png" class="icon menu-icon">
             </div>
           </div>
           <datalist id="usernames"></datalist>
@@ -1339,7 +1326,7 @@
             <div id="sitepwcopied" class="inner-icon-2 copied nodisplay">copied!</div>
             <div id="sitepw3bluedots" class="icon inner-icon-1" 
               title=" Click for menu" style="display: block">
-            <img src="3bluedots.png" class="dots">
+            <img src="images/3bluedots.png" class="dots">
           </div>
           <div id="sitepwmenu" class="nodisplay menu inner-icon-2">
             <div id="sitepwmenushow" class="nodisplay" title="Show your site password">
@@ -1363,7 +1350,7 @@
               </svg>
             </div>
             <div id="sitepwmenuhelp" title="Find out more about how SitePassword calculates your site password.">
-              <img src="help.png" class="icon menu-icon menu-icon-blue">
+              <img src="images/help.png" class="icon menu-icon menu-icon-blue">
             </div>
           </div>
         </div>

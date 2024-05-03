@@ -133,7 +133,7 @@ async function setup() {
             } else if (request.cmd === "resetIcon") {
                 await chrome.storage.local.set({"onClipboard": false});
                 await chrome.action.setTitle({title: "Site Password"});
-                await chrome.action.setIcon({"path": "icon128.png"});
+                await chrome.action.setIcon({"path": "../images/icon128.png"});
                 sendResponse("icon reset");        
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);

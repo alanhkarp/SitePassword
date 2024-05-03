@@ -14,10 +14,10 @@ you remember those three things. (Some sites require that you remember more thin
 you don't have to remember them.
 
 Clicking the 
-<img src="instructionsopen.png" style="width: 16px; height: 16px; vertical-align: middle;">
+<img src="src/images/instructionsopen.png" style="width: 16px; height: 16px; vertical-align: middle;">
 icon on the SitePassword window opens the
 instructions.  Clicking
-<img src="instructionsclose.bmp" style="width: 16px; height: 16px; vertical-align: middle;">
+<img src="src/images/instructionsclose.bmp" style="width: 16px; height: 16px; vertical-align: middle;">
 closes them.
 
 [Using the Extension](#basic)
@@ -58,7 +58,7 @@ that doesn't have the SitePassword extension installed.
 
 You may have more than one domain name for a given account because some web sites
 use more than one domain name for logging into that account. You'll get the same password
-for all of the domain names as long as they are all associated with the same nickname.
+for all domain names associated with the same nickname.
 
 [Your Super Password](#superpassword)
 ---------------------------------------
@@ -135,7 +135,7 @@ set up a new site, or when you need to paste your password.  Most of the time, y
 form's password field.  You'll know which to do because the password field will 
 say either *Click SitePassword* or *Click here for password*.  If the 
 password field says neither, just click on the password field and see if
-your password was filled in.  If it wasn't, you should see
+your password gets filled in.  If it wasn't, you should see
 an alert telling you to open SitePassword.  If 
 neither of those happens, SitePassword could not find the password field.
 In that case, open SitePassword and copy your site password to the clipboard.
@@ -166,12 +166,13 @@ You can also get your passwords without the extension. Go to
 [https://sitepassword.info](https://sitepassword.info) or 
 [the page on Github](https://alanhkarp.github.io/SitePasswordWeb) and fill in the form.  
 
-[Input Field Menus 
-(<img src="src/3bluedots.png" alt="3 blue dots" style="width: 6px; height: 14px">)](#menus)
+[Input Field Menus ](#menus)
 --------------------------
 
 Each of the input fields has a menu that shows up when you mouse over 
-(or tap on a touchscreen) the 3 dots in the right side of the field.  Each field has a particular set of menu items.  If an icon is grayed out, it is not available for that field.  For example, you can't show your super password if the field is empty.
+(or tap on a touchscreen) the 3 dots
+(<img src="src/3bluedots.png" alt="3 blue dots" style="width: 6px; height: 14px; vertical-align: middle">)
+in the right side of the field.  Each field has a particular set of menu items.  If an icon is grayed out, it is not available for that field.  For example, you can't show your super password if the field is empty.
 
 <img src="src/help.png" alt="help" style="width: 16px; height: 16px; vertical-align: middle;"/> &nbsp; 
 Every field has a help option, 
@@ -272,7 +273,7 @@ is that you don't see either *Click here for password* or
 sure that happened if neither of them shows up as a tooltip after 
 holding your mouse over the site's password field for a couple of
 seconds.  In that case, click on
-<img src="src/icon128.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/>
+<img src="images/icon128.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/>
 and copy your site password to the clipboard
 
 The other time you'll use the clipboard is on pages that have more than 
@@ -280,14 +281,14 @@ one password field, such as those for
 creating an account or changing your password. In those cases, you
 may see instructions to *Paste your password here*.
 Clicking on
-<img src="src/icon128.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/>
+<img src="images/icon128.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/>
 and then
-<img src="src/clipboard.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/> 
+<img src="images/clipboard.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/> 
 in the
 site password field will put your site password on the clipboard.
 
 Since leaving a password on the clipboard is not a good idea, the SitePassword icon changes to
-<img src="src/icon128pw.png" alt="iconpw" style="width: 16px; height: 16px; vertical-align: middle;"/> 
+<img src="images/icon128pw.png" alt="iconpw" style="width: 16px; height: 16px; vertical-align: middle;"/> 
  as a reminder.  You can clear the reminder by clicking the *Clear clipboard* button on the SitePassword popup or by copying something
  else to the clipboard.  (These steps only clear the top item if the
  clipboard provides a stack of items.) 
