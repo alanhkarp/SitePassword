@@ -14,10 +14,10 @@ you remember those three things. (Some sites require that you remember more thin
 you don't have to remember them.
 
 Clicking the 
-<img src="src/images/instructionsopen.png" style="width: 16px; height: 16px; vertical-align: middle;">
+<img src="images/instructionsopen.png" style="width: 16px; height: 16px; vertical-align: middle;">
 icon on the SitePassword window opens the
 instructions.  Clicking
-<img src="src/images/instructionsclose.bmp" style="width: 16px; height: 16px; vertical-align: middle;">
+<img src="images/instructionsclose.bmp" style="width: 16px; height: 16px; vertical-align: middle;">
 closes them.
 
 [Using the Extension](#basic)
@@ -27,7 +27,7 @@ After you install the Chrome extension and visit a page with a
 login form, you'll see that the password field tells you to
 *Click SitePassword*. When you click on the SitePassword
 icon
-<img src="src/ssplogo.png" alt="help" style="width: 16px; height: 16px; vertical-align: middle;"/>,
+<img src="images/ssplogo.png" alt="help" style="width: 16px; height: 16px; vertical-align: middle;"/>,
 you'll see a form with the domain name field filled in.
 Enter your super password, an easy to remember nickname for the
 site, and your user name for the site. You will see your user name
@@ -123,7 +123,7 @@ don't see it, one of a few things happened.
 In the last two cases,
 you'll have to fill in your userid manually, which you can do by copying 
 it to the clipboard using the 
-<img src="src/clipboard.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/>
+<img src="images/clipboard.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/>
 icon in the userid field.
 
 
@@ -152,11 +152,11 @@ determined attacker to guess your site password.
 
 Many sites have rules for what constitutes a valid password.  Clicking
 on
-<img src="src/gear.png" style="width: 16px; height: 16px; vertical-align: middle;">
+<img src="images/gear.png" style="width: 16px; height: 16px; vertical-align: middle;">
 at the bottom left of the SitePassword popup opens
 a menu that lets you tell SitePassword the rules for the site you're on.
 Clicking 
-<img src="src/gear2.png" style="width: 16px; height: 16px; vertical-align: middle;">
+<img src="images/gear2.png" style="width: 16px; height: 16px; vertical-align: middle;">
 closes the settings.
 
 On the rare occurrences when SitePassword can't generate a password acceptable to the site, it can remember a password 
@@ -171,19 +171,19 @@ You can also get your passwords without the extension. Go to
 
 Each of the input fields has a menu that shows up when you mouse over 
 (or tap on a touchscreen) the 3 dots
-(<img src="src/3bluedots.png" alt="3 blue dots" style="width: 6px; height: 14px; vertical-align: middle">)
+(<img src="images/3bluedots.png" alt="3 blue dots" style="width: 6px; height: 14px; vertical-align: middle">)
 in the right side of the field.  Each field has a particular set of menu items.  If an icon is grayed out, it is not available for that field.  For example, you can't show your super password if the field is empty.
 
-<img src="src/help.png" alt="help" style="width: 16px; height: 16px; vertical-align: middle;"/> &nbsp; 
+<img src="images/help.png" alt="help" style="width: 16px; height: 16px; vertical-align: middle;"/> &nbsp; 
 Every field has a help option, 
 which provides a brief summary of the information provided in these Instructions.
 
-<img src="src/forget.png" alt="forget" style="width: 16px; height: 16px; vertical-align: middle;"/> &nbsp;
+<img src="images/forget.png" alt="forget" style="width: 16px; height: 16px; vertical-align: middle;"/> &nbsp;
 The domain name, sitename and username fields have a Forget option.  For example, if you click this icon in the site nickname 
 field, you will be given the opportunity to permanently forget the settings for all domain names associated 
 with that site nickname.
 
-<img src="src/clipboard.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/> &nbsp;
+<img src="images/clipboard.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/> &nbsp;
 The username and site password fields have a copy option, which copies the contents of the field to the clipboard.
 
 
@@ -194,9 +194,9 @@ The settings panel has a number of options divided
 into three sections.  The first section is about your super and site passwords.
 The second section controls how SitePassword computes your site password, and the third allows you to download your data.
 Click on the gear
-<img src="src/gear.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/> 
+<img src="images/gear.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/> 
 icon to open the settings panel and the 
-<img src="src/gear2.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/> 
+<img src="images/gear2.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/> 
 icon to close it.  
 
 The top section of the settings panel has three settings related to your super and site passwords.  
@@ -237,7 +237,7 @@ if it must contain upper case or lower case letters, numbers, or
 special characters, including restrictions on which special
 characters are allowed. If you run into a site that doesn't
 accept the calculated password, click
-<img src="src/gear.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/> 
+<img src="images/gear.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/> 
 and change the appropriate menu entries. SitePassword
 was tested on hundreds of web sites to make sure it can almost always
 compute a valid password.
