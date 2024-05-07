@@ -36,13 +36,13 @@ SitePassword cannot retrieve your super password. You should make sure it's some
 
 You refer to an account by assigning it a nickname that should be easy to remember, such as 'amazon' for amazon.com, but it doesn't have to be that simple. For example, you might want to append the year if you must change your password annually.
 
-[Additional settings](#settingsinfo), such as the site password length and whether your site password contains special characters are associated with this nickname.
+[Additional settings](#additional-settings), such as the site password length and whether your site password contains special characters are associated with this nickname.
 
-You [change a site password](#changeinfo) by changing the nickname. All your settings will then be associated with the new nickname.
+You [change a site password](#changing-a-site-password) by changing the nickname. All your settings will then be associated with the new nickname.
 
 ### Your User Name
 
-Your user name is the name you use to log in to the account. It is associated with the nickname for the account and is used to calculate your site password. That means you can only have a single user name for a given nickname. If you want to use different user names for the same site, follow the instructions for [Shared Machines](#sharedinfo).
+Your user name is the name you use to log in to the account. It is associated with the nickname for the account and is used to calculate your site password. That means you can only have a single user name for a given nickname. If you want to use different user names for the same site, follow the instructions for [Shared Machines](#shared-machines).
 
 SitePassword will attempt to fill in the userid field of a login form. If you don't see it, one of a few things happened.
 
@@ -69,7 +69,7 @@ You can also get your passwords without the extension. Go to [https://sitepasswo
 
 ### Input Field Menus
 
-Each of the input fields has a menu that shows up when you mouse over (or tap on a touchscreen) the 3 dots in the right side of the field (<img src="images/3bluedots.png" style="width: 16px; height: 16px; vertical-align: middle;">). Each field has a particular set of menu items. If an icon is grayed out, that function is not available for that field. For example, you can't show your super password if the field is empty.
+Each of the input fields has a menu that shows up when you mouse over (or tap on a touchscreen) the 3 dots in the right side of the field (<img src="images/3bluedots.png" style="height: 16px; vertical-align: middle;">). Each field has a particular set of menu items. If an icon is grayed out, that function is not available for that field. For example, you can't show your super password if the field is empty.
 
 <img src="images/help.png" style="width: 16px; height: 16px; vertical-align: middle;">   Every field has a help option, which provides a brief summary of the information provided in these Instructions.
 
@@ -93,9 +93,9 @@ You normally leave your super password in the form, but you might not want to do
 
 Your site password is not hidden by default. Surprisingly, people develop the ability to recognize their site passwords, allowing them detect typos when re-entering their super passwords. Check the _Hide site password by default_ button to hide it.
 
-The next section controls how SitePassword computes your site password and is explained in [Computing an Acceptable Password](#acceptableinfo).
+The next section controls how SitePassword computes your site password and is explained in [Computing an Acceptable Password](#computing-an-acceptable-password).
 
-The _Download site data_ button is explained in [Downloading Your Settings](#downloadinfo), and the _Export passwords_ button, in [Exporting Your Passwords](#exportinfo).
+The _Download site data_ button is explained in [Downloading Your Settings](#downloading-your-settings), and the _Export passwords_ button, in [Exporting Your Passwords](#exporting-your-passwords).
 
 ### Computing an acceptable password
 

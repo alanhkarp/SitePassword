@@ -150,7 +150,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Overview</h3>
+            <h3 id="#overview">Overview</h3>
             <div id="overviewdiv" style="display: none">
               <p>
                 It's too hard for you to remember a strong password for every account
@@ -191,7 +191,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Using the Extension</h3>
+            <h3 id="#using-the-extension">Using the Extension</h3>
             <div id="basicdiv" style="display: none">
               <p>
                 After you install the Chrome extension and visit a page with a
@@ -236,7 +236,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>The Domain Name</h3>
+            <h3 id="#the-domain-name">The Domain Name</h3>
             <div id="domainnamediv" style="display:none">
               <p>
                 The domain name is associated with the settings for this account.
@@ -266,7 +266,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Your Super Password</h3>
+            <h3 id="#your-super-password">Your Super Password</h3>
             <div id="superpwdiv" style="display:none">
               <p>
                 You should choose a strong super password, one with upper and
@@ -317,7 +317,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Your Site Nickname</h3>
+            <h3 id="#your-site-nickname">Your Site Nickname</h3>
             <div id="sitenamediv" style="display: none;">
               <p>
                 You refer to an account by assigning it a nickname that should be easy to remember,
@@ -325,12 +325,12 @@
                 you might want to append the year if you must change your password annually.  
               </p>
               <p>
-                <span id="settingsref"><a href="#settingsinfo">Additional settings</a></span>,
+                <span id="settingsref"><a href="#additional-settings">Additional settings</a></span>,
                 such as the site password length and whether your
                 site password contains special characters are associated with this nickname.
               </p>
               <p>
-                You <span id="changeref"><a href="#changeinfo">change a site password</a></span> by changing the nickname.
+                You <span id="changeref"><a href="#changing-a-site-password">change a site password</a></span> by changing the nickname.
                 All your settings will then be associated with the new nickname.
               </p>
             </div>
@@ -346,7 +346,7 @@
               <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Your User Name</h3>
+            <h3 id="your-user-name">Your User Name</h3>
             <div id="usernamediv" style="display: none;">
               <p>
                 Your user name is the name you use to log in to the account. It is
@@ -354,7 +354,7 @@
                 calculate your site password.  That means you can only have a 
                 single user name for a given nickname.  If you want to use different 
                 user names for the same site, follow the instructions for 
-                <span id="sharedref"><a href="#sharedinfo">Shared Machines</a></span>.   
+                <span id="sharedref"><a href="#shared-machines">Shared Machines</a></span>.   
               </p>
               <p>
                 SitePassword will attempt to fill in the userid field of a login form. If you
@@ -394,7 +394,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Your Site Password</h3>
+            <h3 id="#your-site-password">Your Site Password</h3>
             <div id="sitepwdiv" style="display: none;">
               <p>
                 You only need to open SitePassword to enter your super password, to
@@ -445,12 +445,12 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Input Field Menus</h3>
+            <h3 id="#input-field-menus">Input Field Menus</h3>
             <div id="menusdiv" style="display:none">
               <p>
                 Each of the input fields has a menu that shows up when you mouse over 
                 (or tap on a touchscreen) the 3 dots in the right side of the field 
-                (<img src="images/3bluedots.png" style="height: 16px; width: 6px; vertical-align: middle;">).  
+                (<img src="images/3bluedots.png" style="height: 16px; width: 16px; width: 6px; vertical-align: middle;">).  
                 Each field has a 
                 particular set of menu items.  
                 If an icon is grayed out, that function is not available for that field.  For example, you can't show  
@@ -493,7 +493,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Additional Settings</h3>
+            <h3 id="#additional-settings">Additional Settings</h3>
             <div id="settingsdiv" style="display:none">
               <p>
                 The settings panel is divided
@@ -536,11 +536,11 @@
               </p>
               <p>
                 The next section controls how SitePassword computes your site password and is 
-                explained in <span id="acceptableref"><a href="#acceptableinfo">Computing an Acceptable Password</a></span>.
+                explained in <span id="acceptableref"><a href="#computing-an-acceptable-password">Computing an Acceptable Password</a></span>.
               <p>
                 The <em>Download site data</em> button is explained in 
-                <span id="downloadref"><a href="#downloadinfo">Downloading Your Settings</a></span>, and the
-                <em>Export passwords</em> button, in <span id="exportref"><a href="#exportinfo">Exporting Your Passwords</a></span>.
+                <span id="downloadref"><a href="#downloading-your-settings">Downloading Your Settings</a></span>, and the
+                <em>Export passwords</em> button, in <span id="exportref"><a href="#exporting-your-passwords">Exporting Your Passwords</a></span>.
               </p>
             </div>
           </section>
@@ -559,7 +559,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Computing an acceptable password</h3>
+            <h3 id="#computing-an-acceptable-password">Computing an acceptable password</h3>
             <div id="acceptablediv" style="display: none;">
               <p>
                 Some web sites have strict password rules, how long it must be,
@@ -603,7 +603,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Changing a Site Password</h3>
+            <h3 id="#changing-a-site-password">Changing a Site Password</h3>
             <div id="changediv" style="display: none;">
               <p>
                 Some sites make you change your password periodically. SitePassword
@@ -630,7 +630,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Using the Clipboard</h3>
+            <h3 id="#using-the-clipboard">Using the Clipboard</h3>
             <div id="clipboarddiv" style="display: none;">
               <p>
                 There are two times when you will use the clipboard. Although SitePassword
@@ -681,7 +681,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Phishing Warning</h3>
+            <h3 id="#phishing-warning">Phishing Warning</h3>
             <div id="phishingdiv" style="display: none;">
               <p>
                 SitePassword includes an antiphishing feature. If you try to use
@@ -713,7 +713,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Synchronizing across Your Machines</h3>
+            <h3 id="synchronizing-across-your-machines">Synchronizing across Your Machines</h3>
             <div id="syncdiv" style="display:none">
               <p>
                 If you go to the same login page on a different machine that you
@@ -754,7 +754,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Shared Machines</h3>
+            <h3 id="shared-machines">Shared Machines</h3>
             <div id="shareddiv" style="display: none">
               <p>
                 Many households have one machine shared by everybody. It's likely
@@ -785,7 +785,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Downloading Your Settings</h3>
+            <h3 id="#downloading-your-settings">Downloading Your Settings</h3>
             <div id="downloaddiv" style="display: none;">
               <p>
                 There is a <em>Download Site Data</em> button at the bottom of
@@ -812,7 +812,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Exporting Your Passwords</h3>
+            <h3 id="#exporting-your-passwords">Exporting Your Passwords</h3>
             <div id="exportdiv" style="display: none;">
               <p>
                 There may come a time when you want to use a different password manager.
@@ -844,7 +844,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>The Extension and the Web Page</h3>
+            <h3 id="#the-extension-and-the-web-page">The Extension and the Web Page</h3>
             <div id="extensiondiv" style="display: none;">
               <p>
                 There will be times when you are on a device that doesn't have
@@ -893,7 +893,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Source Code</h3>
+            <h3 id="#source-code">Source Code</h3>
             <div id="sourcediv" style="display: none">
               <p>
                 If you are worried that SitePassword might go away, you can
@@ -923,7 +923,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Developers</h3>
+            <h3 id="#developers">Developers</h3>
             <div id="developersdiv" style="display: none">
               <p>
                 The SitePassword extension can be installed for Firefox, Safari, and most Chromium browsers using the code here.  
@@ -960,7 +960,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3>Voluntary Payment</h3>
+            <h3 id="#voluntary-payment">Voluntary Payment</h3>
             <div id="paymentdiv" style="display: none">
               <p>
                 If you like SitePassword, please make a contribution to the
@@ -1041,7 +1041,7 @@
             single user name for a given nickname.  
             <span name="hideifnobookmarks">If you want to use different 
             user names for the same site, follow the instructions for 
-            <span id="sharedref2"><a href="#sharedinfo">Shared Machines</a></span>.</span>   
+            <span id="sharedref2"><a href="#shared-machines">Shared Machines</a></span>.</span>   
           </p>
           <div class="form-row">
             <button id="usernamehelptextclose" class="button" title="Close this help text.">
