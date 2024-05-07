@@ -36,7 +36,7 @@ SitePassword cannot retrieve your super password. You should make sure it's some
 
 You refer to an account by assigning it a nickname that should be easy to remember, such as 'amazon' for amazon.com, but it doesn't have to be that simple. For example, you might want to append the year if you must change your password annually.
 
-[Additional settings](#additional-settings), such as the site password length and whether your site password contains special characters are associated with this nickname.
+Your settings are associated with the site nickname. If you change one of the settings, that change will apply for all domain names associated with that account. If you change a nickname, all domain names associatd with the old nickname will be associated with the new one.
 
 You [change a site password](#changing-a-site-password) by changing the nickname. All your settings will then be associated with the new nickname.
 
@@ -63,13 +63,19 @@ You only need to open SitePassword to enter your super password, to set up a new
 
 SitePassword could generate a weak site password just by chance. To let you know that has happened, it uses the same strength meter that appears above your super password to tell you how strong your site password is. A tooltip tells you how long it would take a determined adversary to guess your site password.
 
-When the generated password can't be used, say if you've been given one that you're not allowed to change, SitePassword can remember a password you provide. It is stored in your settings encrypted with the computed password for the site as a key. That means you must fill in the form before entering your password. After you fill in the form, open the settings by clicking and click the _Provide your own site password_ check box. You can then enter your password into the site password field.
+When the generated password can't be used, say if you've been given one that you're not allowed to change, SitePassword can remember one you provide, as explained in [Providing a Password](#providing-a-password).
 
 You can also get your passwords without the extension. Go to [https://sitepassword.info](https://sitepassword.info) and fill in the form.
 
+### Providing a Password
+
+Unlike most password managers that calculate your password, SitePassword gives you the option to provide your own. This is useful if you have a password that you can't change, such as one provided by your employer. You can also use this option if SitePassword can't compute a password acceptable by the site.
+
+The password you provide is encrypted with the computed site password as a key. That means you must fill in the form before entering your password. After you fill in the form, open the settings and check the _Provide your own site password_ check box. You'll then be able to enter your password into the site password field.
+
 ### Input Field Menus
 
-Each of the input fields has a menu that shows up when you mouse over (or tap on a touchscreen) the 3 dots in the right side of the field (<img src="images/3bluedots.png" style="height: 16px; vertical-align: middle;">). Each field has a particular set of menu items. If an icon is grayed out, that function is not available for that field. For example, you can't show your super password if the field is empty.
+Each of the input fields has a menu that shows up when you mouse over (or tap on a touchscreen) the 3 dots in the right side of the field (<img src="images/3bluedots.png" style="width: 16px; height: 16px; vertical-align: middle;">). Each field has a particular set of menu items. If an icon is grayed out, that function is not available for that field. For example, you can't show your super password if the field is empty.
 
 <img src="images/help.png" style="width: 16px; height: 16px; vertical-align: middle;">   Every field has a help option, which provides a brief summary of the information provided in these Instructions.
 
@@ -83,13 +89,9 @@ Each of the input fields has a menu that shows up when you mouse over (or tap on
 
 The settings panel is divided into three sections. The first section is about your super and site passwords. The second section controls how SitePassword computes your site password. The third section lets you download your settings and export your passwords. Click on the <img src="images/gear.png" style="width: 16px; height: 16px; vertical-align: middle;"> icon to open the settings panel and the <img src="images/gear2.png" style="width: 16px; height: 16px; vertical-align: middle;"> icon to close it.
 
-The top section of the settings panel has three settings related to your super and site passwords.
+The top section of the settings panel has three settings related to your super and site passwords. SitePassword allows you to provide your own password as explained in [Providing a Password](#providing-a-password),
 
-Unlike most password managers that calculate your password, SitePassword gives you the option to provide your own. This is useful if you have a password that you can't change, such as one provided by your employer. You can also use this option if SitePassword can't compute a password acceptable by the site.
-
-The password you provide is encrypted with the computed site password as a key. That means you must fill in the form before entering your password. After you fill in the form, open the settings and check the _Provide your own site password_ check box. You'll then be able to enter your password into the site password field.
-
-You normally leave your super password in the form, but you might not want to do that on a shared machine. Check the _Clear super password on use_ to clear your super password every time you use the calculated site password. You'll have to enter your super password every time you use SitePassword.
+You usually leave your super password filled in for the entire browser session, but you might not want to do that on a shared machine. Checking the _Clear super password on use_ means don't have to remember to clear it.
 
 Your site password is not hidden by default. Surprisingly, people develop the ability to recognize their site passwords, allowing them detect typos when re-entering their super passwords. Check the _Hide site password by default_ button to hide it.
 
@@ -160,6 +162,10 @@ See the instructions on the [https://sitepassword.info](https://sitepassword.inf
 There will be times when you are on a device that doesn't have SitePassword installed, such as at a friend's house or on your mobile device. You can still get your passwords by going to [https://sitepassword.info](https://sitepassword.info) or [the page on Github](https://github.com/alanhkarp/SitePasswordWeb).
 
 See the instructions on the [https://sitepassword.info](https://sitepassword.info) web page for more information.
+
+### Browser Autofill
+
+The autofill feature of your browser can interfere with SitePassword. You should turn it off following the instructions for your browser.
 
 ### Source Code
 
