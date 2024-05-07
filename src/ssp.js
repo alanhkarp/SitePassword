@@ -78,6 +78,7 @@ window.onload = async function () {
     if (logging) console.log("popup got tab", domainname, activetab);
     if (logging) console.log("popup getting metadata");
     instructionSetup();
+    sectionrefSetup();
     await getsettings(domainname);
 }
 async function init() {
@@ -755,40 +756,6 @@ get("cancelbutton").onclick = function () {
     }
     msgoff("forget");
 }
-// I need to handle the case where the user clicks on the link in the instructions or help
-get("sharedref").onclick = function (e) {
-    e.stopPropagation();
-    sectionClick("shared");
-}
-get("sharedref2").onclick = function (e) {
-    e.stopPropagation();
-    showInstructions();
-    sectionClick("shared");
-} 
-get("downloadref").onclick = function (e) {
-    e.stopPropagation();
-    sectionClick("download");
-}
-get("acceptableref").onclick = function (e) {
-    e.stopPropagation();
-    sectionClick("acceptable");
-}
-get("changeref").onclick = function (e) {
-    e.stopPropagation();
-    sectionClick("change");
-}
-get("settingsref").onclick = function (e) {
-    e.stopPropagation();
-    sectionClick("settings");
-}
-get("exportref").onclick = function (e) {
-    e.stopPropagation();
-    sectionClick("export");
-}
-get("phishingcheck").onclick = async function (e) {
-    e.stopPropagation();
-    await chrome.tabs.create({url: this.href});
-}
 // Handle external links in the instructions and help
 document.addEventListener('DOMContentLoaded', function () {
     var links = document.querySelectorAll('.external-link');
@@ -1376,6 +1343,17 @@ function clearallmessages() {
         msgoff(messages[i].name);
     }
 }
+// Handle the case where the user clicks on the link in the instructions or help
+function sectionrefSetup() {
+    let sectionrefs = document.getElementsByName("sectionref");
+    for (let section of sectionrefs) {
+        section.onclick = function (e) {
+            e.stopPropagation();
+            sectionClick(this.id.slice(0, -3));
+        }
+    }
+}
+// Handle all sections of the instructions
 function instructionSetup() {
     let instructions = document.getElementsByName("instructions");
     if (logging) console.log("popup instructions", instructions);

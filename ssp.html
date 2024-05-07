@@ -347,12 +347,13 @@ to change all occurrences if ![](images...) to <img> tags.
                 you might want to append the year if you must change your password annually.  
               </p>
               <p>
-                <span id="settingsref"><a href="#additional-settings">Additional settings</a></span>,
-                such as the site password length and whether your
-                site password contains special characters are associated with this nickname.
+                Your settings are associated with the site nickname.  If you change one of
+                the settings, that change will apply for all domain names associated with 
+                that account.  If you change a nickname, all domain names associatd with the old nickname
+                will be associated with the new one.
               </p>
               <p>
-                You <span id="changeref"><a href="#changing-a-site-password">change a site password</a></span> by changing the nickname.
+                You <span id="changeref" name="sectionref"><a href="#changing-a-site-password">change a site password</a></span> by changing the nickname.
                 All your settings will then be associated with the new nickname.
               </p>
             </div>
@@ -376,7 +377,7 @@ to change all occurrences if ![](images...) to <img> tags.
                 calculate your site password.  That means you can only have a 
                 single user name for a given nickname.  If you want to use different 
                 user names for the same site, follow the instructions for 
-                <span id="sharedref"><a href="#shared-machines">Shared Machines</a></span>.   
+                <span id="sharedref" name="sectionref"><a href="#shared-machines">Shared Machines</a></span>.   
               </p>
               <p>
                 SitePassword will attempt to fill in the userid field of a login form. If you
@@ -433,22 +434,45 @@ to change all occurrences if ![](images...) to <img> tags.
               </p>
               <p>
                 When the generated password can't be used, say if you've been given one that
-                you're not allowed to change, SitePassword can remember a password
-                you provide. It is stored in your settings encrypted with the computed
-                password for the site as a key. That means you must fill in the form before entering
-                your password. After you fill in the form, open the settings by clicking
-                <svg width="12px" height="12px" viewBox="2 1 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M14 21h-4l-.551-2.48a6.991 6.991 0 0 1-1.819-1.05l-2.424.763-2-3.464 1.872-1.718a7.055 7.055 0 0 1 0-2.1L3.206 9.232l2-3.464 2.424.763A6.992 6.992 0 0 1 9.45 5.48L10 3h4l.551 2.48a6.992 6.992 0 0 1 1.819 1.05l2.424-.763 2 3.464-1.872 1.718a7.05 7.05 0 0 1 0 2.1l1.872 1.718-2 3.464-2.424-.763a6.99 6.99 0 0 1-1.819 1.052L14 21z" />
-                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
-                </svg>
-                and click the <em>Provide your own site password</em>
-                check box. You can then enter your password into the site password field.
+                you're not allowed to change, SitePassword can remember one you provide, as
+                explained in <span id="provideref" name="sectionref"><a href="#providing-a-password">Providing a Password</a></span>.  
               </p>
               <p>
                 You can also get your passwords without the extension. Go to
                 <a class="external-link" href="https://sitepassword.info">https://sitepassword.info</a> and fill
                 in the form.
+              </p>
+            </div>
+          </section>
+          <section id="provideinfo" name="instructions" class="instructionpaneltext">
+            <svg id="openprovide" class="accordian" style="display: block;" width="24px" height="24px"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 11 3 3 3-3" />
+            </svg>
+            <svg id="closeprovide" class="accordian" style="display: none;" width="24px" height="24px"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 13 3-3 3 3" />
+            </svg>
+            <h3 id="#providing-a-password">Providing a Password</h3>
+            <div id="providediv" style="display: none;">
+              <p>
+                Unlike most password managers that calculate your password, SitePassword gives you
+                the option to provide your own.  This is useful if you have a password that you
+                can't change, such as one provided by your employer.  You can also use this option
+                if SitePassword can't compute a password acceptable by the site. 
+              </p>
+              <p>
+                The password you 
+                provide is encrypted with the computed site password as a key.  That means you must 
+                fill in the form before entering your password.  After you fill in the form, open the
+                settings and check the <em>Provide your own site password</em> check box.
+                You'll then be able to enter your password into the site password field.
               </p>
             </div>
           </section>
@@ -528,27 +552,15 @@ to change all occurrences if ![](images...) to <img> tags.
                 <img src="images/gear2.png" alt="forget" style="width: 16px; height: 16px; vertical-align: middle;"/>
                 icon to close it.  
               </p> 
-             <p>
-                The top section of the settings panel has three settings related to your super and site passwords.  
+              <p>
+                The top section of the settings panel has three settings related to your super and site passwords.
+                SitePassword allows you to provide your own password as explained in 
+                <a id="provideref" href="#providing-a-password" name="sectionref">Providing a Password</a>,
               </p>
               <p>
-                Unlike most password managers that calculate your password, SitePassword gives you
-                the option to provide your own.  This is useful if you have a password that you
-                can't change, such as one provided by your employer.  You can also use this option
-                if SitePassword can't compute a password acceptable by the site. 
-              </p>
-              <p>
-                The password you 
-                provide is encrypted with the computed site password as a key.  That means you must 
-                fill in the form before entering your password.  After you fill in the form, open the
-                settings and check the <em>Provide your own site password</em> check box.
-                You'll then be able to enter your password into the site password field.
-              </p>
-              <p>
-                You normally leave your super password in the form, but you might not want to do 
-                that on a shared machine.  Check the <em>Clear super password on use</em> to clear 
-                your super password every time you use the calculated site password.  You'll have to
-                enter your super password every time you use SitePassword.
+                You usually leave your super password filled in for the entire browser session,
+                but you might not want to do that on a shared machine.  Checking the <em>Clear super password 
+                on use</em> means don't have to remember to clear it.
               </p>
               <p>
                 Your site password is not hidden by default. Surprisingly, people 
@@ -558,11 +570,11 @@ to change all occurrences if ![](images...) to <img> tags.
               </p>
               <p>
                 The next section controls how SitePassword computes your site password and is 
-                explained in <span id="acceptableref"><a href="#computing-an-acceptable-password">Computing an Acceptable Password</a></span>.
+                explained in <span id="acceptableref" name="sectionref"><a href="#computing-an-acceptable-password">Computing an Acceptable Password</a></span>.
               <p>
                 The <em>Download site data</em> button is explained in 
-                <span id="downloadref"><a href="#downloading-your-settings">Downloading Your Settings</a></span>, and the
-                <em>Export passwords</em> button, in <span id="exportref"><a href="#exporting-your-passwords">Exporting Your Passwords</a></span>.
+                <span id="downloadref" name="sectionref"><a href="#downloading-your-settings">Downloading Your Settings</a></span>, and the
+                <em>Export passwords</em> button, in <span id="exportref" name="sectionref"><a href="#exporting-your-passwords">Exporting Your Passwords</a></span>.
               </p>
             </div>
           </section>
