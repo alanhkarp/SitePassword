@@ -133,6 +133,28 @@
         </div>
         <br />
       </div>
+<!--
+Instructions for converting the contents of this panel to Markdown
+
+1. Insert everything in ssp.html from <div id="instructionpanel" to the 
+corresponding </div> into the form at 
+https://www.convertsimple.com/convert-html-to-markdown/.
+
+2. Copy the output to README.md.
+
+3. Use the regular expression
+
+!\[[^\]]*\]\((images\/[^)]*\.(?:png|bmp))\)
+
+and the replacement string
+
+<img src="$1" style="width: 16px; height: 16px; vertical-align: middle;">
+
+to change all occurrences if ![](images...) to <img> tags.
+
+4. Manually edit the nested list in Your User Name to insert 4 spaces in the inner list.
+
+-->
       <div id="instructionpanel" class="sticky side-panel" style="display: none">
         <div id="sections">
           <section id="overviewinfo" name="instructions" class="instructionpaneltext">
