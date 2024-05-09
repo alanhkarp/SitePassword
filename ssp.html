@@ -1098,7 +1098,11 @@ to change all occurrences if ![](images...) to <img> tags.
             single user name for a given nickname.  
             <span name="hideifnobookmarks">If you want to use different 
             user names for the same site, follow the instructions for 
-            <span id="sharedref2"><a href="#shared-machines">Shared Machines</a></span>.</span>   
+            <span id="sharedref" name="sectionref"><a href="#shared-machines">Shared Machines</a></span>. 
+            <!--
+              There is another element with id=sharedref, which you're not supposed 
+              to do, but I've got a hack for handling these links that needs it.
+            --> 
           </p>
           <div class="form-row">
             <button id="usernamehelptextclose" class="button" title="Close this help text.">
