@@ -591,6 +591,7 @@ get("clearsuperpw").onclick = function () {
 get("hidesitepw").onclick = function () {
     database.hidesitepw = get("hidesitepw").checked;
     hidesitepw();
+    if (resolvers.hidesitepwResolver) resolvers.hidesitepwResolver("hidesitepwPromise");
 }
 get("pwlength").onmouseout = async function () {
     await handleblur("pwlength", "pwlength");

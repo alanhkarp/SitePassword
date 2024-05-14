@@ -78,6 +78,7 @@ export async function runTests() {
         await testPhishing();
         await testForget();
         await testClearSuperpw();
+        await testHideSitepw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         await testSaveAsDefault();
@@ -298,6 +299,23 @@ export async function runTests() {
             passed += 1;
         } else {
             console.warn("Failed: Clear superpw");
+            failed += 1;
+        }
+    }
+    // Test hide sitepw
+    async function testHideSitepw() {
+        await resetState();
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        await triggerEvent("click", $hidesitepw, "hidesitepwResolver");
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        await triggerEvent("blur", $domainname, "domainnameblurResolver");
+        let test = $sitepw.type === "password";
+        if (test) {
+            console.log("Passed: Hide sitepw");
+            passed += 1;
+        } else {
+            console.warn("Failed: Hide sitepw");
             failed += 1;
         }
     }
