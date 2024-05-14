@@ -27,6 +27,7 @@ var observerOptions = {
     attributeOldValue: false,
     characterDataOldValue: false
 };
+if (logging) console.log(document.URL, Date.now(), "findpw starting", mutationObserver);
 var start = Date.now();
 if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw starting");
 // Most pages work if I start looking for password fields as soon as the basic HTML is loaded
@@ -72,8 +73,11 @@ function searchShadowRoots(element) {
 }
 // Tell the service worker that the user has copied something to the clipboard
 // so it can clear the icon
-document.oncopy = function () {
-    chrome.runtime.sendMessage({"cmd": "resetIcon"});
+document.oncopy = async function () {
+    await wakeup();
+    await chrome.runtime.sendMessage({"cmd": "resetIcon"});
+    if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw document.oncopy error", chrome.runtime.lastError);
+    if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
 }
 function startup(sendPageInfo) {
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
@@ -115,7 +119,20 @@ function startup(sendPageInfo) {
                     fillfield(cpi.idfield, userid);
                     fillfield(cpi.pwfields[0], request.p);
                     setPlaceholder(userid);
-                    sendResponse();
+                    sendResponse("fillfields");
+                    break;
+                case "update":
+                    // If the user changes a setting in the popup, the password
+                    // on the page may not be what the user thinks it is.  However,
+                    // I can't just fill the form if the password field is empty.
+                    userid = request.u;
+                    fillfield(cpi.idfield, userid);
+                    sitepw = request.p;
+                    if (cpi.pwfields[0] && cpi.pwfields[0].value) {
+                        fillfield(cpi.pwfields[0], sitepw);
+                        setPlaceholder(userid);
+                        sendResponse("update");
+                    }
                     break;
                 case "count":
                     cpi = countpwid();
@@ -131,16 +148,15 @@ function startup(sendPageInfo) {
                         cpi.pwfields[i].value = "";
                     }
                     setPlaceholder("");
-                    sendResponse();
+                    sendResponse("clear");
                     break;
                 default:
                     if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
-                    sendResponse();
+                    sendResponse("default");
             }
             let myMutations = mutationObserver.takeRecords();
             if (logging) console.log("findpw listener fillfields my mutations", myMutations);
             handleMutations(mutations);
-            return true;
         });
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
@@ -161,8 +177,8 @@ function handleMutations(mutations) {
     if (logging) console.log("findpw handleMutations my mutations", myMutations);
 }
 function fillfield(field, text) {
-    // Don't change if there is a value to avoid mutationObserver cycling
-    if (field && text && !field.value) {
+    // Don't change unless there is a different value to avoid mutationObserver cycling
+    if (field && text && text !== field.value) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
         field.value = text.trim();
         fixfield(field, text.trim());
@@ -178,6 +194,8 @@ function fixfield(field, text) {
     makeEvent(field, "keydown");
     makeEvent(field, "keypress");
     makeEvent(field, "keyup");
+    makeEvent(field, "cut");
+    makeEvent(field, "paste");
     // Is there a better test for telling if the page knows the value has been set?
     if (logging) console.log(document.URL, Date.now() - start, "findpw focus test", field.value, text);
 }
@@ -186,40 +204,41 @@ function makeEvent(field, type) {
     let event = new Event(type, { bubbles: true, view: window, cancelable: true });
     field.dispatchEvent(event);
 }
-function sendpageinfo(cpi, clicked, onload) {
+async function sendpageinfo(cpi, clicked, onload) {
     // No need to send page info if no password fields found.  User will have to open
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length);
-    chrome.runtime.sendMessage({
+    await wakeup();
+    let response = await chrome.runtime.sendMessage({
         "count": cpi.pwfields.length,
         "clicked": clicked,
         "onload": onload
-    }, (response) => {
-        if (response === "multiple") {
-            alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
-            return;
-        }
-        if (response === "duplicate" && !dupNotified) {
-            dupNotified = true;
-            let alertString = "You have one or more duplicate bookmarks in your SitePasswordData bookmark folder.  ";
-            alertString += "Open the Bookmark Manager and delete the ones in the SitePasswordData folder ";
-            alertString +- "that you don't want.  Then reload this page.";
-            alert(alertString);
-            return;
-        }
-        if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
-        if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
-        readyForClick = response.readyForClick;
-        userid = response.u;
-        let mutations = mutationObserver.takeRecords();
-        fillfield(cpi.idfield, userid);
-        setPlaceholder(userid, response.p);
-        if (userid) fillfield(cpi.pwfields[0], "");
-        let myMutations = mutationObserver.takeRecords();
-        if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
-        handleMutations(mutations);
-    });
+        });
+    if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw senpageinfo error", chrome.runtime.lastError);
+    if (response === "multiple") {
+        alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
+        return;
+    }
+    if (response === "duplicate" && !dupNotified) {
+        dupNotified = true;
+        let alertString = "You have one or more duplicate bookmarks in your SitePasswordData bookmark folder.  ";
+        alertString += "Open the Bookmark Manager and delete the ones in the SitePasswordData folder ";
+        alertString +- "that you don't want.  Then reload this page.";
+        alert(alertString);
+        return;
+    }
+    if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
+    if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
+    readyForClick = response.readyForClick;
+    userid = response.u;
+    let mutations = mutationObserver.takeRecords();
+    fillfield(cpi.idfield, userid);
+    setPlaceholder(userid, response.p);
+    if (userid) fillfield(cpi.pwfields[0], "");
+    let myMutations = mutationObserver.takeRecords();
+    if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
+    handleMutations(mutations);
 }
 function setPlaceholder(userid) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", userid, readyForClick, cpi.pwfields);
@@ -253,17 +272,18 @@ function setPlaceholder(userid) {
         }
     }
 }
-function pwfieldOnclick(event) {
+async function pwfieldOnclick(event) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
     if ((!this.placeholder) || this.placeholder === clickHere) {
-        chrome.runtime.sendMessage({ "cmd": "getPassword" }, (response) => {
-            sitepw = response;
-            let mutations = mutationObserver.takeRecords();
-            fillfield(this, response);
-            let myMutations = mutationObserver.takeRecords();
-            if (logging) console.log(document.URL, Date.now() - start, "findpw got password", this, response, myMutations);
-            handleMutations(mutations);
-        });
+        await wakeup();
+        let response = await chrome.runtime.sendMessage({ "cmd": "getPassword" });
+        if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw pwfieldOnclick error", chrome.runtime.lastError);
+        sitepw = response;
+        let mutations = mutationObserver.takeRecords();
+        fillfield(this, response);
+        let myMutations = mutationObserver.takeRecords();
+        if (logging) console.log(document.URL, Date.now() - start, "findpw got password", this, response, myMutations);
+        handleMutations(mutations);
     } else {
         // Because people don't always pay attention
         if (!this.placeholder || this.placeholder === clickSitePassword) alert(clickSitePassword);
@@ -362,12 +382,22 @@ function overlaps(field, label) {
     if (floc.left >= lloc.right) return false;
     return true;
 }
-/*
-    https://bugs.chromium.org/p/chromium/issues/detail?id=1342046 shows
-    how this content script can learn the user's super password that's
-    stored in session storage even though it's not supposed to.  The
-    solution is to not use chrome.storage.addListener.
-*/
+// Make sure the service worker is running
+// Multiple events can be lost if they are triggered fast enough,
+// so each one needs to send its own wakeup message.
+// Copied from ssp.js because I can't import it
+async function wakeup() {
+    if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
+    await new Promise((resolve, reject) => {
+        if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
+        chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
+            if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw wakeup error", chrome.runtime.lastError);
+            if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup response", response);
+            if (!response) await wakeup();
+            resolve("wakeup");
+        });
+    });
+}
 /* 
 This code is a major modification of the code released with the
 following licence.  Neither Hewlett-Packard Company nor Hewlett-Packard

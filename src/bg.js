@@ -1,11 +1,12 @@
 'use strict';
-import { generate, isSuperPw, normalize,  string2array, array2string, stringXorArray } from "./generate.js";
+import {isSuperPw, normalize,  string2array, array2string, stringXorArray, generatePassword } from "./generate.js";
 // Set to true to run the tests in test.js then reload the extension.
-// Using any kind of storage (session, local, sync) is awkward because 
-// accessing the value is an async operation.
+// Tests must be run on a page that has the content script, specifically,
+// http or https whether it has a password field or not.
 const testMode = false;
+const testLogging = false;
 const debugMode = false;
-const logging = debugMode;
+const logging = false;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
 let sitedataBookmark = "SitePasswordData"; 
@@ -17,20 +18,18 @@ if (testMode) {
 var superpw = "";
 var activetab;
 var domainname = "";
-var protocol;
+var protocol; // VSCode says this is unused, but it is in function retrieved() below.
 var rootFolder = {id: -1};
 var pwcount = 0;
 var createBookmarksFolder = true;
-export const webpage = "https://sitepassword.info/index.html";
+export const webpage = "https://sitepassword.info";
 export const config = {
     lower: "abcdefghijklmnopqrstuvwxyz",
     upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     digits: "0123456789",
-    specials: "/!=@?._-",
-    miniter: 100,
-    maxiter: 1000
+    specials: "$/!=@?._-",
 };
-export let defaultSettings = {
+const baseDefaultSettings = {
     sitename: "",
     username: "",
     providesitepw: false,
@@ -49,39 +48,36 @@ export let defaultSettings = {
     minspecial: 1,
     specials: config.specials,
 };
+export let defaultSettings =  clone(baseDefaultSettings);
 export let bgDefault = {superpw: "", settings: defaultSettings};
 export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
 var database = clone(databaseDefault);
 var bg = clone(bgDefault);
 
+export const isSafari = typeof chrome.bookmarks === "undefined";
+if (logging) console.log("bg isSafari", isSafari);
+
 let bkmksId;
 let bkmksSafari = {};
-try {
-    chrome.bookmarks.getTree((nodes) => {
-        bkmksId = nodes[0].children[0].id
-    });
-} catch {
-    // Safari
-    bkmksId = -1;
-    chrome.storage.sync.get((value) => {
-        bkmksSafari = value;
+async function setup() {
+    await Promise.resolve(); // Because some branches have await and others don't
+    if (!isSafari) {
+        let nodes = await chrome.bookmarks.getTree();
+        if (chrome.runtime.lastError) console.log("bg bkmksid lastError", chrome.runtime.lastError);
+        bkmksId = nodes[0].children[0].id;
+    } else {
+        // Safari
+        bkmksId = -1;
         if (logging) console.log("bg got Safari bookmarks", bkmksSafari);
-    });
-}
-if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
+     }
 
-// Make sure previous asynch calls have finished
-setTimeout(() => {
-    if (logging) console.log("bg finished waiting");
-}, 0);
+    if (logging) console.log("bg clear superpw");
 
-if (logging) console.log("bg clear superpw");
+    if (logging) console.log("bg starting with database", database);
 
-if (logging) console.log("bg starting with database", database);
-
-// Check reminder clock set in ssp.js.  If too much time has passed, 
-// clear superpw so user has to reenter it as an aid in not forgetting it.
-chrome.storage.local.get("reminder", (value) => {
+    // Check reminder clock set in ssp.js.  If too much time has passed, 
+    // clear superpw so user has to reenter it as an aid in not forgetting it.
+    let value = await chrome.storage.local.get("reminder");
     if (logging) console.log("bg got reminder", value);
     if (value.reminder) {
         let now = new Date();
@@ -91,119 +87,121 @@ chrome.storage.local.get("reminder", (value) => {
         if (diff > 604800000) {
             if (logging) console.log("bg clearing superpw because of reminder");
             superpw = "";
-            chrome.storage.session.set({"superpw": ""});
-            chrome.storage.local.set({"reminder": ""});
+            await chrome.storage.session.set({"superpw": ""});
+            await chrome.storage.local.set({"reminder": ""});
         }
     }
-});
-
-// Need to clear cache following an update
-chrome.runtime.onInstalled.addListener(function(details) {
-    if (logging) console.log("bg clearing browser cache because of", details)
-    chrome.browsingData.removeCache({}, function() {
+    // Need to clear cache following an update
+    chrome.runtime.onInstalled.addListener(async function(details) {
+        if (logging) console.log("bg clearing browser cache because of", details)
+        await chrome.browsingData.removeCache({});
         if (logging) console.log("bg cleared the browser cache");
-    });
-    if (details.reason === "install") {
-        chrome.windows.create({
-            url: "./gettingStarted.html",
-            type:"normal",
-            height:800,
-            width:800
-        })
-    }
-});
-
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (logging) console.log("bg got message request, sender", request, sender);
-    // Start with a new database in case something changed while the service worker stayed open
-    database = clone(databaseDefault);
-    bg = clone(bgDefault);
-    retrieveMetadata(sendResponse, () => {
-        if (logging) console.log("bg listener back from retrieveMetadata", database);
-        try {
-            let superpw = sessionStorage.getItem("superpw");
-            if (logging) console.log("bg got superpw", superpw);
-            remainder(superpw);
-        } catch {
-            chrome.storage.session.get(["superpw"], (value) => {
-                remainder(value.superpw);
+        if (details.reason === "install") {
+            chrome.windows.create({
+                url: "./gettingStarted.html",
+                type:"normal",
+                height:800,
+                width:800
             });
         }
-        function remainder(superpw) {
-            superpw = superpw || ""; // Need to set global value
+    });
+    // Add message listener
+    if (logging) console.log("bg adding listener");
+    chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+        if (logging || testLogging) console.log("bg got message request, sender", request, sender);
+        // No need to retrieve metadata for a wakeup message
+        if (request.cmd === "wakeup") {
+            if (logging) console.log("bg sending awake");
+            sendResponse("awake");
+            return true;
+        }
+        // Start with a new database in case something changed while the service worker stayed open
+        database = clone(databaseDefault);
+        bg = clone(bgDefault);
+        retrieveMetadata(sendResponse, request, async () => {
+            await Promise.resolve(); // Because some branches have await and others don't
+            if (logging) console.log("bg listener back from retrieveMetadata", database);
+            superpw = "";
+            let value = await chrome.storage.session.get(["superpw"]);
+            superpw = value.superpw;
+            if (logging) console.log("bg got superpw", superpw);
+            superpw = superpw || "";
             bg.superpw = superpw;
             if (logging) console.log("bg got ssp", isSuperPw(superpw));
             if (request.cmd === "getMetadata") {
-                getMetadata(request, sender, sendResponse);
+                await getMetadata(request, sender, sendResponse);
             } else if (request.cmd === "resetIcon") {
-                chrome.storage.local.set({"onClipboard": false});
-                chrome.action.setTitle({title: "Site Password"});
-                chrome.action.setIcon({"path": "icon128.png"});
-                sendResponse("reset");        
+                await chrome.storage.local.set({"onClipboard": false});
+                await chrome.action.setTitle({title: "Site Password"});
+                await chrome.action.setIcon({"path": "../images/icon128.png"});
+                sendResponse("icon reset");        
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);
                 bg = clone(request.bg);
                 database.clearsuperpw = request.clearsuperpw;
                 database.hidesitepw = request.hidesitepw;
                 superpw = bg.superpw || "";
-                persistMetadata(sendResponse);
+                await persistMetadata(sendResponse);
+                sendResponse("persisted");
             } else if (request.cmd === "getPassword") {                
                 let domainname = getdomainname(sender.origin || sender.url);
+                if (testMode) domainname = "alantheguru.alanhkarp.com";
                 bg.settings = bgsettings(domainname);
-                let p = generate(bg);
+                let p = await generatePassword(bg);
                 p = stringXorArray(p, bg.settings.xor);
                 if (database.clearsuperpw) {
                     superpw = "";
                     bg.superpw = "";
-                    persistMetadata(sendResponse);
+                    await persistMetadata(sendResponse);
                 }
                 if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
                 sendResponse(p);
-            } else if (request.cmd === "keepAlive") {
-                // Firefox doesn't preserve session storage across restarts, but Chrome does.
-                // It's a good thing the keepAlive message works for Firefox but not for Chrome.
-                if (chrome.storage.session) {
-                    sendResponse({"keepAlive": false});
-                } else {
-                    sendResponse({"keepAlive": true});
-                }
-                // Used for testing
             } else if (request.cmd === "reset") {
-                getRootFolder(sendResponse).then((rootFolder) => {
-                    chrome.bookmarks.removeTree(rootFolder[0].id, () => {
-                        createBookmarksFolder = true;
-                        retrieveMetadata(sendResponse, () => {
-                            sendResponse("reset");
-                        });
-                    });
-                });
+                // Used for testing, can't be in test.js becuase it needs to set local variables 
+                defaultSettings = clone(baseDefaultSettings);
+                database = clone(databaseDefault);
+                if (testLogging) console.log("bg removing bookmarks folder for testing", defaultSettings.pwlength);
+                rootFolder = await getRootFolder(sendResponse);
+                await chrome.bookmarks.removeTree(rootFolder[0].id);
+                createBookmarksFolder = true;
+                if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0].title, defaultSettings.pwlength);
+                sendResponse("reset");
             } else if (request.cmd === "newDefaults") {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
                 defaultSettings = request.newDefaults;
-                persistMetadata(sendResponse);
+                await persistMetadata(sendResponse);
+                sendResponse("persisted");
             } else if (request.cmd === "forget") {
-                getRootFolder(sendResponse).then((rootFolder) => {
-                    forget(request.toforget, rootFolder[0], sendResponse);
-                });
+                if (logging) console.log("bg forget", request.cmd);
+                rootFolder = await getRootFolder(sendResponse);
+                if (logging) console.log("bg forget rootFolder", rootFolder, request.toforget);
+                await forget(request.toforget, rootFolder[0], sendResponse);
+                if (logging) console.log("bg forget done");
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
                 if (logging) console.log("bg clicked: sending response", bg);
-                sendResponse(bg);
                 if (database.clearsuperpw) {
                     superpw = "";
                     if (logging) console.log("bg clear superpw", isSuperPw(superpw));
                 }
+                sendResponse(bg);
             } else if (request.onload) {
-                onContentPageload(request, sender, sendResponse);
-                persistMetadata(sendResponse);
+                await onContentPageload(request, sender, sendResponse);
+                await persistMetadata(sendResponse);
+                sendResponse("persisted");
+            } else {
+                if (logging) console.log("bg got unknown request", request);
+                sendResponse("unknown request");
             }
             if (logging) console.log("bg addListener returning", isSuperPw(superpw));
-        };
+        });
+        return true;
     });
-    return true;
-});
+}
+setup();
 async function getMetadata(request, _sender, sendResponse) {
+    await Promise.resolve(); // Because some branches have await and others don't
     if (logging) console.log("bg getMetadata", bg, request);
     let sitename = database.domains[request.domainname];
     if (sitename) {
@@ -219,108 +217,80 @@ async function getMetadata(request, _sender, sendResponse) {
     // Restores data stored the last time this page was loaded
     let activetabUrl = activetab.url;
     if (logging) console.log("bg got active tab", activetab);
-    try {
-        let t = sessionStorage.getItem("savedData");
-        let savedData = JSON.parse(t) || {};
-        remainder(savedData);
-    } catch {
-        chrome.storage.session.get(["savedData"], (s)=> {
-            if (logging) console.log("bg got saved data", s);
-            let savedData = {};
-            if (s && Object.keys(s).length > 0) savedData = s.savedData;
-            remainder(savedData);
-        });
+    let savedData = {};
+    let s = await chrome.storage.session.get(["savedData"]);
+    if (logging) console.log("bg got saved data", s);
+    if (s && Object.keys(s).length > 0) savedData = s.savedData;
+    // I don't create savedData in onContentPageLoad() for two reasons.
+    //    1. Pages without a password field never send the message to trigger the save.
+    //    2. file:/// pages don't get a content script to send that message.
+    // In those cases s === {}, but I still need to send a response.
+    if (savedData[activetabUrl]) {
+        if (logging) console.log("bg got saved data for", activetabUrl, savedData[activetabUrl]);
+        pwcount = savedData[activetabUrl];
+        bg.pwcount = pwcount;
+    } else {
+        if (logging) console.log("bg no saved data for", activetabUrl, savedData);
+        pwcount = 0;
+        bg.pwcount = 0;
     }
-    function remainder(savedData) {
-        // I don't create savedData in onContentPageLoad() for two reasons.
-        //    1. Pages without a password field never send the message to trigger the save.
-        //    2. file:/// pages don't get a content script to send that message.
-        // In those cases s === {}, but I still need to send a response.
-        if (savedData[activetabUrl]) {
-            if (logging) console.log("bg got saved data for", activetabUrl, savedData[activetabUrl]);
-            pwcount = savedData[activetabUrl];
-            bg.pwcount = pwcount;
-        } else {
-            if (logging) console.log("bg no saved data for", activetabUrl, savedData);
-            pwcount = 0;
-            bg.pwcount = 0;
-        }
-        domainname = getdomainname(activetabUrl);
-        if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
-        if (logging) console.log("bg sending metadata", pwcount, bg, db);
-        sendResponse({"test" : testMode, "superpw": superpw || "", "bg": bg, "database": db});
-    };
+    domainname = getdomainname(activetabUrl);
+    if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
+    if (logging) console.log("bg sending metadata", pwcount, bg, db);
+    sendResponse({"test" : testMode, "superpw": superpw || "", "bg": bg, "database": db});
 }
-function onContentPageload(request, sender, sendResponse) {
+async function onContentPageload(request, sender, sendResponse) {
+    await Promise.resolve(); // Because some branches have await and others don't
     if (logging) console.log("bg onContentPageLoad", bg, request, sender);
     activetab = sender.tab;
     bg.pwcount = request.count;
     pwcount = request.count;
     // Save data that service worker needs after it restarts
-    try {
+    let savedData = {};
+    if (isSafari) {
         let t = sessionStorage.getItem("savedData");
-        let savedData = JSON.parse(t) || {};
-        remainder(savedData);
-    } catch {
-        chrome.storage.session.get(["savedData"], (s) => {
-            let savedData = {};
-            if (Object.keys(s).length > 0) savedData = s.savedData;
-            remainder(savedData);
-        });
+        savedData = JSON.parse(t) || {};
+    } else {
+        let s = await chrome.storage.session.get(["savedData"]);
+        if (Object.keys(s).length > 0) savedData = s.savedData;
     }
-    function remainder(savedData) {
-        savedData[activetab.url] = pwcount;
-        if (logging) console.log("bg saving data", savedData[activetab.url]);
-        try {
-            let s = JSON.stringify(savedData);
-            sessionStorage.setItem("savedData", s);
-        } catch {
-            chrome.storage.session.set({"savedData": savedData});
-        }    
-        let domainname = getdomainname(activetab.url);
-        if (logging) console.log("domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
-        let sitename = database.domains[domainname];
-        if (logging) console.log("bg |sitename|, settings, database", sitename, database.sites[sitename], database);
-        if (sitename) {
-            bg.settings = database.sites[sitename];
-        } else {
-            bg.settings = clone(defaultSettings);
-        }
-        bg.settings.domainname = domainname;
-        bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
-        let readyForClick = false;
-        if (superpw && bg.settings.sitename && bg.settings.username) {
-            readyForClick = true;
-        }
-        let sitepass = "";
-        if (bg.pwcount !== 0 && bg.settings.username) {
-            let p = generate(bg);
-            p = stringXorArray(p, bg.settings.xor);
-            sitepass = p;
-        }
-        if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "p": sitepass, "readyForClick": readyForClick });
-        sendResponse({ "cmd": "fillfields", 
-                    "u": bg.settings.username || "", 
-                    "p": sitepass || "", 
-                    "clearsuperpw": database.clearsuperpw,
-                    "hideSitepw": database.hideSitepw,
-                    "readyForClick": readyForClick
-        });
+    savedData[activetab.url] = pwcount;
+    if (logging) console.log("bg saving data", savedData[activetab.url]);
+    if (isSafari) {
+        let s = JSON.stringify(savedData);
+        sessionStorage.setItem("savedData", s);
+    } else {
+        await chrome.storage.session.set({"savedData": savedData}); 
+    }    
+    let domainname = getdomainname(activetab.url);
+    if (logging) console.log("bg domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
+    let sitename = database.domains[domainname];
+    if (logging) console.log("bg |sitename|, settings, database", sitename, database.sites[sitename], database);
+    if (sitename) {
+        bg.settings = database.sites[sitename];
+    } else {
+        bg.settings = clone(defaultSettings);
     }
+    bg.settings.domainname = domainname;
+    bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
+    let readyForClick = false;
+    if (superpw && bg.settings.sitename && bg.settings.username) {
+        readyForClick = true;
+    }
+    if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "readyForClick": readyForClick });
+    sendResponse({ "cmd": "fillfields", 
+        "u": bg.settings.username || "", 
+        "p": "", 
+        "clearsuperpw": database.clearsuperpw,
+        "hideSitepw": database.hideSitepw,
+        "readyForClick": readyForClick
+    });
 }
 async function persistMetadata(sendResponse) {
-    // localStorage[name] = JSON.stringify(value);
+    await Promise.resolve(); // Because some branches have await and others don't
     if (logging) console.log("bg persistMetadata", bg, database);
-    // There appears to be a race condition.  Every once in a while
-    // bg.settings is not defined when I get here.  I have no idea
-    // why.  I think it makes sense to just exit in this case.
-    if (!bg.settings) return;
     superpw = bg.superpw;
-    try {
-        sessionStorage.setItem("superpw", superpw);
-    } catch {
-        chrome.storage.session.set({"superpw": superpw});
-    }
+    await chrome.storage.session.set({"superpw": superpw});
     let db = clone(database);
     let found = await getRootFolder(sendResponse);
     if (found.length > 1) return;
@@ -360,11 +330,11 @@ async function persistMetadata(sendResponse) {
     // The databae is saved as one bookmark for the common settings
     // and a bookmark for each domain name.
     let allchildren;
-    try {
-        allchildren = await chrome.bookmarks.getChildren(rootFolder.id); // Deleted some so recreate list
-        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
-    } catch {
+    if (isSafari) {
         allchildren = Object.values(bkmksSafari);
+    } else {
+        allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
+        if (chrome.runtime.lastError) console.log("bg getChildren lastError", chrome.runtime.lastError);
     }
     let commonSettings = [];
     let domains = [];
@@ -380,32 +350,31 @@ async function persistMetadata(sendResponse) {
     delete common.domains;
     delete common.sites;
     common.defaultSettings = defaultSettings;
+    common.defaultSettings.specials = string2array(defaultSettings.specials);
+    if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
     if (commonSettings.length === 0) {
         let url = "ssp://" + JSON.stringify(common);
-        try {
-            chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url }, (commonBkmk) => {
-                if (logging) console.log("bg created bookmark", commonBkmk.id);
-            });
-            if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
-        } catch {
+        if (isSafari) {
             bkmksSafari[commonSettingsTitle] = {};
             bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
             bkmksSafari[commonSettingsTitle].url = url;
-            chrome.storage.sync.set(bkmksSafari);
+            await chrome.storage.sync.set(bkmksSafari);
+        } else {
+            let commonBkmk = await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url });
+            if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
+            if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonSettings.pwlength);
         }
     }
     let url = "ssp://" + JSON.stringify(common);
     if (commonSettings.length > 0 && url !== commonSettings[0].url.replace(/%22/g, "\"").replace(/%20/g, " ")) {
-        let url = "ssp://" + JSON.stringify(common);
-        try {
-            chrome.bookmarks.update(commonSettings[0].id, { "url": url }, (_e) => {
-                if (logging) console.log("bg updated bookmark", _e, commonSettings[0].id);
-            });
-            if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
-        } catch {
+        if (isSafari) {
             bkmksSafari[commonSettingsTitle].url = url;
-            chrome.storage.sync.set(bkmksSafari);
+            await chrome.storage.sync.set(bkmksSafari);
+        } else {
+            await chrome.bookmarks.update(commonSettings[0].id, { "url": url });
+            if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
+            if (logging) console.log("bg updated bookmark", commonSettings[0].id, url);
         }
     }
     // Persist changes to domain settings
@@ -421,19 +390,17 @@ async function persistMetadata(sendResponse) {
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
             let foundSettings = JSON.parse(sspUrl(found.url).replace(/%22/g, "\"").replace(/%20/g, " "));
-            // Second clause to handle legacy bookmarks
             if (!sameSettings(settings, foundSettings) || found.url.substr(0,6) === "ssp://") {
                 url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
-                try {
-                    chrome.bookmarks.update(found.id, { "url": url }, (_e) => {
-                        if (chrome.runtime.lastError) console.log("bg update lastError", chrome.runtime.lastError, found);
-                       //if (logging) console.log("bg updated settings bookmark", _e, found);
-                    });
-                } catch {
+                if (isSafari) {
+                    // Handle Safari bookmarks
                     if (bkmksSafari[found.title] && bkmksSafari[found.title].url !== url) {
                         bkmksSafari[found.title].url = url;
-                        chrome.storage.sync.set(bkmksSafari);
+                        await chrome.storage.sync.set(bkmksSafari);
                     }
+                } else {
+                    await chrome.bookmarks.update(found.id, { "url": url });
+                    if (chrome.runtime.lastError) console.log("bg update lastError", chrome.runtime.lastError, found);
                 }
             }
         } else {
@@ -442,27 +409,26 @@ async function persistMetadata(sendResponse) {
                 (domainnames[i] === bg.settings.pwdomainname)) {
                 let title = domainnames[i];
                 url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
-                try {
-                    chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url }, (e) => {
-                        if (chrome.runtime.lastError) console.log("bg create bookmark lastError", chrome.runtime.lastError);
-                        if (logging) console.log("bg created settings bookmark", e, title);
-                        if (chrome.runtime.lastError) console.log("bg lastError", chrome.runtime.lastError);
-                    });
-                } catch {
+                if (logging) console.log("bg creating bookmark for", title);
+                if (isSafari) {
                     bkmksSafari[title] = {};
                     bkmksSafari[title].title = title;
                     bkmksSafari[title].url = url;
-                    chrome.storage.sync.set(bkmksSafari);
+                    await chrome.storage.sync.set(bkmksSafari);
+                } else {
+                    await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
+                    if (chrome.runtime.lastError) console.log("bg create bookmark lastError", chrome.runtime.lastError);
+                    if (logging) console.log("bg created settings bookmark", e, title);
                 }
             }
         }
     }
-    sendResponse("persisted");
 }
-async function retrieveMetadata(sendResponse, callback) {
+async function retrieveMetadata(sendResponse, request, callback) {
+    await Promise.resolve(); // Because some branches have await and others don't
     database = clone(databaseDefault); // Start with an empty database
     bg = clone(bgDefault); // and settings
-    if (logging) console.log("bg find SSP bookmark folder");
+    if (logging) console.log("bg find SSP bookmark folder", request);
     let folders = await getRootFolder(sendResponse);
     if (folders.length === 1) {
         if (logging) console.log("bg found bookmarks folder: ", folders[0]);
@@ -479,124 +445,138 @@ async function retrieveMetadata(sendResponse, callback) {
         // folder is being created, resulting in two of them.  My solution is to
         // use a flag to make sure I only create it once.
         if (createBookmarksFolder) {
-            if (logging) console.log("Creating SSP bookmark folder");
             createBookmarksFolder = false;
+            if (logging || testLogging) console.log("bg creating SSP bookmark folder");
             let bkmk = - 1;
-            try {
-                // If there's no bookmarks folder, but there are entries in sync storage,
-                // then copy those entries to bookmarks and clear sync storage.  This will
-                // happen when the browser newly implements the bookmarks API.
-                bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
-                if (chrome.runtime.lastError) console.log("bg sync lastError", chrome.runtime.lastError);
-                // Nothing in sync storage unless using Safari
-                let values = await chrome.storage.sync.get();
-                for (let title in values) {
-                    chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
-                    if (chrome.runtime.lastError) console.log("bg sync create lastError", chrome.runtime.lastError);
-                }
+            if (isSafari) {
                 // Leaving the entries in sync storage protects against the case where a browser (Safari) 
                 // starts supporting the bookmarks API, but users haven't updated the browser on all their machines.
                 //chrome.storage.sync.clear();
-            } catch {
-                // Nothing to do here
+                // Nothing in sync storage unless using Safari
+                let values = await chrome.storage.sync.get();
+                for (let title in values) {
+                    let bkmk = await chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
+                    if (chrome.runtime.lastError) {
+                        console.log("bg sync create lastError", chrome.runtime.lastError);
+                    } else {
+                        if (testLogging) console.log("bg created bookmark", bkmk);
+                    }
+                    await parseBkmk(bkmk.id, callback, sendResponse);
+                }
+            } else {
+                // If there's no bookmarks folder, but there are entries in sync storage,
+                // then copy those entries to bookmarks and clear sync storage.  This will
+                // happen when the browser newly implements the bookmarks API.
+                if (logging) console.log("bg creating bookmarks folder");
+                let bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
+                if (chrome.runtime.lastError) console.log("bg sync lastError", chrome.runtime.lastError);
+                await parseBkmk(bkmk.id, callback, sendResponse);
             }
-            parseBkmk(bkmk.id, callback, sendResponse);
         }
     }
 }
 async function parseBkmk(rootFolderId, callback, sendResponse) {
+    await Promise.resolve(); // Because some branches have await and others don't
     if (logging) console.log("bg parsing bookmark");
-    try {
-        chrome.bookmarks.getChildren(rootFolderId, (children) => {cleanbkmks(children)});
+    let children = [];
+    if (isSafari) {
+        Object.values(bkmksSafari);
+    } else {
+        children = await chrome.bookmarks.getChildren(rootFolderId);
         if (chrome.runtime.lastError) console.log("bg parseBkmk lastError", chrome.runtime.lastError);
-    } catch {
-        cleanbkmks(Object.values(bkmksSafari));
     }
-    function cleanbkmks(children) {
-        if (logging) console.log("bg cleaning bookmarks", children);
-        let seenTitles = {};
-        let newdb = clone(databaseDefault);
-        for (let i = 0; i < children.length; i++) {
-            let title = children[i].title;
-            // Remove legacy bookmarks
-            if (!isNaN(title)) {
-                try {
-                    chrome.bookmarks.remove(children[i].id);
-                    if (chrome.runtime.lastError) console.log("bg remove legacy lastError", chrome.runtime.lastError);
-                } catch {
-                    delete bkmksSafari[children[i]];
-                    chrome.storage.sync.set(bkmksSafari);
-                }
+    if (logging) console.log("bg cleaning bookmarks", children);
+    let seenTitles = {};
+    let newdb = clone(databaseDefault);
+    for (let i = 0; i < children.length; i++) {
+        let title = children[i].title;
+        // Remove legacy bookmarks
+        if (!isNaN(title)) {
+            if (logging) console.log("bg removing legacy bookmark", children[i]);
+            if (isSafari) {
+                delete bkmksSafari[children[i]];
+                await chrome.storage.sync.set(bkmksSafari);
+                if (chrome.runtime.lastError) console.log("bg remove legacy Safari lastError", chrome.runtime.lastError);
+            } else {
+                await chrome.bookmarks.remove(children[i].id);
+                if (chrome.runtime.lastError) console.log("bg remove legacy lastError", chrome.runtime.lastError);
             }
-            if (seenTitles[title]) {
-                let seen = JSON.parse(sspUrl(children[seenTitles[title]].url).replace(/%22/g, "\"").replace(/%20/g, " "));
-                let dupl = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
-                if (sameSettings(seen, dupl)) {
-                    try {
-                        chrome.bookmarks.remove(children[i].id);
-                        if (chrome.runtime.lastError) console.log("bg duplicates lastError", chrome.runtime.lastError);
-                    } catch {
-                        delete bkmksSafari[children[i]];
-                    }
-               } else {
+        }
+        if (seenTitles[title]) {
+            if (logging) console.log("bg duplicate bookmark", children[i]);
+            let seen = JSON.parse(sspUrl(children[seenTitles[title]].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+            let dupl = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+            if (sameSettings(seen, dupl)) {
+                if (isSafari) {
+                    delete bkmksSafari[children[i]];
+                } else {
                     sendResponse({"duplicate": children[i].title});
                     continue;
                 }
-            } else {
-                seenTitles[title] = i;
             }
-            if (title === commonSettingsTitle) {
-                let common = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
-                newdb.clearsuperpw = common.clearsuperpw;
-                newdb.hidesitepw = common.hidesitepw;
-                defaultSettings = common.defaultSettings || defaultSettings;
-            } else {
-                let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
-                if ('string' !== typeof settings.specials) {
-                    let specials = array2string(settings.specials);
-                    settings.specials = specials;
-                }
-                if (settings.sitename) {
-                    newdb.domains[title] = normalize(settings.sitename);
-                    newdb.sites[normalize(settings.sitename)] = settings;
-                }
+        } else {
+            seenTitles[title] = i;
+        }
+        if (title === commonSettingsTitle) {
+            if (logging) console.log("bg common settings from bookmark", children[i]);
+            let common = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+            common.defaultSettings.specials = array2string(common.defaultSettings.specials);
+            if (logging) console.log("bg common settings from bookmark", common.defaultSettings.pwlength);
+            newdb.clearsuperpw = common.clearsuperpw;
+            newdb.hidesitepw = common.hidesitepw;
+            defaultSettings = common.defaultSettings || defaultSettings;
+        } else {
+            if (logging && i < 3) console.log("bg settings from bookmark", children[i]);
+            let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+            if (logging) console.log("bg settings from bookmark", settings);
+            if ('string' !== typeof settings.specials) {
+                let specials = array2string(settings.specials);
+                settings.specials = specials;
+            }
+            if (settings.sitename) {
+                newdb.domains[title] = normalize(settings.sitename);
+                newdb.sites[normalize(settings.sitename)] = settings;
             }
         }
-        database = newdb;
-        retrieved(callback);
     }
+    database = newdb;
+    await retrieved(callback);
 }
 async function getRootFolder(sendResponse) {
     if (logging) console.log("bg getRootFolder", sitedataBookmark);
     // bookmarks.search finds any bookmark with a title containing the
     // search string, but I need to find one with an exact match.  I
     // also only want to include those in the bookmarks bar.
-    try {
+    if (isSafari) {
+        return [bkmksSafari];
+    } else {
         let candidates = await chrome.bookmarks.search({ "title": sitedataBookmark });
+        if (chrome.runtime.lastError) console.log("bg search lastError", chrome.runtime.lastError);
+        if (logging) console.log("bg search candidates", candidates);
         let folders = [];
         for (let i = 0; i < candidates.length; i++) {
             if (candidates[i].parentId === bkmksId &&
                 candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
         }
         if (folders.length > 1) {
-            console.log("bg found multiple", sitedataBookmark, "folders", folders);
-            sendResponse("multiple");
-        } 
+            if (logging) console.log("bg found multiple", sitedataBookmark, "folders", folders);
+            if (sendResponse) sendResponse("multiple");
+        } else if (folders.length === 0) {
+            if (logging) console.log("bg found no", sitedataBookmark, "folders");
+        }
         if (logging) console.log("bg getRootFolder returning", folders);
         return folders;
-    } catch {
-        return [bkmksSafari];
     }
 }
-function retrieved(callback) {
+async function retrieved(callback) {
     if (logging) console.log("bg retrieved", database);
     if (!domainname) {
-        callback();
+        await callback();
         return;
     };
     if (!database || !database.sites) {
         console.log("stop here please");
-        callback();
+        await callback();
     }
     let sitename = database.domains[domainname];
     let settings;
@@ -609,7 +589,7 @@ function retrieved(callback) {
     if (!bg.settings) bg.settings = settings; 
     bg.superpw = superpw || "";
     if (logging) console.log("bg leaving retrieived", bg, database);
-    callback();
+    await callback();
 }
 function bgsettings(domainname) {
     if (database.domains[domainname]) {
@@ -625,20 +605,24 @@ function bgsettings(domainname) {
 async function forget(toforget, rootFolder, sendResponse) {
     if (logging) console.log("bg forget", toforget);
     for (const item of toforget)  {
+        if (logging) console.log("bg forget item", item);
         delete database.domains[item];
-        chrome.bookmarks.getChildren(rootFolder.id, (allchildren) => {
-            if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
-            for (let child of allchildren) {
-                if (child.title === item) {
-                    chrome.bookmarks.remove(child.id, () => {
-                        if (chrome.runtime.lastError) console.log("bg remove child lastError", chrome.runtime.lastError);
-                        if (logging) console.log("bg removed bookmark for", item);
-                        chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
-                    });                       
-                }
+        if (logging) console.log("bg forget getting children", item, rootFolder);
+        let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
+        if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
+        if (logging) console.log("bg forget got children", allchildren);
+        for (let child of allchildren) {
+            if (child.title === item) {
+                if (logging) console.log("bg removing bookmark for", child.title);
+                await chrome.bookmarks.remove(child.id);
+                if (chrome.runtime.lastError) console.log("bg remove child lastError", chrome.runtime.lastError);
+                if (logging) console.log("bg removed bookmark for", item);
+                await chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
+                if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
+                if (logging) console.log("bg sent clear message");
             }
-        });
-        if (chrome.runtime.lastError) console.log("popup lastError", chrome.runtime.lastError);
+        }
+        if (logging) console.log("bg forget done", item);
     }
     sendResponse("forgot");
 }

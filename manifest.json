@@ -1,0 +1,36 @@
+{
+    "manifest_version": 3,
+    "name": "Site Password",
+    "short_name": "Site Password for Chrome",
+    "description": "Don't remember your passwords. Don't store them.  Calculate them!",
+    "version": "3.0",
+    "background": {
+        "service_worker": "src/bg.js", 
+        "type": "module"
+    },
+    "action": {
+        "default_icon": "images/ssplogo.png",
+        "default_popup": "ssp.html"
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://*/*", "http://*/*"],
+            "run_at": "document_idle",
+            "js": [
+                "src/findpw.js" 
+            ],
+            "all_frames": true
+        }
+    ],
+    "icons": {
+        "128": "images/icon128.png"
+    },
+    "permissions": [
+        "activeTab",
+        "background",
+        "bookmarks",
+        "browsingData",
+        "storage",
+        "tabs"
+    ]
+}
