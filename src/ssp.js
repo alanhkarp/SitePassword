@@ -586,6 +586,7 @@ get("providesitepw").onclick = async function () {
 }
 get("clearsuperpw").onclick = function () {
     database.clearsuperpw = get("clearsuperpw").checked;
+    if (resolvers.clearsuperpwResolver) resolvers.clearsuperpwResolver("clearsuperpwPromise");
 }
 get("hidesitepw").onclick = function () {
     database.hidesitepw = get("hidesitepw").checked;
@@ -1080,6 +1081,7 @@ async function showsettings() {
     get("superpw").value = bg.superpw || "";
     await fill();
     pwoptions(["lower", "upper", "number", "special"]);
+    if (resolvers.settingsshowResolver) resolvers.settingsshowResolver("settingsshowPromise");
 }
 function hidesettings() {
     get("settingsshow").style.display = "inline";

@@ -145,6 +145,7 @@ async function setup() {
                 sendResponse("persisted");
             } else if (request.cmd === "getPassword") {                
                 let domainname = getdomainname(sender.origin || sender.url);
+                if (testMode) domainname = "alantheguru.alanhkarp.com";
                 bg.settings = bgsettings(domainname);
                 let p = await generatePassword(bg);
                 p = stringXorArray(p, bg.settings.xor);

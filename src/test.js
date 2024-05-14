@@ -11,6 +11,7 @@ export let resolvers = {};
 let logging = false;
 let loggingCalculation = false;
 let loggingClear = false;
+let loggingClearsuperpw = false;
 let loggingDefault = false;
 let loggingFill = false;
 let loggingForget = false;
@@ -28,12 +29,15 @@ if (logging) {
 export async function runTests() {
     // Fields needed for tests
     const $mainpanel = get("mainpanel");
+    const $settingsshow = get("settingsshow");
     const $domainname = get("domainname");
     const $sitename = get("sitename");
     const $username = get("username");
     const $superpw = get("superpw");
     const $sitepw = get("sitepw");
     const $providesitepw = get("providesitepw");
+    const $clearsuperpw = get("clearsuperpw");
+    const $hidesitepw = get("hidesitepw");
     const $pwlength = get("pwlength");
     const $allowlowercheckbox = get("allowlowercheckbox");
     const $allowuppercheckbox = get("allowuppercheckbox");
@@ -73,6 +77,7 @@ export async function runTests() {
         await testProvidedpw();
         await testPhishing();
         await testForget();
+        await testClearSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         await testSaveAsDefault();
@@ -276,6 +281,26 @@ export async function runTests() {
             failed += 1;
         } 
     }
+    // Test clear superpw
+    async function testClearSuperpw() {
+        const expected = "UG1qIyn6mSuJ";
+        await resetState();
+        await triggerEvent("click", $settingsshow, "settingsshowResolver");
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+        await triggerEvent("click", $clearsuperpw, "clearsuperpwResolver");
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        let response = await chrome.runtime.sendMessage({"cmd": "getPassword"});
+        await triggerEvent("blur", $domainname, "domainnameblurResolver");
+        if (loggingClearsuperpw || logging) console.log("testClearSuperpw getPassword", response, foo);
+        let test = $superpw.value === "" && response === expected;
+        if (test) {
+            console.log("Passed: Clear superpw");
+            passed += 1;
+        } else {
+            console.warn("Failed: Clear superpw");
+            failed += 1;
+        }
+    }
     // Test save as default
     async function testSaveAsDefault() {
         if (loggingDefault) console.log("testSaveAsDefault");
@@ -330,6 +355,8 @@ export async function runTests() {
         $username.value = "";
         $sitepw.value = "";
         $providesitepw.checked = defaultSettings.providesitepw;
+        $clearsuperpw.checked = defaultSettings.clearsuperpw;
+        $hidesitepw.checked = defaultSettings.hidesitepw;
         $pwlength.value = defaultSettings.pwlength;
         $startwithletter.checked = defaultSettings.startwithletter;
         $allowlowercheckbox.checked = defaultSettings.allowlower;
