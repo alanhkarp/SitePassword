@@ -142,6 +142,7 @@ async function setup() {
                 database.hidesitepw = request.hidesitepw;
                 superpw = bg.superpw || "";
                 await persistMetadata(sendResponse);
+                sendResponse("persisted");
             } else if (request.cmd === "getPassword") {                
                 let domainname = getdomainname(sender.origin || sender.url);
                 bg.settings = bgsettings(domainname);
@@ -168,6 +169,7 @@ async function setup() {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
                 defaultSettings = request.newDefaults;
                 await persistMetadata(sendResponse);
+                sendResponse("persisted");
             } else if (request.cmd === "forget") {
                 if (logging) console.log("bg forget", request.cmd);
                 rootFolder = await getRootFolder(sendResponse);
@@ -186,6 +188,7 @@ async function setup() {
             } else if (request.onload) {
                 await onContentPageload(request, sender, sendResponse);
                 await persistMetadata(sendResponse);
+                sendResponse("persisted");
             } else {
                 if (logging) console.log("bg got unknown request", request);
                 sendResponse("unknown request");
@@ -419,7 +422,6 @@ async function persistMetadata(sendResponse) {
             }
         }
     }
-    sendResponse("persisted");
 }
 async function retrieveMetadata(sendResponse, request, callback) {
     await Promise.resolve(); // Because some branches have await and others don't
