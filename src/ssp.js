@@ -45,7 +45,7 @@ window.onload = async function () {
         get("logopw").style.display = "block";
         // Don't worry about waiting for these to complete
         await chrome.action.setTitle({title: "A site password may be on the clipboard."});
-        await chrome.action.setIcon({"path": "icon128pw.png"});
+        await chrome.action.setIcon({"path": "images/icon128pw.png"});
     } else {
         if (logging) console.log("popup clipboard not used");
         get("logo").title = defaultTitle;
@@ -511,7 +511,7 @@ get("sitepwmenucopy").onclick = async function(e) {
         get("logo").style.display = "none";
         get("logopw").style.display = "block";
         await chrome.action.setTitle({title: "A site password may be on the clipboard."});
-        await chrome.action.setIcon({"path": "icon128pw.png"});
+        await chrome.action.setIcon({"path": "images/icon128pw.png"});
         await chrome.storage.local.set({"onClipboard": true})
         copied("sitepw");
     } catch(e) {
