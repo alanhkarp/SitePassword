@@ -51,7 +51,7 @@ async function computePassword(superpw, salt, settings) {
         pw = await candidatePassword(args);
     }
     // Construct a legal password since hashing failed to produce one
-    console.log("bg failed after", iter, "extra iteration and took", Date.now() - startIter, "ms, founds", pw);
+    if (logging) console.log("generate failed after", iter, "extra iteration and took", Date.now() - startIter, "ms, founds", pw);
     pw = uint2chars();
     return pw;
     function uint2chars() {
@@ -89,15 +89,15 @@ async function computePassword(superpw, salt, settings) {
             }
         }
         function shuffle(chars) {
-            let currentIndex = chars.length, temporaryValue, randomIndex;
+            let currentIndex = chars.length;
             let charsArray = chars.split("");
             // While there remain elements to shuffle...
             while (0 !== currentIndex) {                      
               // Pick a remaining element...
-              randomIndex = byteArray[currentIndex] % charsArray.length;
+              let randomIndex = byteArray[currentIndex] % charsArray.length;
               currentIndex -= 1;                      
               // And swap it with the current element.
-              temporaryValue = charsArray[currentIndex];
+              let temporaryValue = charsArray[currentIndex];
               charsArray[currentIndex] = charsArray[randomIndex];
               charsArray[randomIndex] = temporaryValue;
             }

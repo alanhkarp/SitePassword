@@ -349,8 +349,8 @@ async function persistMetadata(sendResponse) {
     let common = clone(db);
     delete common.domains;
     delete common.sites;
-    common.defaultSettings = defaultSettings;
-    common.defaultSettings.specials = string2array(defaultSettings.specials);
+    common.defaultSettings = clone(defaultSettings);
+    common.defaultSettings.specials = string2array(common.defaultSettings.specials);
     if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
     if (commonSettings.length === 0) {
@@ -530,8 +530,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
             let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
             if (logging) console.log("bg settings from bookmark", settings);
             if ('string' !== typeof settings.specials) {
-                let specials = array2string(settings.specials);
-                settings.specials = specials;
+                settings.specials = array2string(settings.specials);
             }
             if (settings.sitename) {
                 newdb.domains[title] = normalize(settings.sitename);
