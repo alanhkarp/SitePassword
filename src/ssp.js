@@ -220,7 +220,7 @@ get("root").onmouseenter = function (e) {
     clearTimeout(mainPanelTimer);
 }
 get("title").onclick = function () {
-    window.open("https://sitepassword.info");
+    window.open("https://sitepassword.info", target, "noopener,noreferrer");
 }
 // Domain Name
 // There are no actions the user can take on the domain name field,
@@ -1220,6 +1220,7 @@ function sitedataHTMLDoc(doc, sorted) {
         caption.innerText = "You can use these settings at ";
         let a = addElement(caption, "a");
         a.href = "https://sitepassword.info";
+        a.rel = "noopener noreferrer";
         a.innerText = "https://sitepassword.info."; 
         let p = addElement(caption, "p");
         p.innerText = "Click on the domain name to open sitepassword.info or right click on the domain name and copy the link address to paste into the bookmark field."; 

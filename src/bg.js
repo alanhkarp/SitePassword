@@ -119,7 +119,6 @@ async function setup() {
         database = clone(databaseDefault);
         bg = clone(bgDefault);
         retrieveMetadata(sendResponse, request, async () => {
-            await Promise.resolve(); // Because some branches have await and others don't
             if (logging) console.log("bg listener back from retrieveMetadata", database);
             superpw = "";
             let value = await chrome.storage.session.get(["superpw"]);
@@ -156,6 +155,7 @@ async function setup() {
                 }
                 if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
                 sendResponse(p);
+                await Promise.resolve(); // To match the awaits in the other branches
             } else if (request.cmd === "reset") {
                 // Used for testing, can't be in test.js becuase it needs to set local variables 
                 defaultSettings = clone(baseDefaultSettings);
@@ -186,6 +186,7 @@ async function setup() {
                     if (logging) console.log("bg clear superpw", isSuperPw(superpw));
                 }
                 sendResponse(bg);
+                await Promise.resolve(); // To match the awaits in the other branches
             } else if (request.onload) {
                 await onContentPageload(request, sender, sendResponse);
                 await persistMetadata(sendResponse);
@@ -193,6 +194,7 @@ async function setup() {
             } else {
                 if (logging) console.log("bg got unknown request", request);
                 sendResponse("unknown request");
+                await Promise.resolve(); // To match the awaits in the other branches
             }
             if (logging) console.log("bg addListener returning", isSuperPw(superpw));
         });
