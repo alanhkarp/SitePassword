@@ -60,13 +60,13 @@ if (logging) console.log("bg isSafari", isSafari);
 let bkmksId;
 let bkmksSafari = {};
 async function setup() {
-    await Promise.resolve(); // Because some branches have await and others don't
     if (!isSafari) {
         let nodes = await chrome.bookmarks.getTree();
         if (chrome.runtime.lastError) console.log("bg bkmksid lastError", chrome.runtime.lastError);
         bkmksId = nodes[0].children[0].id;
     } else {
         // Safari
+        await Promise.resolve(); // Force timing to be the same as the other branch
         bkmksId = -1;
         if (logging) console.log("bg got Safari bookmarks", bkmksSafari);
      }
@@ -89,6 +89,8 @@ async function setup() {
             superpw = "";
             await chrome.storage.session.set({"superpw": ""});
             await chrome.storage.local.set({"reminder": ""});
+        } else {
+            await Promise.resolve(); // To match the await in the other branch
         }
     }
     // Need to clear cache following an update
@@ -152,6 +154,8 @@ async function setup() {
                     superpw = "";
                     bg.superpw = "";
                     await persistMetadata(sendResponse);
+                } else {
+                    await Promise.resolve(); // To match the await in the other branch
                 }
                 if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
                 sendResponse(p);
@@ -203,7 +207,6 @@ async function setup() {
 }
 setup();
 async function getMetadata(request, _sender, sendResponse) {
-    await Promise.resolve(); // Because some branches have await and others don't
     if (logging) console.log("bg getMetadata", bg, request);
     let sitename = database.domains[request.domainname];
     if (sitename) {
@@ -242,7 +245,6 @@ async function getMetadata(request, _sender, sendResponse) {
     sendResponse({"test" : testMode, "superpw": superpw || "", "bg": bg, "database": db});
 }
 async function onContentPageload(request, sender, sendResponse) {
-    await Promise.resolve(); // Because some branches have await and others don't
     if (logging) console.log("bg onContentPageLoad", bg, request, sender);
     activetab = sender.tab;
     bg.pwcount = request.count;
@@ -252,6 +254,7 @@ async function onContentPageload(request, sender, sendResponse) {
     if (isSafari) {
         let t = sessionStorage.getItem("savedData");
         savedData = JSON.parse(t) || {};
+        await Promise.resolve(); // To match the await in the other branch
     } else {
         let s = await chrome.storage.session.get(["savedData"]);
         if (Object.keys(s).length > 0) savedData = s.savedData;
@@ -261,6 +264,7 @@ async function onContentPageload(request, sender, sendResponse) {
     if (isSafari) {
         let s = JSON.stringify(savedData);
         sessionStorage.setItem("savedData", s);
+        await Promise.resolve(); // To match the awaits in the other branches
     } else {
         await chrome.storage.session.set({"savedData": savedData}); 
     }    
@@ -289,7 +293,6 @@ async function onContentPageload(request, sender, sendResponse) {
     });
 }
 async function persistMetadata(sendResponse) {
-    await Promise.resolve(); // Because some branches have await and others don't
     if (logging) console.log("bg persistMetadata", bg, database);
     superpw = bg.superpw;
     await chrome.storage.session.set({"superpw": superpw});
@@ -334,6 +337,7 @@ async function persistMetadata(sendResponse) {
     let allchildren;
     if (isSafari) {
         allchildren = Object.values(bkmksSafari);
+        await Promise.resolve(); // To match the await in the other branch
     } else {
         allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
         if (chrome.runtime.lastError) console.log("bg getChildren lastError", chrome.runtime.lastError);
@@ -399,6 +403,8 @@ async function persistMetadata(sendResponse) {
                     if (bkmksSafari[found.title] && bkmksSafari[found.title].url !== url) {
                         bkmksSafari[found.title].url = url;
                         await chrome.storage.sync.set(bkmksSafari);
+                    } else {
+                        await Promise.resolve(); // To match the await in the other branch
                     }
                 } else {
                     await chrome.bookmarks.update(found.id, { "url": url });
@@ -427,7 +433,6 @@ async function persistMetadata(sendResponse) {
     }
 }
 async function retrieveMetadata(sendResponse, request, callback) {
-    await Promise.resolve(); // Because some branches have await and others don't
     database = clone(databaseDefault); // Start with an empty database
     bg = clone(bgDefault); // and settings
     if (logging) console.log("bg find SSP bookmark folder", request);
@@ -478,11 +483,11 @@ async function retrieveMetadata(sendResponse, request, callback) {
     }
 }
 async function parseBkmk(rootFolderId, callback, sendResponse) {
-    await Promise.resolve(); // Because some branches have await and others don't
     if (logging) console.log("bg parsing bookmark");
     let children = [];
     if (isSafari) {
         Object.values(bkmksSafari);
+        await Promise.resolve(); // To match the await in the other branch
     } else {
         children = await chrome.bookmarks.getChildren(rootFolderId);
         if (chrome.runtime.lastError) console.log("bg parseBkmk lastError", chrome.runtime.lastError);
@@ -549,6 +554,7 @@ async function getRootFolder(sendResponse) {
     // search string, but I need to find one with an exact match.  I
     // also only want to include those in the bookmarks bar.
     if (isSafari) {
+        await Promise.resolve(); // To match the await in the other branch
         return [bkmksSafari];
     } else {
         let candidates = await chrome.bookmarks.search({ "title": sitedataBookmark });
@@ -578,6 +584,8 @@ async function retrieved(callback) {
     if (!database || !database.sites) {
         console.log("stop here please");
         await callback();
+    } else {
+        await Promise.resolve(); // To match the await in the other branch
     }
     let sitename = database.domains[domainname];
     let settings;
@@ -621,6 +629,8 @@ async function forget(toforget, rootFolder, sendResponse) {
                 await chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
                 if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
                 if (logging) console.log("bg sent clear message");
+            } else {
+                await Promise.resolve(); // To match the await in the other branch
             }
         }
         if (logging) console.log("bg forget done", item);

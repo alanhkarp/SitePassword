@@ -89,15 +89,16 @@ function startup(sendPageInfo) {
     if (!mutationObserver) {
         // Firefox doesn't preserve sessionStorage across restarts of
         // the service worker.  Sending periodic messages keeps it
-        // alive, but there's no reason to send them if I'm using
-        // storage.session.
+        // alive, but there's no point to keep sending if there's an error.
         let keepAlive = setInterval(() => {
             chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
-                if (!alive.keepAlive) clearInterval(keepAlive);
+                if (chrome.runtime.lastError) {
+                    console.log("findpw keepAlive error", error);
+                    clearInterval(keepAlive);
+                } else {
+                    if (!alive.keepAlive) clearInterval(keepAlive);
+                }
             });
-            if (chrome.runtime.lastError) {
-                console.log("findpw keepAlive error", error);
-                clearInterval(keepAlive);}
         }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button
         document.body.onclick = function () {
@@ -287,6 +288,7 @@ async function pwfieldOnclick(event) {
     } else {
         // Because people don't always pay attention
         if (!this.placeholder || this.placeholder === clickSitePassword) alert(clickSitePassword);
+        await Promise.resolve(); // To match the await in the other branch
     }
 }
 function countpwid() {
@@ -393,7 +395,11 @@ async function wakeup() {
         chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
             if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw wakeup error", chrome.runtime.lastError);
             if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup response", response);
-            if (!response) await wakeup();
+            if (!response) {
+                await wakeup();
+            } else {
+                await Promise.resolve(); // To match the await in the other branch
+            }
             resolve("wakeup");
         });
     });

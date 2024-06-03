@@ -340,7 +340,6 @@ get("sitename").onkeyup = async function () {
     if (resolvers.sitenamekeyupResolver) resolvers.sitenamekeyupResolver("sitenamekeyupPromise");
 }
 get("sitename").onblur = async function (e) {
-    await Promise.resolve(); // Because some branches have await and others don't
     let d = isphishing(bg.settings.sitename)
     if (d) {
         get("phishingtext0").innerText = get("sitename").value;
@@ -352,6 +351,7 @@ get("sitename").onblur = async function (e) {
         get("superpw").disabled = true;
         get("username").disabled = true;
         get("sitepw").value = "";
+        await Promise.resolve(); // To match the await of the other branch
     } else {
         phishing = false;
         msgoff("phishing");
@@ -558,7 +558,6 @@ get("clearclipboard").onclick = async function() {
 document.oncopy = get("clearclipboard").onclick;
 get("settingssave").onclick = hidesettings;
 get("providesitepw").onclick = async function () {
-    await Promise.resolve(); // Because some branches have await and others don't
     if (!(get("sitename").value && get("username").value)) return;
     bg.settings.providesitepw = get("providesitepw").checked;
     if (get("providesitepw").checked) {
@@ -571,6 +570,7 @@ get("providesitepw").onclick = async function () {
         get("sitepwmenucopy").classList.remove("menu-icon-blue");
         get("sitepwmenuhelp").classList.remove("menu-icon-blue");
         get("sitepw").placeholder = "Enter your site password";
+        await Promise.resolve(); // To match the await of the other branch
     } else {
         get("sitepw").readOnly = true;
         get("sitepw").style.backgroundColor = "rgb(136, 204, 255, 20%)";
@@ -1003,10 +1003,10 @@ function defaultfocus() {
     if (!get("superpw").value) setfocus(get("superpw"));
 }
 async function ask2generate() {
-    Promise.resolve(); // Because some branches have await and others don't
     if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
         msgon("nopw");
         computed = "";
+        Promise.resolve(); // To match the await in the other branch
     } else {
         message("nopw", false); // I don't want to hide any other open messages
         const computed = await generatePassword(bg);
