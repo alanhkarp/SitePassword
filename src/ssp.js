@@ -659,7 +659,7 @@ get("specials").onblur = async function() {
         .replace(alphanumerics, '')  // eliminate alphanumerics
         .substring(0, 12);  // limit to 12 specials
     bg.settings.specials = specials.value;
-    await handlekeyup("specials");
+    await handlekeyup("specials", "specials");
     if (resolvers.specialsblurResolver) resolvers.specialsblurResolver("specialsblurPromise");
 }
 get("makedefaultbutton").onclick = async function () {
