@@ -90,16 +90,16 @@ function startup(sendPageInfo) {
         // Firefox doesn't preserve sessionStorage across restarts of
         // the service worker.  Sending periodic messages keeps it
         // alive, but there's no point to keep sending if there's an error.
-        let keepAlive = setInterval(() => {
-            chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
-                if (chrome.runtime.lastError) {
-                    console.log("findpw keepAlive error", error);
-                    clearInterval(keepAlive);
-                } else {
-                    if (!alive.keepAlive) clearInterval(keepAlive);
-                }
-            });
-        }, 10_000);
+        // let keepAlive = setInterval(() => {
+        //     chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
+        //         if (chrome.runtime.lastError) {
+        //             console.log("findpw keepAlive error", error);
+        //             clearInterval(keepAlive);
+        //         } else {
+        //             if (!alive.keepAlive) clearInterval(keepAlive);
+        //         }
+        //     });
+        // }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button
         document.body.onclick = function () {
             if (logging) console.log("findpw click on body");

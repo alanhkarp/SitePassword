@@ -5,7 +5,7 @@ import {isSuperPw, normalize,  string2array, array2string, stringXorArray, gener
 // http or https whether it has a password field or not.
 const testMode = false;
 const testLogging = false;
-const debugMode = false;
+const debugMode = true;
 const logging = false;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
@@ -358,7 +358,7 @@ async function persistMetadata(sendResponse) {
     common.defaultSettings = clone(defaultSettings);
     if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
-    let url = "ssp://" + encodeURIComponent(JSON.stringify(common));
+    let url = "ssp://" + stringifySettings(common);
     if (commonSettings.length === 0) {
         if (isSafari) {
             bkmksSafari[commonSettingsTitle] = {};
@@ -370,15 +370,17 @@ async function persistMetadata(sendResponse) {
             if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
             if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonSettings.pwlength);
         }
-    }
-    if (commonSettings.length > 0 && url !== commonSettings[0].url) {
-        if (isSafari) {
-            bkmksSafari[commonSettingsTitle].url = url;
-            await chrome.storage.sync.set(bkmksSafari);
-        } else {
-            await chrome.bookmarks.update(commonSettings[0].id, { "url": url });
-            if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
-            if (logging) console.log("bg updated bookmark", commonSettings[0].id, url);
+    } else {
+        let existing = parseSettings(commonSettings[0].url);
+        if (sameSettings(common, existing) === false) {
+            if (isSafari) {
+                bkmksSafari[commonSettingsTitle].url = url;
+                await chrome.storage.sync.set(bkmksSafari);
+            } else {
+                await chrome.bookmarks.update(commonSettings[0].id, { "url": url });
+                if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
+                if (logging) console.log("bg updated bookmark", commonSettings[0].id, url);
+            }
         }
     }
     // Persist changes to domain settings
@@ -387,11 +389,10 @@ async function persistMetadata(sendResponse) {
         let sitename = db.domains[domainnames[i]];
         let settings = db.sites[sitename];
         settings.specials = array2string(settings.specials); // For legacy bookmarks
-        let url = webpage + "?bkmk=ssp://" + encodeURIComponent(JSON.stringify(settings));
+        let url = webpage + "?bkmk=ssp://" + stringifySettings(settings);
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
-            let foundSettings = JSON.parse(decodeURIComponent(sspUrl(found.url)));
-            foundSettings.specials = array2string(foundSettings.specials); // For legacy bookmarks
+            let foundSettings = parseSettings(found.url);
             if (!sameSettings(settings, foundSettings)) {
                 if (isSafari) {
                     // Handle Safari bookmarks
@@ -505,9 +506,9 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         }
         if (seenTitles[title]) {
             if (logging) console.log("bg duplicate bookmark", children[i]);
-            let seen = JSON.parse(decodeURIComponent(sspUrl(children[seenTitles[title]].url)));
+            let seen = parseSettings(children[seenTitles[title]].url);
             seen.settings.specials = array2string(seen.settings.specials); // For legacy bookmarks
-            let dupl = JSON.parse(decodeURIComponent(sspUrl(children[i].url)));
+            let dupl = parseSettings(children[i].url);
             dupl.settings.specials = array2string(dupl.settings.specials); // For legacy bookmarks
             if (sameSettings(seen, dupl)) {
                 if (isSafari) {
@@ -522,14 +523,14 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         }
         if (title === commonSettingsTitle) {
             if (logging) console.log("bg common settings from bookmark", children[i]);
-            let common = JSON.parse(decodeURIComponent(sspUrl(children[i].url)));
+            let common = parseSettings(children[i].url);
             if (logging) console.log("bg common settings from bookmark", common.defaultSettings.pwlength);
             newdb.clearsuperpw = common.clearsuperpw;
             newdb.hidesitepw = common.hidesitepw;
             defaultSettings = common.defaultSettings || defaultSettings;
         } else {
             if (logging && i < 3) console.log("bg settings from bookmark", children[i]);
-            let settings = JSON.parse(decodeURIComponent(sspUrl(children[i].url)));
+            let settings = parseSettings(children[i].url);
             settings.specials = array2string(settings.specials); // For legacy bookmarks    
             if (logging) console.log("bg settings from bookmark", settings);
             if (settings.sitename) {
@@ -630,6 +631,20 @@ async function forget(toforget, rootFolder, sendResponse) {
     }
     sendResponse("forgot");
 }
+function stringifySettings(settings) {
+    let s = JSON.stringify(settings);
+    return encodeURIComponent(s);
+}
+function parseSettings(url) {
+    let str = sspUrl(url);
+    try {
+        return JSON.parse(decodeURIComponent(str));
+    } catch (e) {
+        let settings = JSON.parse(str.replace(/%22/g, '"').replace(/%20/g, " "));
+        if (settings.specials) settings.specials = array2string(settings.specials);
+        return settings; // To handle legacy bookmarks
+    }
+}
 function sameSettings(a, b) {
     if (!a || !b) return false;  // Assumes one or the other is set
     if (Object.keys(a).length !== Object.keys(b).length) return false;
@@ -637,7 +652,11 @@ function sameSettings(a, b) {
         // The domain name may change for domains that share setting
         if (key === "domainname") continue;
         if (key === "updateTime") continue;
-        if (a[key] !== b[key]) return false;
+        if (typeof a[key] === "object") {
+            if (!sameSettings(a[key], b[key])) return false;
+        } else {
+            if (a[key] !== b[key]) return false;
+        }
     }
     return true;
 }
