@@ -965,7 +965,7 @@ async function handleblur(element, field) {
     } else {
         get("providesitepw").disabled = true;
     }
-    bg.settings.characters = characters(bg.settings, database);
+    bg.settings.characters = charset();
     let pw = await ask2generate()
     setMeter("superpw");
     setMeter("sitepw");
@@ -983,8 +983,16 @@ async function handleclick(which) {
         bg.settings.startwithletter = false;
         get("startwithletter").checked = false;
     }
-    bg.settings.characters = characters(bg.settings, database)
+    bg.settings.characters = charset();
     await ask2generate();
+}
+function charset() {
+    let specials = bg.settings.specials;
+    try {
+        return characters(bg.settings, database) + decodeURIComponent(specials);
+    } catch(e) {
+        return characters(bg.settings, database) + specials; // For legacy bookmarks
+    }
 }
 async function changePlaceholder() {
     let u = get("username").value || "";
