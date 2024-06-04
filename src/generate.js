@@ -193,11 +193,10 @@ export function characters(settings) {
     if (settings.allowlower) {
         chars += config.lower;
     }
-    let specials = encodeURIComponent(settings.specials);
     if (settings.allowspecial) {
-        chars += specials;
+        chars += settings.specials;
         while (chars.length < 5) {
-            chars += specials;
+            chars += settings.specials;
         }
     }
     return chars.substring(0, 256); // substring just in case...
