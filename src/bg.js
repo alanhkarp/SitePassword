@@ -5,7 +5,7 @@ import {isSuperPw, normalize,  string2array, array2string, stringXorArray, gener
 // http or https whether it has a password field or not.
 const testMode = false;
 const testLogging = false;
-const debugMode = true;
+const debugMode = false;
 const logging = false;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
