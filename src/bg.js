@@ -359,6 +359,7 @@ async function persistMetadata(sendResponse) {
     common.defaultSettings.specials = string2array(common.defaultSettings.specials);
     if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
+    let url = "ssp://" + stringifySettings(common);
     if (commonSettings.length === 0) {
         let url = "ssp://" + JSON.stringify(common);
         if (isSafari) {
@@ -371,16 +372,17 @@ async function persistMetadata(sendResponse) {
             if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
             if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonSettings.pwlength);
         }
-    }
-    let url = "ssp://" + JSON.stringify(common);
-    if (commonSettings.length > 0 && url !== commonSettings[0].url.replace(/%22/g, "\"").replace(/%20/g, " ")) {
-        if (isSafari) {
-            bkmksSafari[commonSettingsTitle].url = url;
-            await chrome.storage.sync.set(bkmksSafari);
-        } else {
-            await chrome.bookmarks.update(commonSettings[0].id, { "url": url });
-            if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
-            if (logging) console.log("bg updated bookmark", commonSettings[0].id, url);
+    } else {
+        let existing = parseSettings(commonSettings[0].url);
+        if (sameSettings(common, existing) === false) {
+            if (isSafari) {
+                bkmksSafari[commonSettingsTitle].url = url;
+                await chrome.storage.sync.set(bkmksSafari);
+            } else {
+                await chrome.bookmarks.update(commonSettings[0].id, { "url": url });
+                if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
+                if (logging) console.log("bg updated bookmark", commonSettings[0].id, url);
+            }
         }
     }
     // Persist changes to domain settings
@@ -388,16 +390,12 @@ async function persistMetadata(sendResponse) {
     for (let i = 0; i < domainnames.length; i++) {
         let sitename = db.domains[domainnames[i]];
         let settings = db.sites[sitename];
-        if ("string" === typeof settings.specials) {
-            let array = string2array(settings.specials);
-            settings.specials = array;
-        }
-        let url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
+        settings.specials = array2string(settings.specials); // For legacy bookmarks
+        let url = webpage + "?bkmk=ssp://" + stringifySettings(settings);
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
-            let foundSettings = JSON.parse(sspUrl(found.url).replace(/%22/g, "\"").replace(/%20/g, " "));
-            if (!sameSettings(settings, foundSettings) || found.url.substr(0,6) === "ssp://") {
-                url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
+            let foundSettings = parseSettings(found.url);
+            if (!sameSettings(settings, foundSettings)) {
                 if (isSafari) {
                     // Handle Safari bookmarks
                     if (bkmksSafari[found.title] && bkmksSafari[found.title].url !== url) {
@@ -511,8 +509,10 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         }
         if (seenTitles[title]) {
             if (logging) console.log("bg duplicate bookmark", children[i]);
-            let seen = JSON.parse(sspUrl(children[seenTitles[title]].url).replace(/%22/g, "\"").replace(/%20/g, " "));
-            let dupl = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+            let seen = parseSettings(children[seenTitles[title]].url);
+            seen.settings.specials = array2string(seen.settings.specials); // For legacy bookmarks
+            let dupl = parseSettings(children[i].url);
+            dupl.settings.specials = array2string(dupl.settings.specials); // For legacy bookmarks
             if (sameSettings(seen, dupl)) {
                 if (isSafari) {
                     delete bkmksSafari[children[i]];
@@ -526,15 +526,15 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         }
         if (title === commonSettingsTitle) {
             if (logging) console.log("bg common settings from bookmark", children[i]);
-            let common = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
-            common.defaultSettings.specials = array2string(common.defaultSettings.specials);
+            let common = parseSettings(children[i].url);
             if (logging) console.log("bg common settings from bookmark", common.defaultSettings.pwlength);
             newdb.clearsuperpw = common.clearsuperpw;
             newdb.hidesitepw = common.hidesitepw;
             defaultSettings = common.defaultSettings || defaultSettings;
         } else {
             if (logging && i < 3) console.log("bg settings from bookmark", children[i]);
-            let settings = JSON.parse(sspUrl(children[i].url).replace(/%22/g, "\"").replace(/%20/g, " "));
+            let settings = parseSettings(children[i].url);
+            settings.specials = array2string(settings.specials); // For legacy bookmarks    
             if (logging) console.log("bg settings from bookmark", settings);
             if ('string' !== typeof settings.specials) {
                 settings.specials = array2string(settings.specials);
@@ -637,6 +637,20 @@ async function forget(toforget, rootFolder, sendResponse) {
     }
     sendResponse("forgot");
 }
+function stringifySettings(settings) {
+    let s = JSON.stringify(settings);
+    return encodeURIComponent(s);
+}
+function parseSettings(url) {
+    let str = sspUrl(url);
+    try {
+        return JSON.parse(decodeURIComponent(str));
+    } catch (e) {
+        let settings = JSON.parse(str.replace(/%22/g, '"').replace(/%20/g, " "));
+        if (settings.specials) settings.specials = array2string(settings.specials);
+        return settings; // To handle legacy bookmarks
+    }
+}
 function sameSettings(a, b) {
     if (!a || !b) return false;  // Assumes one or the other is set
     if (Object.keys(a).length !== Object.keys(b).length) return false;
@@ -644,7 +658,11 @@ function sameSettings(a, b) {
         // The domain name may change for domains that share setting
         if (key === "domainname") continue;
         if (key === "updateTime") continue;
-        if (a[key] !== b[key]) return false;
+        if (typeof a[key] === "object") {
+            if (!sameSettings(a[key], b[key])) return false;
+        } else {
+            if (a[key] !== b[key]) return false;
+        }
     }
     return true;
 }
