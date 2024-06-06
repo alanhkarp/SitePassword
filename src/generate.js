@@ -25,7 +25,7 @@ export async function generatePassword(bg) {
         if (settings.allowlower) total += settings.minlower - 0;
         if (settings.allownumber) total += settings.minnumber - 0;
         if (settings.allowspecial) total += settings.minspecial - 0;
-        return total <= settings.pwlength;
+        return total <= settings.pwlength && total > 0;
     }
 }
 export function isSuperPw(superpw) {
@@ -56,12 +56,13 @@ async function computePassword(superpw, salt, settings) {
     return pw;
     function uint2chars() {
         let byteArray = new TextEncoder().encode(pw);
-        let digits = config.digits;
-        let upper = config.upper;
-        let lower = config.lower;
-        let specials = settings.specials;
-        let cset = digits + upper + lower + specials;
         let chars = "";
+        let upper = settings.allowupper ? config.upper: "";
+        let lower = settings.allowlower? config.lower: "";
+        let digits = settings.allownumber ? config.digits: "";
+        let specials = settings.allowspecial ? settings.specials: "";
+        let cset = upper + lower + digits + specials;
+        if (!cset) return "";
         if (settings.startwithletter) {
             let alphabet = "";
             if (settings.allowupper) alphabet += upper;

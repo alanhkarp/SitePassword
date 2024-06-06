@@ -606,9 +606,12 @@ get("startwithletter").onclick = function () {
     ask2generate();
 }
 get("allowlowercheckbox").onclick = function () {
+    restrictStartsWithLetter();
+    get("minlower").disabled = false;
     handleclick("lower");
 }
 get("allowuppercheckbox").onclick = function () {
+    restrictStartsWithLetter();
     handleclick("upper");
 }
 get("allownumbercheckbox").onclick = function () {
@@ -1069,7 +1072,15 @@ async function fill() {
     get("minupper").value = bg.settings.minupper;
     get("minspecial").value = bg.settings.minspecial;
     get("specials").value = bg.settings.specials;
+    restrictStartsWithLetter();
     await ask2generate();
+}
+function restrictStartsWithLetter() {
+    if (!(get("allowlowercheckbox").checked || get("allowuppercheckbox").checked)) {
+        get("startwithletter").disabled = true;
+    } else {
+        get("startwithletter").disabled = false;
+    }
 }
 async function showsettings() {
     get("settingsshow").style.display = "none";
