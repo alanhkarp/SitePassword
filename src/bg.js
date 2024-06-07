@@ -356,7 +356,6 @@ async function persistMetadata(sendResponse) {
     delete common.domains;
     delete common.sites;
     common.defaultSettings = clone(defaultSettings);
-    common.defaultSettings.specials = string2array(common.defaultSettings.specials);
     if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
     let url = "ssp://" + stringifySettings(common);
@@ -536,9 +535,6 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
             let settings = parseSettings(children[i].url);
             settings.specials = array2string(settings.specials); // For legacy bookmarks    
             if (logging) console.log("bg settings from bookmark", settings);
-            if ('string' !== typeof settings.specials) {
-                settings.specials = array2string(settings.specials);
-            }
             if (settings.sitename) {
                 newdb.domains[title] = normalize(settings.sitename);
                 newdb.sites[normalize(settings.sitename)] = settings;
