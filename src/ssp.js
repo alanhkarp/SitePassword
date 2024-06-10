@@ -881,6 +881,8 @@ function setMeter(which) {
     let guesses = getGuesses(which);
     // 10^9 guesses per second, 3*10^7 seconds per year, average success in 1/2 the tries
     let years = guesses/(1e9*3e7*2);
+    // Adjust site password for modulus bias
+    if (which === "sitepw") years *= 1 - (256%characters(bg.settings).length)/256;
     if (which === "superpw") years /= 16*1024; // So the superpw will have more entropy than the site password
     let score = getScore(years);
     let index = Math.floor(score/5);
