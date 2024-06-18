@@ -5,11 +5,11 @@
     "description": "Don't remember your passwords. Don't store them.  Calculate them!",
     "version": "3.0",
     "background": {
-        "service_worker": "bg.js", 
+        "service_worker": "src/bg.js", 
         "type": "module"
     },
     "action": {
-        "default_icon": "ssplogo.png",
+        "default_icon": "images/ssplogo.png",
         "default_popup": "ssp.html"
     },
     "content_scripts": [
@@ -17,7 +17,7 @@
             "matches": ["https://*/*", "http://*/*"],
             "run_at": "document_idle",
             "js": [
-                "findpw.js" 
+                "src/findpw.js" 
             ],
             "all_frames": true
         }

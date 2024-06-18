@@ -3,17 +3,17 @@
     "name": "Site Password",
     "short_name": "Site Password for Firefox",
     "description": "Don't remember your passwords. Don't store them.  Calculate them!",
-    "version": "1.5.0",
+    "version": "3.0",
     "browser_specific_settings": {
         "gecko": {
             "id": "sitepassword1.3.2@sitepassword.info"
         }
     },
     "background": {
-        "page": "./bg.html"
+        "page": "bg.html"
     },
     "action": {
-        "default_icon": "ssplogo.png",
+        "default_icon": "images/ssplogo.png",
         "default_popup": "ssp.html"
     },
     "content_scripts": [
@@ -21,7 +21,7 @@
             "matches": ["https://*/*", "http://*/*"],
             "run_at": "document_idle",
             "js": [
-                "findpw.js" 
+                "src/findpw.js" 
             ],
             "all_frames": true
         }
