@@ -51,9 +51,17 @@ async function computePassword(superpw, salt, settings) {
         pw = await candidatePassword(args);
     }
     // Construct a legal password since hashing failed to produce one
-    if (logging) console.log("generate failed after", iter, "extra iteration and took", Date.now() - startIter, "ms, founds", pw);
-    pw = uint2chars();
-    return pw;
+    if (logging) console.log("bg failed after", iter, "extra iteration and took", Date.now() - startIter, "ms");
+    while (iter < 210) {
+        iter++;
+        pw = uint2chars(); // Meets requirements but might be weak
+        if (verifyPassword(pw, settings)) {
+            if (logging) console.log("bg deterministic algorithm succeeded in", iter - 200, "iterations and took", Date.now() - startIter, "ms");
+            return pw;
+        }
+    }
+    if (logging) console.log("bg deterministic algorithm failed after", iter, "iterations and took", Date.now() - startIter, "ms");
+    return pw; // Better to return a weak password than non at all
     // Uses 1 byte per character in the password because the hash isn't available.
     function uint2chars() {
         let byteArray = new TextEncoder().encode(pw);
