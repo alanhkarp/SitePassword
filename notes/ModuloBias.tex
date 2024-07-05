@@ -24,13 +24,13 @@ SitePassword hashes  a super password, a per site nickname, and a per site useri
 
 \section{Introduction}
 
-SitePassword uses each byte of the hash produced by PBKDF2\footnote{Password Based Key Derivation Function} to compute the $i$-th character of the site password using $c_i = A[b_i\%|A|]$, where $A$ is an array of characters representing the alphabet, $b_i$ is the byte value, $\%$ represents modulus, and $|A|$ is the size of the alphabet.  If the size of the alphabet evenly divides $2^8 = 256$, every character in the alphabet has the same probability of being selected.  If it doesn't, then some characters have a higher probability than others.  This {\em modulo bias} reduces the entropy of the resulting string.  This document shows that modulo bias does not have a substantial effect on the guessability of the site password it generates.
+The original SitePassword algorithm used each byte of the hash produced by PBKDF2\footnote{Password Based Key Derivation Function} to compute the $i$-th character of the site password using $c_i = A[b_i  \bmod  |A|)]$, where $A$ is an array of characters representing the alphabet, $b_i$ is the byte value, and $|A|$ is the size of the alphabet.  If the size of the alphabet evenly divides $2^8 = 256$, every character in the alphabet has the same probability of being selected.  If it doesn't, then some characters have a higher probability than others.  This {\em modulo bias} reduces the entropy of the resulting string.  This document shows that modulo bias does not have a substantial effect on the guessability of the site password it generates.
 
 \section{Recommended Approaches}
 
-The recommended approach to eliminating modulo bias is {\em rejection sampling}.  Simply ignore any byte value index outside the range of the alphabet.  In other words, don't use any $b_i > |A|$.  Theoretically, this approach could require an unbounded number of bytes, but the number of bytes needed is quite modest in practice.  The recommended approach to mitigating modulo bias is to use a larger range of random numbers, say two bytes instead of one.  There is still bias, but the effect on guessability is orders of magnitude smaller.
+The recommended approach to eliminating modulo bias is {\em rejection sampling}.  Simply ignore any byte value index outside the range of the alphabet.  In other words, don't use any $b_i > |A|$.  Theoretically, this approach could require an unbounded number of bytes, but the number of bytes needed is quite modest in practice.  The recommended approach to mitigating modulo bias is to use a larger range of random numbers, say two bytes instead of one.  There is still bias, but the effect on guessability is substantially smaller.
 
-Unfortunately, while these approaches make it harder to guess the site password, they both make it easier to guess the super password.  Say that an adversary has learned a user's id and site password for a single site, perhaps from a breach, and can guess the site nickname.  The adversary can then mount an offline guessing attack to try to learn the user's super password.  As described in the Collisions document, that adversary has to try many guesses online if the entropy of the user's super password is greater than that of the site password.  Unfortunately, the more bytes used to calculate the site password, the fewer guesses the adversary has to try online.
+Unfortunately, while rejection sample makes it harder to guess the site password, it makes it easier to guess the super password.  PBKDF2 has a runtime that depends on both the key size and iteration count, but the adversary only needs to compute the number of bytes actually used to construct the site password.  In the most likely case, fewer than half the bytes will be rejected when selecting a single character, but more than 10 times as many might be needed.  The additional bytes can be computed conditionally, but that step reduces the number of iterations that SitePassword can do and still meet the latency requirement.  Hence, it's important to use all the bytes of the hash in constructing the site password.
 
 \section{Quantifying Modulo Bias}
 
@@ -40,24 +40,21 @@ There will be no need to use extra bytes to construct the site password if modul
 E_0 = L \log_2 |A|
 \end{equation}
 
-The easiest way to understand modulo bias is to repeat the alphabet until the result is has more elements than the largest possible random value $R$ and truncate to size $R$.  We see that some numbers may appear one more time than others.
-\begin{eqnarray}
-n_1 = \lfloor R/|A| \rfloor \\
-n_2 = \lceil R/|A| \rceil,
-\end{eqnarray}
+The easiest way to understand modulo bias is to repeat the alphabet until the result is has more elements than the largest possible random value $R$ and truncate to size $R$.  Some numbers may appear one more time than others.  In those cases, the number of times a character appears is either
+\begin{equation}
+n_1 = \lfloor R/|A| \rfloor ~~\textrm{or}~~ n_2 = \lceil R/|A| \rceil,
+\end{equation}
 so that $n_1 = n_2$ if $|A|$ divides $R$ or $n_2 = n_1 + 1$ otherwise.  The probabilities that one of those characters is chosen is, 
-\begin{eqnarray}
-p_1 = n_1/R \\
-p_2 = n_2/R.
-\end{eqnarray}
+\begin{equation}
+p_1 = n_1/R ~~\textrm{or}~~ p_2 = n_2/R.
+\end{equation}
 
 The entropy of selecting a single character from each subset is then
-\begin{eqnarray}
-E_1 = -(|A| - R\%|A]) p_1 \log_2 p_1 \\ 
-E_2 = - (R\%|A|) p_2 \log_2 p_2.
-\end{eqnarray}
+\begin{equation}
+E_1 = -(|A| - R \bmod |A]) p_1 \log_2 p_1 ~~~\textrm{or}~~ E_2 = - (R \bmod |A|) p_2 \log_2 p_2.
+\end{equation}
 
-Here $R\%|A|$ is the number of characters that appear an extra time.  Note that if $|A|$ divides $R$, $E_2 = 0$ and $E_1 = E_0$.  The entropy of an $L$-character site password with modulo bias is $E_b = L(E_1 + E_2)$.  
+Here $R \bmod|A|$ is the number of characters that appear an extra time.  Note that if $|A|$ divides $R$, $E_2 = 0$ and $E_1 = E_0$.  The entropy of an $L$-character site password with modulo bias is $E_b = L(E_1 + E_2)$.  
 
 \begin{figure}
     \centering
@@ -66,10 +63,10 @@ Here $R\%|A|$ is the number of characters that appear an extra time.  Note that 
     \label{fig}
 \end{figure}
 
-We can now plug in some numbers.  SitePassword uses $R = 256$ and allows alphabets in the range $10 \leq |A| \leq 96$ with a default of $|A| = 62$ and $L = 12$.  With the default values $E_0 - E_b = .05$ or 96\% of the $2^{71}$ guesses needed if there was no modulo bias.  The worst case in the allowed range is at $|A| = 96$ where $E_0 - E_b = 0.28$, which translates into 82\% as many guesses.  The greater loss in guesses is offset by the larger alphabet size leaving the entropy with modulo bias greater than 78 bits.  Figure~\ref{fig} shows the entropy loss, $E_0 - E_b$, in green and the ratio of the number of guesses needed, $2^{-(E_0-E_b)}$, in purple for $R = 256$ and $L = 12$.
+We can now plug in some numbers.  SitePassword uses $R = 256$ and allows alphabets in the range $10 \leq |A| \leq 96$.  With the default values of $|A| = 62$ and $L = 12$, $E_0 - E_b = .05$ which requires 96\% of the $2^{71}$ guesses needed if there was no modulo bias.  The worst case in the allowed range is at $|A| = 96$ where $E_0 - E_b = 0.28$, which translates into 82\% as many guesses.  The greater loss in guesses is offset by the larger alphabet size leaving the entropy with modulo bias greater than 78 bits.  Figure~\ref{fig} shows the entropy loss, $E_0 - E_b$, in green and the ratio of the number of guesses needed, $2^{-(E_0-E_b)}$, in purple for $R = 256$ and $L = 12$.
 
 \section{Conclusions}
 
-There are cases where a small modulo bias can be a serious problem, such as in choosing a nonce for a stream cypher.  That is not the case for SitePassword.  Even the most extreme bias reduces the entropy of the site password by less than a bit.
+There are cases where a small modulo bias can be a serious problem, such as in choosing a nonce for a stream cypher.  That is not the case for SitePassword.  Even the most extreme modulo bias reduces the entropy of the site password by less than one bit.  Even so, the SitePassword algorithm was changed to use 2 bytes per character, which makes the modulo bias considerably smaller.
 
 \end{document}  
