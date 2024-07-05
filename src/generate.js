@@ -36,7 +36,7 @@ async function computePassword(superpw, salt, settings) {
     if (!(settings.allowupper || settings.allowlower || settings.allownumber)) {
         return Promise.resolve("");
     }
-    let args = {"pw": superpw, "salt": salt, "settings": settings, "iters": 200_000, "keysize": settings.pwlength * 8};
+    let args = {"pw": superpw, "salt": salt, "settings": settings, "iters": 200_000, "keysize": settings.pwlength * 16};
     let pw = await candidatePassword(args);
     // Find a valid password
     let iter = 0;
@@ -47,13 +47,14 @@ async function computePassword(superpw, salt, settings) {
             return pw;
         }
         iter++;
-        args = {"pw": pw, "salt": salt, "settings": settings, "iters": 1, "keysize": settings.pwlength * 8};
+        args = {"pw": pw, "salt": salt, "settings": settings, "iters": 1, "keysize": settings.pwlength * 16};
         pw = await candidatePassword(args);
     }
     // Construct a legal password since hashing failed to produce one
     if (logging) console.log("generate failed after", iter, "extra iteration and took", Date.now() - startIter, "ms, founds", pw);
     pw = uint2chars();
     return pw;
+    // Uses 1 byte per character in the password because the hash isn't available.
     function uint2chars() {
         let byteArray = new TextEncoder().encode(pw);
         let chars = "";
@@ -135,17 +136,18 @@ async function candidatePassword(args) {
             if (logging && Date.now() - start > 2) console.log("deriveBits did", iters, "iterations in", Date.now() - start, "ms");
             let bytes = new Uint8Array(bits);
             // Convert the Uint32Array to a string using a custom algorithm               
-            let pw = uint2chars(bytes.slice(0, settings.pwlength*8), cset).substring(0, settings.pwlength);
+            let pw = uint2chars(bytes.slice(0, 2*settings.pwlength), cset);
             return pw;
             function uint2chars(array) {
                 let chars = "";
                 let len = array.length;
-                for (let i = 0; i < len; i++) {
-                    chars += cset[array[i] % cset.length];
+                for (let i = 0; i < len; i += 2) {
+                    let index = (array[i] << 8) + array[i + 1];
+                    chars += cset[index % cset.length];
                 }
                 return chars;
             }            
-    }); 
+        }); 
     });
 }
 function verifyPassword(pw, settings) {
