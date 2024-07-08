@@ -206,9 +206,6 @@ export function characters(settings) {
     }
     if (settings.allowspecial) {
         chars += settings.specials;
-        while (chars.length < 5) {
-            chars += settings.specials;
-        }
     }
     return chars.substring(0, 256); // substring just in case...
 }
