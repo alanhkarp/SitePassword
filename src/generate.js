@@ -73,7 +73,7 @@ async function computePassword(superpw, salt, settings) {
         let lower = settings.allowlower? config.lower: "";
         let digits = settings.allownumber ? config.digits: "";
         let specials = settings.allowspecial ? settings.specials: "";
-        let cset = upper + lower + digits + specials;
+        let cset = specials + digits + upper + lower;
         if (!cset) return "";
         if (settings.startwithletter) {
             let alphabet = "";
@@ -198,7 +198,10 @@ function verifyPassword(pw, settings) {
 export function characters(settings) {
     // generate a set of no more than 256 characters for encoding
     let chars = "";
-    if (settings.allownumber) {
+    if (settings.allowspecial) {
+        chars += settings.specials;
+    }
+     if (settings.allownumber) {
         chars += config.digits;
     }
     if (settings.allowupper) {
@@ -207,10 +210,7 @@ export function characters(settings) {
     if (settings.allowlower) {
         chars += config.lower;
     }
-    if (settings.allowspecial) {
-        chars += settings.specials;
-    }
-    return chars.substring(0, 256); // substring just in case...
+   return chars.substring(0, 256); // substring just in case...
 }
 export function normalize(name) {
     if (name) {
