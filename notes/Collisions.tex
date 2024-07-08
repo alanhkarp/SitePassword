@@ -101,7 +101,7 @@ Including only the characters the site accepts in the array increases the probab
 
 The simplest way to index into the character array is to use one byte of the key per character.  Alternatively, the index could take 6 or 7 bits of the key, since the character array typically is of length 62-72.  The latter approach gives more characters for the same number of bits, but the index computation is more complicated.  
 
-There are two ways to use a full byte of the hash to select a character.  One alternative compute $R/|A|$, where $R$ is the range of the random values, $R = 256$ when using a byte, and $|A|$ is the number of character in the alphabet.  Another is to repeat the characters in the array until it has 256 characters so that all 8 bits of the byte are used as an index.  Of course, some characters may appear more times than others, which makes site passwords slightly easier to guess.  For example, the first 8 characters of a 62-character alphabet will appear one more time than the others.  The document ModuloBias shows that the loss of entropy due to this factor is small enough to ignore..
+There are two ways to use a full byte of the hash to select a character.  One alternative compute $R/|A|$, where $R$ is the range of the random values, $R = 256$ when using a byte, and $|A|$ is the number of character in the alphabet.  Another is to repeat the characters in the array until it has 256 characters so that all 8 bits of the byte are used as an index.  Of course, some characters may appear more times than others, which makes site passwords slightly easier to guess.  For example, the first 8 characters of a 62-character alphabet will appear one more time than the others.  The resulting modulo bias is the same for both approaches.  The document ModuloBias shows that the loss of entropy due to this factor is small enough to ignore..
 
 \section{Computing an Acceptable Password}
 
@@ -116,20 +116,24 @@ There are several ways to deal with a computed $L$-character password that doesn
 
 \item Keep computing additional hashes until an acceptable password is generated.  These should be fast hashes in order to increase the chance of finding a valid password within the required latency.  Stop if one hasn't been found in a time limited by the latency requirement.
 
-\item Insert characters of the the required types at the beginning of the output and fill the rest with characters selected from the alphabet.  Then shuffle the position of the characters based on bytes from the hash to make the site password less guessable.  Unlike the previous algorithms, this one is guaranteed to find an acceptable password if one exists, e.g., the total number of required characters doesn't exceed the password length.  There are two variants.
+\item Insert characters of the the required types at the beginning of the output and fill the rest with characters selected from the alphabet.  Then shuffle the position of the characters based on bytes from the hash to make the site password less guessable.  There are four variants.
+
 \begin{enumerate}
 \item Use the same bytes for both selecting characters and for shuffling.  This approach makes the site password more guessable since the adversary knows the random numbers used for the shuffle.
 
-\item Use additional bytes from the hash for shuffling.  This approach also makes the super password more guessable by giving the adversary many more chances to reject a guess without testing online.
+\item Use one additional byte from the hash per character for shuffling.  
 
-\item Use one byte of the hash to both select a random character from the allowed set and another byte to select a random place to put it in the site password.  Select another byte if that location is occupied.  Like the previous one, this one is virtually guaranteed to find an acceptable password if one exists while exposing more bits of the hash to the adversary.  Experiments show it uses 3-5 additional bytes per character in the calculated password, giving the adversary many more chances to reject a guess without testing online.
+\item Use one additional byte from the hash as the seed for a pseudo-random number generator.
+
+\item Use one byte of the hash to both select a random character from the allowed set and another byte to select a random place to put it in the site password.  Select another byte if that location is occupied.  Experiments show it uses 3-5 additional bytes per character in the calculated password.  As a result, the hash must return more bytes than may be needed, reducing the number of iterations an adversary needs to do.
 \end{enumerate}
 \end{enumerate}
-
 
 These approaches have been tested and are able to generate an acceptable password with reasonable probability in even extreme cases, such as requiring one number, one upper case letter, one lower case letter, and 5 special characters for a 12-character site password.  
 
-The possibility that the password derived from the initial hash doesn't meet the site's rules, which results in more collisions. favors using one of the first three options  The ability to always construct an acceptable site password favors the last two.  A compromise solution is to use 4(a) only when 3 fails to produce an acceptable password, which protects your super password at the cost of making the site password more guessable.  Note that 3 has never failed in over 10 years' use and testing on 100s of additional sites.
+The approach 4 is guaranteed to find an acceptable password if one exists,{ \em e.g.}, the total number of required characters doesn't exceed the password length.  However, that password may be weak, {\em i.e}, it could consist of many copies of the same character.  As a result, that step may have to be repeated
+
+The possibility that the password derived from the initial hash doesn't meet the site's rules, which results in more collisions, favors using one of the first three options  The ability to always construct an acceptable site password favors one of the variants of the last one.  A compromise solution is to use 4(a) only when 3 fails to produce an acceptable password, which protects your super password at the cost of making the site password more guessable.  Note that 3 has never failed in over 10 years' use and testing on 100s of additional sites.
 
 \section{Further Discussion of 4}
 
