@@ -61,7 +61,7 @@ async function computePassword(superpw, salt, settings) {
         }
     }
     if (logging) console.log("bg deterministic algorithm failed after", iter, "iterations and took", Date.now() - startIter, "ms");
-    return pw; // Better to return a weak password than non at all
+    return pw; // Better to return a weak password than none at all
     // Uses 1 byte per character in the password because the hash isn't available.
     function uint2chars() {
         let byteArray = new TextEncoder().encode(pw);
