@@ -1,5 +1,5 @@
 'use strict';
-import {isSuperPw, normalize,  string2array, array2string, stringXorArray, generatePassword } from "./generate.js";
+import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } from "./generate.js";
 // Set to true to run the tests in test.js then reload the extension.
 // Tests must be run on a page that has the content script, specifically,
 // http or https whether it has a password field or not.

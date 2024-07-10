@@ -20,7 +20,7 @@
 \maketitle
 \abstract
 
-Password managers that calculate your passwords have some advantages over those that store them. but they are vulnerable to offline guessing attacks.  One mitigation is to force the adversary to try so many guesses online that these attacks are impractical.
+Password managers that calculate your passwords have some advantages over those that store them, but they are vulnerable to offline guessing attacks.  One mitigation is to force the adversary to try so many guesses online that these attacks are impractical.
 
 \section{Introduction}
 
@@ -40,7 +40,9 @@ Another mitigation is to use a different super password for different types of s
 
 A third mitigation is to use a slow hash function.  If each guess takes longer, then the adversary is able to try fewer guesses in a given time, which can take the time to guess a moderately weak super password from minutes to years.  Unfortunately, users don't want to wait to get their passwords, limiting how slow the hash function can be. 
 
-A fourth mitigation was used by PassPet.  When you first enter a super password on a given machine, PassPet recursively hashes it for several seconds and caches the result on the machine.  When you ask for a password, PassPet hashes the cached value with the other inputs to the calculation, which is fast.  An adversary trying to guess your super password would have to do the same amount of work needed to create the cached value for every guess.  The problem is knowing which master password to compute with if you have more than one.  It also gives an adversary who learns the cached value another vehicle for guessing your super password.
+A fourth mitigation was used by Halderman, {\em et al}.\footnote{Halderman, J.A., Waters, B., Felten, E.W.: A Convenient Method for Securely
+Managing Passwords, p. 471479. WWW 05, ACM (2005), http://doi.acm.org/
+10.1145/1060745.1060815} and PassPet.  When you first enter a super password on a given machine, PassPet recursively hashes it for several seconds and caches the result on the machine.  When you ask for a password, PassPet hashes the cached value with the other inputs to the calculation, which is fast.  An adversary trying to guess your super password would have to do the same amount of work needed to create the cached value for every guess.  The problem is knowing which master password to compute with if you have more than one.  It also gives an adversary who learns the cached value another vehicle for guessing your super password.
 
 Yet another mitigation is to use a second factor in the computation.  In this case, learning your super password does not give the adversary the ability to compute all your site passwords.  One issue with this approach is incorporating it into different implementations of a password calculator.  For example, those provided as a browser add-on often have a web page to use when the add-on isn't available.  Another is finding a second factor that can be used with a variety of devices.  Finally, the low uptake of 2-factor authentication shows that users don't like it.\footnote{Why is Daddy crying?  Multi-factor authentication.}
 
