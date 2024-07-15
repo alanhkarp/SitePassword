@@ -1,7 +1,7 @@
 'use strict';
 import { bgDefault, config, isSafari, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
-import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
+import { candidatePassword, characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
@@ -265,18 +265,47 @@ const $superpw = get("superpw");
 get("superpw").onkeyup = async function (e) {
     // Start the reminder clock ticking
     await chrome.storage.local.set({"reminder": Date.now()});
+    await chrome.storage.session.remove("cachedValue");
     bg.superpw = $superpw.value || "";
     await ask2generate()
+    get("sitepw").value = "Click to see your site password";
+    get("sitepwmenucopy").disabled = true;
+    get("sitepwmenushow").disabled = true;
     setMeter("superpw");
     setMeter("sitepw");
-    await handlekeyup("superpw", "superpw");
     if (resolvers.superpwkeyupResolver) resolvers.superpwkeyupResolver("superpwkeyupPromise");
 }
 get("superpw").onblur = async function (e) {
+    let cachedValue = await chrome.storage.session.get("cachedValue");
+    if ((!cachedValue || !cachedValue.cachedValue) && $superpw.value) {
+        let $protect = get("superpwprotect");
+        $protect.classList.remove("nodisplay");
+        let start = Date.now();
+        get("sitepw").value = "Computing...";
+        let interval = setInterval(() => {
+            get("sitepw").value += ".";
+        }, 750);
+        cachedValue = await protect();
+        $protect.classList.add("nodisplay");
+        clearInterval(interval);
+        console.log("popup protect time", Date.now() - start, "ms", cachedValue);
+        await chrome.storage.session.set({"cachedValue": cachedValue});
+        get("sitepw").value = await ask2generate();
+    }
     if (logging) console.log("popup superpw onmouseout");
     await handleblur("superpw", "superpw");
     await changePlaceholder();
     if (resolvers.superpwblurResolve) resolvers.superpwblurResolver("superpwblurPromise");
+    async function protect() {
+        // Computes for a long time and stores the result in the settings for this sitename
+        // That value is used when computing the site password
+        let settings = clone(bg.settings);
+        settings.pwlength = 12;
+        let salt = ""; // Can't use salt because I need the same value every time and everywhere
+        let args = {"pw": $superpw.value, "salt": salt, "settings": settings, "iters": 4_000_000, "keysize": settings.pwlength * 16};
+        let cachedValue = await candidatePassword(args);
+        return cachedValue;
+    }
 }
 get("superpwmenu").onmouseleave = function (e) {
     menuOff("superpw", e);
@@ -489,7 +518,7 @@ get("sitepwmenu").onmouseleave = function (e) {
 }
 get("sitepw3bluedots").onmouseover = function (e) {
     let sitepw = get("sitepw").value;
-    if (sitepw) {
+    if (sitepw && sitepw !== "Click to see your site password") {
         get("sitepwmenucopy").style.opacity = "1";
         get("sitepwmenushow").style.opacity = "1";
         get("sitepwmenuhide").style.opacity = "1";
@@ -503,7 +532,7 @@ get("sitepw3bluedots").onmouseover = function (e) {
 get("sitepw3bluedots").onclick = get("sitepw3bluedots").onmouseover;
 get("sitepwmenucopy").onclick = async function(e) {
     let sitepw = get("sitepw").value;
-    if (!sitepw) return;
+    if (!sitepw || sitepw === "Click here to see your site password") return;
     try {
         await navigator.clipboard.writeText(sitepw);
         if (logging) console.log("popup wrote to clipboard", sitepw);

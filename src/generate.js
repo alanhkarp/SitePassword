@@ -13,7 +13,9 @@ export async function generatePassword(bg) {
     if (!m || !isConsistent(settings)) {
         return "";
     }
-    let salt = n.toString() + '\t' + u.toString();
+    let cachedObject = await chrome.storage.session.get("cachedValue") || {};
+    let cachedValue = cachedObject.cachedValue || "";
+    let salt = n.toString() + '\t' + u.toString() + '\t' + cachedValue;
     let p = await computePassword(m, salt, settings);
     if (!settings.providesitepw) {
         settings.xor = xorStrings(p, p); // set to 0s
@@ -119,7 +121,7 @@ async function computePassword(superpw, salt, settings) {
           }                      
     }            
 }
-async function candidatePassword(args) {
+export async function candidatePassword(args) {
     let superpw = args.pw;
     let salt = args.salt;
     let settings = args.settings;
