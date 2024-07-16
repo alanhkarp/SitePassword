@@ -299,7 +299,7 @@ get("superpw").onblur = async function (e) {
     async function protect() {
         // Computes for a long time and stores the result in the settings for this sitename
         // That value is used when computing the site password
-        let settings = clone(bg.settings);
+        let settings = clone(baseDefaultSettings);
         settings.pwlength = 12;
         let salt = ""; // Can't use salt because I need the same value every time and everywhere
         let args = {"pw": $superpw.value, "salt": salt, "settings": settings, "iters": 4_000_000, "keysize": settings.pwlength * 16};
