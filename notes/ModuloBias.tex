@@ -26,15 +26,17 @@ SitePassword hashes  a super password, a per site nickname, and a per site useri
 
 The original SitePassword algorithm used each byte of the hash produced by PBKDF2\footnote{Password Based Key Derivation Function} to compute the $i$-th character of the site password using $c_i = A[b_i  \bmod  |A|)]$, where $A$ is an array of characters representing the alphabet, $b_i$ is the byte value, and $|A|$ is the size of the alphabet.  If the size of the alphabet evenly divides $2^8 = 256$, every character in the alphabet has the same probability of being selected.  If it doesn't, then some characters have a higher probability than others.  This {\em modulo bias} reduces the entropy of the resulting string.  This document shows that modulo bias does not have a substantial effect on the guessability of the site password it generates.
 
-\section{Recommended Approaches}
+\section{Recommended Approach}
 
-The recommended approach to eliminating modulo bias is {\em rejection sampling}.  Simply ignore any byte value index outside the range of the alphabet.  In other words, don't use any $b_i > |A|$.  Theoretically, this approach could require an unbounded number of bytes, but the number of bytes needed is quite modest in practice.  The recommended approach to mitigating modulo bias is to use a larger range of random numbers, say two bytes instead of one.  There is still bias, but the effect on guessability is substantially smaller.
+The recommended approach to eliminating modulo bias is {\em rejection sampling}.  Simply ignore any byte value index outside the range of the alphabet.  In other words, don't use any $b_i > |A|$.  Theoretically, this approach could require an unbounded number of bytes, but the number of bytes needed is not too large in practice.  
 
-Unfortunately, while rejection sample makes it harder to guess the site password, it makes it easier to guess the super password.  PBKDF2 has a runtime that depends on both the key size and iteration count, but the adversary only needs to compute the number of bytes actually used to construct the site password.  In the most likely case, fewer than half the bytes will be rejected when selecting a single character, but more than 10 times as many might be needed.  The additional bytes can be computed conditionally, but that step reduces the number of iterations that SitePassword can do and still meet the latency requirement.  Hence, it's important to use all the bytes of the hash in constructing the site password.
+Unfortunately, while rejection sample makes it harder to guess the site password, it makes it easier to guess your super password.  Because the alphabet size is much smaller than the range of values in a byte, SitePassword will need to compute a lot of bytes in order to have a high probability of constructing a password.  In particular, the expected number of bytes from the hash needed to select a single character is $E(p) = log(p)/log(1-|A|/R)$, where $p$ is the desired probability of success.  For SitePassword's default parameters roughly 3/4 of the byte values will be rejected.  As a result, about 30 bytes/character are needed to be able to construct a site password 99.99\% of the time.  Even that success rate is too low for a tool like SitePassword.
+
+ SitePassword must compute all the bytes that might be needed, which reduces the number of iterations that SitePassword can do and still meet the latency requirement.  The adversary can be more conservative, gaining as much as a 10x advantage in compute time when guessing your super password.  While site passwords that need more bytes won't be useful in guessing your master password, most will.
 
 \section{Quantifying Modulo Bias}
 
-There will be no need to use extra bytes to construct the site password if modulo bias doesn't weaken the site password very much.  One way to quantify that weakening is by looking at the entropy of the site password both with and without modulo bias.  Without bias, the entropy of an $L$-character site password is
+There will be no need to use extra bytes to construct the site password if modulo bias doesn't weaken the site password very much.  One way to quantify that weakening is by looking at the entropy of the site password both with and without modulo bias.  Without bias, the entropy of an $L$-character string picked at random from a uniform distribution is
 
 \begin{equation}
 E_0 = L \log_2 |A|
@@ -54,7 +56,7 @@ The entropy of selecting a single character from each subset is then
 E_1 = -(|A| - R \bmod |A]) p_1 \log_2 p_1 ~~~\textrm{or}~~ E_2 = - (R \bmod |A|) p_2 \log_2 p_2.
 \end{equation}
 
-Here $R \bmod|A|$ is the number of characters that appear an extra time.  Note that if $|A|$ divides $R$, $E_2 = 0$ and $E_1 = E_0$.  The entropy of an $L$-character site password with modulo bias is $E_b = L(E_1 + E_2)$.  
+Here $(R \bmod|A|)$ is the number of characters that appear an extra time.  Note that if $|A|$ divides $R$, $E_2 = 0$ and $E_1 = E_0$.  The entropy of an $L$-character site password with modulo bias is $E_b = L(E_1 + E_2)$.  
 
 \begin{figure}
     \centering
