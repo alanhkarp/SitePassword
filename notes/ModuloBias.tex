@@ -31,13 +31,17 @@ This document shows that modulo bias has only a modest effect on the guessabilit
 
 \section{Recommended Approaches}
 
-The recommended approach to eliminating modulo bias is {\em rejection sampling}.  Simply ignore any byte value index outside the range of the alphabet.  In other words, don't use any $b_i > |A|$.  Theoretically, this approach could require an unbounded number of bytes, but the number of bytes needed is quite modest in practice.  The recommended approach to mitigating modulo bias is to use a larger range of random numbers, say two bytes instead of one.  There is still bias, but the effect on guessability is substantially smaller.
+The recommended approach to eliminating modulo bias is {\em rejection sampling}.  Simply ignore any byte value index outside the range of the alphabet.  In other words, don't use any $b_i > |A|$.  Theoretically, this approach could require an unbounded number of bytes, but the number of bytes needed is modest in practice.  
 
-Unfortunately, usability considerations require that SitePassword always succeed in computing a password, which means it must be conservative in how many bytes it computes with rejection sampling.  While it's possible to estimate how many extra bytes are needed to achieve a given probability of success, there are no guarantees.  A deterministic algorithm, such as one with modulo bias, meets the requirements.
+Usability considerations require that SitePassword always succeed in computing a password, which means it must be conservative in how many bytes it computes with rejection sampling.  While it's possible to estimate how many extra bytes are needed to achieve a given probability of success, there are no guarantees.  
 
-A second problem with rejection sampling is that it makes offline guessing of the super password easier.  The runtime of PBKDF2 depends on the number of iterations and the key size.  SitePassword might choose to compute 10 or 20 times as many bytes as are typically needed.  An adversary might choose to compute only 2 times as many and give up on the very small percentage that need more.  This 5-10 times advantage in guess rate is significant.
+A second problem with rejection sampling is that it makes offline guessing of the super password easier.  The runtime of PBKDF2 depends on the number of iterations and the key size.  In order to have a high enough probability of having enough bytes left after rejection, SitePassword must compute a very large number of bytes.  An adversary who is willing to give up guessing the super password for a small fraction of site passwords can compute fewer bytes.
 
-One workaround would be for SitePassword to first compute a key with a modest number of bytes, say 2 times the size of the site password.  If more bytes are needed, SitePassword could redo the calculation with 4 times as many, {\em etc}.  Unfortunately, the fixed overhead of each run and the wasted computation make it hard to meet the latency requirement.
+Consider an example with SitePassword's default parameters.  A failure rate of one in a million requires computing 50 bytes/character in the password.  An adversary who is willing to succeed only 99\% of the time would need to compute 16 characters/byte, gaining a 3x computational advantage.
+
+One workaround would be for SitePassword to first compute a key with a modest number of bytes, say 2 times the size of the site password.  If more bytes are needed, SitePassword could redo the calculation with the first set of bytes as input.  Unfortunately, the fixed overhead of each run makes it hard to meet the latency requirement.
+
+The recommended approach to mitigating modulo bias is to use a larger range of random numbers, say two bytes instead of one.  There is still bias, but the effect on guessability is substantially smaller.
 
 \section{Quantifying Modulo Bias}
 
@@ -47,7 +51,7 @@ There will be no need to use extra bytes to construct the site password if modul
 E_0 = L \log_2 |A|
 \end{equation}
 
-The easiest way to understand modulo bias is to repeat the alphabet until the result is has more elements than the largest possible random value $R$ and truncate to size $R$.  If $|A|$ doesn't evenly divide $R$, some characters will appear one more time than others.  In those cases, the number of times a character appears is either
+The easiest way to understand modulo bias is to keep repeating the alphabet until the result is has more elements than the largest possible random value $R$ and truncate to size $R$.  If $|A|$ doesn't evenly divide $R$, some characters will appear one more time than others.  The number of times a character appears is either
 \begin{equation}
 n_1 = \lfloor R/|A| \rfloor ~~\textrm{or}~~ n_2 = \lceil R/|A| \rceil,
 \end{equation}
@@ -61,7 +65,7 @@ The entropy of selecting a single character from each subset is then
 E_1 = -(|A| - R \bmod |A]) p_1 \log_2 p_1 ~~~\textrm{or}~~ E_2 = - (R \bmod |A|) p_2 \log_2 p_2.
 \end{equation}
 
-Here $R \bmod|A|$ is the number of characters that appear an extra time.  Note that if $|A|$ divides $R$, $E_2 = 0$ and $E_1 = E_0$.  The entropy of an $L$-character site password with modulo bias is $E_b = L(E_1 + E_2)$.  
+Here ($R \bmod|A|$) is the number of characters that appear an extra time.  Note that if $|A|$ divides $R$, $E_2 = 0$ and $E_1 = E_0$.  The entropy of an $L$-character site password with modulo bias is $E_b = L(E_1 + E_2)$.  
 
 \begin{figure}
     \centering
@@ -70,7 +74,7 @@ Here $R \bmod|A|$ is the number of characters that appear an extra time.  Note t
     \label{fig}
 \end{figure}
 
-We can now plug in some numbers.  SitePassword uses $R = 256$ and allows alphabets in the range $10 \leq |A| \leq 96$.  With the default values of $|A| = 62$ and $L = 12$, $E_0 - E_b = .05$ which requires 96\% of the $2^{71}$ guesses needed if there was no modulo bias.  The worst case in the allowed range is at $|A| = 96$ where $E_0 - E_b = 0.28$, which translates into 82\% as many guesses.  The greater loss in guesses is offset by the larger alphabet size leaving the entropy with modulo bias greater than 78 bits.  Figure~\ref{fig} shows the entropy loss, $E_0 - E_b$, in green and the ratio of the number of guesses needed, $2^{-(E_0-E_b)}$, in purple for $R = 256$ and $L = 12$.
+We can now plug in some numbers.  SitePassword uses $R = 256$ and allows alphabets in the range $10 \leq |A| \leq 96$.  With the default values of $|A| = 62$ and $L = 12$, $E_0 - E_b = .05$ which requires 96\% of the $2^{71}$ guesses needed if there was no modulo bias.  The worst case in the allowed range is at $|A| = 96$ where $E_0 - E_b = 0.28$, which translates into 82\% as many guesses.  The greater loss in guesses is offset by the larger alphabet size, leaving the entropy with modulo bias greater than 78 bits.  Figure~\ref{fig} shows the entropy loss, $E_0 - E_b$, in green and the ratio of the number of guesses needed, $2^{-(E_0-E_b)}$, in purple for $R = 256$ and $L = 12$.
 
 \section{Conclusions}
 

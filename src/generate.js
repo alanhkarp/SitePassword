@@ -58,7 +58,7 @@ async function computePassword(superpw, salt, settings) {
         pw = uint2chars(); // Meets requirements but might be weak
         if (verifyPassword(pw, settings)) {
             if (logging) console.log("bg deterministic algorithm succeeded in", iter - 200, "iterations and took", Date.now() - startIter, "ms");
-            return uint2chars();
+            return pw;
         }
         args = {"pw": pw, "salt": salt, "settings": settings, "iters": 1, "keysize": settings.pwlength * 16};
         pw = await candidatePassword(args);
