@@ -70,11 +70,11 @@ Here ($R \bmod|A|$) is the number of characters that appear an extra time.  Note
 \begin{figure}
     \centering
     \includegraphics[width=0.5\textwidth]{moduloBias.png} 
-    \caption{Modulo bias for SitePassword for an $L$-character site password.  The green line is the entropy loss; the purple line the reduction in the number of guesses.  Only values of $10 \leq |A| \leq 96$ are relevant to SitePassword.}
+    \caption{Modulo bias for a 12-character site password.  The green line is the entropy loss; the purple line the reduction in the number of guesses.  Only values of $10 \leq |A| \leq 96$ are relevant to SitePassword.}
     \label{fig}
 \end{figure}
 
-We can now plug in some numbers.  SitePassword uses $R = 256$ and allows alphabets in the range $10 \leq |A| \leq 96$.  With the default values of $|A| = 62$ and $L = 12$, $E_0 - E_b = .05$ which requires 96\% of the $2^{71}$ guesses needed if there was no modulo bias.  The worst case in the allowed range is at $|A| = 96$ where $E_0 - E_b = 0.28$, which translates into 82\% as many guesses.  The greater loss in guesses is offset by the larger alphabet size, leaving the entropy with modulo bias greater than 78 bits.  Figure~\ref{fig} shows the entropy loss, $E_0 - E_b$, in green and the ratio of the number of guesses needed, $2^{-(E_0-E_b)}$, in purple for $R = 256$ and $L = 12$.
+We can now plug in some numbers.  SitePassword uses $R = 256$ and allows alphabets in the range $10 \leq |A| \leq 96$.  With the default values of $|A| = 62$ and $L = 12$, $E_0 - E_b = .04$ which requires 96\% of the $2^{71}$ guesses needed if there was no modulo bias.  The worst case in the allowed range is at $|A| = 96$ where $E_0 - E_b = 0.2$, which translates into 87\% as many guesses.  The greater loss in guesses is offset by the larger alphabet size, leaving the entropy with modulo bias greater than 78 bits.  Figure~\ref{fig} shows the entropy loss, $E_0 - E_b$, in green and the ratio of the number of guesses needed, $2^{-(E_0-E_b)}$, in purple for $R = 256$ and $L = 12$.
 
 \section{Conclusions}
 
