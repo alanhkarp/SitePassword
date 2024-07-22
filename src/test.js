@@ -94,7 +94,7 @@ export async function runTests() {
     async function testCalculation() {
         await resetState();
         if (loggingCalculation) console.log("testCalculation state reset", $pwlength.value);
-        const expected = "UG1qIyn6mSuJ";
+        const expected = "c3EEm4qRFSfk";
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
         if (loggingCalculation) console.log("testCalculation form filled", $sitename.value, $username.value);
         let actual = $sitepw.value;
@@ -284,7 +284,7 @@ export async function runTests() {
     }
     // Test clear superpw
     async function testClearSuperpw() {
-        const expected = "UG1qIyn6mSuJ";
+        const expected = "c3EEm4qRFSfk";
         await resetState();
         await triggerEvent("click", $settingsshow, "settingsshowResolver");
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
