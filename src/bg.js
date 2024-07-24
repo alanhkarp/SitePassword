@@ -59,6 +59,21 @@ if (logging) console.log("bg isSafari", isSafari);
 
 let bkmksId;
 let bkmksSafari = {};
+// Need to clear cache following an update
+if (logging) console.log("bg running");
+chrome.runtime.onInstalled.addListener(async function(details) {
+    if (logging) console.log("bg clearing browser cache because of", details);
+    await chrome.browsingData.removeCache({});
+    if (logging) console.log("bg cleared the browser cache");
+    if (details.reason === "install") {
+        chrome.windows.create({
+            url: "./gettingStarted.html",
+            type:"normal",
+            height:800,
+            width:800
+        });
+    }
+});
 async function setup() {
     if (!isSafari) {
         let nodes = await chrome.bookmarks.getTree();
@@ -93,20 +108,6 @@ async function setup() {
             await Promise.resolve(); // To match the await in the other branch
         }
     }
-    // Need to clear cache following an update
-    chrome.runtime.onInstalled.addListener(async function(details) {
-        if (logging) console.log("bg clearing browser cache because of", details)
-        await chrome.browsingData.removeCache({});
-        if (logging) console.log("bg cleared the browser cache");
-        if (details.reason === "install") {
-            chrome.windows.create({
-                url: "./gettingStarted.html",
-                type:"normal",
-                height:800,
-                width:800
-            });
-        }
-    });
     // Add message listener
     if (logging) console.log("bg adding listener");
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
