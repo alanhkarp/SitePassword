@@ -9,7 +9,7 @@ const debugMode = false;
 const logging = false;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
-let sitedataBookmark = "SitePasswordDataNew"; // So I can use V2 for to get my passwords
+let sitedataBookmark = "SitePasswordData";
 if (testMode) {
     sitedataBookmark = "SitePasswordDataTest";
 } else if (debugMode) {
