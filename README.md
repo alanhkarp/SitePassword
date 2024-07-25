@@ -149,6 +149,11 @@ There is a _Download Site Data_ button at the bottom of the popup window after y
 
 There may come a time when you want to use a different password manager. In that case you can use the _Export passwords_ button at the bottom of the popup window after you click <img src="images/gear.png" style="width: 16px; height: 16px; vertical-align: middle;">. Clicking this button creates a file with your passwords. You can see a readable form of the data in the file by opening it in a spreadsheet.
 
+You'll have to export to a separate file for each super password you use.  Since SitePassword doesn't track 
+your super passwords, it doesn't know which one goes with which domain.  As a result each file 
+will have a site password for every domain name in your SitePasswordData bookmarks folder.  Only the domains associated with that super 
+password will have the correct site password.
+
 **Be very careful with this file.** Completely delete it from your machine, including emptying the trash, after you use it. If you don't, anyone who gets access to your machine can get your passwords.
 
 ### The Extension and the Web Page
