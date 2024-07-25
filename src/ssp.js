@@ -1125,10 +1125,10 @@ function pwoptions(options) {
 function updateExportButton() {
     if (get("superpw").value) {
         get("exportbutton").disabled = false;
-        get("exportbutton").title = "Export site data";
+        get("exportbutton").title = "Export your site passwords";
     } else {
         get("exportbutton").disabled = true;
-        get("exportbutton").title = "Enter your super password to export site data";
+        get("exportbutton").title = "Enter your super password to export your site passwords";
     }
 }
 async function exportPasswords() {
