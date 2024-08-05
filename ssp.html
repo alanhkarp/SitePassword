@@ -16,125 +16,6 @@
   <noscript>JavaScript must be enabled to use this tool.</noscript>
   <div id="content" class="column" style="overflow-x: auto">
     <div id="mainpanel">
-      <div id="settings" class="sticky side-panel" style="display: none; width: 25em">
-        <h1 style="text-align: left;">Additional Settings</h1>
-        <div class="setting-row" id="providesitepwdiv"
-          title="You must fill in the SitePassword form before you can provide your own site password.">
-          <label for="providesitepw" class="checkbox-label">
-            <input id="providesitepw" class="checkbox-input" type="checkbox" disabled aria-disabled="true"
-              title="Check to type your own site password.  You must fill in the SitePassword form first." />
-            <span class="checkbox-custom"></span>
-            <span id="providesitepwlabel" class="settings">Provide your own site password.</span>
-          </label>
-        </div>
-        <div class="setting-row">
-          <label for="clearsuperpw" class="checkbox-label">
-            <input id="clearsuperpw" type="checkbox" class="checkbox-input" />
-            <span class="checkbox-custom"></span>
-            <span class="settings">Clear super password on use</span>
-          </label>
-        </div>
-        <div class="setting-row">
-          <label for="hidesitepw" class="checkbox-label">
-            <input id="hidesitepw" type="checkbox" class="checkbox-input" />
-            <span class="checkbox-custom"></span>
-            <span class="settings">Hide site password by default</span>
-          </label>
-        </div>
-        <div id="defaultsettings" class="boxed" style="margin-right: 10px">
-          <div class="setting-row">
-            <span class="settings" style="position: relative; top: 5px; left: 3px">Site password is</span>
-            <input id="pwlength" type="text" value="12" size="2" class="settings-input" style="position: relative; top: 5px; left: 3px"/>
-            <span class="settings" style="position: relative; top: 5px; left: 3px">characters long</span>
-          </div>
-          <div class="setting-row">
-            <label for="startwithletter" class="checkbox-label">
-              <input id="startwithletter" type="checkbox" class="checkbox-input" checked="checked" />
-              <span class="checkbox-custom"></span>
-              <span class="settings">Starts with letter</span>
-            </label>
-          </div>
-          <div class="setting-row">
-            <label for="allowlowercheckbox" class="checkbox-label">
-              <input id="allowlowercheckbox" type="checkbox" class="checkbox-input" checked="checked" />
-              <span class="checkbox-custom"></span>
-              <span id="allowlower" class="settings" style="display: none;">Allows lowercase letters</span>
-              <span id="requirelower" class="settings" style="display: inline;">
-                Requires at least
-                <input id="minlower" type="text" value="1" size="2" class="settings-input" />
-                lowercase letter(s)
-              </span>
-            </label>
-          </div>
-          <div class="setting-row">
-            <label for="allowuppercheckbox" class="checkbox-label">
-              <input id="allowuppercheckbox" type="checkbox" class="checkbox-input" checked="checked" />
-              <span class="checkbox-custom"></span>
-              <span id="allowupper" class="settings" style="display: none;">Allows uppercase letters</span>
-              <span id="requireupper" class="settings" style="display: inline;">
-                Requires at least
-                <input id="minupper"" type=" text" value="1" size="2" class="settings-input"" />
-                uppercase letter(s)
-              </span>
-            </label>
-          </div>
-          <div class=" setting-row">
-                <label for="allownumbercheckbox" class="checkbox-label" />
-                <input id="allownumbercheckbox" type="checkbox" class="checkbox-input" checked="checked" />
-                <span class="checkbox-custom"></span>
-                <span id="allownumber" class="settings" style="display: none;">Allows numbers</span>
-                <span id="requirenumber" class="settings" style="display: inline;">
-                  Requires at least
-                  <input id="minnumber"" type=" text" value="1" size="2" class="settings-input" />
-                  number(s)
-                </span>
-            </label>
-          </div>
-          <div class="setting-row">
-            <label for="allowspecialcheckbox" class="checkbox-label">
-              <input id="allowspecialcheckbox" type="checkbox" class="checkbox-input" />
-              <span class="checkbox-custom"></span>
-              <span id="allowspecial" class="settings" style="display: inline;">
-                Allows special characters
-              </span>
-              <span id="requirespecial" class="settings" style="display: none;">
-                Requires at least
-                <input id="minspecial" type="text" value="1" size="2" class="settings-input" />
-                of
-                <input id="specials" title="Enter up to 12 special characters" class="fixed" type="text"
-                  class="settings-input" value="$/!=@?._-" size="12" />
-              </span>
-            </label>
-          </div>
-          <div class="form-row">
-            <button id="makedefaultbutton" type="button"
-              style="position: relative; left: 5px"
-              target="_blank" title="Make the settings in the box your default">
-              <span class="btn-text">Save as default</span>
-            </button>
-            <span style="flex:1"></span>
-          </div>
-        </div>
-        <div class="form-row">
-          <button id="sitedatagetbutton" type="button" style="display: inline; position: relative; top: 10px" target="_blank"
-            title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
-            <span class="btn-text">Download site data</span>
-          </button>
-          <span style="flex:1"></span>
-          <a id="data" href="data:application/octet-stream," target="_blank" style="display: none;"
-            rel="noopener noreferrer"
-            download="SiteData.html">SiteData.html</a>
-          <button id="exportbutton" type="button" disabled style="display: inline; position: relative; top: 10px" target="_blank"
-            title="Export your passwords to a CSV file that can be imported into a spreadsheet.">
-            <span class="btn-text">Export passwords</span>
-          </button>
-          <span style="flex:1"></span>
-          <a id="pwdata" href="data:application/octet-stream," target="_blank" style="display: none;"
-          rel="noopener noreferrer"
-          download="passwords.csv">passwords.csv</a>
-        </div>
-        <br />
-      </div>
 <!--
 Instructions for converting the contents of this panel to Markdown
 
@@ -157,6 +38,242 @@ to change all occurrences if ![](images...) to <img> tags.
 4. Manually edit the nested list in Your User Name to insert 4 spaces in the inner list.
 
 -->
+      <div id="helptext" class="sticky side-panel" style="display: none; width: auto">
+        <div id="domainnamehelptext" name="help" class="helptext">
+          <br />
+          <h3>Domain Name Help</h3>
+          <p>
+            The domain name is associated with your settings for this account.
+            It is also the name of a bookmark in the SitePasswordData bookmark folder.
+            That's the bookmark you can use to get your settings when you're on a machine
+            that doesn't have the SitePassword extension installed.
+          </p>
+          <div class="form-row">
+            <button id="domainnamehelptextclose" class="button" title="Close this help text">
+              <span class="btn-text">Close</span>
+            </button>
+            &nbsp;&nbsp;
+            <button id="domainnamehelptextmore" title="Learn more about how SitePassword uses domain names.">
+              <span class="btn-text">Learn more</span>
+            </button>
+          </div>
+        </div>
+        <div id="superpwhelptext" name="help" class="helptext">
+          <br />
+          <h3>Super Password Help</h3>
+          <p>
+            You should choose a strong super password, one with lots of characters that contain
+            upper and lower case letters, numbers, and special characters. Just make sure
+            it's something you won't forget. SitePassword can't help you if you do.
+          </p>
+          <div class="form-row">
+            <button id="superpwhelptextclose" class="button" title="Close this help text.">
+              <span class="btn-text">Close<span class="btn-text"></span>
+            </button>
+            &nbsp;&nbsp;
+            <button id="superpwhelptextmore" title="Learn more about your super password">
+              <span class="btn-text">Learn more</span>
+            </button>
+            <span style="flex:1"></span>
+          </div>
+        </div>
+        <div id="sitenamehelptext" name="help" class="helptext">
+          <br />
+          <h3>Nickname Help</h3>
+          <p>
+            Your nickname is the way you refer to this account. It should be easy to remember,
+            such as 'amazon' for amazon.com, but it doesn't have to be that simple.  You can 
+            change the password for an account by changing the nickname.  That's useful if you
+            have to change your password periodically.
+          </p>
+          <div class="form-row">
+            <button id="sitenamehelptextclose" class="button" title="Close this help text.">
+              <span class="btn-text">Close<span class="btn-text"></span>
+            </button>
+            &nbsp;&nbsp;
+            <button id="sitenamehelptextmore" title="Learn more about your site nickname">
+              <span class="btn-text">Learn more</span>
+            </button>
+          </div>
+        </div>
+        <div id="usernamehelptext" name="help" class="helptext">
+          <br />
+          <h3>User Name Help</h3>
+          <p>
+            Your user name is the name you use to log in to the site. It is
+            associated with the nickname for the account and is used to 
+            calculate your site password.  That means you can only have a 
+            single user name for a given nickname.  
+            <span name="hideifnobookmarks">If you want to use different 
+            user names for the same site, follow the instructions for 
+            <span id="sharedref" name="sectionref"><a href="#shared-machines">Shared Machines</a></span>. 
+            <!--
+              There is another element with id=sharedref, which you're not supposed 
+              to do, but I've got a hack for handling these links that needs it.
+            --> 
+          </p>
+          <div class="form-row">
+            <button id="usernamehelptextclose" class="button" title="Close this help text.">
+              <span class="btn-text">Close</span>
+            </button>
+            &nbsp;&nbsp;
+            <button id="usernamehelptextmore" title="Learn more about your username">
+              <span class="btn-text">Learn more</span>
+            </button>
+          </div>
+        </div>
+        <div id="sitepwhelptext" name="help" class="helptext">
+          <br />
+          <h3>Site Password Help</h3>
+          <p>
+            SitePassword uses your super password, nickname for the site, and
+            your user name for the site along with the additional settings to
+            calculate this password for the account.
+          </p>
+          <p>
+            If the password field on
+            the login form doesn't say <em>Click here for password</em>, you
+            can use the Copy option on the menu to put this password on the clipboard.
+          </p>
+          <div class="form-row">
+            <button id="sitepwhelptextclose" class="button" title="Close this help text.">
+              <span class="btn-text">Close</span>
+            </button>
+            &nbsp;&nbsp;
+            <button id="sitepwhelptextmore" title="Learn more about your site password">
+              <span class="btn-text">Learn more</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="warnings" class="sticky side-panel" style="display: none; width: auto; top: -10px">
+        <div id="phishing" class="warning nodisplay" style="width: 25em">
+          <img src="images/warning.png" class="icon warning-icon">
+          <span class="warningtext">Warning: Possible Phishing</span>
+          <p>
+            <!-- https://www.ipqualityscore.com/threat-feeds/malicious-url-scanner 
+                 https://www.abuseipdb.com/
+                 https://www.malwareurl.com/listing-urls.php
+                 https://www.scamadviser.com/
+            -->
+            You may be at a fake site that is trying to steal your password.
+            You previously used the nickname
+            <span id="phishingtext0" class="phishing"></span>
+            for
+          </p>
+          <span id="phishingtext1" class="phishing"></span>
+          <br /><br />
+          <p>The domain asking for your password is</p>
+          <span id="phishingtext2" class="phishing"></span>
+          <br /><br />
+          <p>
+            Check the domain name carefully; it may not be for your account.
+            You can check for known bad web pages at 
+            <a class="external-link" id="phishingcheck" href="https://www.scamadviser.com/">ScamAdvisor</a>
+            or other sites that check for phishing.
+          </p>
+          <button id="cancelwarning" type="button"
+            style="background-color: #21973f; margin: auto; color: white; width:100%"
+            title="I don't recognize this domain name. Take me away from this web page.">
+            <span class="btn-text" style="color: white">This domain name looks suspicious</span>
+          </button>
+          <br /><br />
+          <p>
+            It is common to see different domain names for the same account login. 
+            You may see <span class="example">login.example.com</span> and 
+            <span class="example">www.example.com</span> for the same account at example.com.
+            Just make sure you recognize the domain name.
+          </p>
+          <button id="warningbutton" type="button"
+            style="background-color: #D51c24; margin: auto; color:white; width:100%"
+            title="This page is for the same account. Use the same settings for it.">
+            <span class="btn-text" style="color: white">This page is for the same account</span>
+          </button>
+          <br /><br />
+          <p>
+            You may have accidentally reused a nickname. In that case, you can just pick a different one.
+          </p>
+          <button id="nicknamebutton" type="button"
+            style="background-color: #1964dc; margin: auto; color:white; width:100%"
+            title="This page is for a different account.  I'll select a new nickname.">
+            <span class="btn-text" style="color: white">Pick a new nickname</span>
+          </button>
+          <br /><br />
+        </div>
+        <div id="http" class="warning nodisplay" style="width: 18em">
+          <span id="httptext">
+            <img src="images/warning.png" class="icon warning-icon">
+            <span class="warningtext">Warning: Page Not Secure</span>
+            <p>
+              The connection to this page is not secure. Are you sure you want to enter your super password?
+            </p>
+          </span>
+        </div>
+        <div id="zero" class="warning nodisplay" style="width: 18em"
+          title="SitePassword didn't find any password fields.  You will have to paste your site password.">
+          <span id="zerotext">
+            <img src="images/warning.png" class="icon warning-icon">
+            <span class="warningtext">Warning: No Password Fields</span>
+            <p>
+              Site Password did not find any password fields
+              on this page. Try reloading the page. If that doesn't work, click the
+              Copy icon in the site password field to put
+              it on the clipboard.
+            </p>
+          </span>
+        </div>
+        <div id="forget" class="warning nodisplay" style="width: 18em"
+          title="You can change your mind or permanently forget the settings for the listed domain names.">
+          <span id="forgettext">
+            <img src="images/warning.png" class="icon warning-icon">
+            <span class="warningtext">Forget Enabled</span>
+            <p>
+              Are you sure you want to delete the settings for these domain names?
+            </p>
+            <ul id="toforgetlist"></ul>
+            <div>
+              <p>You can change your mind,</p>
+              <button id="cancelbutton" type="button" style="background-color: #21973f; color: white; width:100%"
+                title="Click to cancel forgetting the settings for the listed domain names.">
+                <span class="btn-text" style="color: white">Cancel</span>
+              </button>
+              <p>
+                or permanently forget the settings for the listed domain names.
+                <b>This action cannot be undone.</b>
+              </p>
+              <button id="forgetbutton" type="button" style="background-color: #D51c24; color:white; width:100%"
+                title="Click to delete the settings for the listed domain names.">
+                <span class="btn-text" style="color: white">Permanently forget</span>
+              </button>
+            </div>
+          </span>
+        </div>
+        <div id="nopw" class="warning nodisplay" style="width: 18em"
+          title="You may need to enable some characters, increase the pasword length, or reduce the number of special characters you're asking for.">
+          <span id="nopwtext">
+            <img src="images/warning.png" class="icon warning-icon">
+            <span class="warningtext">Warning: No Password</span>
+            <p>
+              Site Password can't compute a password with these settings. You
+              either need to enable some characters, increase the pasword length,
+              or reduce the number of special characters you're asking for. If
+              that doesn't work, try another nickname for the site.
+            </p>
+          </span>
+        </div>
+        <div id="multiple" class="warning nodisplay" style="width: 18em">
+          <span id="multipletext">
+            <img src="images/warning.png" class="icon warning-icon">
+            <span class="warningtext">Warning: Multiple Passwords</span>
+            <p>
+              There is more than one password field
+              on this page. Click the Copy icon in the site password field to put it
+              on the clipboard. <b> When you are done pasting your
+              password, come back here and click the Clear Clipboard button.</b>
+            </p>
+          </span>
+        </div>
+      </div>
       <div id="instructionpanel" class="sticky side-panel" style="display: none">
         <div id="sections">
           <section id="overviewinfo" name="instructions" class="instructionpaneltext">
@@ -1038,241 +1155,124 @@ to change all occurrences if ![](images...) to <img> tags.
           </section>
         </div>
       </div>
-      <div id="helptext" class="sticky side-panel" style="display: none; width: auto">
-        <div id="domainnamehelptext" name="help" class="helptext">
-          <br />
-          <h3>Domain Name Help</h3>
-          <p>
-            The domain name is associated with your settings for this account.
-            It is also the name of a bookmark in the SitePasswordData bookmark folder.
-            That's the bookmark you can use to get your settings when you're on a machine
-            that doesn't have the SitePassword extension installed.
-          </p>
-          <div class="form-row">
-            <button id="domainnamehelptextclose" class="button" title="Close this help text">
-              <span class="btn-text">Close</span>
-            </button>
-            &nbsp;&nbsp;
-            <button id="domainnamehelptextmore" title="Learn more about how SitePassword uses domain names.">
-              <span class="btn-text">Learn more</span>
-            </button>
-          </div>
+      <div id="settings" class="sticky side-panel" style="display: none; width: 25em">
+        <h1 style="text-align: left;">Additional Settings</h1>
+        <div class="setting-row" id="providesitepwdiv"
+          title="You must fill in the SitePassword form before you can provide your own site password.">
+          <label for="providesitepw" class="checkbox-label">
+            <input id="providesitepw" class="checkbox-input" type="checkbox" disabled aria-disabled="true"
+              title="Check to type your own site password.  You must fill in the SitePassword form first." />
+            <span class="checkbox-custom"></span>
+            <span id="providesitepwlabel" class="settings">Provide your own site password.</span>
+          </label>
         </div>
-        <div id="superpwhelptext" name="help" class="helptext">
-          <br />
-          <h3>Super Password Help</h3>
-          <p>
-            You should choose a strong super password, one with lots of characters that contain
-            upper and lower case letters, numbers, and special characters. Just make sure
-            it's something you won't forget. SitePassword can't help you if you do.
-          </p>
+        <div class="setting-row">
+          <label for="clearsuperpw" class="checkbox-label">
+            <input id="clearsuperpw" type="checkbox" class="checkbox-input" />
+            <span class="checkbox-custom"></span>
+            <span class="settings">Clear super password on use</span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <label for="hidesitepw" class="checkbox-label">
+            <input id="hidesitepw" type="checkbox" class="checkbox-input" />
+            <span class="checkbox-custom"></span>
+            <span class="settings">Hide site password by default</span>
+          </label>
+        </div>
+        <div id="defaultsettings" class="boxed" style="margin-right: 10px">
+          <div class="setting-row">
+            <span class="settings" style="position: relative; top: 5px; left: 3px">Site password is</span>
+            <input id="pwlength" type="text" value="12" size="2" class="settings-input" style="position: relative; top: 5px; left: 3px"/>
+            <span class="settings" style="position: relative; top: 5px; left: 3px">characters long</span>
+          </div>
+          <div class="setting-row">
+            <label for="startwithletter" class="checkbox-label">
+              <input id="startwithletter" type="checkbox" class="checkbox-input" checked="checked" />
+              <span class="checkbox-custom"></span>
+              <span class="settings">Starts with letter</span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <label for="allowlowercheckbox" class="checkbox-label">
+              <input id="allowlowercheckbox" type="checkbox" class="checkbox-input" checked="checked" />
+              <span class="checkbox-custom"></span>
+              <span id="allowlower" class="settings" style="display: none;">Allows lowercase letters</span>
+              <span id="requirelower" class="settings" style="display: inline;">
+                Requires at least
+                <input id="minlower" type="text" value="1" size="2" class="settings-input" />
+                lowercase letter(s)
+              </span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <label for="allowuppercheckbox" class="checkbox-label">
+              <input id="allowuppercheckbox" type="checkbox" class="checkbox-input" checked="checked" />
+              <span class="checkbox-custom"></span>
+              <span id="allowupper" class="settings" style="display: none;">Allows uppercase letters</span>
+              <span id="requireupper" class="settings" style="display: inline;">
+                Requires at least
+                <input id="minupper"" type=" text" value="1" size="2" class="settings-input"" />
+                uppercase letter(s)
+              </span>
+            </label>
+          </div>
+          <div class=" setting-row">
+                <label for="allownumbercheckbox" class="checkbox-label" />
+                <input id="allownumbercheckbox" type="checkbox" class="checkbox-input" checked="checked" />
+                <span class="checkbox-custom"></span>
+                <span id="allownumber" class="settings" style="display: none;">Allows numbers</span>
+                <span id="requirenumber" class="settings" style="display: inline;">
+                  Requires at least
+                  <input id="minnumber"" type=" text" value="1" size="2" class="settings-input" />
+                  number(s)
+                </span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <label for="allowspecialcheckbox" class="checkbox-label">
+              <input id="allowspecialcheckbox" type="checkbox" class="checkbox-input" />
+              <span class="checkbox-custom"></span>
+              <span id="allowspecial" class="settings" style="display: inline;">
+                Allows special characters
+              </span>
+              <span id="requirespecial" class="settings" style="display: none;">
+                Requires at least
+                <input id="minspecial" type="text" value="1" size="2" class="settings-input" />
+                of
+                <input id="specials" title="Enter up to 12 special characters" class="fixed" type="text"
+                  class="settings-input" value="$/!=@?._-" size="12" />
+              </span>
+            </label>
+          </div>
           <div class="form-row">
-            <button id="superpwhelptextclose" class="button" title="Close this help text.">
-              <span class="btn-text">Close<span class="btn-text"></span>
-            </button>
-            &nbsp;&nbsp;
-            <button id="superpwhelptextmore" title="Learn more about your super password">
-              <span class="btn-text">Learn more</span>
+            <button id="makedefaultbutton" type="button"
+              style="position: relative; left: 5px"
+              target="_blank" title="Make the settings in the box your default">
+              <span class="btn-text">Save as default</span>
             </button>
             <span style="flex:1"></span>
           </div>
         </div>
-        <div id="sitenamehelptext" name="help" class="helptext">
-          <br />
-          <h3>Nickname Help</h3>
-          <p>
-            Your nickname is the way you refer to this account. It should be easy to remember,
-            such as 'amazon' for amazon.com, but it doesn't have to be that simple.  You can 
-            change the password for an account by changing the nickname.  That's useful if you
-            have to change your password periodically.
-          </p>
-          <div class="form-row">
-            <button id="sitenamehelptextclose" class="button" title="Close this help text.">
-              <span class="btn-text">Close<span class="btn-text"></span>
-            </button>
-            &nbsp;&nbsp;
-            <button id="sitenamehelptextmore" title="Learn more about your site nickname">
-              <span class="btn-text">Learn more</span>
-            </button>
-          </div>
-        </div>
-        <div id="usernamehelptext" name="help" class="helptext">
-          <br />
-          <h3>User Name Help</h3>
-          <p>
-            Your user name is the name you use to log in to the site. It is
-            associated with the nickname for the account and is used to 
-            calculate your site password.  That means you can only have a 
-            single user name for a given nickname.  
-            <span name="hideifnobookmarks">If you want to use different 
-            user names for the same site, follow the instructions for 
-            <span id="sharedref" name="sectionref"><a href="#shared-machines">Shared Machines</a></span>. 
-            <!--
-              There is another element with id=sharedref, which you're not supposed 
-              to do, but I've got a hack for handling these links that needs it.
-            --> 
-          </p>
-          <div class="form-row">
-            <button id="usernamehelptextclose" class="button" title="Close this help text.">
-              <span class="btn-text">Close</span>
-            </button>
-            &nbsp;&nbsp;
-            <button id="usernamehelptextmore" title="Learn more about your username">
-              <span class="btn-text">Learn more</span>
-            </button>
-          </div>
-        </div>
-        <div id="sitepwhelptext" name="help" class="helptext">
-          <br />
-          <h3>Site Password Help</h3>
-          <p>
-            SitePassword uses your super password, nickname for the site, and
-            your user name for the site along with the additional settings to
-            calculate this password for the account.
-          </p>
-          <p>
-            If the password field on
-            the login form doesn't say <em>Click here for password</em>, you
-            can use the Copy option on the menu to put this password on the clipboard.
-          </p>
-          <div class="form-row">
-            <button id="sitepwhelptextclose" class="button" title="Close this help text.">
-              <span class="btn-text">Close</span>
-            </button>
-            &nbsp;&nbsp;
-            <button id="sitepwhelptextmore" title="Learn more about your site password">
-              <span class="btn-text">Learn more</span>
-            </button>
-          </div>
-        </div>
-      </div>
-      <div id="warnings" class="sticky side-panel" style="display: none; width: auto; top: -10px">
-        <div id="phishing" class="warning nodisplay" style="width: 25em">
-          <img src="images/warning.png" class="icon warning-icon">
-          <span class="warningtext">Warning: Possible Phishing</span>
-          <p>
-            <!-- https://www.ipqualityscore.com/threat-feeds/malicious-url-scanner 
-                 https://www.abuseipdb.com/
-                 https://www.malwareurl.com/listing-urls.php
-                 https://www.scamadviser.com/
-            -->
-            You may be at a fake site that is trying to steal your password.
-            You previously used the nickname
-            <span id="phishingtext0" class="phishing"></span>
-            for
-          </p>
-          <span id="phishingtext1" class="phishing"></span>
-          <br /><br />
-          <p>The domain asking for your password is</p>
-          <span id="phishingtext2" class="phishing"></span>
-          <br /><br />
-          <p>
-            Check the domain name carefully; it may not be for your account.
-            You can check for known bad web pages at 
-            <a class="external-link" id="phishingcheck" href="https://www.scamadviser.com/">ScamAdvisor</a>
-            or other sites that check for phishing.
-          </p>
-          <button id="cancelwarning" type="button"
-            style="background-color: #21973f; margin: auto; color: white; width:100%"
-            title="I don't recognize this domain name. Take me away from this web page.">
-            <span class="btn-text" style="color: white">This domain name looks suspicious</span>
+        <div class="form-row">
+          <button id="sitedatagetbutton" type="button" style="display: inline; position: relative; top: 10px" target="_blank"
+            title="Download your settings to a file that you can use to calculate your passwords when the SitePassword extension is not available.">
+            <span class="btn-text">Download site data</span>
           </button>
-          <br /><br />
-          <p>
-            It is common to see different domain names for the same account login. 
-            You may see <span class="example">login.example.com</span> and 
-            <span class="example">www.example.com</span> for the same account at example.com.
-            Just make sure you recognize the domain name.
-          </p>
-          <button id="warningbutton" type="button"
-            style="background-color: #D51c24; margin: auto; color:white; width:100%"
-            title="This page is for the same account. Use the same settings for it.">
-            <span class="btn-text" style="color: white">This page is for the same account</span>
+          <span style="flex:1"></span>
+          <a id="data" href="data:application/octet-stream," target="_blank" style="display: none;"
+            rel="noopener noreferrer"
+            download="SiteData.html">SiteData.html</a>
+          <button id="exportbutton" type="button" disabled style="display: inline; position: relative; top: 10px" target="_blank"
+            title="Export your passwords to a CSV file that can be imported into a spreadsheet.">
+            <span class="btn-text">Export passwords</span>
           </button>
-          <br /><br />
-          <p>
-            You may have accidentally reused a nickname. In that case, you can just pick a different one.
-          </p>
-          <button id="nicknamebutton" type="button"
-            style="background-color: #1964dc; margin: auto; color:white; width:100%"
-            title="This page is for a different account.  I'll select a new nickname.">
-            <span class="btn-text" style="color: white">Pick a new nickname</span>
-          </button>
-          <br /><br />
+          <span style="flex:1"></span>
+          <a id="pwdata" href="data:application/octet-stream," target="_blank" style="display: none;"
+          rel="noopener noreferrer"
+          download="passwords.csv">passwords.csv</a>
         </div>
-        <div id="http" class="warning nodisplay" style="width: 18em">
-          <span id="httptext">
-            <img src="images/warning.png" class="icon warning-icon">
-            <span class="warningtext">Warning: Page Not Secure</span>
-            <p>
-              The connection to this page is not secure. Are you sure you want to enter your super password?
-            </p>
-          </span>
-        </div>
-        <div id="zero" class="warning nodisplay" style="width: 18em"
-          title="SitePassword didn't find any password fields.  You will have to paste your site password.">
-          <span id="zerotext">
-            <img src="images/warning.png" class="icon warning-icon">
-            <span class="warningtext">Warning: No Password Fields</span>
-            <p>
-              Site Password did not find any password fields
-              on this page. Try reloading the page. If that doesn't work, click the
-              Copy icon in the site password field to put
-              it on the clipboard.
-            </p>
-          </span>
-        </div>
-        <div id="forget" class="warning nodisplay" style="width: 18em"
-          title="You can change your mind or permanently forget the settings for the listed domain names.">
-          <span id="forgettext">
-            <img src="images/warning.png" class="icon warning-icon">
-            <span class="warningtext">Forget Enabled</span>
-            <p>
-              Are you sure you want to delete the settings for these domain names?
-            </p>
-            <ul id="toforgetlist"></ul>
-            <div>
-              <p>You can change your mind,</p>
-              <button id="cancelbutton" type="button" style="background-color: #21973f; color: white; width:100%"
-                title="Click to cancel forgetting the settings for the listed domain names.">
-                <span class="btn-text" style="color: white">Cancel</span>
-              </button>
-              <p>
-                or permanently forget the settings for the listed domain names.
-                <b>This action cannot be undone.</b>
-              </p>
-              <button id="forgetbutton" type="button" style="background-color: #D51c24; color:white; width:100%"
-                title="Click to delete the settings for the listed domain names.">
-                <span class="btn-text" style="color: white">Permanently forget</span>
-              </button>
-            </div>
-          </span>
-        </div>
-        <div id="nopw" class="warning nodisplay" style="width: 18em"
-          title="You may need to enable some characters, increase the pasword length, or reduce the number of special characters you're asking for.">
-          <span id="nopwtext">
-            <img src="images/warning.png" class="icon warning-icon">
-            <span class="warningtext">Warning: No Password</span>
-            <p>
-              Site Password can't compute a password with these settings. You
-              either need to enable some characters, increase the pasword length,
-              or reduce the number of special characters you're asking for. If
-              that doesn't work, try another nickname for the site.
-            </p>
-          </span>
-        </div>
-        <div id="multiple" class="warning nodisplay" style="width: 18em">
-          <span id="multipletext">
-            <img src="images/warning.png" class="icon warning-icon">
-            <span class="warningtext">Warning: Multiple Passwords</span>
-            <p>
-              There is more than one password field
-              on this page. Click the Copy icon in the site password field to put it
-              on the clipboard. <b> When you are done pasting your
-                password, come back here and click the Clear Clipboard button.
-            </p>
-          </span>
-        </div>
+        <br />
       </div>
       <div id="main" class="sticky main datalist-closed" style="flex: auto; position: sticky; top: 0;">
         <div id="top" class="form-row">
