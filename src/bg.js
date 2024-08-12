@@ -66,8 +66,9 @@ chrome.runtime.onInstalled.addListener(async function(details) {
     await chrome.browsingData.removeCache({});
     if (logging) console.log("bg cleared the browser cache");
     if (details.reason === "install") {
+        let gettingstarted = chrome.runtime.getURL("gettingstarted.html");
         chrome.windows.create({
-            url: "./gettingStarted.html",
+            url: gettingstarted,
             type:"normal",
             height:800,
             width:800
