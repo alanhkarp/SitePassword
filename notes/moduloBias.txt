@@ -1,0 +1,8 @@
+P1 = ceil(R/A)/R
+p2 = floor(R/A)/R
+H1 = -(A-mod(R,A)p1 log(p1))
+H2 = -mod(R,a)p2 log(p2)
+D = L(H1+H2)
+E = L log(A)
+F = E - D
+r = 2^{-F}
