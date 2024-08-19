@@ -16,6 +16,7 @@ var cpi = { count: 0, pwfields: [], idfield: null };
 var readyForClick = false;
 var mutationObserver;
 var oldpwfield = null;
+var savedPlaceholder = "";
 var lasttry = setTimeout(() => { // I want to be able to cancel without it firing
     if (logging) console.log("findpw initialize last try timer")
 }, 1000000);
@@ -87,6 +88,10 @@ function startup(sendPageInfo) {
     // The code in this function used to be called once, but now it's called several times.
     // There is no reason to declare new mutation observers and listeners on every call.
     if (!mutationObserver) {
+        cpi = countpwid();
+        for (let i = 0; i < cpi.pwfields.length; i++) {
+            // cpi.pwfields[i].placeholder = "Testing " + i; // To test not overwriting existing placeholders
+        }
         // Firefox doesn't preserve sessionStorage across restarts of
         // the service worker.  Sending periodic messages keeps it
         // alive, but there's no point to keep sending if there's an error.
@@ -241,41 +246,54 @@ async function sendpageinfo(cpi, clicked, onload) {
     if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
     handleMutations(mutations);
 }
-function setPlaceholder(userid) {
+// Some sites use placeholders and tooltips to tell the user what to do.
+// I don't want to hide that information from the user, so I don't overwrite 
+// existing placeholders.  However, I still need to tell the user what to do. 
+// My strategy that if there is more than one password field, and any of them 
+// has a placeholder, I won't overwrite them except for Click SitePassword. 
+// I'll communicate with the user by replacing the any tooltips provided by 
+// the site.
+async function setPlaceholder(userid) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", userid, readyForClick, cpi.pwfields);
     if (userid) clearLabel(cpi.idfield);
+    // See if any password fields have a placholder
+    let hasPlaceholder = cpi.pwfields.some((field) => field.placeholder !== "" && 
+                                                      field.placeholder !== clickSitePassword &&
+                                                      field.placeholder !== clickHere &&
+                                                      field.placeholder !== pasteHere);
     if (cpi.pwfields[0] && readyForClick && userid) {
         let placeholder = (cpi.pwfields.length === 1) ? clickHere : pasteHere;
-        if (cpi.pwfields[0].placeholder !== placeholder) {
-            if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", placeholder);
-            cpi.pwfields[0].placeholder = placeholder;
-            cpi.pwfields[0].ariaPlaceholder = placeholder;
-            cpi.pwfields[0].title = placeholder;
-            if (placeholder === pasteHere) {
-                cpi.pwfields[0].onclick = null;
-            }
-            clearLabel(cpi.pwfields[0]);
-            for (let i = 1; i < cpi.pwfields.length; i++) {
-                cpi.pwfields[i].placeholder = pasteHere;
-                cpi.pwfields[i].ariaPlaceholder = pasteHere;
-                cpi.pwfields[i].title = pasteHere;
-                cpi.pwfields[i].onclick = null;
-                clearLabel(cpi.pwfields[i]);
-            }
+        if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", placeholder);
+        if (cpi.pwfields[0].placeholder ===  clickSitePassword) {
+            cpi.pwfields[0].placeholder = savedPlaceholder || placeholder;
         }
-    } else if (cpi.pwfields[0]) {
-        if (cpi.pwfields[0].placeholder !== clickSitePassword) {
-            if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", clickSitePassword);
-            cpi.pwfields[0].placeholder = clickSitePassword;
-            cpi.pwfields[0].ariaPlaceholder = clickSitePassword;
-            cpi.pwfields[0].title = clickSitePasswordTitle;
-            clearLabel(cpi.pwfields[0]);
+        for (let i = 0; i < cpi.pwfields.length; i++) {
+            if (cpi.pwfields.length > 1 ) cpi.pwfields[i].onclick = null;
+            if (!hasPlaceholder || cpi.pwfields.length === 1) {
+                cpi.pwfields[i].placeholder = placeholder;
+                cpi.pwfields[i].ariaPlaceholder = placeholder;
+            }
+            cpi.pwfields[i].title = placeholder;
+            clearLabel(cpi.pwfields[i]);
         }
+    } else {
+        if (elementHasPlaceholder(cpi.pwfields[0])) savedPlaceholder = cpi.pwfields[0].placeholder || "";
+        if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", clickSitePassword);
+        cpi.pwfields[0].placeholder = clickSitePassword;
+        cpi.pwfields[0].ariaPlaceholder = clickSitePassword;
+        if (!elementHasPlaceholder(cpi.pwfields[0])) cpi.pwfields[0].title = clickSitePasswordTitle;
+        clearLabel(cpi.pwfields[0]);
+    }
+    function elementHasPlaceholder(element) {
+        return element && element.placeholder && 
+             !(element.placeholder === clickHere || 
+               element.placeholder === pasteHere ||
+               element.placeholder === clickSitePassword);
     }
 }
 async function pwfieldOnclick(event) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
-    if ((!this.placeholder) || this.placeholder === clickHere) {
+    if (!(this.placeholder === clickSitePassword || this.placeholder === pasteHere)) {
         await wakeup();
         let response = await chrome.runtime.sendMessage({ "cmd": "getPassword" });
         if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw pwfieldOnclick error", chrome.runtime.lastError);
