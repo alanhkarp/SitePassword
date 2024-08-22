@@ -17,12 +17,12 @@ const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 const defaultTitle = "SitePassword";
 
-let phishing = false;
+let nicknamebutton = false;
 let warningMsg = false;
 let bg = bgDefault;
 
 // I can't get the debugger statement to work unless I wait at least 1 second on Chrome
-let timeout = testMode ? 1000 : 0;     
+let timeout = debugMode ? 1000 : 0;     
 setTimeout(() => {
     if (debugMode) debugger;
 }, timeout);
@@ -171,21 +171,25 @@ get("root").onmouseleave = function (event) {
         }, 750);
     }
 }
-get("mainpanel").onmouseleave = async function () {
-    if (logging) console.log("popup mainpanel mousleave", bg);
+get("mainpanel").onmouseleave = async function (event) {
+    if (logging) console.log("popup mainpanel mouseleave", event);
     if (warningMsg) {   
         autoclose = false;
     } 
-    // Don't persist phishing sites if user mouses out of popup. Can't use
-    // isphising() because the new bookmark hasn't been created yet when the 
-    // user clicks the same account button.
-    get("superpw").focus(); // Force phishing test in case focus is on sitename
-    if (logging) console.log("popup phishing mouseleave phishing", phishing);
-    if (phishing || exporting) {
-        if (logging) console.log("popup phishing mouseleave resolve mouseleaveResolver", phishing, resolvers);
+    let phishingDomain = getPhishingDomain(get("sitename").value);
+    if (logging) console.log("popup mainpanel mouseleave", phishingDomain);
+    if (phishingDomain && !nicknamebutton) openPhishingWarning(phishingDomain);
+    nicknamebutton = false;
+    // Don't persist phishing sites if user mouses out of popup. 
+    let element = document.elementFromPoint(event.pageX, event.pageY);
+    if (logging) console.log("popup onmouseleave", phishingDomain, exporting, element);
+    if (phishingDomain || exporting || element) {
+        if (logging) console.log("popup phishing mouseleave resolve mouseleaveResolver", phishingDomain, resolvers);
         if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
         return;
     }
+    get("superpw").focus();
+    if (logging) console.log("popup mainpanel mouseleave update bg", document.activeElement.id, bg);
     // window.onblur fires before I even have a chance to see the window, much less focus it
     if (bg && bg.settings) {
         bg.superpw = get("superpw").value || "";
@@ -315,7 +319,6 @@ get("superpwhelptextmore").onclick = function (e) {
     sectionClick("superpw");
 }
 // Site Name
-let focused = true; // Needed so I can blur and refocus to get the datalist updated
 get("sitename").onfocus = function (e) {
     let set = new Set();
     let value = normalize(get("sitename").value);
@@ -323,15 +326,8 @@ get("sitename").onfocus = function (e) {
         let site = database.sites[normalize(sitename)].sitename;
         if (!value || normalize(site).startsWith(value)) set.add(site);
     })
-    let list = [... set].sort();
+    let list = sortList([... set]);
     setupdatalist(this, list);
-    if (!get("sitename").value && focused) {
-        get("sitename").blur();
-        focused = false;
-        get("sitename").focus();
-    } else {
-        focused = true;
-    }
 }
 get("sitename").onkeyup = async function () {
     await handlekeyup("sitename", "sitename");
@@ -340,28 +336,25 @@ get("sitename").onkeyup = async function () {
     if (resolvers.sitenamekeyupResolver) resolvers.sitenamekeyupResolver("sitenamekeyupPromise");
 }
 get("sitename").onblur = async function (e) {
-    let d = isphishing(bg.settings.sitename)
+    let d = getPhishingDomain(bg.settings.sitename)
     if (d) {
-        get("phishingtext0").innerText = get("sitename").value;
-        get("phishingtext1").innerText = d;
-        get("phishingtext2").innerText = get("domainname").value;
-        phishing = true;
-        msgon("phishing");
-        hidesettings();
-        get("superpw").disabled = true;
-        get("username").disabled = true;
-        get("sitepw").value = "";
+        openPhishingWarning(d);
         await Promise.resolve(); // To match the await of the other branch
     } else {
-        phishing = false;
         msgoff("phishing");
         get("superpw").disabled = false;
         get("username").disabled = false
         await handleblur("sitename", "sitename");
-        changePlaceholder();
+        await changePlaceholder();
     }
     clearDatalist("sitenames");
     if (resolvers.sitenameblurResolver) resolvers.sitenameblurResolver("sitenameblurPromise");
+}
+// Fires when the user selects a site name from the datalist
+get("sitename").onchange = function () {
+    if (logging) console.log("popup when sitename selected from datalist", get("sitename").value);
+    // Changing focus triggers blur on the sitename field opening the phishing warning if needed
+    if (getPhishingDomain(get("sitename").value)) get("superpw").focus();
 }
 get("sitename3bluedots").onmouseover = function (e) {
     let sitename = get("sitename").value;
@@ -396,23 +389,15 @@ get("sitenamehelptextmore").onclick = function (e) {
     sectionClick("sitename");
 }
 // Site Username
-focused = true; // Needed so I can blur and refocus to get the datalist updated
 get("username").onfocus = function (e) {
     let set = new Set();
     let value = normalize(get("username").value);
     Object.keys(database.sites).forEach((sitename) => {
         let username = database.sites[normalize(sitename)].username;
-        if (!value || normalize(username).startsWith(value)) set.add(username);
+        if (!value || normalize(username).startsWith(value)) set.add(username.trim());
     })
-    let list = [... set].sort();
+    let list = sortList([... set]);
     setupdatalist(this, list);
-    if (!get("username").value && focused) {
-        get("username").blur();
-        focused = false;
-        get("username").focus();
-    } else {    
-        focused = true;
-    }
 }
 get("username").onkeyup = async function () {
     await handlekeyup("username", "username");
@@ -705,7 +690,6 @@ get("maininfo").onclick = function () {
     autoclose = false;
 }
 get("cancelwarning").onclick = async function () {
-    phishing = true;
     msgoff("phishing");
     get("domainname").value = "";
     get("sitename").value = "";
@@ -717,7 +701,6 @@ get("cancelwarning").onclick = async function () {
     if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver("cancelwarningPromise");
 }
 get("warningbutton").onclick = async function () {
-    phishing = false;
     get("superpw").disabled = false;
     get("username").disabled = false;
     get("sitename").disabled = false;
@@ -733,9 +716,13 @@ get("warningbutton").onclick = async function () {
     if (resolvers.warningbuttonResolver) resolvers.warningbuttonResolver("warningbuttonPromise");
 }
 get("nicknamebutton").onclick = function () {
-    setfocus(get("sitename"));
+    get("superpw").disabled = false;
+    get("sitename").disabled = false;
+    get("username").disabled = false;
+    get("sitename").focus();
     msgoff("phishing");
     autoclose = false;
+    nicknamebutton = true;
 }
 get("forgetbutton").onclick = async function () {
     if (logging) console.log("popup forgetbutton");
@@ -851,7 +838,21 @@ function hideInstructions() {
     // I need to adjust the width of the main panel when the scrollbar disappears.
     get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
 }
-// End of generic code for menus
+// End of generic code for menus: other utility functions
+function openPhishingWarning(d) {
+    get("phishingtext0").innerText = get("sitename").value;
+    get("phishingtext1").innerText = d;
+    get("phishingtext2").innerText = get("domainname").value;
+    msgon("phishing");
+    hidesettings();
+    get("superpw").disabled = true;
+    get("sitename").disabled = true;
+    get("username").disabled = true;
+    get("sitepw").value = "";
+}
+function sortList(list) {
+    return list.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+}
 // Thanks, Copilot
 function scrollbarWidth() {
     // Create a div with a known width and height
@@ -1002,13 +1003,10 @@ async function changePlaceholder() {
     await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
     if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
 }
-function setfocus(element) {
-    element.focus();
-}
 function defaultfocus() {
-    if (!get("username").value) setfocus(get("username"));
-    if (!get("sitename").value) setfocus(get("sitename"));
-    if (!get("superpw").value) setfocus(get("superpw"));
+    if (!get("username").value) get("username").focus();
+    if (!get("sitename").value) get("sitename").focus();
+    if (!get("superpw").value) get("superpw").focus();
 }
 async function ask2generate() {
     if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
@@ -1270,9 +1268,10 @@ function sitedataHTMLDoc(doc, sorted) {
         addColumnEntries(tr, entries);
     }
 }
-function isphishing(sitename) {
-    if (!sitename) return "";
-    let domainname = get("domainname").value; // Needed for tests
+function getPhishingDomain(sitename) {
+    let domainname = get("domainname").value;
+    // Can't be phishing if the domain name is in the database with this sitename.
+    if (!sitename || database.domains[domainname] === sitename) return "";
     var domains = Object.keys(database.domains);
     var phishing = "";
     domains.forEach(function (d) {
