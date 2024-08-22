@@ -17,7 +17,7 @@ const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 const defaultTitle = "SitePassword";
 
-let nicknamebutton = false;
+let saveSettings = true;
 let warningMsg = false;
 let bg = bgDefault;
 
@@ -178,16 +178,17 @@ get("mainpanel").onmouseleave = async function (event) {
     } 
     let phishingDomain = getPhishingDomain(get("sitename").value);
     if (logging) console.log("popup mainpanel mouseleave", phishingDomain);
-    if (phishingDomain && !nicknamebutton) openPhishingWarning(phishingDomain);
-    nicknamebutton = false;
+    if (phishingDomain && saveSettings) openPhishingWarning(phishingDomain);
     // Don't persist phishing sites if user mouses out of popup. 
     let element = document.elementFromPoint(event.pageX, event.pageY);
     if (logging) console.log("popup onmouseleave", phishingDomain, exporting, element);
-    if (phishingDomain || exporting || element) {
+    if (phishingDomain || exporting || element || !saveSettings) {
         if (logging) console.log("popup phishing mouseleave resolve mouseleaveResolver", phishingDomain, resolvers);
+        saveSettings = true;
         if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
         return;
     }
+    saveSettings = true;
     get("superpw").focus();
     if (logging) console.log("popup mainpanel mouseleave update bg", document.activeElement.id, bg);
     // window.onblur fires before I even have a chance to see the window, much less focus it
@@ -722,7 +723,7 @@ get("nicknamebutton").onclick = function () {
     get("sitename").focus();
     msgoff("phishing");
     autoclose = false;
-    nicknamebutton = true;
+    saveSettings = false;
 }
 get("forgetbutton").onclick = async function () {
     if (logging) console.log("popup forgetbutton");
@@ -804,12 +805,14 @@ function helpItemOff(which) {
     get("helptext").style.display = "none";
     get(which).style.display = "none";
     autoclose = false;
+    saveSettings = false;
 }
 function helpAllOff() {
     let helps = document.getElementsByName("help");
     for (let help of helps) {
         helpItemOff(help.id); 
     } 
+    saveSettings = false;
 }
 function hidesitepw() {
     if (logging) console.log("popup checking hidesitepw", get("hidesitepw").checked, database.hidesitepw);
@@ -1104,6 +1107,7 @@ function hidesettings() {
     get("settings").style.display = "none";
     let height = mainHeight();
     get("main").style.height = height + "px";
+    saveSettings = false;
 }
 function pwoptions(options) {
     for (var x in options) {
@@ -1351,17 +1355,6 @@ function mainHeight() {
     let height = Math.min(bottom - top, 575);
     return height;
 }
-function cleartransientmsgs() {
-    for (var i = 0; i < messages.length; i++) {
-        var msg = messages[i];
-        if (msg.transient) msgoff(msg.name);
-    }
-}
-function clearallmessages() {
-    for (var i = 0; i < messages.length; i++) {
-        msgoff(messages[i].name);
-    }
-}
 // Handle the case where the user clicks on the link in the instructions or help
 function sectionrefSetup() {
     let sectionrefs = document.getElementsByName("sectionref");
@@ -1425,6 +1418,7 @@ function closeAllInstructions() {
         let section = instruction.id.replace("info", "");
         closeInstructionSection(section);
     }
+    saveSettings = false;
 }
 // Make sure the service worker is running
 // Multiple events can be lost if they are triggered fast enough,
