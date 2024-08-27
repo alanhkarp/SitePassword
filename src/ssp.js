@@ -820,8 +820,12 @@ function hidesitepw() {
     if (logging) console.log("popup checking hidesitepw", get("hidesitepw").checked, database.hidesitepw);
     if (get("hidesitepw").checked || (database && database.hidesitepw)) {
         get("sitepw").type = "password";
+        get("sitepwmenushow").classList.remove("nodisplay");
+        get("sitepwmenuhide").classList.add("nodisplay");
     } else {
         get("sitepw").type = "text";
+        get("sitepwmenushow").classList.add("nodisplay");
+        get("sitepwmenuhide").classList.remove("nodisplay");
     }
 }
 function showInstructions() {
