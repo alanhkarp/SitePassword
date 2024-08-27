@@ -310,7 +310,7 @@ button:enabled:active {
   display: block;
 }
 .checkbox-input:checked ~ .checkbox-custom {
-  background-color: rgb(136, 204, 255, 100%);
+  background-color: rgb(136, 204, 255, 10%);
 }
 .checkbox-input:disabled ~ .checkbox-custom {
   background-color: #ccc;
