@@ -297,16 +297,17 @@ button:enabled:active {
   content: "";
   position: absolute;
   display: none;
-}
-.checkbox-input:checked ~ .checkbox-custom::after {
-  display: none;
-  left: 7px;
-  top: 3px;
-  width: 6px;
-  height: 12px;
+  top: -2px;
+  left: 3px;
+  width: 5px;
+  height: 10px;
   border: solid #007bff;
   border-width: 0 3px 3px 0;
   transform: rotate(45deg);
+}
+
+.checkbox-input:checked ~ .checkbox-custom::after {
+  display: block;
 }
 .checkbox-input:checked ~ .checkbox-custom {
   background-color: rgb(136, 204, 255, 100%);
