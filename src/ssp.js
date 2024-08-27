@@ -225,7 +225,7 @@ get("root").onmouseenter = function (e) {
     clearTimeout(mainPanelTimer);
 }
 get("title").onclick = function () {
-    window.open("https://sitepassword.info", target, "noopener,noreferrer");
+    window.open("https://sitepassword.info", "_blank", "noopener,noreferrer");
 }
 // Domain Name
 // There are no actions the user can take on the domain name field,
