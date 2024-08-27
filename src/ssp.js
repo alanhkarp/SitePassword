@@ -328,6 +328,7 @@ get("sitename").onfocus = function (e) {
         if (!value || normalize(site).startsWith(value)) set.add(site);
     })
     let list = sortList([... set]);
+    if (logging) console.log("popup sitename onfocus", database.sites, list);
     setupdatalist(this, list);
 }
 get("sitename").onkeyup = async function () {
@@ -337,7 +338,7 @@ get("sitename").onkeyup = async function () {
     if (resolvers.sitenamekeyupResolver) resolvers.sitenamekeyupResolver("sitenamekeyupPromise");
 }
 get("sitename").onblur = async function (e) {
-    let d = getPhishingDomain(bg.settings.sitename)
+    let d = getPhishingDomain(get("sitename").value);
     if (d) {
         openPhishingWarning(d);
         await Promise.resolve(); // To match the await of the other branch
@@ -721,6 +722,7 @@ get("nicknamebutton").onclick = function () {
     get("sitename").disabled = false;
     get("username").disabled = false;
     get("sitename").focus();
+    clearDatalist("sitenames");
     msgoff("phishing");
     autoclose = false;
     saveSettings = false;
