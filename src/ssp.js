@@ -542,7 +542,13 @@ get("clearclipboard").onclick = async function() {
         if (logging) console.log("popup clear clipboard failed", e);
     }
 }
-document.oncopy = get("clearclipboard").onclick;
+document.oncopy = function (e) {
+    if (e.target.id !== "sitepw") {
+        get("clearclipboard").onclick;
+    } else {
+        get("sitepwmenucopy").click();
+    }
+}
 get("settingssave").onclick = hidesettings;
 get("providesitepw").onclick = async function () {
     if (!(get("sitename").value && get("username").value)) return;
