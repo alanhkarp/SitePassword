@@ -135,7 +135,7 @@ function startup(sendPageInfo) {
                     fillfield(cpi.idfield, userid);
                     sitepw = request.p;
                     if (cpi.pwfields[0] && cpi.pwfields[0].value) {
-                        fillfield(cpi.pwfields[0], sitepw);
+                        if (cpi.pwfields.length === 1 && cpi.pwfields[0].value !== sitepw) cpi.pwfields[0].value = "";
                         setPlaceholder(userid);
                         sendResponse("update");
                     }
