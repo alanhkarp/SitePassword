@@ -1203,8 +1203,14 @@ async function exportPasswords() {
 }
 async function sitedataHTML() {
     var domainnames = Object.keys(database.domains);
-    let workingdoc = document.implementation.createHTMLDocument("SitePassword Data");
-    let doc = sitedataHTMLDoc(workingdoc, domainnames);
+    // So domains that share a site name appear in order
+    var sorted = Object.keys(domainnames).sort(function (x, y) {
+        if (x.toLowerCase() < y.toLowerCase()) return -1;
+        if (x.toLowerCase() == y.toLowerCase()) return 0;
+        return 1;
+    });
+   let workingdoc = document.implementation.createHTMLDocument("SitePassword Data");
+    let doc = sitedataHTMLDoc(workingdoc, sorted);
     sortdocbycol(1);
     let html = new XMLSerializer().serializeToString(doc);
     let blob = new Blob([html], {type: "text/html"});
