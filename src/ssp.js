@@ -1202,14 +1202,10 @@ async function exportPasswords() {
     }
 }
 async function sitedataHTML() {
-    var domainnames = database.domains
-    var sorted = Object.keys(domainnames).sort(function (x, y) {
-        if (x.toLowerCase() < y.toLowerCase()) return -1;
-        if (x.toLowerCase() == y.toLowerCase()) return 0;
-        return 1;
-    });
+    var domainnames = Object.keys(database.domains);
     let workingdoc = document.implementation.createHTMLDocument("SitePassword Data");
-    let doc = sitedataHTMLDoc(workingdoc, sorted);
+    let doc = sitedataHTMLDoc(workingdoc, domainnames);
+    sortdocbycol(1);
     let html = new XMLSerializer().serializeToString(doc);
     let blob = new Blob([html], {type: "text/html"});
     let url = URL.createObjectURL(blob);
@@ -1217,6 +1213,22 @@ async function sitedataHTML() {
     $data.href = url;
     $data.click();
     return;
+    function sortdocbycol(col) {
+        let body = doc.childNodes[1];
+        let table = body.childNodes[0];
+        let rows = Array.from(table.childNodes).slice(2);
+        rows.sort((a, b) => {
+            let aValue = a.childNodes[col].innerText;
+            let bValue = b.childNodes[col].innerText;
+            return aValue.localeCompare(bValue);
+        });
+        rows.forEach((row, index) => {
+            if (index % 2 === 1) {
+                row.style.backgroundColor = "rgb(136, 204, 255, 30%)";
+            }
+            table.appendChild(row);
+        });
+    }
 }
 function sitedataHTMLDoc(doc, sorted) {
     let header = doc.getElementsByTagName("head")[0];
@@ -1230,12 +1242,11 @@ function sitedataHTMLDoc(doc, sorted) {
     let table = addElement(body, "table");
     tableCaption(table);
     let headings = ["Domain Name", "Site Name", "User Name", "Password Length", "Start with Letter",
-        "Allow Lower", "Min Lower", "Allow Upper", "Min Upper", "Allow Numbers", "Min Numbers",
+        "Allow Lower", "Min Lower", "Allow Upper", "Min Upper", "Allow Digits", "Min Digits",
         "Allow Specials", "Min Specials", "Specials", "Code for User Provided Passwords"];
     tableHeader(table, headings);
     for (let i = 0; i < sorted.length; i++) {
         let tr = addElement(table, "tr");
-        if (i % 2) tr.style.backgroundColor = "rgb(136, 204, 255, 30%)";
         addRow(tr, sorted[i]);
     }
     return doc.documentElement;
