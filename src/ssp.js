@@ -1208,10 +1208,12 @@ async function sitedataHTML() {
         if (x.toLowerCase() < y.toLowerCase()) return -1;
         if (x.toLowerCase() == y.toLowerCase()) return 0;
         return 1;
+    }).map(function(key) {
+        return domainnames[key];
     });
-   let workingdoc = document.implementation.createHTMLDocument("SitePassword Data");
+    let workingdoc = document.implementation.createHTMLDocument("SitePassword Data");
     let doc = sitedataHTMLDoc(workingdoc, sorted);
-    sortdocbycol(1);
+    sortdocbycol(0);
     let html = new XMLSerializer().serializeToString(doc);
     let blob = new Blob([html], {type: "text/html"});
     let url = URL.createObjectURL(blob);
@@ -1224,8 +1226,8 @@ async function sitedataHTML() {
         let table = body.childNodes[0];
         let rows = Array.from(table.childNodes).slice(2);
         rows.sort((a, b) => {
-            let aValue = a.childNodes[col].innerText;
-            let bValue = b.childNodes[col].innerText;
+            let aValue = col === 0 ? patchDomain(a.childNodes[col].innerText).split(".")[1] : a.childNodes[col].innerText;
+            let bValue = col === 0 ? patchDomain(b.childNodes[col].innerText).split(".")[1] : b.childNodes[col].innerText;
             return aValue.localeCompare(bValue);
         });
         rows.forEach((row, index) => {
@@ -1234,7 +1236,14 @@ async function sitedataHTML() {
             }
             table.appendChild(row);
         });
-    }
+        function patchDomain(domain) {
+            if (domain.split(".").length === 2) {
+                return "x." + domain;
+            } else {
+                return domain;
+            }
+        }
+        }
 }
 function sitedataHTMLDoc(doc, sorted) {
     let header = doc.getElementsByTagName("head")[0];
