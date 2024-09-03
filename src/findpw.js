@@ -119,6 +119,7 @@ function startup(sendPageInfo) {
             if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
             readyForClick = request.readyForClick;
             let mutations = mutationObserver.takeRecords();
+            cpi = countpwid();
             switch (request.cmd) {
                 case "fillfields":
                     userid = request.u;
@@ -141,14 +142,12 @@ function startup(sendPageInfo) {
                     }
                     break;
                 case "count":
-                    cpi = countpwid();
                     let pwdomain = document.location.hostname;
                     let count = cpi.pwfields.length;
                     if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", count, pwdomain);
                     sendResponse({ "pwcount": count, "pwdomain": pwdomain });
                     break;
                 case "clear":
-                    cpi = countpwid();
                     if (cpi.idfield) cpi.idfield.value = "";
                     for (let i = 0; i < cpi.pwfields.length; i++) {
                         cpi.pwfields[i].value = "";
@@ -276,7 +275,7 @@ async function setPlaceholder(userid) {
             cpi.pwfields[i].title = placeholder;
             clearLabel(cpi.pwfields[i]);
         }
-    } else {
+    } else if (cpi.pwfields.length > 0) {
         if (elementHasPlaceholder(cpi.pwfields[0])) savedPlaceholder = cpi.pwfields[0].placeholder || "";
         if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", clickSitePassword);
         cpi.pwfields[0].placeholder = clickSitePassword;
