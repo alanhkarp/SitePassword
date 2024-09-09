@@ -5,7 +5,7 @@ var hideLabels = true; // Make it easy to turn off label hiding
 var clickSitePassword = "Click SitePassword";
 var clickSitePasswordTitle = "Click on the SitePassword icon"
 var clickHere = "Click here for password";
-var pasteHere = "Paste your password here";
+var pasteHere = "Dbl-click or paste your password";
 var sitepw = "";
 var userid = "";
 var maxidfields = 0;
@@ -267,7 +267,10 @@ async function setPlaceholder(userid) {
             cpi.pwfields[0].placeholder = savedPlaceholder || placeholder;
         }
         for (let i = 0; i < cpi.pwfields.length; i++) {
-            if (cpi.pwfields.length > 1 ) cpi.pwfields[i].onclick = null;
+            if (cpi.pwfields.length > 1 ) {
+                cpi.pwfields[i].onclick = null;
+                cpi.pwfields[i].ondblclick = pwfieldOnclick;
+            }
             if (!hasPlaceholder || cpi.pwfields.length === 1) {
                 cpi.pwfields[i].placeholder = placeholder;
                 cpi.pwfields[i].ariaPlaceholder = placeholder;
@@ -292,7 +295,7 @@ async function setPlaceholder(userid) {
 }
 async function pwfieldOnclick(event) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
-    if (!(this.placeholder === clickSitePassword || this.placeholder === pasteHere)) {
+    if (!(this.placeholder === clickSitePassword)) {
         await wakeup();
         let response = await chrome.runtime.sendMessage({ "cmd": "getPassword" });
         if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw pwfieldOnclick error", chrome.runtime.lastError);
