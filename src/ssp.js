@@ -467,26 +467,15 @@ get("usernamemenuforget").onclick = function (e) {
 get("usernamemenucopy").onclick = async function(e) {
     let username = get("username").value;
     if (!username) return;
-    let pwonclipboard = false;
-    try {
-        if (get("logopw").style.display !== "none") pwonclipboard = true;
-        console.log("popup username clipboard write", get("logopw").style.display, pwonclipboard);
-        get("clearclipboard").click();
-        await navigator.clipboard.writeText(username);
+    get("clearclipboard").click();
+    navigator.clipboard.writeText(username).then(() => {
         if (logging) console.log("popup wrote to clipboard", username);
         copied("username");
-    } catch(e) {
-        console.log("popup username clipboard write failed", e, pwonclipboard);
-        if (pwonclipboard) {
-            get("logopw").style.display = "block";
-            get("logo").style.display = "none";
-            await chrome.action.setIcon({"path": "images/icon128pw.png"});
-            await chrome.storage.local.set({"onClipboard": true});
-            notcopied("username");
-        }
+    }).catch((e) => {
+        notcopied("username");
         if (logging) console.log("popup username clipboard write failed", e);
-        menuOff("username", e);
-    }  
+    });
+    menuOff("username", e); 
 }
 get("usernamemenuhelp").onclick = function (e) {
     helpItemOn("username");
@@ -536,8 +525,7 @@ get("sitepw3bluedots").onmouseout = function (e) {
 get("sitepwmenucopy").onclick = async function(e) {
     let sitepw = get("sitepw").value;
     if (!sitepw) return;
-    try {
-        await navigator.clipboard.writeText(sitepw);
+    navigator.clipboard.writeText(sitepw).then(async () => {
         if (logging) console.log("popup wrote to clipboard", sitepw);
         get("logopw").title = "A site password may be on the clipboard."
         get("logo").style.display = "none";
@@ -546,10 +534,10 @@ get("sitepwmenucopy").onclick = async function(e) {
         await chrome.action.setIcon({"path": "images/icon128pw.png"});
         await chrome.storage.local.set({"onClipboard": true})
         copied("sitepw");
-    } catch(e) {
+    }).catch((e) => {
         notcopied("sitepw");
         if (logging) console.log("popup sitepw clipboard write failed", e);
-    }
+    });
     menuOff("sitepw", e);
 }
 get("sitepwmenuhelp").onclick = function (e) {
