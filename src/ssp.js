@@ -250,6 +250,12 @@ get("domainname3bluedots").onmouseover = function (e) {
     menuOn("domainname", e);
 }
 get("domainname3bluedots").onclick = get("domainname3bluedots").onmouseover;
+get("domainname3bluedots").onmouseout = function (e) {
+    const relatedTarget = e.relatedTarget || e.toElement;
+    if (!relatedTarget || !get("domainnamemenu").contains(relatedTarget)) {
+        menuOff("domainname", e);
+    }
+};
 get("domainnamemenuforget").onclick = function (e) {
     msgon("forget");
     let toforget = normalize(get("domainname").value);
@@ -297,6 +303,12 @@ get("superpw3bluedots").onmouseover = function (e) {
     menuOn("superpw", e);      
 }
 get("superpw3bluedots").onclick = get("superpw3bluedots").onmouseover;
+get("superpw3bluedots").onmouseout = function (e) {
+    const relatedTarget = e.relatedTarget || e.toElement;
+    if (!relatedTarget || !get("superpwmenu").contains(relatedTarget)) {
+        menuOff("superpw", e);
+    }
+};
 get("superpwmenushow").onclick = function(e) {
     if (!get("superpw").value) return;
     get("superpw").type = "text";
@@ -368,6 +380,12 @@ get("sitename3bluedots").onmouseover = function (e) {
     menuOn("sitename", e);
 }
 get("sitename3bluedots").onclick = get("sitename3bluedots").onmouseover;
+get("sitename3bluedots").onmouseout = function (e) {
+    const relatedTarget = e.relatedTarget || e.toElement;
+    if (!relatedTarget || !get("sitenamemenu").contains(relatedTarget)) {
+        menuOff("sitename", e);
+    }
+};
 get("sitenamemenu").onmouseleave = function (e) {
     menuOff("sitename", e);
 }
@@ -427,6 +445,12 @@ get("username3bluedots").onmouseover = function (e) {
     menuOn("username", e);
 }
 get("username3bluedots").onclick = get("username3bluedots").onmouseover;
+get("username3bluedots").onmouseout = function (e) {
+    const relatedTarget = e.relatedTarget || e.toElement;
+    if (!relatedTarget || !get("usernamemenu").contains(relatedTarget)) {
+        menuOff("username", e);
+    }
+};
 get("usernamemenuforget").onclick = function (e) {
     msgon("forget");
     let toforget = normalize(get("username").value);
@@ -488,6 +512,12 @@ get("sitepw3bluedots").onmouseover = function (e) {
     menuOn("sitepw", e);
 }
 get("sitepw3bluedots").onclick = get("sitepw3bluedots").onmouseover;
+get("sitepw3bluedots").onmouseout = function (e) {
+    const relatedTarget = e.relatedTarget || e.toElement;
+    if (!relatedTarget || !get("sitepwmenu").contains(relatedTarget)) {
+        menuOff("sitepw", e);
+    }
+};
 get("sitepwmenucopy").onclick = async function(e) {
     let sitepw = get("sitepw").value;
     if (!sitepw) return;
