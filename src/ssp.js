@@ -6,7 +6,7 @@ import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xor
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
 const debugMode = false;
-const logging = false;
+let logging = false;
 if (logging) console.log("Version 3.0");
 let activetab;
 let domainname;
@@ -257,6 +257,7 @@ get("domainname3bluedots").onmouseout = function (e) {
     }
 };
 get("domainnamemenuforget").onclick = function (e) {
+    if (!get("domainname").value) return;
     msgon("forget");
     let toforget = normalize(get("domainname").value);
     addForgetItem(toforget);
@@ -390,6 +391,7 @@ get("sitenamemenu").onmouseleave = function (e) {
     menuOff("sitename", e);
 }
 get("sitenamemenuforget").onclick = function (e) {
+    if (!get("sitename").value) return;
     msgon("forget");
     let toforget = normalize(get("sitename").value);
     for (let domain in database.domains) {
@@ -452,6 +454,7 @@ get("username3bluedots").onmouseout = function (e) {
     }
 };
 get("usernamemenuforget").onclick = function (e) {
+    if (!get("username").value) return;
     msgon("forget");
     let toforget = normalize(get("username").value);
     for (let domain in database.domains) {
@@ -464,14 +467,26 @@ get("usernamemenuforget").onclick = function (e) {
 get("usernamemenucopy").onclick = async function(e) {
     let username = get("username").value;
     if (!username) return;
-    navigator.clipboard.writeText(username).then(() => {
+    let pwonclipboard = false;
+    try {
+        if (get("logopw").style.display !== "none") pwonclipboard = true;
+        console.log("popup username clipboard write", get("logopw").style.display, pwonclipboard);
+        get("clearclipboard").click();
+        await navigator.clipboard.writeText(username);
         if (logging) console.log("popup wrote to clipboard", username);
         copied("username");
-        get("clearclipboard").click();
-    }).catch((e) => {
+    } catch(e) {
+        console.log("popup username clipboard write failed", e, pwonclipboard);
+        if (pwonclipboard) {
+            get("logopw").style.display = "block";
+            get("logo").style.display = "none";
+            await chrome.action.setIcon({"path": "images/icon128pw.png"});
+            await chrome.storage.local.set({"onClipboard": true});
+            notcopied("username");
+        }
         if (logging) console.log("popup username clipboard write failed", e);
-    });
-    menuOff("username", e);
+        menuOff("username", e);
+    }  
 }
 get("usernamemenuhelp").onclick = function (e) {
     helpItemOn("username");
@@ -532,6 +547,7 @@ get("sitepwmenucopy").onclick = async function(e) {
         await chrome.storage.local.set({"onClipboard": true})
         copied("sitepw");
     } catch(e) {
+        notcopied("sitepw");
         if (logging) console.log("popup sitepw clipboard write failed", e);
     }
     menuOff("sitepw", e);
@@ -796,13 +812,21 @@ document.addEventListener('DOMContentLoaded', function () {
             chrome.tabs.create({url: this.href});
         });
     });
-});// Generic code for menus
+});
+// Generic code for menus
 function copied(which) {
     get(which + "copied").classList.remove("nodisplay");
     setTimeout(() => {
         get(which + "copied").classList.add("nodisplay");
     }, 900);
 }
+function notcopied(which) {
+    get(which + "notcopied").classList.remove("nodisplay");
+    setTimeout(() => {
+        get(which + "notcopied").classList.add("nodisplay");
+    }, 2000);
+}
+
 function menuOn(which, e) {
     allMenusOff();
     get(which + "3bluedots").style.display = "none";
