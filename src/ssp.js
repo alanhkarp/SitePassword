@@ -1355,6 +1355,10 @@ function addForgetItem(domainname) {
     let $item = document.createElement("li");
     $item.innerText = domainname;
     $list.appendChild($item);
+    let array = Array.from($list.children);
+    array.sort((a, b) => a.innerText.localeCompare(b.innerText));
+    while ($list.firstChild) $list.removeChild($list.firstChild);
+    array.forEach(item => $list.appendChild(item));
 }
 function get(element) {
     return document.getElementById(element);
