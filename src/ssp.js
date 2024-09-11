@@ -242,7 +242,7 @@ get("domainnamemenu").onmouseleave = function (e) {
 }
 get("domainname3bluedots").onmouseover = function (e) {
     let domainname = get("domainname").value;
-    if (domainname && database.domains[domainname]) {
+    if (domainname) {
         get("domainnamemenuforget").style.opacity = "1";
     } else {
         get("domainnamemenuforget").style.opacity = "0.5";
@@ -260,7 +260,8 @@ get("domainnamemenuforget").onclick = function (e) {
     if (!get("domainname").value) return;
     msgon("forget");
     let toforget = normalize(get("domainname").value);
-    addForgetItem(toforget);
+        addForgetItem(normalize(get("domainname").value));
+orgetItem(toforget);
 }
 get("domainnamemenuhelp").onclick = function (e) {
     helpItemOn("domainname");
@@ -392,6 +393,7 @@ get("sitenamemenu").onmouseleave = function (e) {
 }
 get("sitenamemenuforget").onclick = function (e) {
     if (!get("sitename").value) return;
+    addForgetItem(normalize(get("domainname").value));
     msgon("forget");
     let toforget = normalize(get("sitename").value);
     for (let domain in database.domains) {
@@ -455,6 +457,7 @@ get("username3bluedots").onmouseout = function (e) {
 };
 get("usernamemenuforget").onclick = function (e) {
     if (!get("username").value) return;
+    addForgetItem(normalize(get("domainname").value));
     msgon("forget");
     let toforget = normalize(get("username").value);
     for (let domain in database.domains) {
@@ -1347,6 +1350,8 @@ function getPhishingDomain(sitename) {
 }
 function addForgetItem(domainname) {
     let $list = get("toforgetlist");
+    let inlist = Array.from($list.children).some(child => child.innerText === domainname);
+    if (inlist) return;
     let $item = document.createElement("li");
     $item.innerText = domainname;
     $list.appendChild($item);
