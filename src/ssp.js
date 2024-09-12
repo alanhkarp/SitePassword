@@ -1215,18 +1215,84 @@ async function sitedataHTML() {
     let url = URL.createObjectURL(blob);
     const $data = get("data");
     $data.href = url;
-    $data.click();
+    try {
+        $data.click();
+    } catch (e) {
+        console.log("popup sitedataHTML error", e);
+        alert("SitePassword data could not be exported.");
+    }
     return;
 }
 function sitedataHTMLDoc(doc, sorted) {
     let header = doc.getElementsByTagName("head")[0];
-    let title = doc.createElement("title");
-    title.innerText = "SitePassword Data";
-    header.appendChild(title);
-    let style = doc.createElement("style");
-    header.appendChild(style);
+    let scriptContent = `
+        function sortTable(which, ascending = true) {
+            let table = document.getElementsByTagName("table")[0];
+            console.log("sortTable", table, which, ascending);
+            const dirModifier = ascending ? 1 : -1;
+            const tBody = table.tBodies[0];
+            const rows = Array.from(tBody.querySelectorAll("tr"));
+            let headerRow = rows.shift(); // Skip the header row
+
+            // Sort each row
+            const sortedRows = rows.sort(function (a, b) {
+                const aColText = a.querySelector(\`td:nth-child(\${which + 1})\`).innerHTML.trim().toLowerCase();
+                const bColText = b.querySelector(\`td:nth-child(\${which + 1})\`).innerHTML.trim().toLowerCase();
+                console.log("sortTable", aColText, bColText);
+                return aColText > bColText ? (1 * dirModifier) : (-1 * dirModifier);
+            });
+
+            // Remove all existing TRs from the table
+            while (tBody.firstChild) {
+                tBody.removeChild(tBody.firstChild);
+            }
+
+            // Re-add the newly sorted rows
+            tBody.append(headerRow);
+            sortedRows.forEach((row, index) => {
+                if (index % 2 === 0) {
+                    row.style.backgroundColor = "rgb(136, 204, 255, 30%)";
+                } else {
+                    row.style.backgroundColor = "";
+                }
+                tBody.appendChild(row);
+            });
+
+        }
+        function sortBySite() { 
+            console.log("sortBySite");
+            let sortBySite = document.getElementById("sortButtonSite");
+            sortBySite.style.display = "none";
+            let sortByDomain = document.getElementById("sortButtonDomain");
+            sortByDomain.style.display = "block";
+            sortTable(1);
+        }
+        function sortByDomain() { 
+            let sortBySite = document.getElementById("sortButtonDomain");
+            sortBySite.style.display = "none";
+            let sortByDomain = document.getElementById("sortButtonSite");
+            sortByDomain.style.display = "block";
+            window.location.reload();
+        }
+    `;
+    let script = doc.createElement("script");
+    script.type = "text/javascript";
+    script.src = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(scriptContent);
+    header.appendChild(script);
+    let style = addElement(header, "style");
     style.innerText = "th {text-align: left;}";
+    style.classList
     let body = doc.getElementsByTagName("body")[0];
+    let sortButtonSite = addElement(body, "button");
+    sortButtonSite.id = "sortButtonSite";
+    sortButtonSite.innerText = "Sort by site name";
+    sortButtonSite.setAttribute("onclick", "sortBySite()");
+    sortButtonSite.style.display = "block";
+    let sortButtonDomain = addElement(body, "button");
+    sortButtonDomain.id = "sortButtonDomain";
+    sortButtonDomain.innerText = "Sort by domain name";
+    sortButtonDomain.setAttribute("onclick", "sortByDomain()");
+    sortButtonDomain.style.display = "none";
     let table = addElement(body, "table");
     tableCaption(table);
     let headings = ["Domain Name", "Site Name", "User Name", "Password Length", "Start with Letter",
@@ -1235,7 +1301,7 @@ function sitedataHTMLDoc(doc, sorted) {
     tableHeader(table, headings);
     for (let i = 0; i < sorted.length; i++) {
         let tr = addElement(table, "tr");
-        if (i % 2) tr.style.backgroundColor = "rgb(136, 204, 255, 30%)";
+        if (i % 2 === 0) tr.style.backgroundColor = "rgb(136, 204, 255, 30%)";
         addRow(tr, sorted[i]);
     }
     return doc.documentElement;
