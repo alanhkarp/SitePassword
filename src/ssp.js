@@ -179,16 +179,19 @@ get("mainpanel").onmouseleave = async function (event) {
     let phishingDomain = getPhishingDomain(get("sitename").value);
     if (logging) console.log("popup mainpanel mouseleave", phishingDomain);
     if (phishingDomain && saveSettings) openPhishingWarning(phishingDomain);
-    // Don't persist phishing sites if user mouses out of popup. 
-    let element = document.elementFromPoint(event.pageX, event.pageY);
+    if (testMode) {
+        event.pageX = 0;
+        event.pageY = 0;
+    }
+    let element = event.pageX ? document.elementFromPoint(event.pageX, event.pageY) : null;
     if (logging) console.log("popup onmouseleave", phishingDomain, exporting, element);
+    // Don't persist if: phishing sites, exporting, the mouse is in the panel, or if event triggered by closing a help or instruction panel
     if (phishingDomain || exporting || element || !saveSettings) {
         if (logging) console.log("popup phishing mouseleave resolve mouseleaveResolver", phishingDomain, resolvers);
         saveSettings = true;
         if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
         return;
     }
-    saveSettings = true;
     get("superpw").focus();
     if (logging) console.log("popup mainpanel mouseleave update bg", document.activeElement.id, bg);
     // window.onblur fires before I even have a chance to see the window, much less focus it
@@ -260,8 +263,7 @@ get("domainnamemenuforget").onclick = function (e) {
     if (!get("domainname").value) return;
     msgon("forget");
     let toforget = normalize(get("domainname").value);
-        addForgetItem(normalize(get("domainname").value));
-orgetItem(toforget);
+    addForgetItem(toforget);
 }
 get("domainnamemenuhelp").onclick = function (e) {
     helpItemOn("domainname");

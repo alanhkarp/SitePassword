@@ -162,6 +162,12 @@ async function setup() {
                 if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
                 sendResponse(p);
                 await Promise.resolve(); // To match the awaits in the other branches
+            } else if (request.cmd == "getUsername") {
+                let domainname = getdomainname(sender.origin || sender.url);
+                if (testMode) domainname = "alantheguru.alanhkarp.com";
+                bg.settings = bgsettings(domainname);
+                sendResponse(bg.settings.username);
+                await Promise.resolve(); // To match the awaits in the other branches
             } else if (request.cmd === "reset") {
                 // Used for testing, can't be in test.js becuase it needs to set local variables 
                 defaultSettings = clone(baseDefaultSettings);

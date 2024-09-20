@@ -6,6 +6,7 @@ var clickSitePassword = "Click SitePassword";
 var clickSitePasswordTitle = "Click on the SitePassword icon"
 var clickHere = "Click here for password";
 var pasteHere = "Dbl-click or paste your password";
+var insertUsername = "Dbl-click for user name";
 var sitepw = "";
 var userid = "";
 var maxidfields = 0;
@@ -89,9 +90,6 @@ function startup(sendPageInfo) {
     // There is no reason to declare new mutation observers and listeners on every call.
     if (!mutationObserver) {
         cpi = countpwid();
-        for (let i = 0; i < cpi.pwfields.length; i++) {
-            // cpi.pwfields[i].placeholder = "Testing " + i; // To test not overwriting existing placeholders
-        }
         // Firefox doesn't preserve sessionStorage across restarts of
         // the service worker.  Sending periodic messages keeps it
         // alive, but there's no point to keep sending if there's an error.
@@ -317,14 +315,20 @@ function countpwid() {
     var pwfields = [];
     var found = -1;
     var c = 0;
+    let firstVisible = null;
     let inputs = document.getElementsByTagName("input");
     if (cpi.pwfields.length === 0 && inputs.length === 0) inputs = searchShadowRoots(document.body);
     for (var i = 0; i < inputs.length; i++) {
-        if (inputs[i].type && (inputs[i].type.toLowerCase() == "password")) {
-            visible = !isHidden(inputs[i]);
+        visible = !isHidden(inputs[i]);
+        // I'm only interested in visible text and email fields, 
+        // and splitting the condition makes it easier to debug
+        if (visible && inputs[i].type === "text" || inputs[i].type === "email") {
+            if (!firstVisible) firstVisible = inputs[i];
+        }
+        if (visible && inputs[i].type && (inputs[i].type.toLowerCase() === "password")) {
             if (logging) console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
             let pattern = inputs[i].getAttribute("pattern"); // Pattern [0-9]* is a PIN or SSN
-            if (visible && pattern !== "[0-9]*") {
+            if (pattern !== "[0-9]*") {
                 if (self.origin === null || self.origin === "null") {
                     inputs[i].type = "text";
                     inputs[i].value = "Untrusted: Input disabled.";
@@ -370,6 +374,30 @@ function countpwid() {
                 break;
             }
         }
+    }
+    // Allow dbl click to fill in the username
+    // I already fill in the username if there are any password fields
+    if (c === 0 && firstVisible) {
+        let usernameField = firstVisible;
+        // Using await spreads async all over the place
+        wakeup().then(() => {
+            chrome.runtime.sendMessage({ "cmd": "getUsername" }).then((response) => {
+                if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw getUsername error", chrome.runtime.lastError);
+                if (response) {
+                    if (!usernameField.placeholder) usernameField.placeholder = insertUsername;
+                    if (!usernameField.title) usernameField.title = insertUsername;
+                    usernameField.ondblclick = async function () {
+                        let mutations = mutationObserver.takeRecords();
+                        fillfield(this, response);
+                        let myMutations = mutationObserver.takeRecords();
+                        if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, response, myMutations);
+                        handleMutations(mutations);        
+                    }
+                } else {
+                    usernameField.ondblclick = null;
+                }
+            });
+        });
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, useridfield);
     return { pwfields: pwfields, idfield: useridfield };
