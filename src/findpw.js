@@ -315,7 +315,7 @@ function countpwid() {
     var pwfields = [];
     var found = -1;
     var c = 0;
-    let firstVisible = null;
+    let maybeUsernameField = null;
     let inputs = document.getElementsByTagName("input");
     if (cpi.pwfields.length === 0 && inputs.length === 0) inputs = searchShadowRoots(document.body);
     for (var i = 0; i < inputs.length; i++) {
@@ -323,7 +323,7 @@ function countpwid() {
         // I'm only interested in visible text and email fields, 
         // and splitting the condition makes it easier to debug
         if (visible && inputs[i].type === "text" || inputs[i].type === "email") {
-            if (!firstVisible) firstVisible = inputs[i];
+            if (!maybeUsernameField) maybeUsernameField = inputs[i];
         }
         if (visible && inputs[i].type && (inputs[i].type.toLowerCase() === "password")) {
             if (logging) console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
@@ -377,16 +377,15 @@ function countpwid() {
     }
     // Allow dbl click to fill in the username
     // I already fill in the username if there are any password fields
-    if (c === 0 && firstVisible) {
-        let usernameField = firstVisible;
+    if (c === 0 && maybeUsernameField && !maybeUsernameField.value) {
         // Using await spreads async all over the place
         wakeup().then(() => {
             chrome.runtime.sendMessage({ "cmd": "getUsername" }).then((response) => {
                 if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw getUsername error", chrome.runtime.lastError);
                 if (response) {
-                    if (!usernameField.placeholder) usernameField.placeholder = insertUsername;
-                    if (!usernameField.title) usernameField.title = insertUsername;
-                    usernameField.ondblclick = async function () {
+                    if (!maybeUsernameField.placeholder) maybeUsernameField.placeholder = insertUsername;
+                    if (!maybeUsernameField.title) maybeUsernameField.title = insertUsername;
+                    maybeUsernameField.ondblclick = async function () {
                         let mutations = mutationObserver.takeRecords();
                         fillfield(this, response);
                         let myMutations = mutationObserver.takeRecords();
@@ -394,7 +393,7 @@ function countpwid() {
                         handleMutations(mutations);        
                     }
                 } else {
-                    usernameField.ondblclick = null;
+                    maybeUsernameField.ondblclick = null;
                 }
             });
         });
