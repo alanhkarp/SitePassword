@@ -377,7 +377,7 @@ function countpwid() {
     }
     // Allow dbl click to fill in the username
     // I already fill in the username if there are any password fields
-    if (c === 0 && maybeUsernameFields.length == 1 && !maybeUsernameFields[0].value) {
+    if (c === 0 && maybeUsernameFields.length === 1 && !maybeUsernameFields[0].value) {
         let maybeUsernameField = maybeUsernameFields[0];
         // Using await spreads async all over the place
         wakeup().then(() => {
