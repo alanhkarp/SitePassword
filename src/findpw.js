@@ -315,7 +315,7 @@ function countpwid() {
     var pwfields = [];
     var found = -1;
     var c = 0;
-    let maybeUsernameField = null;
+    let maybeUsernameFields = [];
     let inputs = document.getElementsByTagName("input");
     if (cpi.pwfields.length === 0 && inputs.length === 0) inputs = searchShadowRoots(document.body);
     for (var i = 0; i < inputs.length; i++) {
@@ -323,7 +323,7 @@ function countpwid() {
         // I'm only interested in visible text and email fields, 
         // and splitting the condition makes it easier to debug
         if (visible && inputs[i].type === "text" || inputs[i].type === "email") {
-            if (!maybeUsernameField) maybeUsernameField = inputs[i];
+            maybeUsernameFields.push(inputs[i]);
         }
         if (visible && inputs[i].type && (inputs[i].type.toLowerCase() === "password")) {
             if (logging) console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
@@ -377,7 +377,8 @@ function countpwid() {
     }
     // Allow dbl click to fill in the username
     // I already fill in the username if there are any password fields
-    if (c === 0 && maybeUsernameField && !maybeUsernameField.value) {
+    if (c === 0 && maybeUsernameFields.length == 1 && !maybeUsernameFields[0].value) {
+        let maybeUsernameField = maybeUsernameFields[0];
         // Using await spreads async all over the place
         wakeup().then(() => {
             chrome.runtime.sendMessage({ "cmd": "getUsername" }).then((response) => {
