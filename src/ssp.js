@@ -1404,7 +1404,7 @@ function sitedataHTMLDoc(doc, sorted) {
 function getPhishingDomain(sitename) {
     let domainname = get("domainname").value;
     // Can't be phishing if the domain name is in the database with this sitename.
-    if (!sitename || database.domains[domainname] === sitename) return "";
+    if (!sitename || database.domains[domainname] === normalize(sitename)) return "";
     var domains = Object.keys(database.domains);
     var phishing = "";
     domains.forEach(function (d) {
