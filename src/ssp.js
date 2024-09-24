@@ -21,6 +21,16 @@ let saveSettings = true;
 let warningMsg = false;
 let bg = bgDefault;
 
+// Some actions prevent the settings being saved when mousing out of the main panel.
+// However, some tests want to save the settings.  This function sets certain values
+// to what they have when the popup is opened.
+export function restoreForTesting() {
+    autoclose = true;
+    exporting = false;
+    saveSettings = true;
+    warningMsg = false;
+}
+
 // I can't get the debugger statement to work unless I wait at least 1 second on Chrome
 let timeout = debugMode ? 1000 : 0;     
 setTimeout(() => {
@@ -179,11 +189,7 @@ get("mainpanel").onmouseleave = async function (event) {
     let phishingDomain = getPhishingDomain(get("sitename").value);
     if (logging) console.log("popup mainpanel mouseleave", phishingDomain);
     if (phishingDomain && saveSettings) openPhishingWarning(phishingDomain);
-    if (testMode) {
-        event.pageX = 0;
-        event.pageY = 0;
-    }
-    let element = event.pageX ? document.elementFromPoint(event.pageX, event.pageY) : null;
+    let element = event.pageX ? document.elementFromPoint(event.pageX || 0, event.pageY || 0) : null;
     if (logging) console.log("popup onmouseleave", phishingDomain, exporting, element);
     // Don't persist if: phishing sites, exporting, the mouse is in the panel, or if event triggered by closing a help or instruction panel
     if (phishingDomain || exporting || element || !saveSettings) {
@@ -770,7 +776,6 @@ get("nicknamebutton").onclick = function () {
     clearDatalist("sitenames");
     msgoff("phishing");
     autoclose = false;
-    saveSettings = false;
 }
 get("forgetbutton").onclick = async function () {
     if (logging) console.log("popup forgetbutton");
@@ -867,7 +872,6 @@ function helpAllOff() {
     for (let help of helps) {
         helpItemOff(help.id); 
     } 
-    saveSettings = false;
 }
 function hidesitepw() {
     if (logging) console.log("popup checking hidesitepw", get("hidesitepw").checked, database.hidesitepw);

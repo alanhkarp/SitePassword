@@ -4,7 +4,7 @@
 // see an alert "Starting tests".  Click OK and check the console for results.
 import { defaultSettings, isSafari } from "./bg.js";
 import { normalize } from "./generate.js";
-import { getsettings } from "./ssp.js";
+import { getsettings, restoreForTesting } from "./ssp.js";
 
 export let resolvers = {};
 
@@ -30,6 +30,7 @@ export async function runTests() {
     // Fields needed for tests
     const $mainpanel = get("mainpanel");
     const $settingsshow = get("settingsshow");
+    const $settingssave = get("settingssave");
     const $domainname = get("domainname");
     const $sitename = get("sitename");
     const $username = get("username");
@@ -185,6 +186,7 @@ export async function runTests() {
         // Does same account option work?
         await phishingSetup();
         await triggerEvent("click", $warningbutton, "warningbuttonResolver");
+        restoreForTesting();
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         if (loggingPhishing) console.log("testPhishing same account", $phishing.style.display, $sitename.value, $username.value);
         test = $phishing.style.display === "none";
@@ -289,6 +291,7 @@ export async function runTests() {
         await triggerEvent("click", $settingsshow, "settingsshowResolver");
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
         await triggerEvent("click", $clearsuperpw, "clearsuperpwResolver");
+        restoreForTesting();
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         let response = await chrome.runtime.sendMessage({"cmd": "getPassword"});
         await triggerEvent("blur", $domainname, "domainnameblurResolver");
@@ -362,6 +365,7 @@ export async function runTests() {
         if (chrome.runtime.lastError) console.error("resetState reset message error", chrome.runtime.lastError);
         if (loggingReset) console.log("resetState reset message response", response);
         clearForm();
+        restoreForTesting();
         await getsettings("");
         if (loggingClear) console.log("resetState done", $pwlength.value);
     }
@@ -431,7 +435,9 @@ export async function runTests() {
         if (loggingPhishing) console.log("phishingSetup state reset");
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
         if (loggingPhishing) console.log("phishingSetup mouseleave", $domainname.value, $sitename.value, $username.value);
+        if (isSafari) await chrome.storage.sync.clear();
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        restoreForTesting();
         // if (loggingPhishing) console.log("phishingSetup domainname blur", $sitename.value, $username.value);
         // await triggerEvent("blur", $domainname, "domainnameblurResolver");
         if (loggingPhishing) console.log("phishingSetup allantheguru click", $domainname.value, $sitename.value, $username.value);
