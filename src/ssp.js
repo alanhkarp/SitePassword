@@ -208,7 +208,7 @@ get("mainpanel").onmouseleave = async function (event) {
         bg.settings.username = get("username").value || "";
         if (bg.settings.sitename) {
             database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
-            database.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
+            database.domains[bg.settings.domainname] = bg.settings.sitename;
         }
         let sitename = get("sitename").value;
         changePlaceholder();
@@ -1404,11 +1404,11 @@ function sitedataHTMLDoc(doc, sorted) {
 function getPhishingDomain(sitename) {
     let domainname = get("domainname").value;
     // Can't be phishing if the domain name is in the database with this sitename.
-    if (!sitename || database.domains[domainname] === normalize(sitename)) return "";
+    if (!sitename || normalize(database.domains[domainname]) === normalize(sitename)) return "";
     var domains = Object.keys(database.domains);
     var phishing = "";
     domains.forEach(function (d) {
-        if ((database.domains[d] == normalize(sitename)) &&
+        if ((normalize(database.domains[d]) == normalize(sitename)) &&
             (d != domainname)) {
             let settings = database.sites[normalize(sitename)];
             if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
