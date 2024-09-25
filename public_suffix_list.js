@@ -1,4 +1,4 @@
-const publicSuffixList = [
+const publicSuffixSet = new Set([
 "ac",
 "com.ac",
 "edu.ac",
@@ -8714,6 +8714,8 @@ const publicSuffixList = [
 "plc.ng",
 "ie.ua",
 "hostyhosting.io",
+"hf.space",
+"static.hf.space",
 "hypernode.io",
 "iobb.net",
 "co.cz",
@@ -9480,6 +9482,7 @@ const publicSuffixList = [
 "myshopblocks.com",
 "myshopify.com",
 "shopitsite.com",
+"shopware.shop",
 "shopware.store",
 "mo-siemens.io",
 "1kapp.com",
@@ -9653,8 +9656,8 @@ const publicSuffixList = [
 "lima.zone",
 "*.transurl.be",
 "*.transurl.eu",
-"*.transurl.nl",
 "site.transip.me",
+"*.transurl.nl",
 "tuxfamily.org",
 "dd-dns.de",
 "dray-dns.de",
@@ -9775,4 +9778,4 @@ const publicSuffixList = [
 "basicserver.io",
 "virtualserver.io",
 "enterprisecloud.nu",
-];
+]);
