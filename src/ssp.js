@@ -188,7 +188,7 @@ get("mainpanel").onmouseleave = async function (event) {
     } 
     let phishingDomain = getPhishingDomain(get("sitename").value);
     if (logging) console.log("popup mainpanel mouseleave", phishingDomain);
-    if (phishingDomain && saveSettings) openPhishingWarning(phishingDomain);
+    if (saveSettings) openPhishingWarning(phishingDomain);
     let element = event.pageX ? document.elementFromPoint(event.pageX || 0, event.pageY || 0) : null;
     if (logging) console.log("popup onmouseleave", phishingDomain, exporting, element);
     // Don't persist if: phishing sites, exporting, the mouse is in the panel, or if event triggered by closing a help or instruction panel
@@ -219,6 +219,7 @@ get("mainpanel").onmouseleave = async function (event) {
                 "sitename": sitename,
                 "clearsuperpw": get("clearsuperpw").checked,
                 "hidesitepw": get("hidesitepw").checked,
+                "safeSuffixes": database.safeSuffixes || [],
                 "bg": bg,
             });
         if (chrome.runtime.lastError) console.log("popup mouseleave lastError", chrome.runtime.lastError);
@@ -361,10 +362,7 @@ get("sitename").onkeyup = async function () {
 }
 get("sitename").onblur = async function (e) {
     let d = getPhishingDomain(get("sitename").value);
-    if (d) {
-        openPhishingWarning(d);
-        await Promise.resolve(); // To match the await of the other branch
-    } else {
+    if (!openPhishingWarning(d)) {
         msgoff("phishing");
         get("superpw").disabled = false;
         get("username").disabled = false
@@ -763,6 +761,9 @@ get("warningbutton").onclick = async function () {
     bg.settings.sitename = get("sitename").value;
     if (testMode) bg.settings.domainname = get("domainname").value;
     database.domains[get("domainname").value] = bg.settings.sitename;
+    let d = getPhishingDomain(sitename);
+    let suffix = commonSuffix(d, bg.settings.domainname);
+    if (suffix) database.safeSuffixes.push(suffix);
     get("username").value = bg.settings.username;
     await ask2generate();
     autoclose = false;
@@ -905,16 +906,37 @@ function hideInstructions() {
     get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
 }
 // End of generic code for menus: other utility functions
+
 function openPhishingWarning(d) {
+    if (!d) return false;
+    let domainname = get("domainname").value;
+    let suffix = commonSuffix(domainname, d);
+    if (database.safeSuffixes.includes(suffix)) return false;
+    database.safeSuffixes.push(suffix);
     get("phishingtext0").innerText = get("sitename").value;
     get("phishingtext1").innerText = d;
-    get("phishingtext2").innerText = get("domainname").value;
+    get("phishingtext2").innerText = domainname;
     msgon("phishing");
     hidesettings();
     get("superpw").disabled = true;
     get("sitename").disabled = true;
     get("username").disabled = true;
     get("sitepw").value = "";
+    return true;
+}
+function commonSuffix(domain1, domain2) {
+    const parts1 = domain1.split('.').reverse();
+    const parts2 = domain2.split('.').reverse();
+    const length = Math.min(parts1.length, parts2.length);
+    let suffix = [];
+    for (let i = 0; i < length; i++) {
+        if (parts1[i] === parts2[i]) {
+            suffix.push(parts1[i]);
+        } else {
+            break;
+        }
+    }
+    return suffix.reverse().join('.');
 }
 function sortList(list) {
     return list.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
