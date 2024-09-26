@@ -3,7 +3,7 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 // Set to true to run the tests in test.js then reload the extension.
 // Tests must be run on a page that has the content script, specifically,
 // http or https whether it has a password field or not.
-const testMode = false;
+const testMode = true;
 const testLogging = false;
 const debugMode = false;
 const logging = false;
@@ -50,7 +50,7 @@ const baseDefaultSettings = {
 };
 export let defaultSettings =  clone(baseDefaultSettings);
 export let bgDefault = {superpw: "", settings: defaultSettings};
-export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
+export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "safeSuffixes": new Set(), "domains": {}, "sites": {} };
 var database = clone(databaseDefault);
 var bg = clone(bgDefault);
 
@@ -364,6 +364,7 @@ async function persistMetadata(sendResponse) {
     delete common.domains;
     delete common.sites;
     common.defaultSettings = clone(defaultSettings);
+    if (!common.safeSuffixes) common.safeSuffixes = new Set();
     if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
     let url = "ssp://" + stringifySettings(common);
@@ -381,7 +382,7 @@ async function persistMetadata(sendResponse) {
         }
     } else {
         let existing = parseSettings(commonSettings[0].url);
-        if (sameSettings(common, existing) === false) {
+        if (!sameSettings(common, existing)) {
             if (isSafari) {
                 bkmksSafari[commonSettingsTitle].url = url;
                 await chrome.storage.sync.set(bkmksSafari);

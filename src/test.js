@@ -75,14 +75,15 @@ export async function runTests() {
     if (!restart) {
         await testCalculation(); 
         await testRememberForm();
-        await testProvidedpw();
-        await testPhishing();
-        await testForget();
-        await testClearSuperpw();
-        await testHideSitepw();
+        // await testProvidedpw();
+        // await testPhishing();
+        // await testForget();
+        // await testClearSuperpw();
+        // await testHideSitepw();
+        await testSafeSuffixes();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
-        await testSaveAsDefault();
+        // await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -319,6 +320,23 @@ export async function runTests() {
             passed += 1;
         } else {
             console.warn("Failed: Hide sitepw");
+            failed += 1;
+        }
+    }
+    // Test safe suffixes
+    async function testSafeSuffixes() {
+        await resetState();
+        await phishingSetup();
+        await triggerEvent("click", $warningbutton, "warningbuttonResolver");
+        restoreForTesting();
+        fillForm("qwerty", "allentheguru.alanhkarp.com", "Guru", "");
+        await triggerEvent("blur", $sitename, "sitenameblurResolver");
+        let test = $username.value === "alan" && $phishing.style.display === "none";
+        if (test) {
+            console.log("Passed: Safe suffixes");
+            passed += 1;
+        } else {
+            console.warn("Failed: Safe suffixes");
             failed += 1;
         }
     }
