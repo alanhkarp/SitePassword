@@ -25,6 +25,7 @@ if (logging) {
                          loggingForget = loggingPhishing = loggingProvide = 
                          loggingReset = loggingTrigger = loggingWrapHandler = true;
 }
+const expectedpw = "c3EEm4qRFSfk";
 
 export async function runTests() {
     // Fields needed for tests
@@ -75,15 +76,15 @@ export async function runTests() {
     if (!restart) {
         await testCalculation(); 
         await testRememberForm();
-        // await testProvidedpw();
-        // await testPhishing();
-        // await testForget();
-        // await testClearSuperpw();
-        // await testHideSitepw();
+        await testProvidedpw();
+        await testPhishing();
+        await testForget();
+        await testClearSuperpw();
+        await testHideSitepw();
         await testSafeSuffixes();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
-        // await testSaveAsDefault();
+        await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -96,15 +97,14 @@ export async function runTests() {
     async function testCalculation() {
         await resetState();
         if (loggingCalculation) console.log("testCalculation state reset", $pwlength.value);
-        const expected = "c3EEm4qRFSfk";
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
         if (loggingCalculation) console.log("testCalculation form filled", $sitename.value, $username.value);
         let actual = $sitepw.value;
-        if (actual === expected) {
+        if (actual === expectedpw) {
             console.log("Passed: Calculation");
             passed += 1;
         } else {
-            let inputs = {"expected": expected, "actual": actual, "superpw": $superpw.value, "sitename": $sitename.value, "username": $username.value};
+            let inputs = {"expectedpw": expectedpw, "actual": actual, "superpw": $superpw.value, "sitename": $sitename.value, "username": $username.value};
             console.warn("Failed: Calculation", inputs);
             failed += 1;
         }
@@ -287,7 +287,6 @@ export async function runTests() {
     }
     // Test clear superpw
     async function testClearSuperpw() {
-        const expected = "c3EEm4qRFSfk";
         await resetState();
         await triggerEvent("click", $settingsshow, "settingsshowResolver");
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
@@ -297,7 +296,7 @@ export async function runTests() {
         let response = await chrome.runtime.sendMessage({"cmd": "getPassword"});
         await triggerEvent("blur", $domainname, "domainnameblurResolver");
         if (loggingClearsuperpw || logging) console.log("testClearSuperpw getPassword", response, foo);
-        let test = $superpw.value === "" && response === expected;
+        let test = $superpw.value === "" && response === expectedpw;
         if (test) {
             console.log("Passed: Clear superpw");
             passed += 1;
@@ -325,18 +324,55 @@ export async function runTests() {
     }
     // Test safe suffixes
     async function testSafeSuffixes() {
-        await resetState();
+        // Test that you don't get a phishing warning with a safe suffix
         await phishingSetup();
-        await triggerEvent("click", $warningbutton, "warningbuttonResolver");
         restoreForTesting();
-        fillForm("qwerty", "allentheguru.alanhkarp.com", "Guru", "");
+        await triggerEvent("click", $warningbutton, "warningbuttonResolver");
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        restoreForTesting();
+        await fillForm("qwerty", "allentheguru.alanhkarp.com", "Guru", "");
         await triggerEvent("blur", $sitename, "sitenameblurResolver");
-        let test = $username.value === "alan" && $phishing.style.display === "none";
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        let test = $username.value === "alan" && $sitepw.value === expectedpw && $phishing.style.display === "none";
         if (test) {
             console.log("Passed: Safe suffixes");
             passed += 1;
         } else {
             console.warn("Failed: Safe suffixes");
+            failed += 1;
+        }
+        // Test that you do get a phishing warning with an unsafe suffix
+        await phishingSetup();
+        restoreForTesting();
+        await triggerEvent("click", $warningbutton, "warningbuttonResolver");
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        await fillForm("qwerty", "alantheguru.allanhkarp.com", "Guru", "");
+        await triggerEvent("blur", $sitename, "sitenameblurResolver");
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        test = $username.value === "" && $phishing.style.display === "block";
+        if (test) {
+            console.log("Passed: Unsafe suffixes");
+            passed += 1;
+        } else {
+            console.warn("Failed: Unsafe suffixes");
+            failed += 1;
+        }
+        // Test that you don't get an entry in the public suffix list in the safe suffixes
+        restoreForTesting();
+        await phishingSetup();
+        await fillForm("qwerty", "alantheguru.allanhkarp.com", "Guru", "");
+        await triggerEvent("blur", $sitename, "sitenameblurResolver");
+        await triggerEvent("click", $warningbutton, "warningbuttonResolver");
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        restoreForTesting();
+        await fillForm("qwerty", "alantheguru.alenhkarp.com", "Guru", "");
+        await triggerEvent("blur", $sitename, "sitenameblurResolver");
+        test = $phishing.style.display === "block";
+        if (test) {
+            console.log("Passed: Not in safe suffixes");
+            passed += 1;
+        } else {
+            console.warn("Failed: Not in safe suffixes");
             failed += 1;
         }
     }

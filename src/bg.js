@@ -3,7 +3,7 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 // Set to true to run the tests in test.js then reload the extension.
 // Tests must be run on a page that has the content script, specifically,
 // http or https whether it has a password field or not.
-const testMode = false;
+const testMode = true;
 const testLogging = false;
 const debugMode = false;
 const logging = false;
@@ -119,9 +119,6 @@ async function setup() {
             sendResponse("awake");
             return true;
         }
-        // Start with a new database in case something changed while the service worker stayed open
-        database = clone(databaseDefault);
-        bg = clone(bgDefault);
         retrieveMetadata(sendResponse, request, async () => {
             if (logging) console.log("bg listener back from retrieveMetadata", database);
             superpw = "";
@@ -440,8 +437,6 @@ async function persistMetadata(sendResponse) {
     }
 }
 async function retrieveMetadata(sendResponse, request, callback) {
-    database = clone(databaseDefault); // Start with an empty database
-    bg = clone(bgDefault); // and settings
     if (logging) console.log("bg find SSP bookmark folder", request);
     let folders = await getRootFolder(sendResponse);
     if (folders.length === 1) {

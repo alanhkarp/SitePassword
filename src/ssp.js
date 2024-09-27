@@ -2,6 +2,7 @@
 import { bgDefault, config, isSafari, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
+import { publicSuffixSet } from "./public_suffix_list.js";
 
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
@@ -911,8 +912,12 @@ function openPhishingWarning(d) {
     if (!d) return false;
     let domainname = get("domainname").value;
     let suffix = commonSuffix(domainname, d);
-    if (database.safeSuffixes.includes(suffix)) return false;
-    database.safeSuffixes.push(suffix);
+    if (suffix && database.safeSuffixes.includes(suffix)) {
+        bg.settings = clone(database.sites[getlowertrim("sitename")]);
+        get("username").value = bg.settings.username;
+        return false
+    };
+    if (suffix && !database.safeSuffixes.includes(suffix)) database.safeSuffixes.push(suffix);
     get("phishingtext0").innerText = get("sitename").value;
     get("phishingtext1").innerText = d;
     get("phishingtext2").innerText = domainname;
@@ -936,7 +941,9 @@ function commonSuffix(domain1, domain2) {
             break;
         }
     }
-    return suffix.reverse().join('.');
+    let common = suffix.reverse().join('.');
+    if (publicSuffixSet.has(common)) return "";
+    return common;
 }
 function sortList(list) {
     return list.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));

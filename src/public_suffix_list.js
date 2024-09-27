@@ -1,4 +1,4 @@
-const publicSuffixSet = new Set([
+export const publicSuffixSet = new Set([
 "ac",
 "com.ac",
 "edu.ac",
