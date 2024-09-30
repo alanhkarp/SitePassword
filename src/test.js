@@ -52,7 +52,7 @@ export async function runTests() {
     const $startwithletter = get("startwithletter");
     const $specials = get("specials");
     const $makedefaultbutton = get("makedefaultbutton");
-    const $warningbutton = get("warningbutton");
+    const $sameacctbutton = get("sameacctbutton");
     const $forgetbutton = get("forgetbutton");
     const $domainname3bluedots = get("domainname3bluedots");
     const $domainnamemenuforget = get("domainnamemenuforget");
@@ -186,7 +186,7 @@ export async function runTests() {
         }
         // Does same account option work?
         await phishingSetup();
-        await triggerEvent("click", $warningbutton, "warningbuttonResolver");
+        await triggerEvent("click", $sameacctbutton, "sameacctbuttonResolver");
         restoreForTesting();
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         if (loggingPhishing) console.log("testPhishing same account", $phishing.style.display, $sitename.value, $username.value);
@@ -233,7 +233,7 @@ export async function runTests() {
         }
         // See if database still has site name if it should
         await phishingSetup();
-        await triggerEvent("click", $warningbutton, "warningbuttonResolver"); // Now I have two domain names pointing to the same site name
+        await triggerEvent("click", $sameacctbutton, "sameacctbuttonResolver"); // Now I have two domain names pointing to the same site name
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         await forgetDomainname();
         await fillForm("qwerty", "allantheguru.alanhkarp.com", "", "");
@@ -248,7 +248,7 @@ export async function runTests() {
         }
         // See if forget by site name works
         await phishingSetup();
-        await triggerEvent("click", $warningbutton, "warningbuttonResolver"); // Now I have two domain names pointing to the same site name
+        await triggerEvent("click", $sameacctbutton, "sameacctbuttonResolver"); // Now I have two domain names pointing to the same site name
         await forgetSitename();
         await triggerEvent("click", $forgetbutton, "forgetclickResolver");
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
@@ -266,7 +266,7 @@ export async function runTests() {
         }
         // See if forget by username works
         await phishingSetup();
-        await triggerEvent("click", $warningbutton, "warningbuttonResolver"); // Now I have two domain names pointing to the same site name
+        await triggerEvent("click", $sameacctbutton, "sameacctbuttonResolver"); // Now I have two domain names pointing to the same site name
         if (loggingForget) console.log("testForget forget by username");
         await forgetUsername();
         await triggerEvent("click", $forgetbutton, "forgetclickResolver");
@@ -326,10 +326,9 @@ export async function runTests() {
     async function testSafeSuffixes() {
         // Test that you don't get a phishing warning with a safe suffix
         await phishingSetup();
+        await triggerEvent("click", $sameacctbutton, "sameacctbuttonResolver");
         restoreForTesting();
-        await triggerEvent("click", $warningbutton, "warningbuttonResolver");
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
-        restoreForTesting();
         await fillForm("qwerty", "allentheguru.alanhkarp.com", "Guru", "");
         await triggerEvent("blur", $sitename, "sitenameblurResolver");
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
@@ -342,14 +341,12 @@ export async function runTests() {
             failed += 1;
         }
         // Test that you do get a phishing warning with an unsafe suffix
-        await phishingSetup();
-        restoreForTesting();
-        await triggerEvent("click", $warningbutton, "warningbuttonResolver");
-        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         await fillForm("qwerty", "alantheguru.allanhkarp.com", "Guru", "");
         await triggerEvent("blur", $sitename, "sitenameblurResolver");
+        restoreForTesting();
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         test = $username.value === "" && $phishing.style.display === "block";
+        get("phishing").style.display = "none";
         if (test) {
             console.log("Passed: Unsafe suffixes");
             passed += 1;
@@ -359,15 +356,14 @@ export async function runTests() {
         }
         // Test that you don't get an entry in the public suffix list in the safe suffixes
         restoreForTesting();
-        await phishingSetup();
         await fillForm("qwerty", "alantheguru.allanhkarp.com", "Guru", "");
-        await triggerEvent("blur", $sitename, "sitenameblurResolver");
-        await triggerEvent("click", $warningbutton, "warningbuttonResolver");
-        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        await triggerEvent("click", $sameacctbutton, "sameacctbuttonResolver");
         restoreForTesting();
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         await fillForm("qwerty", "alantheguru.alenhkarp.com", "Guru", "");
         await triggerEvent("blur", $sitename, "sitenameblurResolver");
         test = $phishing.style.display === "block";
+        get("phishing").style.display = "none";
         if (test) {
             console.log("Passed: Not in safe suffixes");
             passed += 1;

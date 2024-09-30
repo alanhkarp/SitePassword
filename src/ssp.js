@@ -369,6 +369,9 @@ get("sitename").onblur = async function (e) {
         get("username").disabled = false
         await handleblur("sitename", "sitename");
         await changePlaceholder();
+        bg.settings = clone(database.sites[normalize(get("sitename").value)]);
+        get("username").value = bg.settings.username || "";
+        await ask2generate();
     }
     clearDatalist("sitenames");
     if (resolvers.sitenameblurResolver) resolvers.sitenameblurResolver("sitenameblurPromise");
@@ -752,23 +755,24 @@ get("cancelwarning").onclick = async function () {
     }
     if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver("cancelwarningPromise");
 }
-get("warningbutton").onclick = async function () {
+get("sameacctbutton").onclick = async function () {
     get("superpw").disabled = false;
     get("username").disabled = false;
     get("sitename").disabled = false;
     msgoff("phishing");
-    var sitename = getlowertrim("sitename");
+    let domainname = get("domainname").value;
+    let sitename = getlowertrim("sitename");
     bg.settings = clone(database.sites[sitename]);
     bg.settings.sitename = get("sitename").value;
-    if (testMode) bg.settings.domainname = get("domainname").value;
-    database.domains[get("domainname").value] = bg.settings.sitename;
-    let d = getPhishingDomain(sitename);
+    if (testMode) bg.settings.domainname = domainname;
+    let d = getPhishingDomain(bg.settings.sitename);
     let suffix = commonSuffix(d, bg.settings.domainname);
-    if (suffix) database.safeSuffixes.push(suffix);
+    if (suffix && !database.safeSuffixes.includes(suffix)) database.safeSuffixes.push(suffix);
+    database.domains[domainname] = normalize(bg.settings.sitename);
     get("username").value = bg.settings.username;
-    await ask2generate();
+    await ask2generate();    
     autoclose = false;
-    if (resolvers.warningbuttonResolver) resolvers.warningbuttonResolver("warningbuttonPromise");
+    if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
 }
 get("nicknamebutton").onclick = function () {
     get("superpw").disabled = false;
@@ -907,17 +911,37 @@ function hideInstructions() {
     get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
 }
 // End of generic code for menus: other utility functions
-
+function getPhishingDomain(sitename) {
+    let domainname = get("domainname").value;
+    // Can't be phishing if the domain name is in the database with this sitename,
+    // or if it has a safe suffix
+    let domains = Object.keys(database.domains);
+    let phishing = "";
+    domains.forEach(function (d) {
+        if (normalize(database.domains[d]) === normalize(sitename)) {
+            if (d !== domainname) {
+                let settings = database.sites[normalize(sitename)];
+                if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
+                    if (!phishing) phishing = settings.pwdomainname;
+                } else {
+                    if (!phishing) phishing = d;
+                }
+            } else {
+                phishing = "";
+                return
+            }
+        }
+    });
+    let suffix = commonSuffix(phishing, domainname);
+    if (!database.safeSuffixes.includes(suffix)) {
+        return phishing
+    } else {
+        return "";
+    }
+}
 function openPhishingWarning(d) {
     if (!d) return false;
     let domainname = get("domainname").value;
-    let suffix = commonSuffix(domainname, d);
-    if (suffix && database.safeSuffixes.includes(suffix)) {
-        bg.settings = clone(database.sites[getlowertrim("sitename")]);
-        get("username").value = bg.settings.username;
-        return false
-    };
-    if (suffix && !database.safeSuffixes.includes(suffix)) database.safeSuffixes.push(suffix);
     get("phishingtext0").innerText = get("sitename").value;
     get("phishingtext1").innerText = d;
     get("phishingtext2").innerText = domainname;
@@ -1429,24 +1453,6 @@ function sitedataHTMLDoc(doc, sorted) {
             s.allowspecial, s.minspecial, s.specials, s.xor || ""];
         addColumnEntries(tr, entries);
     }
-}
-function getPhishingDomain(sitename) {
-    let domainname = get("domainname").value;
-    // Can't be phishing if the domain name is in the database with this sitename.
-    if (!sitename || database.domains[domainname] === normalize(sitename)) return "";
-    var domains = Object.keys(database.domains);
-    var phishing = "";
-    domains.forEach(function (d) {
-        if ((normalize(database.domains[d]) === normalize(sitename)) && (d !== domainname)) {
-            let settings = database.sites[normalize(sitename)];
-            if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
-                phishing = settings.pwdomainname;
-            } else {
-                phishing = d;
-            }
-        }
-    });
-    return phishing;
 }
 function addForgetItem(domainname) {
     let $list = get("toforgetlist");
