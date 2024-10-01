@@ -922,9 +922,9 @@ function getPhishingDomain(sitename) {
             if (d !== domainname) {
                 let settings = database.sites[normalize(sitename)];
                 if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
-                    if (!phishing) phishing = settings.pwdomainname;
+                    if (!phishing || settings.pwdomainname.length < phishing.length) phishing = settings.pwdomainname;
                 } else {
-                    if (!phishing) phishing = d;
+                    if (!phishing || d.length < phishing.length) phishing = d;
                 }
             } else {
                 phishing = "";

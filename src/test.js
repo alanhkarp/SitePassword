@@ -329,7 +329,7 @@ export async function runTests() {
         await triggerEvent("click", $sameacctbutton, "sameacctbuttonResolver");
         restoreForTesting();
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
-        await fillForm("qwerty", "allentheguru.alanhkarp.com", "Guru", "");
+        await fillForm("qwerty", "ahktheguru.alanhkarp.com", "Guru", "");
         await triggerEvent("blur", $sitename, "sitenameblurResolver");
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         let test = $username.value === "alan" && $sitepw.value === expectedpw && $phishing.style.display === "none";
