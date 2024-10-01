@@ -2,6 +2,7 @@
 import { bgDefault, config, isSafari, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
+import { publicSuffixSet } from "./public_suffix_list.js";
 
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
@@ -188,7 +189,7 @@ get("mainpanel").onmouseleave = async function (event) {
     } 
     let phishingDomain = getPhishingDomain(get("sitename").value);
     if (logging) console.log("popup mainpanel mouseleave", phishingDomain);
-    if (phishingDomain && saveSettings) openPhishingWarning(phishingDomain);
+    if (saveSettings) openPhishingWarning(phishingDomain);
     let element = event.pageX ? document.elementFromPoint(event.pageX || 0, event.pageY || 0) : null;
     if (logging) console.log("popup onmouseleave", phishingDomain, exporting, element);
     // Don't persist if: phishing sites, exporting, the mouse is in the panel, or if event triggered by closing a help or instruction panel
@@ -219,6 +220,7 @@ get("mainpanel").onmouseleave = async function (event) {
                 "sitename": sitename,
                 "clearsuperpw": get("clearsuperpw").checked,
                 "hidesitepw": get("hidesitepw").checked,
+                "safeSuffixes": database.safeSuffixes || [],
                 "bg": bg,
             });
         if (chrome.runtime.lastError) console.log("popup mouseleave lastError", chrome.runtime.lastError);
@@ -361,15 +363,15 @@ get("sitename").onkeyup = async function () {
 }
 get("sitename").onblur = async function (e) {
     let d = getPhishingDomain(get("sitename").value);
-    if (d) {
-        openPhishingWarning(d);
-        await Promise.resolve(); // To match the await of the other branch
-    } else {
+    if (!openPhishingWarning(d)) {
         msgoff("phishing");
         get("superpw").disabled = false;
         get("username").disabled = false
         await handleblur("sitename", "sitename");
         await changePlaceholder();
+        bg.settings = clone(database.sites[normalize(get("sitename").value)]);
+        get("username").value = bg.settings.username || "";
+        await ask2generate();
     }
     clearDatalist("sitenames");
     if (resolvers.sitenameblurResolver) resolvers.sitenameblurResolver("sitenameblurPromise");
@@ -753,20 +755,24 @@ get("cancelwarning").onclick = async function () {
     }
     if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver("cancelwarningPromise");
 }
-get("warningbutton").onclick = async function () {
+get("sameacctbutton").onclick = async function () {
     get("superpw").disabled = false;
     get("username").disabled = false;
     get("sitename").disabled = false;
     msgoff("phishing");
-    var sitename = getlowertrim("sitename");
+    let domainname = get("domainname").value;
+    let sitename = getlowertrim("sitename");
     bg.settings = clone(database.sites[sitename]);
     bg.settings.sitename = get("sitename").value;
-    if (testMode) bg.settings.domainname = get("domainname").value;
-    database.domains[get("domainname").value] = bg.settings.sitename;
+    if (testMode) bg.settings.domainname = domainname;
+    let d = getPhishingDomain(bg.settings.sitename);
+    let suffix = commonSuffix(d, bg.settings.domainname);
+    if (suffix && !database.safeSuffixes.includes(suffix)) database.safeSuffixes.push(suffix);
+    database.domains[domainname] = normalize(bg.settings.sitename);
     get("username").value = bg.settings.username;
-    await ask2generate();
+    await ask2generate();    
     autoclose = false;
-    if (resolvers.warningbuttonResolver) resolvers.warningbuttonResolver("warningbuttonPromise");
+    if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
 }
 get("nicknamebutton").onclick = function () {
     get("superpw").disabled = false;
@@ -905,16 +911,63 @@ function hideInstructions() {
     get("main").style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
 }
 // End of generic code for menus: other utility functions
+function getPhishingDomain(sitename) {
+    let domainname = get("domainname").value;
+    // Can't be phishing if the domain name is in the database with this sitename,
+    // or if it has a safe suffix
+    let domains = Object.keys(database.domains);
+    let phishing = "";
+    domains.forEach(function (d) {
+        if (normalize(database.domains[d]) === normalize(sitename)) {
+            if (d !== domainname) {
+                let settings = database.sites[normalize(sitename)];
+                if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
+                    if (!phishing || settings.pwdomainname.length < phishing.length) phishing = settings.pwdomainname;
+                } else {
+                    if (!phishing || d.length < phishing.length) phishing = d;
+                }
+            } else {
+                phishing = "";
+                return
+            }
+        }
+    });
+    let suffix = commonSuffix(phishing, domainname);
+    if (!database.safeSuffixes.includes(suffix)) {
+        return phishing
+    } else {
+        return "";
+    }
+}
 function openPhishingWarning(d) {
+    if (!d) return false;
+    let domainname = get("domainname").value;
     get("phishingtext0").innerText = get("sitename").value;
     get("phishingtext1").innerText = d;
-    get("phishingtext2").innerText = get("domainname").value;
+    get("phishingtext2").innerText = domainname;
     msgon("phishing");
     hidesettings();
     get("superpw").disabled = true;
     get("sitename").disabled = true;
     get("username").disabled = true;
     get("sitepw").value = "";
+    return true;
+}
+function commonSuffix(domain1, domain2) {
+    const parts1 = domain1.split('.').reverse();
+    const parts2 = domain2.split('.').reverse();
+    const length = Math.min(parts1.length, parts2.length);
+    let suffix = [];
+    for (let i = 0; i < length; i++) {
+        if (parts1[i] === parts2[i]) {
+            suffix.push(parts1[i]);
+        } else {
+            break;
+        }
+    }
+    let common = suffix.reverse().join('.');
+    if (publicSuffixSet.has(common)) return "";
+    return common;
 }
 function sortList(list) {
     return list.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
@@ -1400,25 +1453,6 @@ function sitedataHTMLDoc(doc, sorted) {
             s.allowspecial, s.minspecial, s.specials, s.xor || ""];
         addColumnEntries(tr, entries);
     }
-}
-function getPhishingDomain(sitename) {
-    let domainname = get("domainname").value;
-    // Can't be phishing if the domain name is in the database with this sitename.
-    if (!sitename || normalize(database.domains[domainname]) === normalize(sitename)) return "";
-    var domains = Object.keys(database.domains);
-    var phishing = "";
-    domains.forEach(function (d) {
-        if ((normalize(database.domains[d]) == normalize(sitename)) &&
-            (d != domainname)) {
-            let settings = database.sites[normalize(sitename)];
-            if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
-                phishing = settings.pwdomainname;
-            } else {
-                phishing = d;
-            }
-        }
-    });
-    return phishing;
 }
 function addForgetItem(domainname) {
     let $list = get("toforgetlist");
