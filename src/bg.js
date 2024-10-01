@@ -3,7 +3,7 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 // Set to true to run the tests in test.js then reload the extension.
 // Tests must be run on a page that has the content script, specifically,
 // http or https whether it has a password field or not.
-const testMode = true;
+const testMode = false;
 const testLogging = false;
 const debugMode = false;
 const logging = false;
