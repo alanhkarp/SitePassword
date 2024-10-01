@@ -369,8 +369,9 @@ get("sitename").onblur = async function (e) {
         get("username").disabled = false
         await handleblur("sitename", "sitename");
         await changePlaceholder();
-        bg.settings = clone(database.sites[normalize(get("sitename").value)]);
-        get("username").value = bg.settings.username || "";
+        bg.settings = clone(database.sites[normalize(get("sitename").value)] || bgDefault.settings);
+        get("sitename").value = bg.settings.sitename || get("sitename").value;
+        get("username").value = bg.settings.username || get("username").value;
         await ask2generate();
     }
     clearDatalist("sitenames");
@@ -792,7 +793,7 @@ get("forgetbutton").onclick = async function () {
     }
     get("sitename").value = "";
     get("username").value = "";
-    bg = bgDefault;
+    bg = clone(bgDefault);
     if (logging) console.log("popup forgetbutton sending forget", list);
     await wakeup("foregetbutton");
     let response = await chrome.runtime.sendMessage({"cmd": "forget", "toforget": list});
