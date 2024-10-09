@@ -946,6 +946,15 @@ function openPhishingWarning(d) {
     get("phishingtext0").innerText = get("sitename").value;
     get("phishingtext1").innerText = d;
     get("phishingtext2").innerText = domainname;
+    let suffix = commonSuffix(d, domainname);
+    if (suffix) {
+        get("phishingtext3").innerText = suffix;
+        get("samesuffix").style.display = "block";
+        get("differentsuffix").style.display = "none";
+    } else {
+        get("differentsuffix").style.display = "block";
+        get("samesuffix").style.display = "none";
+    }
     msgon("phishing");
     hidesettings();
     get("superpw").disabled = true;
