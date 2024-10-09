@@ -307,6 +307,19 @@ async function persistMetadata(sendResponse) {
     if (found.length > 1) return;
     rootFolder = found[0];
     let sitename = normalize(bg.settings.sitename);
+    let suffixCounts = {};
+    let suffixes = clone(database.safeSuffixes || []);
+    for (let suffix of suffixes) {
+        suffixCounts[suffix] = 0;
+        for (let domain in db.domains) {
+            if (domain.endsWith(suffix)) {
+                suffixCounts[suffix]++;
+            }
+        }
+        if (suffixCounts[suffix] < 2) delete database.safeSuffixes[suffix];
+    }
+    if (logging) console.log("Suffix counts:", suffixCounts);
+
     if (sitename) {
         let oldsitename = db.domains[bg.settings.domainname];
         if ((!oldsitename) || sitename === oldsitename) {

@@ -54,10 +54,20 @@ to change all occurrences if ![](images...) to <img> tags.
             for
           </p>
           <span id="phishingtext1" class="phishing"></span>
-          <br /><br />
+          <br />
           <p>The domain asking for your password is</p>
           <span id="phishingtext2" class="phishing"></span>
-          <br /><br />
+          <br />
+          <p id="samesuffix" style="display: none">
+            Both of these domain names end in
+            <span id="phishingtext3" class="phishing"></span>,
+            which makes it likely that they are for the same account, 
+            but there are exceptions.
+          </p>
+          <p id="differentsuffix" style="display: none">
+            These domain names appear to be from different sites, 
+            which makes it more likely that someone is trying to steal your password.
+          </p>
           <p>
             Check the domain name carefully; it may not be for your account.
             You can check for known bad web pages at 
@@ -89,6 +99,52 @@ to change all occurrences if ![](images...) to <img> tags.
             style="background-color: #1964dc; margin: auto; color:white; width:100%"
             title="This page is for a different account.  I'll select a new nickname.">
             <span class="btn-text" style="color: white">Pick a new nickname</span>
+          </button>
+          <br /><br />
+        </div>
+        <div id="suffix" class="warning nodisplay" style="width: 25em">
+          <img src="images/warning.png" class="icon warning-icon">
+          <span class="warningtext">Warning: New Domain</span>
+          <p>
+            This domain name has the suffix <b>chase.com</b>,
+            <span id="suffixtext0" class="suffix"></span>
+            which is the same as the domain names associated with the 
+            site nickname <b>chase</b>.  Do you want to use the same settings for this domain name?
+            <span id="suffixtext1" class="suffix"></span>
+          </p>
+          <button id="suffixsameacctbutton" type="button"
+            style="background-color: #D51c24; margin: auto; color:white; width:100%"
+            title="This page is for the same account. Use the same settings for it.">
+            <span class="btn-text" style="color: white">This domain name is for the same account.</span>
+          </button>
+          <br /><br />
+          <p>
+            Or is this domain name for a different account?
+          </p>
+          <button id="suffixnicknamebutton" type="button"
+            style="background-color: #1964dc; margin: auto; color:white; width:100%"
+            title="This page is for a different account.  I'll select a new nickname.">
+            <span class="btn-text" style="color: white">Use this nickname for the new account.</span>
+          </button>
+          <br /><br />
+        </div>
+        <div id="sitenamechange" class="warning nodisplay" style="width: 25em">
+          <img src="images/warning.png" class="icon warning-icon">
+          <span class="warningtext">Warning: Site Nickname Changed</span>
+          <p>
+            You have changed your site nickname.  Are you changing your password 
+            for this account, or is this domain name for a different account?
+          </p>  
+          <button id="sitenamesameacctbutton" type="button"
+            style="background-color: #D51c24; margin: auto; color:white; width:100%"
+            title="This page is for the same account. Use the same settings for it.">
+            <span class="btn-text" style="color: white">Update your password for this account.</span>
+          </button>
+          <br />
+          <button id="sitenameseparateacctbutton" type="button"
+            style="background-color: #1964dc; margin: auto; color:white; width:100%"
+            title="This page is for a different account.  I've selected a new nickname.">
+            <span class="btn-text" style="color: white">Create a password for a different account.</span>
           </button>
           <br /><br />
         </div>
