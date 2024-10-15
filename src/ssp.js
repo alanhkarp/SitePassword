@@ -1412,7 +1412,7 @@ function getPhishingDomain(sitename) {
     var domains = Object.keys(database.domains);
     var phishing = "";
     domains.forEach(function (d) {
-        if ((normalize(database.domains[d]) == normalize(sitename)) &&
+        if ((normalize(database.domains[d]) === normalize(sitename)) &&
             (d != domainname)) {
             let settings = database.sites[normalize(sitename)];
             if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
