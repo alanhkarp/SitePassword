@@ -1,4 +1,4 @@
-const publicSuffixSet = new Set([
+export const publicSuffixSet = new Set([
     "ac", "com.ac", "edu.ac", "gov.ac", "net.ac", "mil.ac", "org.ac", "ad", "nom.ad", "ae", "co.ae",
     "net.ae", "org.ae", "sch.ae", "ac.ae", "gov.ae", "mil.ae", "aero", "airline.aero", "airport.aero",
     "accident-investigation.aero", "accident-prevention.aero", "aerobatic.aero", "aeroclub.aero",

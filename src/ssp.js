@@ -30,6 +30,7 @@ export function restoreForTesting() {
     exporting = false;
     saveSettings = true;
     warningMsg = false;
+    messages.forEach(msg => msg.ison = false);
 }
 
 // I can't get the debugger statement to work unless I wait at least 1 second on Chrome
@@ -246,6 +247,7 @@ get("domainname").onblur = async function (e) {
     if (testMode) domainname = get("domainname").value;
     await getsettings(domainname);
     await fill();
+    await ask2generate();
     if (resolvers.domainnameblurResolver) resolvers.domainnameblurResolver("domainnameblurPromise");
 }
 get("domainnamemenu").onmouseleave = function (e) {
@@ -362,26 +364,26 @@ get("sitename").onkeyup = async function () {
     if (resolvers.sitenamekeyupResolver) resolvers.sitenamekeyupResolver("sitenamekeyupPromise");
 }
 get("sitename").onblur = async function (e) {
-    let d = getPhishingDomain(get("sitename").value);
+    let sitename = get("sitename").value;
+    let d = getPhishingDomain(sitename);
     if (!openPhishingWarning(d)) {
         msgoff("phishing");
         get("superpw").disabled = false;
-        get("username").disabled = false
+        get("username").disabled = false;
+        let isChanged = sitename !== bg.settings.sitename;
         await handleblur("sitename", "sitename");
         await changePlaceholder();
-        bg.settings = clone(database.sites[normalize(get("sitename").value)] || bgDefault.settings);
-        get("sitename").value = bg.settings.sitename || get("sitename").value;
-        get("username").value = bg.settings.username || get("username").value;
-        await ask2generate();
+        if (isChanged) {
+            msgon("sitenamechange");
+        } else {
+            bg.settings = clone(database.sites[normalize(sitename)] || bg.settings || bgDefault.settings);
+            get("sitename").value = bg.settings.sitename || sitename;
+            get("username").value = bg.settings.username || get("username").value;
+            await ask2generate();
+        }
     }
     clearDatalist("sitenames");
     if (resolvers.sitenameblurResolver) resolvers.sitenameblurResolver("sitenameblurPromise");
-}
-// Fires when the user selects a site name from the datalist
-get("sitename").onchange = function () {
-    if (logging) console.log("popup when sitename selected from datalist", get("sitename").value);
-    // Changing focus triggers blur on the sitename field opening the phishing warning if needed
-    if (getPhishingDomain(get("sitename").value)) get("superpw").focus();
 }
 get("sitename3bluedots").onmouseover = function (e) {
     let sitename = get("sitename").value;
@@ -745,6 +747,7 @@ get("maininfo").onclick = function () {
     }
     autoclose = false;
 }
+// Phishing buttons
 get("cancelwarning").onclick = async function () {
     msgoff("phishing");
     get("domainname").value = "";
@@ -784,6 +787,7 @@ get("nicknamebutton").onclick = function () {
     msgoff("phishing");
     autoclose = false;
 }
+// Forget buttons
 get("forgetbutton").onclick = async function () {
     if (logging) console.log("popup forgetbutton");
     let list = [];
@@ -807,6 +811,20 @@ get("cancelbutton").onclick = function () {
         get("toforgetlist").removeChild(get("toforgetlist").firstChild);
     }
     msgoff("forget");
+}
+// Site name change buttons
+get("sitenamesameacctbutton").onclick = async function () {
+    msgoff("sitenamechange");
+    bg.settings.sitename = get("sitename").value;
+    get("sitename").onblur(); // I want to do this during the same turn
+    if (resolvers.sitenamesameacctbuttonResolver) resolvers.sitenamesameacctbuttonResolver("sitenamesameacctbuttonPromise");
+}
+get("sitenameseparateacctbutton").onclick = async function () {
+    msgoff("sitenamechange");
+    bg.settings.sitename = get("sitename").value;
+    database.domains[get("domainname").value] = get("sitename").value;
+    database.sites[normalize(get("sitename").value)] = clone(bg.settings);
+    if (resolvers.sitenameseparateacctbuttonResolver) resolvers.sitenameseparateacctbuttonResolver("sitenameseparateacctbuttonPromise");
 }
 // Handle external links in the instructions and help
 document.addEventListener('DOMContentLoaded', function () {
@@ -915,7 +933,7 @@ function hideInstructions() {
 function getPhishingDomain(sitename) {
     let domainname = get("domainname").value;
     // Can't be phishing if the domain name is in the database with this sitename,
-    // or if it has a safe suffix
+    if (!sitename || normalize(database.domains[domainname]) === normalize(sitename)) return "";
     let domains = Object.keys(database.domains);
     let phishing = "";
     domains.forEach(function (d) {
@@ -927,12 +945,10 @@ function getPhishingDomain(sitename) {
                 } else {
                     if (!phishing || d.length < phishing.length) phishing = d;
                 }
-            } else {
-                phishing = "";
-                return
             }
         }
     });
+    // or if it has a safe suffix
     let suffix = commonSuffix(phishing, domainname);
     if (!database.safeSuffixes.includes(suffix)) {
         return phishing
@@ -963,6 +979,7 @@ function openPhishingWarning(d) {
     get("sitepw").value = "";
     return true;
 }
+// Thanks, Copilot
 function commonSuffix(domain1, domain2) {
     const parts1 = domain1.split('.').reverse();
     const parts2 = domain2.split('.').reverse();
@@ -1109,8 +1126,7 @@ async function handleblur(element, field) {
     setMeter("sitepw");
     updateExportButton(); 
     let u = get("username").value || "";
-    let readyForClick = false;
-    if (get("superpw").value && u) readyForClick = true;
+    let readyForClick = get("superpw").value && u;
     await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
     if (chrome.runtime.lastError) console.log("popup handleblur lastError", chrome.runtime.lastError);
 }
@@ -1489,6 +1505,7 @@ function clone(object) {
 var messages = [
     { name: "forget", ison: false, transient: false },
     { name: "phishing", ison: false, transient: false },
+    { name: "sitenamechange", ison: false, transient: false },
     { name: "nopw", ison: false, transient: false },
     { name: "http", ison: false, transient: false },
     { name: "zero", ison: false, transient: false },

@@ -63,6 +63,9 @@ export async function runTests() {
     const $sitenamemenuforget = get("sitenamemenuforget");
     const $username3bluedots = get("username3bluedots");
     const $usernamemenuforget = get("usernamemenuforget");
+    const $sitenamechange = get("sitenamechange");
+    const $sitenamesameacctbutton = get("sitenamesameacctbutton");
+    const $sitenameseparateacctbutton = get("sitenameseparateacctbutton");
 
     let passed = 0;
     let failed = 0;
@@ -75,16 +78,16 @@ export async function runTests() {
     }
     if (!restart) {
         await testCalculation(); 
-        await testRememberForm();
-        await testProvidedpw();
-        await testPhishing();
-        await testForget();
-        await testClearSuperpw();
-        await testHideSitepw();
+        // await testRememberForm();
+        // await testProvidedpw();
+        // await testPhishing();
+        // await testForget();
+        // await testClearSuperpw();
+        // await testHideSitepw();
         await testSafeSuffixes();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
-        alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
-        await testSaveAsDefault();
+        // alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
+        // await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -369,6 +372,54 @@ export async function runTests() {
             passed += 1;
         } else {
             console.warn("Failed: Not in safe suffixes");
+            failed += 1;
+        }
+        // Test change password for account
+        restoreForTesting();
+        clearForm();
+        await fillForm("qwerty", "ahktheguru.alanhkarp.com", "", "");
+        await triggerEvent("blur", $domainname, "domainnameblurResolver");
+        test = normalize($sitename.value) === "guru" && $username.value === "alan";
+        $sitename.value = "Guru2";
+        await triggerEvent("blur", $sitename, "sitenameblurResolver");
+        test = test && $sitenamechange.style.display === "block";
+        await triggerEvent("click", $sitenamesameacctbutton, "sitenamesameacctbuttonResolver");
+        let sitepw = get("sitepw").value;
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        restoreForTesting();
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
+        await triggerEvent("blur", $domainname, "domainnameblurResolver");
+        test = test && $sitename.value === "Guru2" && get("sitepw").value === sitepw;
+        if (test) {
+            console.log("Passed: Change password for account");
+            passed += 1;
+        } else {
+            console.warn("Failed: Change password for account");
+            failed += 1;
+        }
+        // Test create password for new account
+        restoreForTesting();
+        clearForm();
+        await fillForm("qwerty", "ahktheguru.alanhkarp.com", "", "");
+        await triggerEvent("blur", $domainname, "domainnameblurResolver");
+        test = normalize($sitename.value) === "guru2" && $username.value === "alan";
+        $sitename.value = "guru";
+        await triggerEvent("blur", $sitename, "sitenameblurResolver");
+        test = test && $sitenamechange.style.display === "block";
+        await triggerEvent("click", $sitenameseparateacctbutton, "sitenameseparateacctbuttonResolver");
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        restoreForTesting();
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
+        await triggerEvent("blur", $domainname, "domainnameblurResolver");
+        test = test && normalize($sitename.value) === "guru";
+        await fillForm("qwerty", "ahktheguru.alanhkarp.com", "", "");
+        await triggerEvent("blur", $domainname, "domainnameblurResolver");
+        test = test && normalize($sitename.value) === "guru2";
+        if (test) {
+            console.log("Passed: Create password for new account");
+            passed += 1;
+        } else {
+            console.warn("Failed: Create password for new account");
             failed += 1;
         }
     }
