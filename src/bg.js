@@ -3,7 +3,7 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 // Set to true to run the tests in test.js then reload the extension.
 // Tests must be run on a page that has the content script, specifically,
 // http or https whether it has a password field or not.
-const testMode = true;
+const testMode = false;
 const testLogging = false;
 const debugMode = false;
 const logging = false;
@@ -141,6 +141,10 @@ async function setup() {
                 database.clearsuperpw = request.clearsuperpw;
                 database.hidesitepw = request.hidesitepw;
                 database.safeSuffixes = request.safeSuffixes || [];
+                if (!request.sameacct) {
+                    database.domains[normalize(bg.settings.domainname)] = bg.settings.sitename;
+                    database.sites[normalize(bg.settings.sitename)] = clone(bg.settings)
+                }                                
                 superpw = bg.superpw || "";
                 await persistMetadata(sendResponse);
                 sendResponse("persisted");
@@ -285,6 +289,8 @@ async function onContentPageload(request, sender, sendResponse) {
     }
     bg.settings.domainname = domainname;
     bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
+    if (testMode) bg.settings.pwdomainname = domainname;
+    if (bg.settings.pwdomainname === domainname) bg.settings.pwdomainname = "";
     let readyForClick = false;
     if (superpw && bg.settings.sitename && bg.settings.username) {
         readyForClick = true;
@@ -324,8 +330,7 @@ async function persistMetadata(sendResponse) {
         let oldsitename = db.domains[bg.settings.domainname];
         if ((!oldsitename) || sitename === oldsitename) {
             db.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
-            if (!bg.settings.pwdomainname) bg.settings.pwdomainname = bg.settings.domainname;
-            if (bg.settings.pwdomainname !== bg.settings.domainname) {
+            if (bg.settings.pwdomainname && bg.settings.pwdomainname !== bg.settings.domainname) {
                 db.domains[bg.settings.pwdomainname] = normalize(bg.settings.sitename);
             }
             db.sites[sitename] = bg.settings;

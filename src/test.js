@@ -78,16 +78,16 @@ export async function runTests() {
     }
     if (!restart) {
         await testCalculation(); 
-        // await testRememberForm();
-        // await testProvidedpw();
-        // await testPhishing();
-        // await testForget();
-        // await testClearSuperpw();
-        // await testHideSitepw();
+        await testRememberForm();
+        await testProvidedpw();
+        await testPhishing();
+        await testForget();
+        await testClearSuperpw();
+        await testHideSitepw();
         await testSafeSuffixes();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
-        // alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
-        // await testSaveAsDefault();
+        alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
+        await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -409,12 +409,12 @@ export async function runTests() {
         await triggerEvent("click", $sitenameseparateacctbutton, "sitenameseparateacctbuttonResolver");
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         restoreForTesting();
-        await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-        await triggerEvent("blur", $domainname, "domainnameblurResolver");
-        test = test && normalize($sitename.value) === "guru";
-        await fillForm("qwerty", "ahktheguru.alanhkarp.com", "", "");
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "", ""); // Should get the same password as before
         await triggerEvent("blur", $domainname, "domainnameblurResolver");
         test = test && normalize($sitename.value) === "guru2";
+        await fillForm("qwerty", "ahktheguru.alanhkarp.com", "", ""); // Should get a different password
+        await triggerEvent("blur", $domainname, "domainnameblurResolver");
+        test = test && normalize($sitename.value) === "guru";
         if (test) {
             console.log("Passed: Create password for new account");
             passed += 1;

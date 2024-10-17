@@ -104,6 +104,7 @@ let domainname;
 let mainPanelTimer;
 let autoclose = true;
 let exporting = false;
+let sameacct = true;
 const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 const defaultTitle = "SitePassword";
@@ -312,6 +313,7 @@ $mainpanel.onmouseleave = async function (event) {
                 "clearsuperpw": $clearsuperpw.checked,
                 "hidesitepw": $hidesitepw.checked,
                 "safeSuffixes": database.safeSuffixes || [],
+                "sameacct": sameacct,
                 "bg": bg,
             });
         if (chrome.runtime.lastError) console.log("popup mouseleave lastError", chrome.runtime.lastError);
@@ -856,7 +858,6 @@ $sameacctbutton.onclick = async function () {
     let domainname = $domainname.value;
     let sitename = getlowertrim("sitename");
     bg.settings = clone(database.sites[sitename]);
-    bg.settings.sitename = $sitename.value;
     if (testMode) bg.settings.domainname = domainname;
     let d = getPhishingDomain(bg.settings.sitename);
     let suffix = commonSuffix(d, bg.settings.domainname);
@@ -905,14 +906,14 @@ $cancelbutton.onclick = function () {
 $sitenamesameacctbutton.onclick = async function () {
     msgoff("sitenamechange");
     bg.settings.sitename = $sitename.value;
-    $sitename.onblur(); // I want to do this during the same turn
+    sameacct = true;
+    // $sitename.onblur(); // I want to do this during the same turn
     if (resolvers.sitenamesameacctbuttonResolver) resolvers.sitenamesameacctbuttonResolver("sitenamesameacctbuttonPromise");
 }
 $sitenameseparateacctbutton.onclick = async function () {
     msgoff("sitenamechange");
     bg.settings.sitename = $sitename.value;
-    database.domains[$domainname.value] = $sitename.value;
-    database.sites[normalize($sitename.value)] = clone(bg.settings);
+    sameacct = false;
     if (resolvers.sitenameseparateacctbuttonResolver) resolvers.sitenameseparateacctbuttonResolver("sitenameseparateacctbuttonPromise");
 }
 // Handle external links in the instructions and help
