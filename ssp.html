@@ -102,6 +102,26 @@ to change all occurrences if ![](images...) to <img> tags.
           </button>
           <br /><br />
         </div>
+        <div id="account" class="warning nodisplay" style="width: 25em">
+          <img src="images/warning.png" class="icon warning-icon">
+          <span class="warningtext">New Account</span>
+          <p>
+            You can associate this domain name with a different account by changing 
+            the site nickname.
+          </p>
+          <span style="display: flex; align-items: center;">
+            <input id="accountnicknameinput" type="text"
+              style="width:80%;" 
+              placeholder="Enter a different site nickname for this account."
+              title="This domain name is for a different account.">
+            <br />
+            <button id="accountnicknamesavebutton" type="button"
+              style="background-color: #1964dc; margin-left: 10px; color:white; width:auto"
+              title="Use this nickname for this account.">
+              <span class="btn-text" style="color: white">Use</span>
+            </button> 
+          </span>
+        </div>
         <div id="suffix" class="warning nodisplay" style="width: 25em">
           <img src="images/warning.png" class="icon warning-icon">
           <span class="warningtext">Warning: New Domain</span>
@@ -1410,6 +1430,10 @@ to change all occurrences if ![](images...) to <img> tags.
             <img src="images/3bluedots.png" class="dots">
           </div>
           <div id="sitenamemenu" class="nodisplay menu inner-icon-2">
+            <div id="sitenamemenuaccount"
+              title="Click to use this domain name for a different account.">
+              <img src="images/account.png" class="icon menu-icon">
+            </div>
             <div id="sitenamemenuforget"
               title="Click to enable forgetting all domain names associated with this nickname.">
               <img src="images/forget.png" class="icon menu-icon">

@@ -25,6 +25,9 @@ import { publicSuffixSet } from "./public_suffix_list.js";
     const $sitename = get("sitename");
     const $sitename3bluedots = get("sitename3bluedots");
     const $sitenamemenu = get("sitenamemenu");
+    const $sitenamemenuaccount = get("sitenamemenuaccount");
+    const $accountnicknameinput = get("accountnicknameinput");
+    const $accountnicknamesavebutton = get("accountnicknamesavebutton");
     const $sitenamemenuforget = get("sitenamemenuforget");
     const $sitenamemenuhelp = get("sitenamemenuhelp");
     const $sitenamehelptextclose = get("sitenamehelptextclose");
@@ -39,7 +42,7 @@ import { publicSuffixSet } from "./public_suffix_list.js";
     const $usernamehelptextmore = get("usernamehelptextmore");
     const $sitepw = get("sitepw");
     const $sitepwmenu = get("sitepwmenu");
-    const $sitepw3bluedots = get("sitepw3bluedots");
+    const $sitepw3bluedots = get("sitepw3bluedots")
     const $sitepwmenucopy = get("sitepwmenucopy");
     const $sitepwmenushow = get("sitepwmenushow");
     const $sitepwmenuhide = get("sitepwmenuhide");
@@ -480,8 +483,10 @@ $sitename3bluedots.onmouseover = function (e) {
     let sitename = $sitename.value;
     if (sitename) {
         $sitenamemenuforget.style.opacity = "1";
+        $sitenamemenuaccount.style.opacity = "1";
     } else {
         $sitenamemenuforget.style.opacity = "0.5";
+        $sitenamemenuaccount.style.opacity = "0.5";
     }
     menuOn("sitename", e);
 }
@@ -494,6 +499,21 @@ $sitename3bluedots.onmouseout = function (e) {
 };
 $sitenamemenu.onmouseleave = function (e) {
     menuOff("sitename", e);
+}
+$sitenamemenuaccount.onclick = function (e) {
+    if (!$sitename.value) return;
+    msgon("account");
+    $accountnicknameinput.value = $sitename.value;
+}
+$accountnicknamesavebutton.onclick = function (e) {
+    if (!$accountnicknameinput.value) return;
+    if ($sitename.value === $accountnicknameinput.value) {
+        sameacct = true;
+    } else {
+        $sitename.value = $accountnicknameinput.value;
+        sameacct = false;
+    }
+     msgoff("account");
 }
 $sitenamemenuforget.onclick = function (e) {
     if (!$sitename.value) return;
@@ -1595,7 +1615,7 @@ function clone(object) {
 var messages = [
     { name: "forget", ison: false, transient: false },
     { name: "phishing", ison: false, transient: false },
-    { name: "sitenamechange", ison: false, transient: false },
+    { name: "account", ison: false, transient: false },
     { name: "nopw", ison: false, transient: false },
     { name: "http", ison: false, transient: false },
     { name: "zero", ison: false, transient: false },
