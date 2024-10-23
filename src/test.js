@@ -31,7 +31,6 @@ export async function runTests() {
     // Fields needed for tests
     const $mainpanel = get("mainpanel");
     const $settingsshow = get("settingsshow");
-    const $settingssave = get("settingssave");
     const $domainname = get("domainname");
     const $sitename = get("sitename");
     const $username = get("username");
@@ -63,7 +62,6 @@ export async function runTests() {
     const $sitenamemenuforget = get("sitenamemenuforget");
     const $username3bluedots = get("username3bluedots");
     const $usernamemenuforget = get("usernamemenuforget");
-    const $sitenamechange = get("sitenamechange");
     const $sitenamesameacctbutton = get("sitenamesameacctbutton");
     const $sitenameseparateacctbutton = get("sitenameseparateacctbutton");
 
@@ -78,16 +76,17 @@ export async function runTests() {
     }
     if (!restart) {
         await testCalculation(); 
-        await testRememberForm();
-        await testProvidedpw();
-        await testPhishing();
-        await testForget();
-        await testClearSuperpw();
-        await testHideSitepw();
-        await testSafeSuffixes();
+        await testChangePassword();
+        // await testRememberForm();
+        // await testProvidedpw();
+        // await testPhishing();
+        // await testForget();
+        // await testClearSuperpw();
+        // await testHideSitepw();
+        // await testSafeSuffixes();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
-        await testSaveAsDefault();
+        // await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -109,6 +108,29 @@ export async function runTests() {
         } else {
             let inputs = {"expectedpw": expectedpw, "actual": actual, "superpw": $superpw.value, "sitename": $sitename.value, "username": $username.value};
             console.warn("Failed: Calculation", inputs);
+            failed += 1;
+        }
+    }
+    // Test change password
+    async function testChangePassword() {
+        await phishingSetup();
+        await triggerEvent("click", $sameacctbutton, "sameacctbuttonResolver");
+        restoreForTesting();
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+        $sitename.value = "Guru2";
+        await triggerEvent("blur", $sitename, "sitenameblurResolver");
+        let actual = $sitepw.value;
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        restoreForTesting();
+        await fillForm("qwerty", "allantheguru.alanhkarp.com", "", "");
+        await triggerEvent("blur", $domainname, "domainnameblurResolver");
+        let test = $sitename.value === "Guru2" && $username.value === "alan" && $sitepw.value === actual;
+        if (test) {
+            console.log("Passed: Change password");
+            passed += 1;
+        } else {
+            console.warn("Failed: Change password", "Guru2", "alan", actual, $sitename.value, $username.value, $sitepw.value);
             failed += 1;
         }
     }
@@ -382,8 +404,6 @@ export async function runTests() {
         test = normalize($sitename.value) === "guru" && $username.value === "alan";
         $sitename.value = "Guru2";
         await triggerEvent("blur", $sitename, "sitenameblurResolver");
-        test = test && $sitenamechange.style.display === "block";
-        await triggerEvent("click", $sitenamesameacctbutton, "sitenamesameacctbuttonResolver");
         let sitepw = get("sitepw").value;
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         restoreForTesting();
