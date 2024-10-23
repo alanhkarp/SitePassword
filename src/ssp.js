@@ -79,8 +79,6 @@ import { publicSuffixSet } from "./public_suffix_list.js";
     const $nicknamebutton = get("nicknamebutton");
     const $forgetbutton = get("forgetbutton");
     const $cancelbutton = get("cancelbutton");
-    const $sitenamesameacctbutton = get("sitenamesameacctbutton");
-    const $sitenameseparateacctbutton = get("sitenameseparateacctbutton");
     const $toforgetlist = get("toforgetlist");
     const $helptext = get("helptext");
     const $instructionpanel = get("instructionpanel");
@@ -895,6 +893,7 @@ $nicknamebutton.onclick = function () {
     $sitename.focus();
     clearDatalist("sitenames");
     msgoff("phishing");
+    saveSettings = false;
     autoclose = false;
 }
 // Forget buttons
@@ -921,20 +920,6 @@ $cancelbutton.onclick = function () {
         $toforgetlist.removeChild($toforgetlist.firstChild);
     }
     msgoff("forget");
-}
-// Site name change buttons
-$sitenamesameacctbutton.onclick = async function () {
-    msgoff("sitenamechange");
-    bg.settings.sitename = $sitename.value;
-    sameacct = true;
-    // $sitename.onblur(); // I want to do this during the same turn
-    if (resolvers.sitenamesameacctbuttonResolver) resolvers.sitenamesameacctbuttonResolver("sitenamesameacctbuttonPromise");
-}
-$sitenameseparateacctbutton.onclick = async function () {
-    msgoff("sitenamechange");
-    bg.settings.sitename = $sitename.value;
-    sameacct = false;
-    if (resolvers.sitenameseparateacctbuttonResolver) resolvers.sitenameseparateacctbuttonResolver("sitenameseparateacctbuttonPromise");
 }
 // Handle external links in the instructions and help
 document.addEventListener('DOMContentLoaded', function () {
