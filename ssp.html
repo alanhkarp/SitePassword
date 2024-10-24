@@ -106,21 +106,27 @@ to change all occurrences if ![](images...) to <img> tags.
           <img src="images/warning.png" class="icon warning-icon">
           <span class="warningtext">New Account</span>
           <p>
-            You can associate this domain name with a different account by changing 
-            the site nickname.
+            You can associate this domain name with a different account by 
+            entering a new site nickname here.
           </p>
-          <span style="display: flex; align-items: center;">
-            <input id="accountnicknameinput" type="text"
-              style="width:80%;" 
-              placeholder="Enter a different site nickname for this account."
-              title="This domain name is for a different account.">
-            <br />
-            <button id="accountnicknamesavebutton" type="button"
+          <input id="accountnicknameinput" type="text"
+            style="width:80%;" 
+            placeholder="Enter a different site nickname for this account."
+            title="This domain name is for a different account.">
+          <button id="accountnicknamesavebutton" type="button"
+            style="background-color: #1964dc; margin-left: 10px; color:white; width:auto"
+            title="Use the new site nickname for this domain name.">
+            <span class="btn-text" style="color: white">Use the new site nickname.</span>
+          </button> 
+          <br />
+          <p>
+            I changed my mind and want to use the existing site nickname for this domain name.
+          </p>
+            <button id="accountnicknamecancelbutton" type="button"
               style="background-color: #1964dc; margin-left: 10px; color:white; width:auto"
-              title="Use this nickname for this account.">
-              <span class="btn-text" style="color: white">Use</span>
+              title="Use the existing site nickname for this account.">
+              <span class="btn-text" style="color: white">Use the existing site nickname.</span>
             </button> 
-          </span>
         </div>
         <div id="http" class="warning nodisplay" style="width: 18em">
           <span id="httptext">

@@ -59,11 +59,14 @@ export async function runTests() {
     const $phishing = get("phishing");
     const $settings = get("settings");
     const $sitename3bluedots = get("sitename3bluedots");
+    const $account = get("account");
+    const $sitenamemenuaccount = get("sitenamemenuaccount");
+    const $accountnicknameinput = get("accountnicknameinput");
+    const $accountnicknamesavebutton = get("accountnicknamesavebutton");
+    const $accountnicknamecancelbutton = get("accountnicknamecancelbutton");
     const $sitenamemenuforget = get("sitenamemenuforget");
     const $username3bluedots = get("username3bluedots");
     const $usernamemenuforget = get("usernamemenuforget");
-    const $sitenamesameacctbutton = get("sitenamesameacctbutton");
-    const $sitenameseparateacctbutton = get("sitenameseparateacctbutton");
 
     let passed = 0;
     let failed = 0;
@@ -76,7 +79,7 @@ export async function runTests() {
     }
     if (!restart) {
         await testCalculation(); 
-        await testChangePassword();
+        // await testChangePassword();
         // await testRememberForm();
         // await testProvidedpw();
         // await testPhishing();
@@ -84,6 +87,7 @@ export async function runTests() {
         // await testClearSuperpw();
         // await testHideSitepw();
         // await testSafeSuffixes();
+        await testChangeAccount();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         // await testSaveAsDefault();
@@ -396,53 +400,58 @@ export async function runTests() {
             console.warn("Failed: Not in safe suffixes");
             failed += 1;
         }
-        // Test change password for account
+    }
+    // Test reassign account
+    async function testChangeAccount() {
+        await resetState();
+        await phishingSetup();
+        await triggerEvent("click", $sameacctbutton, "sameacctbuttonResolver");
         restoreForTesting();
-        clearForm();
-        await fillForm("qwerty", "ahktheguru.alanhkarp.com", "", "");
-        await triggerEvent("blur", $domainname, "domainnameblurResolver");
-        test = normalize($sitename.value) === "guru" && $username.value === "alan";
-        $sitename.value = "Guru2";
-        await triggerEvent("blur", $sitename, "sitenameblurResolver");
-        let sitepw = get("sitepw").value;
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
-        restoreForTesting();
-        await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-        await triggerEvent("blur", $domainname, "domainnameblurResolver");
-        test = test && $sitename.value === "Guru2" && get("sitepw").value === sitepw;
+        $sitename3bluedots.onmouseover();
+        $sitenamemenuaccount.onclick();
+        let test = $account.style.display === "block";
         if (test) {
-            console.log("Passed: Change password for account");
+            console.log("Passed: Change account open");
             passed += 1;
         } else {
-            console.warn("Failed: Change password for account");
+            console.warn("Failed: Change account not open");
             failed += 1;
         }
-        // Test create password for new account
         restoreForTesting();
-        clearForm();
-        await fillForm("qwerty", "ahktheguru.alanhkarp.com", "", "");
-        await triggerEvent("blur", $domainname, "domainnameblurResolver");
-        test = normalize($sitename.value) === "guru2" && $username.value === "alan";
-        $sitename.value = "guru";
-        await triggerEvent("blur", $sitename, "sitenameblurResolver");
-        test = test && $sitenamechange.style.display === "block";
-        await triggerEvent("click", $sitenameseparateacctbutton, "sitenameseparateacctbuttonResolver");
-        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
-        restoreForTesting();
-        await fillForm("qwerty", "alantheguru.alanhkarp.com", "", ""); // Should get the same password as before
-        await triggerEvent("blur", $domainname, "domainnameblurResolver");
-        test = test && normalize($sitename.value) === "guru2";
-        await fillForm("qwerty", "ahktheguru.alanhkarp.com", "", ""); // Should get a different password
-        await triggerEvent("blur", $domainname, "domainnameblurResolver");
+        $accountnicknameinput.value = "newGuru";
+        $accountnicknamecancelbutton.onclick();
+        test = $account.style.display === "none";
         test = test && normalize($sitename.value) === "guru";
         if (test) {
-            console.log("Passed: Create password for new account");
+            console.log("Passed: Change account cancel");
             passed += 1;
         } else {
-            console.warn("Failed: Create password for new account");
+            console.warn("Failed: Change account cancel");
             failed += 1;
         }
-    }
+        restoreForTesting();
+        $sitename3bluedots.onmouseover();
+        $sitenamemenuaccount.onclick();
+        $accountnicknameinput.value = "newGuru";
+        $accountnicknamesavebutton.onclick();
+        test = $account.style.display === "none";
+        test = test && normalize($sitename.value) === normalize("newGuru");
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
+        await triggerEvent("blur", $domainname, "domainnameblurResolver");
+        test = test && normalize($sitename.value) === "guru";
+        await fillForm("qwerty", "allantheguru.alanhkarp.com", "", "");
+        await triggerEvent("blur", $domainname, "domainnameblurResolver");
+        test = test && normalize($sitename.value) === normalize("newGuru");
+        if (test) {
+            console.log("Passed: Change account save");
+            passed += 1;
+        } else {
+            console.warn("Failed: Change account save");
+            failed += 1;
+        }
+    }    
     // Test save as default
     async function testSaveAsDefault() {
         if (loggingDefault) console.log("testSaveAsDefault");

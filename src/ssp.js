@@ -26,6 +26,8 @@ import { publicSuffixSet } from "./public_suffix_list.js";
     const $sitename3bluedots = get("sitename3bluedots");
     const $sitenamemenu = get("sitenamemenu");
     const $sitenamemenuaccount = get("sitenamemenuaccount");
+    const $account = get("account");
+    const $accountnicknamecancelbutton = get("accountnicknamecancelbutton");
     const $accountnicknameinput = get("accountnicknameinput");
     const $accountnicknamesavebutton = get("accountnicknamesavebutton");
     const $sitenamemenuforget = get("sitenamemenuforget");
@@ -511,7 +513,12 @@ $accountnicknamesavebutton.onclick = function (e) {
         $sitename.value = $accountnicknameinput.value;
         sameacct = false;
     }
-     msgoff("account");
+    msgoff("account");
+    autoclose = false;
+}
+$accountnicknamecancelbutton.onclick = function (e) {
+    msgoff("account");
+    autoclose = false;
 }
 $sitenamemenuforget.onclick = function (e) {
     if (!$sitename.value) return;
