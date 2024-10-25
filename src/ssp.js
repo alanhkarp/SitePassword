@@ -284,7 +284,7 @@ $mainpanel.onmouseleave = async function (event) {
     } 
     let phishingDomain = getPhishingDomain($sitename.value);
     if (logging) console.log("popup mainpanel mouseleave", phishingDomain);
-    if (saveSettings) openPhishingWarning(phishingDomain);
+    if (phishingDomain && saveSettings) openPhishingWarning(phishingDomain);
     let element = event.pageX ? document.elementFromPoint(event.pageX || 0, event.pageY || 0) : null;
     if (logging) console.log("popup onmouseleave", phishingDomain, exporting, element);
     // Don't persist if: phishing sites, exporting, the mouse is in the panel, or if event triggered by closing a help or instruction panel
@@ -891,7 +891,7 @@ $sameacctbutton.onclick = async function () {
     $username.value = bg.settings.username;
     await ask2generate();    
     autoclose = false;
-    if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
+    if (resolvers.warningbuttonResolver) resolvers.warningbuttonResolver("warningbuttonPromise");
 }
 $nicknamebutton.onclick = function () {
     $superpw.disabled = false;
@@ -1581,6 +1581,25 @@ function sitedataHTMLDoc(doc, sorted) {
             s.allowspecial, s.minspecial, s.specials, s.xor || ""];
         addColumnEntries(tr, entries);
     }
+}
+function getPhishingDomain(sitename) {
+    let domainname = get("domainname").value;
+    // Can't be phishing if the domain name is in the database with this sitename.
+    if (!sitename || normalize(database.domains[domainname]) === normalize(sitename)) return "";
+    var domains = Object.keys(database.domains);
+    var phishing = "";
+    domains.forEach(function (d) {
+        if ((normalize(database.domains[d]) === normalize(sitename)) &&
+            (d != domainname)) {
+            let settings = database.sites[normalize(sitename)];
+            if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
+                phishing = settings.pwdomainname;
+            } else {
+                phishing = d;
+            }
+        }
+    });
+    return phishing;
 }
 function addForgetItem(domainname) {
     let $list = $toforgetlist;

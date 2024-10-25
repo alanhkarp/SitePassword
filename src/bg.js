@@ -50,7 +50,7 @@ const baseDefaultSettings = {
 };
 export let defaultSettings =  clone(baseDefaultSettings);
 export let bgDefault = {superpw: "", settings: defaultSettings};
-export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "safeSuffixes": [], "domains": {}, "sites": {} };
+export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
 var database = clone(databaseDefault);
 var bg = clone(bgDefault);
 
@@ -119,6 +119,9 @@ async function setup() {
             sendResponse("awake");
             return true;
         }
+        // Start with a new database in case something changed while the service worker stayed open
+        database = clone(databaseDefault);
+        bg = clone(bgDefault);
         retrieveMetadata(sendResponse, request, async () => {
             if (logging) console.log("bg listener back from retrieveMetadata", database);
             superpw = "";
@@ -380,7 +383,6 @@ async function persistMetadata(sendResponse) {
     delete common.domains;
     delete common.sites;
     common.defaultSettings = clone(defaultSettings);
-    if (!common.safeSuffixes) common.safeSuffixes = [];
     if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
     let url = "ssp://" + stringifySettings(common);
@@ -398,7 +400,7 @@ async function persistMetadata(sendResponse) {
         }
     } else {
         let existing = parseSettings(commonSettings[0].url);
-        if (!sameSettings(common, existing)) {
+        if (sameSettings(common, existing) === false) {
             if (isSafari) {
                 bkmksSafari[commonSettingsTitle].url = url;
                 await chrome.storage.sync.set(bkmksSafari);
@@ -455,6 +457,8 @@ async function persistMetadata(sendResponse) {
     }
 }
 async function retrieveMetadata(sendResponse, request, callback) {
+    database = clone(databaseDefault); // Start with an empty database
+    bg = clone(bgDefault); // and settings
     if (logging) console.log("bg find SSP bookmark folder", request);
     let folders = await getRootFolder(sendResponse);
     if (folders.length === 1) {
