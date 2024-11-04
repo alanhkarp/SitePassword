@@ -50,7 +50,7 @@ const baseDefaultSettings = {
 };
 export let defaultSettings =  clone(baseDefaultSettings);
 export let bgDefault = {superpw: "", settings: defaultSettings};
-export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {} };
+export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {}, "safeSuffixes": [] };
 var database = clone(databaseDefault);
 var bg = clone(bgDefault);
 

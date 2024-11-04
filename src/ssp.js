@@ -25,11 +25,13 @@ import { publicSuffixSet } from "./public_suffix_list.js";
     const $sitename = get("sitename");
     const $sitename3bluedots = get("sitename3bluedots");
     const $sitenamemenu = get("sitenamemenu");
-    const $sitenamemenuaccount = get("sitenamemenuaccount");
+    const $sitepwmenuaccount = get("sitepwmenuaccount");
     const $account = get("account");
+    const $accounttext1 = get("accounttext1");
     const $accountnicknamecancelbutton = get("accountnicknamecancelbutton");
     const $accountnicknameinput = get("accountnicknameinput");
     const $accountnicknamesavebutton = get("accountnicknamesavebutton");
+    const $accountnicknamenewbutton = get("accountnicknamenewbutton");
     const $sitenamemenuforget = get("sitenamemenuforget");
     const $sitenamemenuhelp = get("sitenamemenuhelp");
     const $sitenamehelptextclose = get("sitenamehelptextclose");
@@ -483,10 +485,8 @@ $sitename3bluedots.onmouseover = function (e) {
     let sitename = $sitename.value;
     if (sitename) {
         $sitenamemenuforget.style.opacity = "1";
-        $sitenamemenuaccount.style.opacity = "1";
     } else {
         $sitenamemenuforget.style.opacity = "0.5";
-        $sitenamemenuaccount.style.opacity = "0.5";
     }
     menuOn("sitename", e);
 }
@@ -500,25 +500,24 @@ $sitename3bluedots.onmouseout = function (e) {
 $sitenamemenu.onmouseleave = function (e) {
     menuOff("sitename", e);
 }
-$sitenamemenuaccount.onclick = function (e) {
-    if (!$sitename.value) return;
-    msgon("account");
-    $accountnicknameinput.value = $sitename.value;
-}
 $accountnicknamesavebutton.onclick = function (e) {
     if (!$accountnicknameinput.value) return;
-    if ($sitename.value === $accountnicknameinput.value) {
-        sameacct = true;
-    } else {
-        $sitename.value = $accountnicknameinput.value;
-        sameacct = false;
-    }
+    $sitename.value = $accountnicknameinput.value;
+    sameacct = true;
+    $sitename.onblur(); // So it runs in the same turn
     msgoff("account");
-    autoclose = false;
+    autoclose = true;
 }
 $accountnicknamecancelbutton.onclick = function (e) {
     msgoff("account");
     autoclose = false;
+}
+$accountnicknamenewbutton.onclick = function (e) {
+    $sitename.value = $accountnicknameinput.value;
+    $sitename.onblur(); // So it runs in the same turn
+    msgoff("account");
+    autoclose = true;
+    sameacct = false;
 }
 $sitenamemenuforget.onclick = function (e) {
     if (!$sitename.value) return;
@@ -640,10 +639,12 @@ $sitepw3bluedots.onmouseover = function (e) {
         $sitepwmenucopy.style.opacity = "1";
         $sitepwmenushow.style.opacity = "1";
         $sitepwmenuhide.style.opacity = "1";
+        $sitepwmenuaccount.style.opacity = "1";
     } else {
         $sitepwmenucopy.style.opacity = "0.5";
         $sitepwmenushow.style.opacity = "0.5";
         $sitepwmenuhide.style.opacity = "0.5";
+        $sitepwmenuaccount.style.opacity = "0.5";
     }
     menuOn("sitepw", e);
 }
@@ -654,6 +655,27 @@ $sitepw3bluedots.onmouseout = function (e) {
         menuOff("sitepw", e);
     }
 };
+$sitepwmenuaccount.onclick = function (e) {
+    // Can only change a password if there is one
+    if (!$sitepw.value) return;
+    let sitename = $sitename.value;
+    let sitenameCount = Object.values(database.domains).filter(domainSitename => domainSitename === sitename).length;
+    // Can only change a password if the site is in the database
+    if (sitenameCount === 0) return;
+    let elements = document.getElementsByName("hassuffix");
+    elements.forEach(element => {
+        if (sitenameCount > 1) {
+            $accounttext1.innerText = $domainname.value;
+            element.classList.remove("nodisplay");
+        } else {
+            $accounttext1.innerText = "";
+            element.classList.add("nodisplay");
+        }
+    });
+    console.log(`The sitename "${sitename}" appears ${sitenameCount} times in the database.`);
+    msgon("account");
+    $accountnicknameinput.value = $sitename.value;
+}
 $sitepwmenucopy.onclick = async function(e) {
     let sitepw = $sitepw.value;
     if (!sitepw) return;
@@ -882,11 +904,11 @@ $sameacctbutton.onclick = async function () {
     msgoff("phishing");
     let domainname = $domainname.value;
     let sitename = getlowertrim("sitename");
-    bg.settings = clone(database.sites[sitename]);
     if (testMode) bg.settings.domainname = domainname;
     let d = getPhishingDomain(bg.settings.sitename);
     let suffix = commonSuffix(d, bg.settings.domainname);
     if (suffix && !database.safeSuffixes.includes(suffix)) database.safeSuffixes.push(suffix);
+    bg.settings = clone(database.sites[sitename]);
     database.domains[domainname] = normalize(bg.settings.sitename);
     $username.value = bg.settings.username;
     await ask2generate();    
@@ -1581,25 +1603,6 @@ function sitedataHTMLDoc(doc, sorted) {
             s.allowspecial, s.minspecial, s.specials, s.xor || ""];
         addColumnEntries(tr, entries);
     }
-}
-function getPhishingDomain(sitename) {
-    let domainname = get("domainname").value;
-    // Can't be phishing if the domain name is in the database with this sitename.
-    if (!sitename || normalize(database.domains[domainname]) === normalize(sitename)) return "";
-    var domains = Object.keys(database.domains);
-    var phishing = "";
-    domains.forEach(function (d) {
-        if ((normalize(database.domains[d]) === normalize(sitename)) &&
-            (d != domainname)) {
-            let settings = database.sites[normalize(sitename)];
-            if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
-                phishing = settings.pwdomainname;
-            } else {
-                phishing = d;
-            }
-        }
-    });
-    return phishing;
 }
 function addForgetItem(domainname) {
     let $list = $toforgetlist;

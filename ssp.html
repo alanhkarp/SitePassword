@@ -86,7 +86,7 @@ to change all occurrences if ![](images...) to <img> tags.
             <span class="example">www.example.com</span> for the same account at example.com.
             Just make sure you recognize the domain name.
           </p>
-          <button id="warningbutton" type="button"
+          <button id="sameacctbutton" type="button"
             style="background-color: #D51c24; margin: auto; color:white; width:100%"
             title="This page is for the same account. Use the same settings for it.">
             <span class="btn-text" style="color: white">This page is for the same account</span>
@@ -104,29 +104,42 @@ to change all occurrences if ![](images...) to <img> tags.
         </div>
         <div id="account" class="warning nodisplay" style="width: 25em">
           <img src="images/warning.png" class="icon warning-icon">
-          <span class="warningtext">New Account</span>
+          <span class="warningtext">Change Password</span>
           <p>
-            You can associate this domain name with a different account by 
-            entering a new site nickname here.
+            You can change your password
+            <span name="hassuffix" class="nodisplay">for all login pages ending in 
+                <span id="accounttext0" class="phishing">alanhkarp.com</span>
+            </span> by providing a new account nickname.
           </p>
           <input id="accountnicknameinput" type="text"
-            style="width:80%;" 
-            placeholder="Enter a different site nickname for this account."
-            title="This domain name is for a different account.">
-          <button id="accountnicknamesavebutton" type="button"
-            style="background-color: #1964dc; margin-left: 10px; color:white; width:auto"
-            title="Use the new site nickname for this domain name.">
-            <span class="btn-text" style="color: white">Use the new site nickname.</span>
-          </button> 
-          <br />
-          <p>
-            I changed my mind and want to use the existing site nickname for this domain name.
-          </p>
-            <button id="accountnicknamecancelbutton" type="button"
+              style="width:95%; position: relative; left: 10px" 
+              placeholder="Enter a different site nickname for this account."
+              title="This domain name is for a different account."
+          </input>
+          <span style="display: flex; justify-content: space-between; width: 100%;">
+            <button id="accountnicknamesavebutton" type="button"
               style="background-color: #1964dc; margin-left: 10px; color:white; width:auto"
-              title="Use the existing site nickname for this account.">
-              <span class="btn-text" style="color: white">Use the existing site nickname.</span>
+              title="Use the new password for this domain name.">
+              <span class="btn-text" style="color: white">Change password</span>
             </button> 
+            <button id="accountnicknamecancelbutton" type="button"
+              style="background-color: #21973f; margin-left: 10px; color:white; width:auto"
+              title="Use the old password for this account.">
+              <span class="btn-text" style="color: white">Don't change password</span>
+            </button>
+          </span>
+          <div name="hassuffix" class="nodisplay">
+            <p>
+              The domain name 
+              <span id="accounttext1" class="phishing"></span>
+              is for a different account.
+            </p>
+            <button id="accountnicknamenewbutton" type="button"
+              style="background-color: #1964dc; margin-left: 10px; color:white; width:auto"
+              title="Use the new password for this domain name.">
+              <span class="btn-text" style="color: white">Use the new password for this account.</span>
+            </button>
+          </div>
         </div>
         <div id="http" class="warning nodisplay" style="width: 18em">
           <span id="httptext">
@@ -1390,10 +1403,6 @@ to change all occurrences if ![](images...) to <img> tags.
             <img src="images/3bluedots.png" class="dots">
           </div>
           <div id="sitenamemenu" class="nodisplay menu inner-icon-2">
-            <div id="sitenamemenuaccount"
-              title="Click to use this domain name for a different account.">
-              <img src="images/account.png" class="icon menu-icon">
-            </div>
             <div id="sitenamemenuforget"
               title="Click to enable forgetting all domain names associated with this nickname.">
               <img src="images/forget.png" class="icon menu-icon">
@@ -1448,6 +1457,10 @@ to change all occurrences if ![](images...) to <img> tags.
             <img src="images/3bluedots.png" class="dots">
           </div>
           <div id="sitepwmenu" class="nodisplay menu inner-icon-2">
+            <div id="sitepwmenuaccount"
+              title="Click to change your password.">
+              <img src="images/account.png" class="icon menu-icon">
+            </div>
             <div id="sitepwmenushow" class="nodisplay" title="Show your site password">
               <svg class="icon menu-icon menu-icon-blue" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
