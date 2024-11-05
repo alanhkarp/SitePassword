@@ -387,7 +387,7 @@ async function persistMetadata(sendResponse) {
     // No merge for now
     let url = "ssp://" + stringifySettings(common);
     if (commonSettings.length === 0) {
-        let url = "ssp://" + JSON.stringify(common);
+        let url = ("ssp://" + stringifySettings(common));
         if (isSafari) {
             bkmksSafari[commonSettingsTitle] = {};
             bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
@@ -440,7 +440,7 @@ async function persistMetadata(sendResponse) {
                 (domainnames[i] === bg.settings.domainname) ||
                 (domainnames[i] === bg.settings.pwdomainname)) {
                 let title = domainnames[i];
-                url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
+                url = webpage + "?bkmk=ssp://" + stringifySettings(settings);
                 if (logging) console.log("bg creating bookmark for", title);
                 if (isSafari) {
                     bkmksSafari[title] = {};

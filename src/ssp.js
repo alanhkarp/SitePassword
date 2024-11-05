@@ -659,7 +659,7 @@ $sitepwmenuaccount.onclick = function (e) {
     // Can only change a password if there is one
     if (!$sitepw.value) return;
     let sitename = $sitename.value;
-    let sitenameCount = Object.values(database.domains).filter(domainSitename => domainSitename === sitename).length;
+    let sitenameCount = Object.values(database.domains).filter(domainSitename => normalize(domainSitename) === normalize(sitename)).length;
     // Can only change a password if the site is in the database
     if (sitenameCount === 0) return;
     let elements = document.getElementsByName("hassuffix");
@@ -672,7 +672,7 @@ $sitepwmenuaccount.onclick = function (e) {
             element.classList.add("nodisplay");
         }
     });
-    console.log(`The sitename "${sitename}" appears ${sitenameCount} times in the database.`);
+    if (logging) console.log(`The sitename "${sitename}" appears ${sitenameCount} times in the database.`);
     msgon("account");
     $accountnicknameinput.value = $sitename.value;
 }
@@ -913,7 +913,7 @@ $sameacctbutton.onclick = async function () {
     $username.value = bg.settings.username;
     await ask2generate();    
     autoclose = false;
-    if (resolvers.warningbuttonResolver) resolvers.warningbuttonResolver("warningbuttonPromise");
+    if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
 }
 $nicknamebutton.onclick = function () {
     $superpw.disabled = false;
