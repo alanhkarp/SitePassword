@@ -32,6 +32,7 @@ import { publicSuffixSet } from "./public_suffix_list.js";
     const $accountnicknameinput = get("accountnicknameinput");
     const $accountnicknamesavebutton = get("accountnicknamesavebutton");
     const $accountnicknamenewbutton = get("accountnicknamenewbutton");
+    const $sitenamemenuaccount = get("sitenamemenuaccount");
     const $sitenamemenuforget = get("sitenamemenuforget");
     const $sitenamemenuhelp = get("sitenamemenuhelp");
     const $sitenamehelptextclose = get("sitenamehelptextclose");
@@ -482,11 +483,12 @@ $sitename.onblur = async function (e) {
     if (resolvers.sitenameblurResolver) resolvers.sitenameblurResolver("sitenameblurPromise");
 }
 $sitename3bluedots.onmouseover = function (e) {
-    let sitename = $sitename.value;
-    if (sitename) {
+    if ($sitename.value && $sitepw.value) {
         $sitenamemenuforget.style.opacity = "1";
+        $sitenamemenuaccount.style.opacity = "1";
     } else {
         $sitenamemenuforget.style.opacity = "0.5";
+        $sitenamemenuaccount.style.opacity = "0.5";
     }
     menuOn("sitename", e);
 }
@@ -529,6 +531,9 @@ $sitenamemenuforget.onclick = function (e) {
             addForgetItem(domain);
         }
     }
+}
+$sitenamemenuaccount.onclick = function (e) {
+    $sitepwmenuaccount.onclick();
 }
 $sitenamemenuhelp.onclick = function (e) {
     helpItemOn("sitename");
