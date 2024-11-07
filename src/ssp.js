@@ -1082,7 +1082,7 @@ function getPhishingDomain(sitename) {
     if (!database.safeSuffixes.includes(suffix)) {
         return phishing
     } else {
-        return "";
+        return phishing; // return "";
     }
 }
 function openPhishingWarning(d) {
