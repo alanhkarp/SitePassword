@@ -1,5 +1,5 @@
 'use strict';
-import { bgDefault, config, isSafari, webpage } from "./bg.js";
+import { bgDefault, config, databaseDefault, isSafari, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 import { publicSuffixSet } from "./public_suffix_list.js";
@@ -105,12 +105,12 @@ let testMode = false;
 const debugMode = false;
 let logging = false;
 if (logging) console.log("Version 3.0");
-let activetab;
-let domainname;
-let mainPanelTimer;
 let autoclose = true;
 let exporting = false;
 let sameacct = true;
+let activetab;
+let domainname;
+let mainPanelTimer;
 const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 const defaultTitle = "SitePassword";
@@ -137,7 +137,7 @@ setTimeout(() => {
 }, timeout);
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
-let database = {};
+let database = databaseDefault;
 if (logging) console.log("popup starting");
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
@@ -145,6 +145,7 @@ if (logging) console.log("popup starting");
 // popup window closes before the message it sends gets delivered.
 
 window.onload = async function () {
+    debugger;
     if (logging) console.log("popup check clipboard");
     let v = await chrome.storage.local.get("onClipboard");
     if (v.onClipboard) {
@@ -285,7 +286,7 @@ $mainpanel.onmouseleave = async function (event) {
     if (warningMsg) {   
         autoclose = false;
     } 
-    let phishingDomain = getPhishingDomain($sitename.value);
+    let phishingDomain = await getPhishingDomain($sitename.value);
     if (logging) console.log("popup mainpanel mouseleave", phishingDomain);
     if (phishingDomain && saveSettings) openPhishingWarning(phishingDomain);
     let element = event.pageX ? document.elementFromPoint(event.pageX || 0, event.pageY || 0) : null;
@@ -345,7 +346,6 @@ $domainname.onblur = async function (e) {
     if (testMode) domainname = $domainname.value;
     await getsettings(domainname);
     await fill();
-    await ask2generate();
     if (resolvers.domainnameblurResolver) resolvers.domainnameblurResolver("domainnameblurPromise");
 }
 $domainnamemenu.onmouseleave = function (e) {
@@ -462,7 +462,7 @@ $sitename.onkeyup = async function () {
 }
 $sitename.onblur = async function (e) {
     let sitename = $sitename.value;
-    let d = getPhishingDomain(sitename);
+    let d = await getPhishingDomain(sitename);
     if (!openPhishingWarning(d)) {
         msgoff("phishing");
         $superpw.disabled = false;
@@ -902,22 +902,22 @@ $cancelwarning.onclick = async function () {
     }
     if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver("cancelwarningPromise");
 }
-$sameacctbutton.onclick = async function () {
+$sameacctbutton.onclick = async function (e) {
     $superpw.disabled = false;
     $username.disabled = false;
     $sitename.disabled = false;
     msgoff("phishing");
     let domainname = $domainname.value;
-    let sitename = getlowertrim("sitename");
+    let sitename = normalize($sitename.value);
     if (testMode) bg.settings.domainname = domainname;
-    let d = getPhishingDomain(bg.settings.sitename);
+    let d = await getPhishingDomain(bg.settings.sitename);
     let suffix = commonSuffix(d, bg.settings.domainname);
     if (suffix && !database.safeSuffixes.includes(suffix)) database.safeSuffixes.push(suffix);
     bg.settings = clone(database.sites[sitename]);
     database.domains[domainname] = normalize(bg.settings.sitename);
     $username.value = bg.settings.username;
-    await ask2generate();    
-    autoclose = false;
+    await fill();
+    $mainpanel.onmouseleave(e); // So it runs in the same turn
     if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
 }
 $nicknamebutton.onclick = function () {
@@ -1059,7 +1059,7 @@ function hideInstructions() {
     $main.style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
 }
 // End of generic code for menus: other utility functions
-function getPhishingDomain(sitename) {
+async function getPhishingDomain(sitename) {
     let domainname = $domainname.value;
     // Can't be phishing if the domain name is in the database with this sitename,
     if (!sitename || normalize(database.domains[domainname]) === normalize(sitename)) return "";
@@ -1082,7 +1082,15 @@ function getPhishingDomain(sitename) {
     if (!database.safeSuffixes.includes(suffix)) {
         return phishing
     } else {
-        return phishing; // return "";
+        $username.value = bg.settings.username || "";
+        let settings = database.sites[normalize(sitename)];
+        if (settings) {
+            bg.settings = clone(settings);
+            $sitename.value = bg.settings.sitename || sitename;
+            $username.value = bg.settings.username || $username.value;
+            await ask2generate();
+        }
+        return "";
     }
 }
 function openPhishingWarning(d) {
@@ -1310,9 +1318,9 @@ async function fill() {
         if (!$username.value) $username.value = bg.settings.username;
         if (!$sitename.value) $sitename.value = bg.settings.sitename;
     } else {
-        bg.settings.domainname = getlowertrim("domainname");
-        bg.settings.sitename = getlowertrim("sitename");
-        bg.settings.username = getlowertrim("username");
+        bg.settings.domainname = normalize($domainname.value);
+        bg.settings.sitename = normalize($sitename.value);
+        bg.settings.username = normalize($username.value);
     }
     $superpw.value = bg.superpw || "";
     $providesitepw.checked = bg.settings.providesitepw;
@@ -1623,9 +1631,6 @@ function addForgetItem(domainname) {
 }
 function get(element) {
     return document.getElementById(element);
-}
-function getlowertrim(element) {
-    return (document.getElementById(element).value || "").toLowerCase().trim();
 }
 function clone(object) {
     return JSON.parse(JSON.stringify(object))

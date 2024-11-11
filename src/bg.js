@@ -149,7 +149,7 @@ async function setup() {
                     database.sites[normalize(bg.settings.sitename)] = clone(bg.settings)
                 }                                
                 superpw = bg.superpw || "";
-                await persistMetadata(sendResponse);
+                await persistMetadata(request.sameacct, sendResponse);
                 sendResponse("persisted");
             } else if (request.cmd === "getPassword") {                
                 let domainname = getdomainname(sender.origin || sender.url);
@@ -160,7 +160,7 @@ async function setup() {
                 if (database.clearsuperpw) {
                     superpw = "";
                     bg.superpw = "";
-                    await persistMetadata(sendResponse);
+                    await persistMetadata(false, sendResponse);
                 } else {
                     await Promise.resolve(); // To match the await in the other branch
                 }
@@ -186,7 +186,7 @@ async function setup() {
             } else if (request.cmd === "newDefaults") {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
                 defaultSettings = request.newDefaults;
-                await persistMetadata(sendResponse);
+                await persistMetadata(false, sendResponse);
                 sendResponse("persisted");
             } else if (request.cmd === "forget") {
                 if (logging) console.log("bg forget", request.cmd);
@@ -206,7 +206,7 @@ async function setup() {
                 await Promise.resolve(); // To match the awaits in the other branches
             } else if (request.onload) {
                 await onContentPageload(request, sender, sendResponse);
-                await persistMetadata(sendResponse);
+                await persistMetadata(false, sendResponse);
                 sendResponse("persisted");
             } else {
                 if (logging) console.log("bg got unknown request", request);
@@ -307,7 +307,7 @@ async function onContentPageload(request, sender, sendResponse) {
         "readyForClick": readyForClick
     });
 }
-async function persistMetadata(sendResponse) {
+async function persistMetadata(sameacct, sendResponse) {
     if (logging) console.log("bg persistMetadata", bg, database);
     superpw = bg.superpw;
     await chrome.storage.session.set({"superpw": superpw});
@@ -317,7 +317,7 @@ async function persistMetadata(sendResponse) {
     rootFolder = found[0];
     let sitename = normalize(bg.settings.sitename);
     let suffixCounts = {};
-    let suffixes = clone(database.safeSuffixes || []);
+    let suffixes = clone(db.safeSuffixes || []);
     for (let suffix of suffixes) {
         suffixCounts[suffix] = 0;
         for (let domain in db.domains) {
@@ -325,7 +325,14 @@ async function persistMetadata(sendResponse) {
                 suffixCounts[suffix]++;
             }
         }
-        if (suffixCounts[suffix] < 2) delete database.safeSuffixes[suffix];
+        // The count is 1 the first time I say it's the same account
+        // Hence the flag
+        if (!sameacct && suffixCounts[suffix] < 2) {
+            const index = db.safeSuffixes.indexOf(suffix);
+            if (index > -1) {
+                db.safeSuffixes.splice(index, 1);
+            }
+        }
     }
     if (logging) console.log("Suffix counts:", suffixCounts);
 
@@ -556,6 +563,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
             if (logging) console.log("bg common settings from bookmark", common.defaultSettings.pwlength);
             newdb.clearsuperpw = common.clearsuperpw;
             newdb.hidesitepw = common.hidesitepw;
+            newdb.safeSuffixes = common.safeSuffixes || [];
             defaultSettings = common.defaultSettings || defaultSettings;
         } else {
             if (logging && i < 3) console.log("bg settings from bookmark", children[i]);
