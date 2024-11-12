@@ -319,7 +319,7 @@ $mainpanel.onmouseleave = async function (event) {
                 "sitename": sitename,
                 "clearsuperpw": $clearsuperpw.checked,
                 "hidesitepw": $hidesitepw.checked,
-                "safeSuffixes": database.safeSuffixes || [],
+                "safeSuffixes": database.safeSuffixes || {},
                 "sameacct": sameacct,
                 "bg": bg,
             });
@@ -912,7 +912,13 @@ $sameacctbutton.onclick = async function (e) {
     if (testMode) bg.settings.domainname = domainname;
     let d = await getPhishingDomain(bg.settings.sitename);
     let suffix = commonSuffix(d, bg.settings.domainname);
-    if (suffix && !database.safeSuffixes.includes(suffix)) database.safeSuffixes.push(suffix);
+    if (suffix) {
+        if (database.safeSuffixes[suffix]) {
+            database.safeSuffixes[suffix]++;
+        } else {
+            database.safeSuffixes[suffix] = 1;
+        }
+    }
     bg.settings = clone(database.sites[sitename]);
     database.domains[domainname] = normalize(bg.settings.sitename);
     $username.value = bg.settings.username;
@@ -950,6 +956,8 @@ $forgetbutton.onclick = async function () {
     $cancelbutton.click();
 }
 $cancelbutton.onclick = function () {
+    // Can't just set list to [] because I need to remove the 
+    // corresponding DOM elements
     while ( $toforgetlist.firstChild ) {
         $toforgetlist.removeChild($toforgetlist.firstChild);
     }
@@ -1079,7 +1087,7 @@ async function getPhishingDomain(sitename) {
     });
     // or if it has a safe suffix
     let suffix = commonSuffix(phishing, domainname);
-    if (!database.safeSuffixes.includes(suffix)) {
+    if (!database.safeSuffixes[suffix]) {
         return phishing
     } else {
         $username.value = bg.settings.username || "";
@@ -1117,7 +1125,7 @@ function openPhishingWarning(d) {
     return true;
 }
 // Thanks, Copilot
-function commonSuffix(domain1, domain2) {
+export function commonSuffix(domain1, domain2) {
     const parts1 = domain1.split('.').reverse();
     const parts2 = domain2.split('.').reverse();
     const length = Math.min(parts1.length, parts2.length);

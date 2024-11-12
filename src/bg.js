@@ -5,7 +5,7 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 // http or https whether it has a password field or not.
 const testMode = false;
 const testLogging = false;
-const debugMode = false;
+const debugMode = true;
 const logging = false;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
@@ -50,7 +50,7 @@ const baseDefaultSettings = {
 };
 export let defaultSettings =  clone(baseDefaultSettings);
 export let bgDefault = {superpw: "", settings: defaultSettings};
-export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {}, "safeSuffixes": [] };
+export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {}, "safeSuffixes": {} };
 var database = clone(databaseDefault);
 var bg = clone(bgDefault);
 
@@ -143,7 +143,7 @@ async function setup() {
                 bg = clone(request.bg);
                 database.clearsuperpw = request.clearsuperpw;
                 database.hidesitepw = request.hidesitepw;
-                database.safeSuffixes = request.safeSuffixes || [];
+                database.safeSuffixes = request.safeSuffixes || {};
                 if (!request.sameacct) {
                     database.domains[normalize(bg.settings.domainname)] = bg.settings.sitename;
                     database.sites[normalize(bg.settings.sitename)] = clone(bg.settings)
@@ -316,24 +316,6 @@ async function persistMetadata(sameacct, sendResponse) {
     if (found.length > 1) return;
     rootFolder = found[0];
     let sitename = normalize(bg.settings.sitename);
-    let suffixCounts = {};
-    let suffixes = clone(db.safeSuffixes || []);
-    for (let suffix of suffixes) {
-        suffixCounts[suffix] = 0;
-        for (let domain in db.domains) {
-            if (domain.endsWith(suffix)) {
-                suffixCounts[suffix]++;
-            }
-        }
-        // The count is 1 the first time I say it's the same account
-        // Hence the flag
-        if (!sameacct && suffixCounts[suffix] < 2) {
-            const index = db.safeSuffixes.indexOf(suffix);
-            if (index > -1) {
-                db.safeSuffixes.splice(index, 1);
-            }
-        }
-    }
     if (logging) console.log("Suffix counts:", suffixCounts);
 
     if (sitename) {
@@ -418,8 +400,18 @@ async function persistMetadata(sameacct, sendResponse) {
             }
         }
     }
-    // Persist changes to domain settings
+    // Remove safe suffix if its count is less than 2
     let domainnames = Object.keys(db.domains);
+    let suffixCounts = {};
+    let suffixes = clone(db.safeSuffixes || {});
+    for (let suffix in suffixes) {
+        suffixCounts[suffix] = 0;
+        for (let domain in db.domains) {
+            if (domain.endsWith(suffix)) suffixCounts[suffix]++;
+        }
+        if (suffixCounts[suffix] < 2) delete db.safeSuffixes[suffix];
+    }
+    // Persist changes to domain settings
     for (let i = 0; i < domainnames.length; i++) {
         let sitename = db.domains[domainnames[i]];
         let settings = db.sites[sitename];
@@ -563,7 +555,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
             if (logging) console.log("bg common settings from bookmark", common.defaultSettings.pwlength);
             newdb.clearsuperpw = common.clearsuperpw;
             newdb.hidesitepw = common.hidesitepw;
-            newdb.safeSuffixes = common.safeSuffixes || [];
+            newdb.safeSuffixes = common.safeSuffixes || {};
             defaultSettings = common.defaultSettings || defaultSettings;
         } else {
             if (logging && i < 3) console.log("bg settings from bookmark", children[i]);
@@ -575,6 +567,20 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 newdb.sites[normalize(settings.sitename)] = settings;
             }
         }
+    }
+    // Count the number of times each safe suffix is appears in newdb.domains
+    for (let suffix in newdb.safeSuffixes) {
+        newdb.safeSuffixes[suffix] = 0;
+        for (let domain in newdb.domains) {
+            if (domain.endsWith(suffix)) {
+                if (newdb.safeSuffixes[suffix]) {
+                    newdb.safeSuffixes[suffix]++;
+                } else {
+                    newdb.safeSuffixes[suffix] = 1;
+                }
+            } 
+        }
+        if (newdb.safeSuffixes[suffix] < 2) delete newdb.safeSuffixes[suffix];
     }
     database = newdb;
     await retrieved(callback);
@@ -647,6 +653,8 @@ async function forget(toforget, rootFolder, sendResponse) {
     for (const item of toforget)  {
         if (logging) console.log("bg forget item", item);
         delete database.domains[item];
+        // Can't decrement safe suffix count because user might 
+        // have deleted a bookmark
         if (logging) console.log("bg forget getting children", item, rootFolder);
         let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
         if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
