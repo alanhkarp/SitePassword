@@ -50,17 +50,17 @@ to change all occurrences if ![](images...) to <img> tags.
             -->
             You may be at a fake site that is trying to steal your password.
             You previously used the nickname
-            <span id="phishingtext0" class="phishing"></span>
+            <span id="phishingtext0" class="phishing">guru</span>
             for
           </p>
-          <span id="phishingtext1" class="phishing"></span>
+          <span id="phishingtext1" class="phishing">alantheguru.alanhkarp.com</span>
           <br />
           <p>The domain asking for your password is</p>
-          <span id="phishingtext2" class="phishing"></span>
+          <span id="phishingtext2" class="phishing">alantheguru.allanhkarp.com</span>
           <br />
           <p id="samesuffix" style="display: none">
             Both of these domain names end in
-            <span id="phishingtext3" class="phishing"></span>,
+            <span id="phishingtext3" class="phishing">alanhkarp.com</span>,
             which makes it likely that they are for the same account, 
             but there are exceptions.
           </p>
@@ -73,12 +73,11 @@ to change all occurrences if ![](images...) to <img> tags.
             You can check for known bad web pages at 
             <a class="external-link" id="phishingcheck" href="https://www.scamadviser.com/">ScamAdvisor</a>
             or other sites that check for phishing.
-          </p>
-          <button id="cancelwarning" type="button"
-            style="background-color: #21973f; margin: auto; color: white; width:100%"
-            title="I don't recognize this domain name. Take me away from this web page.">
-            <span class="btn-text" style="color: white">This domain name looks suspicious.</span>
-          </button>
+            </p>
+            <button id="cancelwarning" type="button" class="buttonsafe"
+              title="I don't recognize this domain name. Take me away from this web page.">
+              <span class="btn-text" style="color: white">This domain name looks suspicious.</span>
+            </button>
           <br /><br />
           <p>
             It is common to see different domain names for the same account login. 
@@ -86,8 +85,7 @@ to change all occurrences if ![](images...) to <img> tags.
             <span class="example">www.example.com</span> for the same account at example.com.
             Just make sure you recognize the domain name.
           </p>
-          <button id="sameacctbutton" type="button"
-            style="background-color: #D51c24; margin: auto; color:white; width:100%"
+          <button id="sameacctbutton" type="button" class="buttondangerous"
             title="This page is for the same account. Use the same settings for it.">
             <span class="btn-text" style="color: white">This page is for the same account.</span>
           </button>
@@ -95,12 +93,40 @@ to change all occurrences if ![](images...) to <img> tags.
           <p>
             You may have accidentally reused a nickname. In that case, you can just pick a different one.
           </p>
-          <button id="nicknamebutton" type="button"
-            style="background-color: #1964dc; margin: auto; color:white; width:100%"
+          <button id="nicknamebutton" type="button" class="buttonretry"
             title="This page is for a different account.  I'll select a new nickname.">
             <span class="btn-text" style="color: white">Pick a new nickname.</span>
           </button>
           <br /><br />
+        </div>
+        <div id="suffix" class="warning nodisplay" style="width: 25em;  border: #007bff solid 4px">
+          <p>
+            <span class="warningtext" style="text-align: center; display: block;">Similar Domain Name</span>
+            You have used the nickname
+          </p>
+          <span id="sufftext0" class="phishing" style="text-align: center; display: block; width: 100%;">Stanford</span>
+          <p>
+            for the account with domain names ending in
+          </p>
+            <span id="sufftext1" class="phishing" style="text-align: center; display: block; width: 100%;">stanford.edu</span>
+          <p>
+            Do you want the owner of the domain name
+          </p>
+          <span id="sufftext2" class="phishing" style="text-align: center; display: block; width: 100%;">jasvir.stanford.edu</span>
+          <p>
+           to see your password for this account?
+          </p>
+          <span style="display:flex; justify-content: space-between; width: 100%">
+            <button id="suffixacceptbutton" type="button" class="buttondangerous"
+              title="This domain name is for the same account.">
+              <span class="btn-text" style="color: white">Use the same password</span>
+            </button>
+            <span style="width: 10px;"></span>
+            <button id="suffixcancelbutton" type="button" class="buttonsafe"
+              title="This domain name is for a different account.">
+              <span class="btn-text" style="color: white">Use a different password</span>
+            </button>
+          </span>
         </div>
         <div id="account" class="warning nodisplay" style="width: 25em">
           <img src="images/warning.png" class="icon warning-icon">
@@ -117,13 +143,11 @@ to change all occurrences if ![](images...) to <img> tags.
               title="This domain name is for a different account."
           </input>
           <span style="display: flex; justify-content: space-between; width: 100%;">
-            <button id="accountnicknamesavebutton" type="button"
-              style="background-color: #1964dc; margin-left: 10px; color:white; width:auto"
+            <button id="accountnicknamesavebutton" type="buttonretry"
               title="Use the new password for this domain name.">
               <span class="btn-text" style="color: white">Change password</span>
             </button> 
-            <button id="accountnicknamecancelbutton" type="button"
-              style="background-color: #21973f; margin-left: 10px; color:white; width:auto"
+            <button id="accountnicknamecancelbutton" type="buttonsafe"
               title="Use the old password for this account.">
               <span class="btn-text" style="color: white">Don't change password</span>
             </button>
@@ -134,8 +158,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <span id="accounttext1" class="phishing"></span>
               is for a different account.
             </p>
-            <button id="accountnicknamenewbutton" type="button"
-              style="background-color: #1964dc; margin-left: 10px; color:white; width:auto"
+            <button id="accountnicknamenewbutton" type="buttonretry"
               title="Use the new password for this domain name.">
               <span class="btn-text" style="color: white">Use the new password for this account.</span>
             </button>
@@ -174,7 +197,7 @@ to change all occurrences if ![](images...) to <img> tags.
             <ul id="toforgetlist"></ul>
             <div>
               <p>You can change your mind,</p>
-              <button id="cancelbutton" type="button" style="background-color: #21973f; color: white; width:100%"
+              <button id="cancelbutton" type="button" class="buttonsafe" 
                 title="Click to cancel forgetting the settings for the listed domain names.">
                 <span class="btn-text" style="color: white">Cancel</span>
               </button>
@@ -182,7 +205,7 @@ to change all occurrences if ![](images...) to <img> tags.
                 or permanently forget the settings for the listed domain names.
                 <b>This action cannot be undone.</b>
               </p>
-              <button id="forgetbutton" type="button" style="background-color: #D51c24; color:white; width:100%"
+              <button id="forgetbutton" type="button" class="buttondangerous"
                 title="Click to delete the settings for the listed domain names.">
                 <span class="btn-text" style="color: white">Permanently forget</span>
               </button>

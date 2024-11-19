@@ -262,6 +262,24 @@ button:enabled:hover {
 button:enabled:active {
   background-color: rgb(136, 204, 255, 100%);
 }
+.buttonsafe:enabled {
+  background-color: #21973f;
+  margin: auto;
+  color: white;
+  width: 100%;
+}
+.buttondangerous:enabled {
+  background-color: #d51c24;
+  margin: auto;
+  color: white;
+  width: 100%;
+}
+.buttonretry:enabled {
+  background-color: #1964dc;
+  margin: auto;
+  color: white;
+  width: 100%;
+}
 .checkbox-label {
   display: inline-block;
   position: relative;
