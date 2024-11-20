@@ -258,6 +258,7 @@ button:enabled {
 }
 button:enabled:hover {
   background-color: rgb(136, 204, 255, 80%);
+  color: black
 }
 button:enabled:active {
   background-color: rgb(136, 204, 255, 100%);
@@ -268,23 +269,39 @@ button:enabled:active {
   color: white;
   width: 100%;
 }
+.buttonsafe:enabled:hover {
+  background-color: rgb(33, 151, 63, 80%);
+  color: white;
+}
 .buttonwarning:enabled {
   background-color: rgb(246, 206, 87, 100%);
   margin: auto;
   color: black;
   width: 100%;
 }
+.buttonwarning:enabled:hover {
+  background-color: rgb(246, 206, 87, 80%);
+  color: black;
+}
 .buttondangerous:enabled {
-  background-color: #d51c24;
+  background-color: rgb(213, 28, 36);
   margin: auto;
   color: white;
   width: 100%;
+}
+.buttondangerous:enabled:hover {
+  background-color: rgb(213, 28, 36, 80%);
+  color: white;
 }
 .buttonretry:enabled {
   background-color: #1964dc;
   margin: auto;
   color: white;
   width: 100%;
+}
+.buttonretry:enabled:hover {
+  background-color: rgb(25, 100, 220, 80%);
+  color: white;
 }
 .checkbox-label {
   display: inline-block;
