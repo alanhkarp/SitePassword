@@ -268,6 +268,12 @@ button:enabled:active {
   color: white;
   width: 100%;
 }
+.buttonwarning:enabled {
+  background-color: rgb(246, 206, 87, 100%);
+  margin: auto;
+  color: black;
+  width: 100%;
+}
 .buttondangerous:enabled {
   background-color: #d51c24;
   margin: auto;
