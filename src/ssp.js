@@ -533,7 +533,7 @@ $sitenamemenuforget.onclick = function (e) {
     }
 }
 $sitenamemenuaccount.onclick = function (e) {
-    $sitepwmenuaccount.onclick();
+    $sitepwmenuaccount.onclick(); // So it runs in the same turn
 }
 $sitenamemenuhelp.onclick = function (e) {
     helpItemOn("sitename");
@@ -640,7 +640,7 @@ $sitepwmenu.onmouseleave = function (e) {
 }
 $sitepw3bluedots.onmouseover = function (e) {
     let sitepw = $sitepw.value;
-    if (sitepw) {
+    if (sitepw && $sitename.value) {
         $sitepwmenucopy.style.opacity = "1";
         $sitepwmenushow.style.opacity = "1";
         $sitepwmenuhide.style.opacity = "1";
@@ -662,7 +662,7 @@ $sitepw3bluedots.onmouseout = function (e) {
 };
 $sitepwmenuaccount.onclick = function (e) {
     // Can only change a password if there is one
-    if (!$sitepw.value) return;
+    if (!$sitepw.value || !$sitename.value) return;
     let sitename = $sitename.value;
     let sitenameCount = Object.values(database.domains).filter(domainSitename => normalize(domainSitename) === normalize(sitename)).length;
     // Can only change a password if the site is in the database
