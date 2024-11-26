@@ -57,15 +57,6 @@ to change all occurrences if ![](images...) to <img> tags.
           <p>The domain asking for your password is</p>
           <span id="phishingtext2" class="phishing">alantheguru.allanhkarp.com</span>
           <br />
-          <p id="samesuffix" style="display: none">
-            Both of these domain names end in<span id="phishingtext3" class="phishing">alanhkarp.com</span>,
-            which makes it likely that they are for the same account, 
-            but there are exceptions.
-          </p>
-          <p id="differentsuffix" style="display: none">
-            These domain names appear to be from different sites, 
-            which makes it more likely that someone is trying to steal your password.
-          </p>
           <p>
             Check the domain name carefully; it may not be for your account.
             You can check for known bad web pages at 
@@ -81,7 +72,7 @@ to change all occurrences if ![](images...) to <img> tags.
             It is common to see different domain names for the same account login. 
             You may see<span class="phishing">login.example.com</span>  
             and<span class="phishing">www.example.com</span> for the same account 
-            at<span class="phising"><example.com</span>.
+            at<span class="phishing">example.com</span>.
             Just make sure you recognize the domain name.
           </p>
           <button id="sameacctbutton" type="button" class="buttondangerous"
@@ -103,11 +94,11 @@ to change all occurrences if ![](images...) to <img> tags.
             <span class="warningtext" style="text-align: center; display: block;">Related Domain Name</span>
           </p>
           <p>
-            You used the nickname<span id="sufftext0" class="phishing">Stanford</span>
-            for the account with domain names ending in<span id="sufftext1" class="phishing"">stanford.edu</span>.
+            You used the nickname<span id="suffixtext0" class="phishing">Stanford</span>
+            for the account with domain names ending in<span id="suffixtext1" class="phishing"">stanford.edu</span>.
           </p>
           <p>
-            Is<span id="sufftext2" class="phishing">jasvir.stanford.edu</span>
+            Is<span id="suffixtext2" class="phishing">jasvir.stanford.edu</span>
            for the same account?
           </p>
           <span style="display:flex; justify-content: space-between; width: 100%">
@@ -116,7 +107,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <span class="btn-text" style="color: black">Use the same password</span>
             </button>
             <span style="width: 10px;"></span>
-            <button id="suffixrejectbutton" type="button" class="buttonretry"
+            <button id="suffixcancelbutton" type="button" class="buttonretry"
               title="This domain name is for a different account.">
               <span class="btn-text" style="color: white">Use a different password</span>
             </button>
@@ -136,12 +127,15 @@ to change all occurrences if ![](images...) to <img> tags.
               placeholder="Enter a different site nickname for this account."
               title="This domain name is for a different account."
           </input>
+          <br /><br />
           <span style="display: flex; justify-content: space-between; width: 100%;">
-            <button id="accountnicknamesavebutton" type="buttonretry"
+            <button id="accountnicknamesavebutton" class="buttonretry"
+              disabled
               title="Use the new password for this domain name.">
               <span class="btn-text" style="color: white">Change password</span>
             </button> 
-            <button id="accountnicknamecancelbutton" type="buttonsafe"
+            <span style="width: 10px;"></span>
+            <button id="accountnicknamecancelbutton" class="buttonsafe"
               title="Use the old password for this account.">
               <span class="btn-text" style="color: white">Don't change password</span>
             </button>
@@ -152,7 +146,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <span id="accounttext1" class="phishing"></span>
               is for a different account.
             </p>
-            <button id="accountnicknamenewbutton" type="buttonretry"
+            <button id="accountnicknamenewbutton" class="buttonretry"
               title="Use the new password for this domain name.">
               <span class="btn-text" style="color: white">Use the new password for this account.</span>
             </button>

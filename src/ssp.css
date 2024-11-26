@@ -294,7 +294,7 @@ button:enabled:active {
   color: white;
 }
 .buttonretry:enabled {
-  background-color: #1964dc;
+  background-color: rgb(25, 100, 220, 100%);
   margin: auto;
   color: white;
   width: 100%;
@@ -302,6 +302,12 @@ button:enabled:active {
 .buttonretry:enabled:hover {
   background-color: rgb(25, 100, 220, 80%);
   color: white;
+}
+.buttonretry:disabled {
+  background-color: rgb(25, 100, 220, 60%);
+  margin: auto;
+  color: black;
+  width: 100%;
 }
 .checkbox-label {
   display: inline-block;

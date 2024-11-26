@@ -96,9 +96,11 @@ import { publicSuffixSet } from "./public_suffix_list.js";
     const $phishingtext0 = get("phishingtext0");
     const $phishingtext1 = get("phishingtext1");
     const $phishingtext2 = get("phishingtext2");
-    const $phishingtext3 = get("phishingtext3");
-    const $samesuffix = get("samesuffix");
-    const $differentsuffix = get("differentsuffix");
+    const $suffixtext0 = get("suffixtext0");
+    const $suffixtext1 = get("suffixtext1");
+    const $suffixtext2 = get("suffixtext2");
+    const $suffixacceptbutton = get("suffixacceptbutton");
+    const $suffixcancelbutton = get("suffixcancelbutton");
 // #endregion
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
@@ -501,6 +503,13 @@ $sitename3bluedots.onmouseout = function (e) {
 };
 $sitenamemenu.onmouseleave = function (e) {
     menuOff("sitename", e);
+}
+$accountnicknameinput.onkeyup = function (e) {
+    if ($accountnicknameinput.value && $accountnicknameinput.value !== $sitename.value) {
+        $accountnicknamesavebutton.disabled = false;
+    } else {
+        $accountnicknamesavebutton.disabled = true;
+    }
 }
 $accountnicknamesavebutton.onclick = function (e) {
     if (!$accountnicknameinput.value) return;
@@ -926,7 +935,7 @@ $sameacctbutton.onclick = async function (e) {
     $mainpanel.onmouseleave(e); // So it runs in the same turn
     if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
 }
-$nicknamebutton.onclick = function () {
+$nicknamebutton.onclick = function (e) {
     $superpw.disabled = false;
     $sitename.disabled = false;
     $username.disabled = false;
@@ -935,6 +944,15 @@ $nicknamebutton.onclick = function () {
     msgoff("phishing");
     saveSettings = false;
     autoclose = false;
+}
+// Phishing methods when there is a safe suffix
+$suffixcancelbutton.onclick = function (e) {
+    msgoff("suffix");
+    msgon("account");
+}
+$suffixacceptbutton.onclick = async function (e) {
+    msgoff("suffix");
+    await $sameacctbutton.onclick(e); // So it runs in the same turn
 }
 // Forget buttons
 $forgetbutton.onclick = async function () {
@@ -954,6 +972,7 @@ $forgetbutton.onclick = async function () {
     if (logging) console.log("popup forget response", response);
     if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
     $cancelbutton.click();
+    msgoff("forget");
 }
 $cancelbutton.onclick = function () {
     // Can't just set list to [] because I need to remove the 
@@ -1085,43 +1104,28 @@ async function getPhishingDomain(sitename) {
             }
         }
     });
-    // or if it has a safe suffix
-    let suffix = commonSuffix(phishing, domainname);
-    if (!database.safeSuffixes[suffix]) {
-        return phishing
-    } else {
-        $username.value = bg.settings.username || "";
-        let settings = database.sites[normalize(sitename)];
-        if (settings) {
-            bg.settings = clone(settings);
-            $sitename.value = bg.settings.sitename || sitename;
-            $username.value = bg.settings.username || $username.value;
-            await ask2generate();
-        }
-        return "";
-    }
+    return phishing;
 }
 function openPhishingWarning(d) {
     if (!d) return false;
     let domainname = $domainname.value;
-    $phishingtext0.innerText = $sitename.value;
-    $phishingtext1.innerText = d;
-    $phishingtext2.innerText = domainname;
     let suffix = commonSuffix(d, domainname);
-    if (suffix) {
-        $phishingtext3.innerText = suffix;
-        $samesuffix.style.display = "block";
-        $differentsuffix.style.display = "none";
+    if (database.safeSuffixes[suffix]) {
+        $suffixtext0.innerText = $sitename.value;
+        $suffixtext1.innerText = suffix;
+        $suffixtext2.innerText = domainname;
+        msgon("suffix");
     } else {
-        $differentsuffix.style.display = "block";
-        $samesuffix.style.display = "none";
+        $phishingtext0.innerText = $sitename.value;
+        $phishingtext1.innerText = d;
+        $phishingtext2.innerText = domainname;
+        msgon("phishing");
     }
-    msgon("phishing");
-    hidesettings();
     $superpw.disabled = true;
     $sitename.disabled = true;
     $username.disabled = true;
     $sitepw.value = "";
+    hidesettings();
     return true;
 }
 // Thanks, Copilot
@@ -1647,6 +1651,7 @@ function clone(object) {
 var messages = [
     { name: "forget", ison: false, transient: false },
     { name: "phishing", ison: false, transient: false },
+    { name: "suffix", ison: false, transient: false },
     { name: "account", ison: false, transient: false },
     { name: "nopw", ison: false, transient: false },
     { name: "http", ison: false, transient: false },

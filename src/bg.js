@@ -316,8 +316,6 @@ async function persistMetadata(sameacct, sendResponse) {
     if (found.length > 1) return;
     rootFolder = found[0];
     let sitename = normalize(bg.settings.sitename);
-    if (logging) console.log("Suffix counts:", suffixCounts);
-
     if (sitename) {
         let oldsitename = db.domains[bg.settings.domainname];
         if ((!oldsitename) || sitename === oldsitename) {
