@@ -291,7 +291,7 @@ $mainpanel.onmouseleave = async function (event) {
     let phishingDomain = await getPhishingDomain($sitename.value);
     if (logging) console.log("popup mainpanel mouseleave", phishingDomain);
     if (phishingDomain && saveSettings) openPhishingWarning(phishingDomain);
-    let element = event.pageX ? document.elementFromPoint(event.pageX || 0, event.pageY || 0) : null;
+    let element = event ? (event.pageX ? document.elementFromPoint(event.pageX || 0, event.pageY || 0) : null) : null;
     if (logging) console.log("popup onmouseleave", phishingDomain, exporting, element);
     // Don't persist if: phishing sites, exporting, the mouse is in the panel, or if event triggered by closing a help or instruction panel
     if (phishingDomain || exporting || element || !saveSettings) {
@@ -934,7 +934,7 @@ $sameacctbutton.onclick = async function (e) {
     database.domains[domainname] = normalize(bg.settings.sitename);
     $username.value = bg.settings.username;
     await fill();
-    $mainpanel.onmouseleave(e); // So it runs in the same turn
+    $mainpanel.onmouseleave(); // So it runs in the same turn
     if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
 }
 $nicknamebutton.onclick = function (e) {
