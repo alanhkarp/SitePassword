@@ -194,6 +194,7 @@ async function setup() {
                 if (logging) console.log("bg forget rootFolder", rootFolder, request.toforget);
                 await forget(request.toforget, rootFolder[0], sendResponse);
                 if (logging) console.log("bg forget done");
+                sendResponse("forgot");
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
@@ -568,17 +569,14 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
     }
     // Count the number of times each safe suffix is appears in newdb.domains
     for (let suffix in newdb.safeSuffixes) {
-        newdb.safeSuffixes[suffix] = 0;
+        let sitename = newdb.safeSuffixes[suffix];
+        let count = 0;
         for (let domain in newdb.domains) {
-            if (domain.endsWith(suffix)) {
-                if (newdb.safeSuffixes[suffix]) {
-                    newdb.safeSuffixes[suffix]++;
-                } else {
-                    newdb.safeSuffixes[suffix] = 1;
-                }
+            if (domain.endsWith(suffix) && newdb.domains[domain] === sitename) {
+                count++;
             } 
         }
-        if (newdb.safeSuffixes[suffix] < 2) delete newdb.safeSuffixes[suffix];
+        if (count < 2) delete newdb.safeSuffixes[suffix];
     }
     database = newdb;
     await retrieved(callback);

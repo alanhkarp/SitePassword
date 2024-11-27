@@ -923,9 +923,11 @@ $sameacctbutton.onclick = async function (e) {
     let suffix = commonSuffix(d, bg.settings.domainname);
     if (suffix) {
         if (database.safeSuffixes[suffix]) {
-            database.safeSuffixes[suffix]++;
+            if (database.safeSuffixes[suffix] !== sitename) {
+                alert("Something is wrong. " + sitename + " is not the same as " + database.safeSuffixes[suffix]); 
+            }
         } else {
-            database.safeSuffixes[suffix] = 1;
+            database.safeSuffixes[suffix] = sitename;
         }
     }
     bg.settings = clone(database.sites[sitename]);
@@ -970,9 +972,9 @@ $forgetbutton.onclick = async function () {
     let response = await chrome.runtime.sendMessage({"cmd": "forget", "toforget": list});
     if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
     if (logging) console.log("popup forget response", response);
-    if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
     $cancelbutton.click();
     msgoff("forget");
+    if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
 }
 $cancelbutton.onclick = function () {
     // Can't just set list to [] because I need to remove the 
