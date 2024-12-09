@@ -918,7 +918,10 @@ $sameacctbutton.onclick = async function (e) {
     msgoff("phishing");
     let domainname = $domainname.value;
     let sitename = normalize($sitename.value);
-    if (testMode) bg.settings.domainname = domainname;
+    if (testMode) {
+        bg.settings.domainname = domainname;
+        database.sites[sitename]["domainname"] = domainname;
+    }
     let d = await getPhishingDomain(bg.settings.sitename);
     let suffix = commonSuffix(d, bg.settings.domainname);
     if (suffix) {
@@ -950,11 +953,12 @@ $nicknamebutton.onclick = function (e) {
 // Phishing methods when there is a safe suffix
 $suffixcancelbutton.onclick = function (e) {
     msgoff("suffix");
-    msgon("account");
+    $sitename.focus();
 }
 $suffixacceptbutton.onclick = async function (e) {
     msgoff("suffix");
     await $sameacctbutton.onclick(e); // So it runs in the same turn
+    if (resolvers.suffixacceptbuttonResolver) resolvers.suffixacceptbuttonResolver("suffixacceptbuttonPromise");
 }
 // Forget buttons
 $forgetbutton.onclick = async function () {
