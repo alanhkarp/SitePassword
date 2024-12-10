@@ -320,16 +320,16 @@ async function persistMetadata(sameacct, sendResponse) {
     if (sitename) {
         let oldsitename = db.domains[bg.settings.domainname];
         if ((!oldsitename) || sitename === oldsitename) {
-            db.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
+            db.domains[bg.settings.domainname] = sitename;
             if (bg.settings.pwdomainname && bg.settings.pwdomainname !== bg.settings.domainname) {
-                db.domains[bg.settings.pwdomainname] = normalize(bg.settings.sitename);
+                db.domains[bg.settings.pwdomainname] = sitename;
             }
             db.sites[sitename] = bg.settings;
         } else {
             // Find all domains that point to oldsitename and have them point to
             // the new one
             for (let entry of Object.entries(db.domains)) {
-                if (db.domains[entry[0]] === oldsitename) db.domains[entry[0]] = normalize(bg.settings.sitename);
+                if (db.domains[entry[0]] === oldsitename) db.domains[entry[0]] = sitename;
             }
             db.sites[sitename] = bg.settings;
             // then remove the old site name from database.sites
