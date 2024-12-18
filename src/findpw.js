@@ -227,7 +227,9 @@ async function sendpageinfo(cpi, clicked, onload) {
         dupNotified = true;
         let alertString = "You have one or more duplicate bookmarks in your SitePasswordData bookmark folder.  ";
         alertString += "Open the Bookmark Manager and delete the ones in the SitePasswordData folder ";
-        alertString +- "that you don't want.  Then reload this page.";
+        alertString += "that you don't want.  Then reload this page.\n\n";
+        alertString += "The easiest way to see what's in the duplicate bookmarks is to click on them.  "
+        alertString += "They will open sitepassword.info with the settings for that bookmark filled in.";
         alert(alertString);
         return;
     }
