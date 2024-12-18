@@ -145,8 +145,10 @@ export async function getsettings(testdomainname) {
     if (chrome.runtime.lastError) console.log("popup getsettings lastError", chrome.runtime.lastError);
     if (logging) console.log("popup getsettings response", response);
     if (response && response.duplicate) {
-        let msg = "You have two bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.";
-        alert(msg);
+        let alertString = "You have multiple bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.\n\n";
+        alertString += "The easiest way to see what's in the duplicate bookmarks is to dbl-click on them.  "
+        alertString += "They will open sitepassword.info with the settings for that bookmark.";
+        alert(alertString);
         return;
     }
     bg = response.bg;

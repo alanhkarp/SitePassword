@@ -517,16 +517,18 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         if (seenTitles[title]) {
             if (logging) console.log("bg duplicate bookmark", children[i]);
             let seen = parseSettings(children[seenTitles[title]].url);
-            seen.settings.specials = array2string(seen.settings.specials); // For legacy bookmarks
+            seen.specials = array2string(seen.specials); // For legacy bookmarks
             let dupl = parseSettings(children[i].url);
-            dupl.settings.specials = array2string(dupl.settings.specials); // For legacy bookmarks
+            dupl.specials = array2string(dupl.specials); // For legacy bookmarks
             if (sameSettings(seen, dupl)) {
                 if (isSafari) {
                     delete bkmksSafari[children[i]];
                 } else {
-                    sendResponse({"duplicate": children[i].title});
-                    continue;
+                    chrome.bookmarks.remove(children[i].id);
                 }
+            } else {
+                sendResponse({"duplicate": children[i].title});
+                continue;
             }
         } else {
             seenTitles[title] = i;
@@ -665,7 +667,9 @@ function sameSettings(a, b) {
         if (typeof a[key] === "object") {
             if (!sameSettings(a[key], b[key])) return false;
         } else {
-            if (a[key] !== b[key]) return false;
+            if (a[key] !== b[key]) {
+                return false;
+            }
         }
     }
     return true;
