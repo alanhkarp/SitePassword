@@ -1,5 +1,5 @@
 'use strict';
-import { bgDefault, config, isSafari, webpage } from "./bg.js";
+import { bgBaseDefault, config, isSafari, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
@@ -19,8 +19,8 @@ const defaultTitle = "SitePassword";
 
 let saveSettings = true;
 let warningMsg = false;
-let bg = bgDefault;
-
+let bg = {};
+const bgDefault = clone(bgBaseDefault);
 // Some actions prevent the settings being saved when mousing out of the main panel.
 // However, some tests want to save the settings.  This function sets certain values
 // to what they have when the popup is opened.
@@ -152,6 +152,7 @@ export async function getsettings(testdomainname) {
         return;
     }
     bg = response.bg;
+    let pwcount = response.pwcount;
     database = response.database;
     hidesitepw();
     if (!bg.settings.sitename) {
@@ -160,8 +161,8 @@ export async function getsettings(testdomainname) {
     get("superpw").value = response.superpw || "";
     init();
     if (logging) console.log("popup got metadata", bg, database);
-    message("multiple", bg.pwcount > 1);
-    message("zero", bg.pwcount == 0);
+    message("multiple", pwcount > 1);
+    message("zero", pwcount === 0);
     if (!testMode && response.test) { // Only run tests once
         testMode = true;
         runTests();
@@ -217,12 +218,12 @@ get("mainpanel").onmouseleave = async function (event) {
         if (logging) console.log("popup sending siteData", bg.settings, database);
         await wakeup("mouseleave");
         let response = await chrome.runtime.sendMessage({
-                "cmd": "siteData",
-                "sitename": sitename,
-                "clearsuperpw": get("clearsuperpw").checked,
-                "hidesitepw": get("hidesitepw").checked,
-                "bg": bg,
-            });
+            "cmd": "siteData",
+            "sitename": sitename,
+            "clearsuperpw": get("clearsuperpw").checked,
+            "hidesitepw": get("hidesitepw").checked,
+            "bg": bg,
+        });
         if (chrome.runtime.lastError) console.log("popup mouseleave lastError", chrome.runtime.lastError);
         if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
         if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
@@ -372,7 +373,7 @@ get("sitename").onblur = async function (e) {
         get("username").disabled = false
         await handleblur("sitename", "sitename");
         await changePlaceholder();
-        bg.settings = clone(database.sites[normalize(get("sitename").value)] || bgDefault.settings);
+        bg.settings = clone(database.sites[normalize(get("sitename").value)] || bg.settings);
         get("sitename").value = bg.settings.sitename || get("sitename").value;
         get("username").value = bg.settings.username || get("username").value;
         await ask2generate();
@@ -629,11 +630,11 @@ get("providesitepw").onclick = async function () {
     if (resolvers.providesitepwResolver) resolvers.providesitepwResolver("providesitepwPromise");
 }
 get("clearsuperpw").onclick = function () {
-    database.clearsuperpw = get("clearsuperpw").checked;
+    database.common.clearsuperpw = get("clearsuperpw").checked;
     if (resolvers.clearsuperpwResolver) resolvers.clearsuperpwResolver("clearsuperpwPromise");
 }
 get("hidesitepw").onclick = function () {
-    database.hidesitepw = get("hidesitepw").checked;
+    database.common.hidesitepw = get("hidesitepw").checked;
     hidesitepw();
     if (resolvers.hidesitepwResolver) resolvers.hidesitepwResolver("hidesitepwPromise");
 }
@@ -880,8 +881,8 @@ function helpAllOff() {
     } 
 }
 function hidesitepw() {
-    if (logging) console.log("popup checking hidesitepw", get("hidesitepw").checked, database.hidesitepw);
-    if (get("hidesitepw").checked || (database && database.hidesitepw)) {
+    if (logging) console.log("popup checking hidesitepw", get("hidesitepw").checked, database.common.hidesitepw);
+    if (get("hidesitepw").checked || (database && database.common.hidesitepw)) {
         get("sitepw").type = "password";
         get("sitepwmenushow").classList.remove("nodisplay");
         get("sitepwmenuhide").classList.add("nodisplay");
@@ -1133,8 +1134,8 @@ async function fill() {
         get("sitepw").style.backgroundColor = "rgb(136, 204, 255, 20%)";
         defaultfocus();
     }
-    get("clearsuperpw").checked = database.clearsuperpw;
-    get("hidesitepw").checked =  database.hidesitepw;
+    get("clearsuperpw").checked = database.common.clearsuperpw;
+    get("hidesitepw").checked =  database.common.hidesitepw;
     hidesitepw();
     get("pwlength").value = bg.settings.pwlength;
     get("startwithletter").checked = bg.settings.startwithletter;

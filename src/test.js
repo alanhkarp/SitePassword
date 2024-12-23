@@ -2,7 +2,7 @@
 // the extension.  Then open any https page, e.g., https://alanhkarp.com. 
 // Right click on the SitePassword icon and select "Inspect".  You will 
 // see an alert "Starting tests".  Click OK and check the console for results.
-import { defaultSettings, isSafari } from "./bg.js";
+import { baseDefaultSettings, isSafari } from "./bg.js";
 import { normalize } from "./generate.js";
 import { getsettings, restoreForTesting } from "./ssp.js";
 
@@ -370,26 +370,26 @@ export async function runTests() {
         if (loggingClear) console.log("resetState done", $pwlength.value);
     }
     function clearForm() {
-        if (loggingClear) console.log("clearForm", defaultSettings.pwlength);
+        if (loggingClear) console.log("clearForm", baseDefaultSettings.pwlength);
         $domainname.value = "";
         $superpw.value = "";
         $sitename.value = "";
         $username.value = "";
         $sitepw.value = "";
-        $providesitepw.checked = defaultSettings.providesitepw;
-        $clearsuperpw.checked = defaultSettings.clearsuperpw;
-        $hidesitepw.checked = defaultSettings.hidesitepw;
-        $pwlength.value = defaultSettings.pwlength;
-        $startwithletter.checked = defaultSettings.startwithletter;
-        $allowlowercheckbox.checked = defaultSettings.allowlower;
-        $allowuppercheckbox.checked = defaultSettings.allowupper;
-        $allownumbercheckbox.checked = defaultSettings.allownumber;
-        $allowspecialcheckbox.checked = defaultSettings.allowspecial;
-        $minlower.value = defaultSettings.minlower;
-        $minupper.value = defaultSettings.minupper;
-        $minnumber.value = defaultSettings.minnumber;
-        $minspecial.value = defaultSettings.minspecial;
-        $specials.value = defaultSettings.specials;
+        $providesitepw.checked = baseDefaultSettings.providesitepw;
+        $clearsuperpw.checked = baseDefaultSettings.clearsuperpw;
+        $hidesitepw.checked = baseDefaultSettings.hidesitepw;
+        $pwlength.value = baseDefaultSettings.pwlength;
+        $startwithletter.checked = baseDefaultSettings.startwithletter;
+        $allowlowercheckbox.checked = baseDefaultSettings.allowlower;
+        $allowuppercheckbox.checked = baseDefaultSettings.allowupper;
+        $allownumbercheckbox.checked = baseDefaultSettings.allownumber;
+        $allowspecialcheckbox.checked = baseDefaultSettings.allowspecial;
+        $minlower.value = baseDefaultSettings.minlower;
+        $minupper.value = baseDefaultSettings.minupper;
+        $minnumber.value = baseDefaultSettings.minnumber;
+        $minspecial.value = baseDefaultSettings.minspecial;
+        $specials.value = baseDefaultSettings.specials;
         $settings.style.display = "none";
         if (loggingClear) console.log("clearForm done", $pwlength.value);
     }
