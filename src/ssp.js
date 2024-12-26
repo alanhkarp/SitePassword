@@ -690,13 +690,13 @@ get("minspecial").onmouseout = function () {
 get("minspecial").onblur = function () {
     handleblur("minspecial", "minspecial");
 }
-// I need to limit the number of specials because generate() 
-// computes a number between 0 and 63 to index into the
-// characters array.  There are 10 integers and 26 upper
-// case letters.  If there are too many special characters,
-// then the first lower case letter is past index 63.
+// In an older version I needed to limit the number of 
+// specials because generate() computed a number between 
+// 0 and 63 to index into the characters array.  That's 
+// no longer the case, but I don't want to risk
+// generating different passwords.
 const alphanumerics = /[0-9A-Za-z]/g;
-get("specials").onblur = async function() {
+get("specials").onkeyup = async function() {
     if (!get("specials").value) {
         alert("You must enter at least one special character.");
         get("specials").value = bg.settings.specials;
