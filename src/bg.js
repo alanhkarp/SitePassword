@@ -388,7 +388,7 @@ async function persistMetadata(sendResponse) {
         }
     } else {
         let existing = parseSettings(commonSettings[0].url);
-        if (!sameSettings(common, existing)) {
+        if (isLegacy(commonSettings[0].url) || !sameSettings(common, existing)) {
             if (isSafari) {
                 bkmksSafari[commonSettingsTitle].url = url;
                 await chrome.storage.sync.set(bkmksSafari);
@@ -409,7 +409,7 @@ async function persistMetadata(sendResponse) {
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
             let foundSettings = parseSettings(found.url);
-            if (!sameSettings(settings, foundSettings)) {
+            if (isLegacy(found.url) || !sameSettings(settings, foundSettings)) {
                 if (isSafari) {
                     // Handle Safari bookmarks
                     if (bkmksSafari[found.title] && bkmksSafari[found.title].url !== url) {
@@ -684,6 +684,12 @@ function sameSettings(a, b) {
         }
     }
     return true;
+}
+// Legacy bookmarks did not do URI encoding correctly.  This function
+// checks for the presence of a curly brace to determine if the bookmark
+// is legacy.  With proper URI encoding, the stringified value is %7B.
+function isLegacy(url) { 
+    return url.indexOf("{") > -1;
 }
 function sspUrl(url) {
     let sspUrl = url.split("ssp://")[1];
