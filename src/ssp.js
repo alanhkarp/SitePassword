@@ -955,6 +955,9 @@ $nicknamebutton.onclick = function (e) {
 // Phishing methods when there is a safe suffix
 $suffixcancelbutton.onclick = function (e) {
     msgoff("suffix");
+    $superpw.disabled = false;
+    $sitename.disabled = false;
+    $username.disabled = false;
     $sitename.focus();
 }
 $suffixacceptbutton.onclick = async function (e) {
