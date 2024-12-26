@@ -388,7 +388,7 @@ async function persistMetadata(sendResponse) {
         }
     } else {
         let existing = parseSettings(commonSettings[0].url);
-        if (sameSettings(common, existing) === false) {
+        if (!sameSettings(common, existing)) {
             if (isSafari) {
                 bkmksSafari[commonSettingsTitle].url = url;
                 await chrome.storage.sync.set(bkmksSafari);
