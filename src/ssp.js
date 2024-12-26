@@ -710,6 +710,7 @@ get("specials").onkeyup = async function() {
     await handlekeyup("specials", "specials");
     if (resolvers.specialsblurResolver) resolvers.specialsblurResolver("specialsblurPromise");
 }
+get("specials").onblur = get("specials").onkeyup; // For testing
 get("makedefaultbutton").onclick = async function () {
     let newDefaults = {
         sitename: "",

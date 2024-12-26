@@ -2,7 +2,7 @@
 // the extension.  Then open any https page, e.g., https://alanhkarp.com. 
 // Right click on the SitePassword icon and select "Inspect".  You will 
 // see an alert "Starting tests".  Click OK and check the console for results.
-import { baseDefaultSettings, isSafari } from "./bg.js";
+import { baseDefaultSettings, getRootFolder, isSafari } from "./bg.js";
 import { normalize } from "./generate.js";
 import { getsettings, restoreForTesting } from "./ssp.js";
 
@@ -27,7 +27,7 @@ if (logging) {
 }
 
 export async function runTests() {
-    // Fields needed for tests
+    // #region Fields needed for tests
     const $mainpanel = get("mainpanel");
     const $settingsshow = get("settingsshow");
     const $settingssave = get("settingssave");
@@ -62,7 +62,7 @@ export async function runTests() {
     const $sitenamemenuforget = get("sitenamemenuforget");
     const $username3bluedots = get("username3bluedots");
     const $usernamemenuforget = get("usernamemenuforget");
-
+    // #endregion
     let passed = 0;
     let failed = 0;
     let restart = localStorage.restart;
@@ -80,6 +80,7 @@ export async function runTests() {
         await testForget();
         await testClearSuperpw();
         await testHideSitepw();
+        await testLegacyBkmks();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         await testSaveAsDefault();
@@ -322,6 +323,26 @@ export async function runTests() {
             failed += 1;
         }
     }
+    // Test updating legacy bookmarks
+    async function testLegacyBkmks() {
+        // Create a legacy bookmark
+        let title = "legacy.bkmk.com";
+        let url = "https://sitepassword.info/?bkmk=ssp://{%22sitename%22:%22usps%22,%22username%22:%22fred%22,%22providesitepw%22:false,%22xor%22:[0,0,0,0,0,0,0,0,0,0,0,0],%22pwlength%22:12,%22domainname%22:%22reg.usps.com%22,%22pwdomainname%22:%22reg.usps.com%22,%22startwithletter%22:true,%22allowlower%22:true,%22allowupper%22:true,%22allownumber%22:true,%22allowspecial%22:false,%22minlower%22:1,%22minupper%22:1,%22minnumber%22:1,%22minspecial%22:1,%22specials%22:%22$/!=@?._-%22,%22characters%22:%220123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz%22}";
+        await resetState();
+        let rootFolder = await getRootFolder();
+        await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
+        if (chrome.runtime.lastError) console.log("test getChildren lastError", chrome.runtime.lastError);
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        let children = await chrome.bookmarks.getChildren(rootFolder[0].id);
+        let test = children[0].url.indexOf("{") === -1;
+        if (test) {
+            console.log("Passed: Legacy bookmark updated");
+            passed += 1;
+        } else {
+            console.warn("Failed: Legacy bookmark not updated");
+            failed += 1;
+        }
+    }
     // Test save as default
     async function testSaveAsDefault() {
         if (loggingDefault) console.log("testSaveAsDefault");
@@ -337,6 +358,7 @@ export async function runTests() {
         await triggerEvent("blur", $specials, "specialsblurResolver");
         if (loggingDefault) console.log("testSaveAsDefault click |" + $pwlength.value + "|" + $specials.value + "|" + $allowspecialcheckbox.checked + "|");
         await triggerEvent("click", $makedefaultbutton, "makedefaultResolver");
+        if (loggingDefault) console.log("testSaveAsDefault clicked makedefaultbutton");
         localStorage.restart = "testSaveAsDefault2";
         alert("Inspect the extension again to see the results of testSaveAsDefault.");
     }

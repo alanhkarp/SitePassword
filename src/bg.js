@@ -550,7 +550,6 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         } else {
             if (logging && i < 3) console.log("bg settings from bookmark", children[i]);
             let settings = parseSettings(children[i].url);
-            settings.specials = array2string(settings.specials); // For legacy bookmarks    
             if (logging) console.log("bg settings from bookmark", settings);
             if (settings.sitename) {
                 newdb.domains[title] = normalize(settings.sitename);
@@ -561,7 +560,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
     database = newdb;
     await retrieved(callback);
 }
-async function getRootFolder(sendResponse) {
+export async function getRootFolder(sendResponse) { // Exported for testing
     if (logging) console.log("bg getRootFolder", sitedataBookmark);
     // bookmarks.search finds any bookmark with a title containing the
     // search string, but I need to find one with an exact match.  I
