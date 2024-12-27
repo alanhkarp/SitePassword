@@ -81,6 +81,7 @@ export async function runTests() {
         await testClearSuperpw();
         await testHideSitepw();
         await testLegacyBkmks();
+        await testDuplicateBkmks();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         await testSaveAsDefault();
@@ -331,7 +332,6 @@ export async function runTests() {
         await resetState();
         let rootFolder = await getRootFolder();
         await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
-        if (chrome.runtime.lastError) console.log("test getChildren lastError", chrome.runtime.lastError);
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         let children = await chrome.bookmarks.getChildren(rootFolder[0].id);
         let test = children[0].url.indexOf("{") === -1;
@@ -342,6 +342,42 @@ export async function runTests() {
             console.warn("Failed: Legacy bookmark not updated");
             failed += 1;
         }
+    }
+    // Test proper handling of duplicate bookmarks
+    async function testDuplicateBkmks() {
+        await resetState();
+        // Create a duplicate bookmark
+        let title = "duplicate.bkmk.com";
+        let url = "https://sitepassword.info/?bkmk=ssp://{%22sitename%22:%22usps%22,%22username%22:%22fred%22,%22providesitepw%22:false,%22xor%22:[0,0,0,0,0,0,0,0,0,0,0,0],%22pwlength%22:12,%22domainname%22:%22reg.usps.com%22,%22pwdomainname%22:%22reg.usps.com%22,%22startwithletter%22:true,%22allowlower%22:true,%22allowupper%22:true,%22allownumber%22:true,%22allowspecial%22:false,%22minlower%22:1,%22minupper%22:1,%22minnumber%22:1,%22minspecial%22:1,%22specials%22:%22$/!=@?._-%22,%22characters%22:%220123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz%22}";
+        await resetState();
+        let rootFolder = await getRootFolder();
+        await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
+        await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        let children = await chrome.bookmarks.getChildren(rootFolder[0].id);
+        // See if only one of the duplicats remains
+        let test = children.length === 2; // because of the common settings bookmark
+        if (test) {
+            console.log("Passed: Identical duplicate bookmark handled");
+            passed += 1;
+        } else {
+            console.warn("Failed: Identical duplicate bookmark not handled");
+            failed += 1;
+        }
+        // Create a duplicate bookmark with different settings
+        let newUrl = url.replace("fred", "barney");
+        await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": newUrl });
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        children = await chrome.bookmarks.getChildren(rootFolder[0].id);
+        test = children.length === 3; // because of the common settings bookmark
+        if (test) {
+            console.log("Passed: Different duplicate bookmark handled");
+            passed += 1;
+        } else {
+            console.warn("Failed: Different duplicate bookmark not handled");
+            failed += 1;
+        }
+        await resetState(); // Don't leave duplicate bookmarks
     }
     // Test save as default
     async function testSaveAsDefault() {

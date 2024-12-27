@@ -521,7 +521,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 if (chrome.runtime.lastError) console.log("bg remove legacy lastError", chrome.runtime.lastError);
             }
         }
-        if (seenTitles[title]) {
+        if (seenTitles[title] !== undefined) { // Because 0 tests as false
             if (logging) console.log("bg duplicate bookmark", children[i]);
             let seen = parseSettings(children[seenTitles[title]].url);
             seen.specials = array2string(seen.specials); // For legacy bookmarks
