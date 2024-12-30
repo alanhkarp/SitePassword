@@ -19,8 +19,8 @@ const defaultTitle = "SitePassword";
 
 let saveSettings = true;
 let warningMsg = false;
-let bg = {};
 const bgDefault = clone(bgBaseDefault);
+let bg = clone(bgDefault);
 // Some actions prevent the settings being saved when mousing out of the main panel.
 // However, some tests want to save the settings.  This function sets certain values
 // to what they have when the popup is opened.
@@ -797,7 +797,9 @@ get("forgetbutton").onclick = async function () {
     delete database.sites[normalize(get("sitename").value)];
     get("sitename").value = "";
     get("username").value = "";
+    let superpw = bg.superpw;
     bg = clone(bgDefault);
+    bg.superpw = superpw;
     if (logging) console.log("popup forgetbutton sending forget", list);
     await wakeup("foregetbutton");
     let response = await chrome.runtime.sendMessage({"cmd": "forget", "toforget": list});
@@ -1094,10 +1096,10 @@ async function ask2generate() {
         computed = "";
         Promise.resolve(); // To match the await in the other branch
     } else {
-        message("nopw", false); // I don't want to hide any other open messages
+        msgoff("nopw"); // I don't want to hide any other open messages
         const computed = await generatePassword(bg);
         if (computed) {
-            message("nopw", false); // I don't want to hide any other open messages
+            msgoff("nopw"); // I don't want to hide any other open messages
         } else {
             if (get("superpw").value) {
                 msgon("nopw");
