@@ -62,6 +62,7 @@ export async function runTests() {
     const $sitenamemenuforget = get("sitenamemenuforget");
     const $username3bluedots = get("username3bluedots");
     const $usernamemenuforget = get("usernamemenuforget");
+    const $warnings = get("warnings");
     // #endregion
     let passed = 0;
     let failed = 0;
@@ -284,7 +285,28 @@ export async function runTests() {
         } else {
             console.warn("Failed: Forget by username");
             failed += 1;
-        } 
+        }
+        // See if forget works even if you don't leave the popup
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        await forgetDomainname();
+        test = $warnings.style.display === "none";
+        if (test) {
+            console.log("Passed: Forget without leaving popup no warning");
+            passed += 1;
+        } else {
+            console.warn("Failed: Forget without leaving popup warning");
+            failed += 1;
+        }
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "");
+        test = $username.value === "";
+        if (test) {
+            console.log("Passed: Forget without leaving popup no username");
+            passed += 1;
+        } else {
+            console.warn("Failed: Forget without leaving popup username");
+            failed += 1;
+        }
     }
     // Test clear superpw
     async function testClearSuperpw() {
