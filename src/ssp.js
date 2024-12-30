@@ -780,10 +780,11 @@ get("nicknamebutton").onclick = function () {
     get("superpw").disabled = false;
     get("sitename").disabled = false;
     get("username").disabled = false;
-    get("sitename").focus();
     clearDatalist("sitenames");
     msgoff("phishing");
+    get("sitename").focus();
     autoclose = false;
+    saveSettings = false;
 }
 get("forgetbutton").onclick = async function () {
     if (logging) console.log("popup forgetbutton");
