@@ -159,7 +159,7 @@ export async function getsettings(testdomainname) {
         bg.settings.sitename = "";
     }
     get("superpw").value = response.superpw || "";
-    init();
+    await init();
     if (logging) console.log("popup got metadata", bg, database);
     message("multiple", pwcount > 1);
     message("zero", pwcount === 0);
@@ -793,6 +793,8 @@ get("forgetbutton").onclick = async function () {
     for (let child of children) {
         list.push(child.innerText);
     }
+    delete database.domains[get("domainname").value];
+    delete database.sites[normalize(get("sitename").value)];
     get("sitename").value = "";
     get("username").value = "";
     bg = clone(bgDefault);
@@ -809,6 +811,9 @@ get("cancelbutton").onclick = function () {
         get("toforgetlist").removeChild(get("toforgetlist").firstChild);
     }
     msgoff("forget");
+    defaultfocus();
+    autoclose = false;
+    saveSettings = false;
 }
 // Handle external links in the instructions and help
 document.addEventListener('DOMContentLoaded', function () {
