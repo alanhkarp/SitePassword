@@ -1,5 +1,5 @@
 'use strict';
-import { bgDefault, config, databaseDefault, isSafari, webpage } from "./bg.js";
+import { bgBaseDefault, config, isSafari, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 import { publicSuffixSet } from "./public_suffix_list.js";
@@ -119,8 +119,8 @@ const defaultTitle = "SitePassword";
 
 let saveSettings = true;
 let warningMsg = false;
-let bg = bgDefault;
-
+const bgDefault = clone(bgBaseDefault);
+let bg = clone(bgDefault);
 // Some actions prevent the settings being saved when mousing out of the main panel.
 // However, some tests want to save the settings.  This function sets certain values
 // to what they have when the popup is opened.
@@ -254,16 +254,17 @@ export async function getsettings(testdomainname) {
         return;
     }
     bg = response.bg;
+    let pwcount = response.pwcount;
     database = response.database;
     hidesitepw();
     if (!bg.settings.sitename) {
         bg.settings.sitename = "";
     }
     $superpw.value = response.superpw || "";
-    init();
+    await init();
     if (logging) console.log("popup got metadata", bg, database);
-    message("multiple", bg.pwcount > 1);
-    message("zero", bg.pwcount == 0);
+    message("multiple", pwcount > 1);
+    message("zero", pwcount === 0);
     if (!testMode && response.test) { // Only run tests once
         testMode = true;
         runTests();
@@ -842,11 +843,11 @@ $minspecial.onmouseout = function () {
 $minspecial.onblur = function () {
     handleblur("minspecial", "minspecial");
 }
-// I need to limit the number of specials because generate() 
-// computes a number between 0 and 63 to index into the
-// characters array.  There are 10 integers and 26 upper
-// case letters.  If there are too many special characters,
-// then the first lower case letter is past index 63.
+// In an older version I needed to limit the number of 
+// specials because generate() computed a number between 
+// 0 and 63 to index into the characters array.  That's 
+// no longer the case, but I don't want to risk
+// generating different passwords.
 const alphanumerics = /[0-9A-Za-z]/g;
 $specials.onblur = async function() {
     if (!$specials.value) {
@@ -951,6 +952,7 @@ $nicknamebutton.onclick = function (e) {
     msgoff("phishing");
     saveSettings = false;
     autoclose = false;
+    saveSettings = false;
 }
 // Phishing methods when there is a safe suffix
 $suffixcancelbutton.onclick = function (e) {
@@ -973,9 +975,13 @@ $forgetbutton.onclick = async function () {
     for (let child of children) {
         list.push(child.innerText);
     }
+    delete database.domains[get("domainname").value];
+    delete database.sites[normalize($sitename.value)];
     $sitename.value = "";
     $username.value = "";
+    let superpw = bg.superpw;
     bg = clone(bgDefault);
+    bg.superpw = superpw;
     if (logging) console.log("popup forgetbutton sending forget", list);
     await wakeup("foregetbutton");
     let response = await chrome.runtime.sendMessage({"cmd": "forget", "toforget": list});
@@ -992,6 +998,9 @@ $cancelbutton.onclick = function () {
         $toforgetlist.removeChild($toforgetlist.firstChild);
     }
     msgoff("forget");
+    defaultfocus();
+    autoclose = false;
+    saveSettings = false;
 }
 // Handle external links in the instructions and help
 document.addEventListener('DOMContentLoaded', function () {
@@ -1319,10 +1328,10 @@ async function ask2generate() {
         computed = "";
         Promise.resolve(); // To match the await in the other branch
     } else {
-        message("nopw", false); // I don't want to hide any other open messages
+        msgoff("nopw"); // I don't want to hide any other open messages
         const computed = await generatePassword(bg);
         if (computed) {
-            message("nopw", false); // I don't want to hide any other open messages
+            msgoff("nopw"); // I don't want to hide any other open messages
         } else {
             if ($superpw.value) {
                 msgon("nopw");
@@ -1366,8 +1375,8 @@ async function fill() {
         $sitepw.style.backgroundColor = "rgb(136, 204, 255, 20%)";
         defaultfocus();
     }
-    $clearsuperpw.checked = database.clearsuperpw;
-    $hidesitepw.checked =  database.hidesitepw;
+    $clearsuperpw.checked = database.common.clearsuperpw;
+    $hidesitepw.checked =  database.common.hidesitepw;
     hidesitepw();
     $pwlength.value = bg.settings.pwlength;
     $startwithletter.checked = bg.settings.startwithletter;

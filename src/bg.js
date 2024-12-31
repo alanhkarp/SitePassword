@@ -29,7 +29,8 @@ export const config = {
     digits: "0123456789",
     specials: "$/!=@?._-",
 };
-const baseDefaultSettings = {
+// These are the default settings if the user hasn't set any new values
+let defaultSettings = {
     sitename: "",
     username: "",
     providesitepw: false,
@@ -48,10 +49,24 @@ const baseDefaultSettings = {
     minspecial: 1,
     specials: config.specials,
 };
-export let defaultSettings =  clone(baseDefaultSettings);
-export let bgDefault = {superpw: "", settings: defaultSettings};
-export const databaseDefault = { "clearsuperpw": false, "hidesitepw": false, "domains": {}, "sites": {}, "safeSuffixes": {} };
+// Default handling can be much simpler than what I have here.
+// That's the price I'm paying for starting with 10 year old code.
+export const baseDefaultSettings = clone(defaultSettings); // Exported for testing
+Object.freeze(baseDefaultSettings); // so the values can't be changed
+Object.freeze(baseDefaultSettings.xor); // so the array values can't be changed
+
+export const bgBaseDefault = {superpw: "", settings: baseDefaultSettings}; // Used in ssp.js
+Object.freeze(bgBaseDefault); // so the values can't be changed
+Object.freeze(bgBaseDefault.settings.xor); // so the array values can't be changed
+
+let commonBaseDefault = {"clearsuperpw": false, "hidesitepw": false, "defaultSettings": baseDefaultSettings};
+Object.freeze(commonBaseDefault); // so the values can't be changed
+Object.freeze(commonBaseDefault.defaultSettings); // so the values can't be changed
+Object.freeze(commonBaseDefault.defaultSettings.xor); // so the array values can't be changed
+
+let databaseDefault = { "common": clone(commonBaseDefault), "domains": {}, "sites": {} };
 var database = clone(databaseDefault);
+let bgDefault = clone(bgBaseDefault);
 var bg = clone(bgDefault);
 
 export const isSafari = typeof chrome.bookmarks === "undefined";
@@ -157,7 +172,7 @@ async function setup() {
                 bg.settings = bgsettings(domainname);
                 let p = await generatePassword(bg);
                 p = stringXorArray(p, bg.settings.xor);
-                if (database.clearsuperpw) {
+                if (database.common.clearsuperpw) {
                     superpw = "";
                     bg.superpw = "";
                     await persistMetadata(false, sendResponse);
@@ -177,6 +192,7 @@ async function setup() {
                 // Used for testing, can't be in test.js becuase it needs to set local variables 
                 defaultSettings = clone(baseDefaultSettings);
                 database = clone(databaseDefault);
+                database.common = clone(commonBaseDefault);
                 if (testLogging) console.log("bg removing bookmarks folder for testing", defaultSettings.pwlength);
                 rootFolder = await getRootFolder(sendResponse);
                 await chrome.bookmarks.removeTree(rootFolder[0].id);
@@ -199,7 +215,7 @@ async function setup() {
                 domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
                 if (logging) console.log("bg clicked: sending response", bg);
-                if (database.clearsuperpw) {
+                if (database.common.clearsuperpw) {
                     superpw = "";
                     if (logging) console.log("bg clear superpw", isSuperPw(superpw));
                 }
@@ -247,21 +263,18 @@ async function getMetadata(request, _sender, sendResponse) {
     if (savedData[activetabUrl]) {
         if (logging) console.log("bg got saved data for", activetabUrl, savedData[activetabUrl]);
         pwcount = savedData[activetabUrl];
-        bg.pwcount = pwcount;
     } else {
         if (logging) console.log("bg no saved data for", activetabUrl, savedData);
         pwcount = 0;
-        bg.pwcount = 0;
     }
     domainname = getdomainname(activetabUrl);
     if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
     if (logging) console.log("bg sending metadata", pwcount, bg, db);
-    sendResponse({"test" : testMode, "superpw": superpw || "", "bg": bg, "database": db});
+    sendResponse({"test" : testMode, "superpw": superpw || "", "pwcount": pwcount, "bg": bg, "database": db});
 }
 async function onContentPageload(request, sender, sendResponse) {
     if (logging) console.log("bg onContentPageLoad", bg, request, sender);
     activetab = sender.tab;
-    bg.pwcount = request.count;
     pwcount = request.count;
     // Save data that service worker needs after it restarts
     let savedData = {};
@@ -303,8 +316,6 @@ async function onContentPageload(request, sender, sendResponse) {
     sendResponse({ "cmd": "fillfields", 
         "u": bg.settings.username || "", 
         "p": "", 
-        "clearsuperpw": database.clearsuperpw,
-        "hideSitepw": database.hideSitepw,
         "readyForClick": readyForClick
     });
 }
@@ -367,15 +378,11 @@ async function persistMetadata(sameacct, sendResponse) {
             domains.push(allchildren[i]);
         }
     }
-    let common = clone(db);
-    delete common.domains;
-    delete common.sites;
-    common.defaultSettings = clone(defaultSettings);
+    let common = clone(db.common);
     if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
     let url = "ssp://" + stringifySettings(common);
     if (commonSettings.length === 0) {
-        let url = ("ssp://" + stringifySettings(common));
         if (isSafari) {
             bkmksSafari[commonSettingsTitle] = {};
             bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
@@ -388,7 +395,7 @@ async function persistMetadata(sameacct, sendResponse) {
         }
     } else {
         let existing = parseSettings(commonSettings[0].url);
-        if (sameSettings(common, existing) === false) {
+        if (isLegacy(commonSettings[0].url) || !sameSettings(common, existing)) {
             if (isSafari) {
                 bkmksSafari[commonSettingsTitle].url = url;
                 await chrome.storage.sync.set(bkmksSafari);
@@ -419,7 +426,7 @@ async function persistMetadata(sameacct, sendResponse) {
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
             let foundSettings = parseSettings(found.url);
-            if (!sameSettings(settings, foundSettings)) {
+            if (isLegacy(found.url) || !sameSettings(settings, foundSettings)) {
                 if (isSafari) {
                     // Handle Safari bookmarks
                     if (bkmksSafari[found.title] && bkmksSafari[found.title].url !== url) {
@@ -531,7 +538,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 if (chrome.runtime.lastError) console.log("bg remove legacy lastError", chrome.runtime.lastError);
             }
         }
-        if (seenTitles[title]) {
+        if (seenTitles[title] !== undefined) { // Because 0 tests as false
             if (logging) console.log("bg duplicate bookmark", children[i]);
             let seen = parseSettings(children[seenTitles[title]].url);
             seen.specials = array2string(seen.specials); // For legacy bookmarks
@@ -558,10 +565,11 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
             newdb.hidesitepw = common.hidesitepw;
             newdb.safeSuffixes = common.safeSuffixes || {};
             defaultSettings = common.defaultSettings || defaultSettings;
+            common.defaultSettings = defaultSettings;
+            newdb.common = common;
         } else {
             if (logging && i < 3) console.log("bg settings from bookmark", children[i]);
             let settings = parseSettings(children[i].url);
-            settings.specials = array2string(settings.specials); // For legacy bookmarks    
             if (logging) console.log("bg settings from bookmark", settings);
             if (settings.sitename) {
                 newdb.domains[title] = normalize(settings.sitename);
@@ -583,7 +591,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
     database = newdb;
     await retrieved(callback);
 }
-async function getRootFolder(sendResponse) {
+export async function getRootFolder(sendResponse) { // Exported for testing
     if (logging) console.log("bg getRootFolder", sitedataBookmark);
     // bookmarks.search finds any bookmark with a title containing the
     // search string, but I need to find one with an exact match.  I
@@ -676,7 +684,11 @@ async function forget(toforget, rootFolder, sendResponse) {
 }
 function stringifySettings(settings) {
     let s = JSON.stringify(settings);
-    return encodeURIComponent(s);
+    try {
+        return encodeURIComponent(s);
+    } catch (e) {
+        console.log("bad URI", settings);
+    }
 }
 function parseSettings(url) {
     let str = sspUrl(url);
@@ -705,6 +717,12 @@ function sameSettings(a, b) {
     }
     return true;
 }
+// Legacy bookmarks did not do URI encoding correctly.  This function
+// checks for the presence of a curly brace to determine if the bookmark
+// is legacy.  With proper URI encoding, the stringified value is %7B.
+function isLegacy(url) { 
+    return url.indexOf("{") > -1;
+}
 function sspUrl(url) {
     let sspUrl = url.split("ssp://")[1];
     if (sspUrl) {
@@ -715,7 +733,7 @@ function sspUrl(url) {
     }
 }
 function clone(object) {
-    return JSON.parse(JSON.stringify(object))
+    return JSON.parse(JSON.stringify(object));
 }
 function getdomainname(url) {
     return url.split("/")[2];
