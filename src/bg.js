@@ -59,12 +59,12 @@ export const bgBaseDefault = {superpw: "", settings: baseDefaultSettings}; // Us
 Object.freeze(bgBaseDefault); // so the values can't be changed
 Object.freeze(bgBaseDefault.settings.xor); // so the array values can't be changed
 
-let commonBaseDefault = {"clearsuperpw": false, "hidesitepw": false, "defaultSettings": baseDefaultSettings};
+let commonBaseDefault = {"clearsuperpw": false, "hidesitepw": false, "safeSuffixes": {}, "defaultSettings": baseDefaultSettings};
 Object.freeze(commonBaseDefault); // so the values can't be changed
 Object.freeze(commonBaseDefault.defaultSettings); // so the values can't be changed
 Object.freeze(commonBaseDefault.defaultSettings.xor); // so the array values can't be changed
 
-let databaseDefault = { "common": clone(commonBaseDefault), "domains": {}, "sites": {} };
+export let databaseDefault = { "common": clone(commonBaseDefault), "domains": {}, "sites": {} };
 var database = clone(databaseDefault);
 let bgDefault = clone(bgBaseDefault);
 var bg = clone(bgDefault);
@@ -156,10 +156,10 @@ async function setup() {
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);
                 bg = clone(request.bg);
-                database.clearsuperpw = request.clearsuperpw;
-                database.hidesitepw = request.hidesitepw;
-                database.safeSuffixes = request.safeSuffixes || {};
-                if (!request.sameacct) {
+                database.common.clearsuperpw = request.clearsuperpw;
+                database.common.hidesitepw = request.hidesitepw;
+                database.common.safeSuffixes = request.safeSuffixes || {};
+                if (!request.sameacct && bg.settings.sitename) {
                     database.domains[normalize(bg.settings.domainname)] = bg.settings.sitename;
                     database.sites[normalize(bg.settings.sitename)] = clone(bg.settings)
                 }                                
@@ -202,6 +202,7 @@ async function setup() {
             } else if (request.cmd === "newDefaults") {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
                 defaultSettings = request.newDefaults;
+                database.common.defaultSettings = defaultSettings;
                 await persistMetadata(false, sendResponse);
                 sendResponse("persisted");
             } else if (request.cmd === "forget") {
@@ -368,21 +369,21 @@ async function persistMetadata(sameacct, sendResponse) {
         allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
         if (chrome.runtime.lastError) console.log("bg getChildren lastError", chrome.runtime.lastError);
     }
-    let commonSettings = [];
-    let domains = [];
+    let domainBkmks = [];
+    let commonBkmks = [];
     for (let i = 0; i < allchildren.length; i++) {
         // Bookmarks for Safari don't have a title
         if (allchildren[i].title === commonSettingsTitle) {
-            commonSettings.push(allchildren[i]); // In case of duplicates
+            commonBkmks.push(allchildren[i]); // In case of duplicates
         } else {
-            domains.push(allchildren[i]);
+            domainBkmks.push(allchildren[i]);
         }
     }
     let common = clone(db.common);
     if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
     let url = "ssp://" + stringifySettings(common);
-    if (commonSettings.length === 0) {
+    if (commonBkmks.length === 0) {
         if (isSafari) {
             bkmksSafari[commonSettingsTitle] = {};
             bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
@@ -391,18 +392,18 @@ async function persistMetadata(sameacct, sendResponse) {
         } else {
             let commonBkmk = await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url });
             if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
-            if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonSettings.pwlength);
+            if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonBkmks.pwlength);
         }
     } else {
-        let existing = parseSettings(commonSettings[0].url);
-        if (isLegacy(commonSettings[0].url) || !sameSettings(common, existing)) {
+        let existing = parseSettings(commonBkmks[0].url);
+        if (isLegacy(commonBkmks[0].url) || !sameSettings(common, existing)) {
             if (isSafari) {
                 bkmksSafari[commonSettingsTitle].url = url;
                 await chrome.storage.sync.set(bkmksSafari);
             } else {
-                await chrome.bookmarks.update(commonSettings[0].id, { "url": url });
+                await chrome.bookmarks.update(commonBkmks[0].id, { "url": url });
                 if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
-                if (logging) console.log("bg updated bookmark", commonSettings[0].id, url);
+                if (logging) console.log("bg updated bookmark", commonBkmks[0].id, url);
             }
         }
     }
@@ -423,7 +424,7 @@ async function persistMetadata(sameacct, sendResponse) {
         let settings = db.sites[sitename];
         settings.specials = array2string(settings.specials); // For legacy bookmarks
         let url = webpage + "?bkmk=ssp://" + stringifySettings(settings);
-        let found = domains.find((item) => item.title === domainnames[i]);
+        let found = domainBkmks.find((item) => item.title === domainnames[i]);
         if (found) {
             let foundSettings = parseSettings(found.url);
             if (isLegacy(found.url) || !sameSettings(settings, foundSettings)) {
@@ -561,9 +562,9 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
             if (logging) console.log("bg common settings from bookmark", children[i]);
             let common = parseSettings(children[i].url);
             if (logging) console.log("bg common settings from bookmark", common.defaultSettings.pwlength);
-            newdb.clearsuperpw = common.clearsuperpw;
-            newdb.hidesitepw = common.hidesitepw;
-            newdb.safeSuffixes = common.safeSuffixes || {};
+            newdb.common.clearsuperpw = common.clearsuperpw;
+            newdb.common.hidesitepw = common.hidesitepw;
+            newdb.common.safeSuffixes = common.safeSuffixes || {};
             defaultSettings = common.defaultSettings || defaultSettings;
             common.defaultSettings = defaultSettings;
             newdb.common = common;

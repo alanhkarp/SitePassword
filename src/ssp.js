@@ -1,5 +1,5 @@
 'use strict';
-import { bgBaseDefault, config, isSafari, webpage } from "./bg.js";
+import { bgBaseDefault, config, databaseDefault, isSafari, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 import { publicSuffixSet } from "./public_suffix_list.js";
@@ -139,7 +139,7 @@ setTimeout(() => {
 }, timeout);
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
-let database = databaseDefault;
+let database = clone(databaseDefault);
 if (logging) console.log("popup starting");
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
@@ -324,7 +324,7 @@ $mainpanel.onmouseleave = async function (event) {
                 "sitename": sitename,
                 "clearsuperpw": $clearsuperpw.checked,
                 "hidesitepw": $hidesitepw.checked,
-                "safeSuffixes": database.safeSuffixes || {},
+                "safeSuffixes": database.common.safeSuffixes || {},
                 "sameacct": sameacct,
                 "bg": bg,
             });
@@ -855,11 +855,10 @@ $specials.onblur = async function() {
         $specials.value = bg.settings.specials;
         return;
     }
-    let specials = $specials;
-    specials.value = specials.value
+    $specials.value = $specials.value
         .replace(alphanumerics, '')  // eliminate alphanumerics
         .substring(0, 12);  // limit to 12 specials
-    bg.settings.specials = specials.value;
+    bg.settings.specials = $specials.value;
     await handlekeyup("specials", "specials");
     if (resolvers.specialsblurResolver) resolvers.specialsblurResolver("specialsblurPromise");
 }
@@ -928,12 +927,12 @@ $sameacctbutton.onclick = async function (e) {
     let d = await getPhishingDomain(bg.settings.sitename);
     let suffix = commonSuffix(d, bg.settings.domainname);
     if (suffix) {
-        if (database.safeSuffixes[suffix]) {
-            if (database.safeSuffixes[suffix] !== sitename) {
-                alert("Something is wrong. " + sitename + " is not the same as " + database.safeSuffixes[suffix]); 
+        if (database.common.safeSuffixes[suffix]) {
+            if (database.common.safeSuffixes[suffix] !== sitename) {
+                alert("Something is wrong. " + sitename + " is not the same as " + database.common.safeSuffixes[suffix]); 
             }
         } else {
-            database.safeSuffixes[suffix] = sitename;
+            database.common.safeSuffixes[suffix] = sitename;
         }
     }
     bg.settings = clone(database.sites[sitename]);
@@ -1130,7 +1129,7 @@ function openPhishingWarning(d) {
     if (!d) return false;
     let domainname = $domainname.value;
     let suffix = commonSuffix(d, domainname);
-    if (database.safeSuffixes[suffix]) {
+    if (database.common.safeSuffixes[suffix]) {
         $suffixtext0.innerText = $sitename.value;
         $suffixtext1.innerText = suffix;
         $suffixtext2.innerText = domainname;
