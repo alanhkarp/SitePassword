@@ -387,8 +387,8 @@ async function persistMetadata(sendResponse) {
             if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonSettings.pwlength);
         }
     } else {
-        let existing = parseSettings(commonSettings[0].url);
-        if (isLegacy(commonSettings[0].url) || !sameSettings(common, existing)) {
+        let existing = parseURL(commonSettings[0].url); // Common settings bookmark
+        if (isLegacy(commonSettings[0].url) || !identicalObjects(common, existing)) {
             if (isSafari) {
                 bkmksSafari[commonSettingsTitle].url = url;
                 await chrome.storage.sync.set(bkmksSafari);
@@ -408,8 +408,8 @@ async function persistMetadata(sendResponse) {
         let url = webpage + "?bkmk=ssp://" + stringifySettings(settings);
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
-            let foundSettings = parseSettings(found.url);
-            if (isLegacy(found.url) || !sameSettings(settings, foundSettings)) {
+            let foundSettings = parseURL(found.url);
+            if (isLegacy(found.url) || !identicalObjects(settings, foundSettings)) {
                 if (isSafari) {
                     // Handle Safari bookmarks
                     if (bkmksSafari[found.title] && bkmksSafari[found.title].url !== url) {
@@ -521,13 +521,10 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 if (chrome.runtime.lastError) console.log("bg remove legacy lastError", chrome.runtime.lastError);
             }
         }
-        if (seenTitles[title] !== undefined) { // Because 0 tests as false
+        if (seenTitles[title]) {
             if (logging) console.log("bg duplicate bookmark", children[i]);
-            let seen = parseSettings(children[seenTitles[title]].url);
-            seen.specials = array2string(seen.specials); // For legacy bookmarks
-            let dupl = parseSettings(children[i].url);
-            dupl.specials = array2string(dupl.specials); // For legacy bookmarks
-            if (sameSettings(seen, dupl)) {
+            let dupl = parseURL(children[i].url);
+            if (identicalObjects(seenTitles[title], dupl)) {
                 if (isSafari) {
                     delete bkmksSafari[children[i]];
                 } else {
@@ -535,21 +532,20 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 }
             } else {
                 sendResponse({"duplicate": children[i].title});
-                continue;
             }
         } else {
-            seenTitles[title] = i;
+            seenTitles[title] = parseURL(children[i].url);
         }
         if (title === commonSettingsTitle) {
             if (logging) console.log("bg common settings from bookmark", children[i]);
-            let common = parseSettings(children[i].url);
+            let common = parseURL(children[i].url);
             if (logging) console.log("bg common settings from bookmark", common);
             defaultSettings = common.defaultSettings || defaultSettings;
             common.defaultSettings = defaultSettings;
             newdb.common = common;
         } else {
             if (logging && i < 3) console.log("bg settings from bookmark", children[i]);
-            let settings = parseSettings(children[i].url);
+            let settings = parseURL(children[i].url);
             if (logging) console.log("bg settings from bookmark", settings);
             if (settings.sitename) {
                 newdb.domains[title] = normalize(settings.sitename);
@@ -657,25 +653,35 @@ function stringifySettings(settings) {
         console.log("bad URI", settings);
     }
 }
-function parseSettings(url) {
+function parseURL(url) {
+    // Returns settings or common settings object
     let str = sspUrl(url);
+    let settings;
     try {
-        return JSON.parse(decodeURIComponent(str));
+        settings = JSON.parse(decodeURIComponent(str));
     } catch (e) {
-        let settings = JSON.parse(str.replace(/%22/g, '"').replace(/%20/g, " "));
-        if (settings.specials) settings.specials = array2string(settings.specials);
-        return settings; // To handle legacy bookmarks
+        settings = JSON.parse(str.replace(/%22/g, '"').replace(/%20/g, " "));
     }
+    if (settings.specials) { // For regular legacy bookmarks
+        settings.specials = array2string(settings.specials);
+    } else { // For common settings legacy bookmarks
+        settings.defaultSettings.specials = array2string(settings.defaultSettings.specials);
+    }
+    return settings; // To handle legacy bookmarks
 }
-function sameSettings(a, b) {
+function identicalObjects(a, b) {
     if (!a || !b) return false;  // Assumes one or the other is set
     if (Object.keys(a).length !== Object.keys(b).length) return false;
     for (let key in a) {
         // The domain name may change for domains that share setting
         if (key === "domainname") continue;
         if (key === "updateTime") continue;
+        if (key === "specials") { // For legacy bookmarks
+            a[key] = array2string(a[key]);
+            b[key] = array2string(b[key]);
+        }
         if (typeof a[key] === "object") {
-            if (!sameSettings(a[key], b[key])) return false;
+            if (!identicalObjects(a[key], b[key])) return false;
         } else {
             if (a[key] !== b[key]) {
                 return false;

@@ -25,7 +25,7 @@ if (logging) {
                          loggingForget = loggingPhishing = loggingProvide = 
                          loggingReset = loggingTrigger = loggingWrapHandler = true;
 }
-
+ 
 export async function runTests() {
     // #region Fields needed for tests
     const $mainpanel = get("mainpanel");
@@ -366,13 +366,14 @@ export async function runTests() {
         }
     }
     // Test proper handling of duplicate bookmarks
+// For testing duplicate bookmarks
     async function testDuplicateBkmks() {
-        await resetState();
-        // Create a duplicate bookmark
         let title = "duplicate.bkmk.com";
-        let url = "https://sitepassword.info/?bkmk=ssp://{%22sitename%22:%22usps%22,%22username%22:%22fred%22,%22providesitepw%22:false,%22xor%22:[0,0,0,0,0,0,0,0,0,0,0,0],%22pwlength%22:12,%22domainname%22:%22reg.usps.com%22,%22pwdomainname%22:%22reg.usps.com%22,%22startwithletter%22:true,%22allowlower%22:true,%22allowupper%22:true,%22allownumber%22:true,%22allowspecial%22:false,%22minlower%22:1,%22minupper%22:1,%22minnumber%22:1,%22minspecial%22:1,%22specials%22:%22$/!=@?._-%22,%22characters%22:%220123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz%22}";
+        let url = "https://sitepassword.info/?bkmk=ssp://%7B%22sitename%22%3A%22usps%22%2C%22username%22%3A%22fred%22%2C%22providesitepw%22%3Afalse%2C%22xor%22%3A%5B0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%5D%2C%22domainname%22%3A%22reg.usps.com%22%2C%22pwdomainname%22%3A%22reg.usps.com%22%2C%22pwlength%22%3A%2212%22%2C%22startwithletter%22%3Atrue%2C%22allowlower%22%3Atrue%2C%22allowupper%22%3Atrue%2C%22allownumber%22%3Atrue%2C%22allowspecial%22%3Afalse%2C%22minlower%22%3A%221%22%2C%22minupper%22%3A%221%22%2C%22minnumber%22%3A%221%22%2C%22minspecial%22%3A%221%22%2C%22specials%22%3A%22%24%2F!%3D%40%3F._-%22%2C%22characters%22%3A%220123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz%22%7D";
         await resetState();
-        let rootFolder = await getRootFolder();
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        // Create a duplicate bookmark
+       let rootFolder = await getRootFolder();
         await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
         await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
@@ -399,7 +400,37 @@ export async function runTests() {
             console.warn("Failed: Different duplicate bookmark not handled");
             failed += 1;
         }
+        // Test duplicate common settings bookmark
         await resetState(); // Don't leave duplicate bookmarks
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        rootFolder = await getRootFolder();
+        await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
+        url = "ssp://%7B%22clearsuperpw%22%3Afalse%2C%22hidesitepw%22%3Afalse%2C%22defaultSettings%22%3A%7B%22sitename%22%3A%22%22%2C%22username%22%3A%22%22%2C%22providesitepw%22%3Afalse%2C%22xor%22%3A%5B0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%5D%2C%22pwlength%22%3A12%2C%22domainname%22%3A%22%22%2C%22pwdomainname%22%3A%22%22%2C%22startwithletter%22%3Atrue%2C%22allowlower%22%3Atrue%2C%22allowupper%22%3Atrue%2C%22allownumber%22%3Atrue%2C%22allowspecial%22%3Afalse%2C%22minlower%22%3A1%2C%22minupper%22%3A1%2C%22minnumber%22%3A1%2C%22minspecial%22%3A1%2C%22specials%22%3A%22%24%2F!%3D%40%3F._-%22%7D%7D";
+        title = "CommonSettings";
+        // Create a duplicate common settings bookmark}
+        await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        children = await chrome.bookmarks.getChildren(rootFolder[0].id);
+        test = children.length === 2; 
+        if (test) {
+            console.log("Passed: Identical duplicate common settings bookmark handled");
+            passed += 1;
+        } else {
+            console.warn("Failed: Identical duplicate common settings bookmark not handled");
+            failed += 1;
+        }
+        newUrl = url.replace("12", "15");
+        await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": newUrl });
+        await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+        children = await chrome.bookmarks.getChildren(rootFolder[0].id);
+        test = children.length === 3; // because of the common settings bookmark
+        if (test) {
+            console.log("Passed: Different duplicate common settomgs bookmark handled");
+            passed += 1;
+        } else {
+            console.warn("Failed: Different duplicate common settings bookmark not handled");
+            failed += 1;
+        }
     }
     // Test save as default
     async function testSaveAsDefault() {

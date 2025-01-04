@@ -3,7 +3,7 @@
     "name": "Site Password",
     "short_name": "Site Password for Chrome",
     "description": "Don't remember your passwords. Don't store them.  Calculate them!",
-    "version": "3.0.11",
+    "version": "3.0.12",
     "background": {
         "service_worker": "src/bg.js", 
         "type": "module"
