@@ -83,7 +83,7 @@ import { publicSuffixSet } from "./public_suffix_list.js";
     const $sameacctbutton = get("sameacctbutton");
     const $nicknamebutton = get("nicknamebutton");
     const $forgetbutton = get("forgetbutton");
-    const $cancelbutton = get("cancelbutton");
+    const $forgetcancelbutton = get("forgetcancelbutton");
     const $toforgetlist = get("toforgetlist");
     const $helptext = get("helptext");
     const $instructionpanel = get("instructionpanel");
@@ -986,11 +986,10 @@ $forgetbutton.onclick = async function () {
     let response = await chrome.runtime.sendMessage({"cmd": "forget", "toforget": list});
     if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
     if (logging) console.log("popup forget response", response);
-    $cancelbutton.click();
-    msgoff("forget");
+    $forgetcancelbutton.click();
     if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
 }
-$cancelbutton.onclick = function () {
+$forgetcancelbutton.onclick = function () {
     // Can't just set list to [] because I need to remove the 
     // corresponding DOM elements
     while ( $toforgetlist.firstChild ) {
