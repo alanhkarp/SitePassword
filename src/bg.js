@@ -196,6 +196,7 @@ async function setup() {
                 if (testLogging) console.log("bg removing bookmarks folder for testing", defaultSettings.pwlength);
                 rootFolder = await getRootFolder(sendResponse);
                 await chrome.bookmarks.removeTree(rootFolder[0].id);
+                if (chrome.runtime.lastError) console.log("bg reset lastError", chrome.runtime.lastError);
                 createBookmarksFolder = true;
                 if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0].title, defaultSettings.pwlength);
                 sendResponse("reset");
@@ -382,7 +383,7 @@ async function persistMetadata(sameacct, sendResponse) {
     let common = clone(db.common);
     if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
-    let url = "ssp://" + stringifySettings(common);
+    let url = "ssp://" + stringifyObject(common);
     if (commonBkmks.length === 0) {
         if (isSafari) {
             bkmksSafari[commonSettingsTitle] = {};
@@ -395,8 +396,8 @@ async function persistMetadata(sameacct, sendResponse) {
             if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonBkmks.pwlength);
         }
     } else {
-        let existing = parseSettings(commonBkmks[0].url);
-        if (isLegacy(commonBkmks[0].url) || !sameSettings(common, existing)) {
+        let existing = parseURL(commonBkmks[0].url);
+        if (isLegacy(commonBkmks[0].url) || !identicalObjects(common, existing)) {
             if (isSafari) {
                 bkmksSafari[commonSettingsTitle].url = url;
                 await chrome.storage.sync.set(bkmksSafari);
@@ -423,7 +424,7 @@ async function persistMetadata(sameacct, sendResponse) {
         let sitename = db.domains[domainnames[i]];
         let settings = db.sites[sitename];
         settings.specials = array2string(settings.specials); // For legacy bookmarks
-        let url = webpage + "?bkmk=ssp://" + stringifySettings(settings);
+        let url = webpage + "?bkmk=ssp://" + stringifyObject(settings);
         let found = domainBkmks.find((item) => item.title === domainnames[i]);
         if (found) {
             let foundSettings = parseURL(found.url);
@@ -446,7 +447,7 @@ async function persistMetadata(sameacct, sendResponse) {
                 (domainnames[i] === bg.settings.domainname) ||
                 (domainnames[i] === bg.settings.pwdomainname)) {
                 let title = domainnames[i];
-                url = webpage + "?bkmk=ssp://" + stringifySettings(settings);
+                url = webpage + "?bkmk=ssp://" + stringifyObject(settings);
                 if (logging) console.log("bg creating bookmark for", title);
                 if (isSafari) {
                     bkmksSafari[title] = {};
@@ -547,6 +548,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                     delete bkmksSafari[children[i]];
                 } else {
                     chrome.bookmarks.remove(children[i].id);
+                    if (chrome.runtime.lastError) console.log("bg remove duplicate lastError", chrome.runtime.lastError);
                 }
             } else {
                 sendResponse({"duplicate": children[i].title});
@@ -556,7 +558,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         }
         if (title === commonSettingsTitle) {
             if (logging) console.log("bg common settings from bookmark", children[i]);
-            let common = parseSettings(children[i].url);
+            let common = parseURL(children[i].url);
             if (logging) console.log("bg common settings from bookmark", common.defaultSettings.pwlength);
             newdb.common.clearsuperpw = common.clearsuperpw;
             newdb.common.hidesitepw = common.hidesitepw;
@@ -679,12 +681,12 @@ async function forget(toforget, rootFolder, sendResponse) {
     }
     sendResponse("forgot");
 }
-function stringifySettings(settings) {
-    let s = JSON.stringify(settings);
+function stringifyObject(object) {
+    let s = JSON.stringify(object);
     try {
         return encodeURIComponent(s);
     } catch (e) {
-        console.log("bad URI", settings);
+        console.log("bad URI", object);
     }
 }
 function parseURL(url) {
