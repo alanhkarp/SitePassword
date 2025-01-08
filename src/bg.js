@@ -22,6 +22,7 @@ var protocol; // VSCode says this is unused, but it is in function retrieved() b
 var rootFolder = {id: -1};
 var pwcount = 0;
 var createBookmarksFolder = true;
+var createBookmark = true;
 export const webpage = "https://sitepassword.info";
 export const config = {
     lower: "abcdefghijklmnopqrstuvwxyz",
@@ -375,7 +376,8 @@ async function persistMetadata(sendResponse) {
     if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
     let url = "ssp://" + stringifySettings(common);
-    if (commonSettings.length === 0) {
+    if (commonSettings.length === 0 && createBookmark) {
+        createBookmark = false;
         if (isSafari) {
             bkmksSafari[commonSettingsTitle] = {};
             bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
@@ -386,6 +388,7 @@ async function persistMetadata(sendResponse) {
             if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
             if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonSettings.pwlength);
         }
+        createBookmark = true;
     } else {
         let existing = parseURL(commonSettings[0].url); // Common settings bookmark
         if (isLegacy(commonSettings[0].url) || !identicalObjects(common, existing)) {
@@ -423,7 +426,8 @@ async function persistMetadata(sendResponse) {
                     if (chrome.runtime.lastError) console.log("bg update lastError", chrome.runtime.lastError, found);
                 }
             }
-        } else {
+        } else if (createBookmark) {
+            createBookmark = false;
             if (bg.settings.sitename && 
                 (domainnames[i] === bg.settings.domainname) ||
                 (domainnames[i] === bg.settings.pwdomainname)) {
@@ -441,6 +445,7 @@ async function persistMetadata(sendResponse) {
                     if (logging) console.log("bg created settings bookmark", e, title);
                 }
             }
+            createBookmark = true;
         }
     }
 }
@@ -458,40 +463,38 @@ async function retrieveMetadata(sendResponse, request, callback) {
         // updated the browser on all their machines.
         //chrome.storage.sync.clear();
         await parseBkmk(folders[0].id, callback, sendResponse);
-    } else if (folders.length === 0) {
+    } else if (folders.length === 0 && createBookmarksFolder) {
         // findpw.js sends the SiteData message twice, once for document.onload
         // and once for window.onload.  The latter can arrive while the bookmark
         // folder is being created, resulting in two of them.  My solution is to
         // use a flag to make sure I only create it once.
-        if (createBookmarksFolder) {
-            createBookmarksFolder = false;
-            if (logging || testLogging) console.log("bg creating SSP bookmark folder");
-            let bkmk = - 1;
-            if (isSafari) {
-                // Leaving the entries in sync storage protects against the case where a browser (Safari) 
-                // starts supporting the bookmarks API, but users haven't updated the browser on all their machines.
-                //chrome.storage.sync.clear();
-                // Nothing in sync storage unless using Safari
-                let values = await chrome.storage.sync.get();
-                for (let title in values) {
-                    let bkmk = await chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
-                    if (chrome.runtime.lastError) {
-                        console.log("bg sync create lastError", chrome.runtime.lastError);
-                    } else {
-                        if (testLogging) console.log("bg created bookmark", bkmk);
-                    }
-                    await parseBkmk(bkmk.id, callback, sendResponse);
+        createBookmarksFolder = false;
+        if (logging || testLogging) console.log("bg creating SSP bookmark folder");
+        if (isSafari) {
+            // Leaving the entries in sync storage protects against the case where a browser (Safari) 
+            // starts supporting the bookmarks API, but users haven't updated the browser on all their machines.
+            //chrome.storage.sync.clear();
+            // Nothing in sync storage unless using Safari
+            let values = await chrome.storage.sync.get();
+            for (let title in values) {
+                let bkmk = await chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
+                if (chrome.runtime.lastError) {
+                    console.log("bg sync create lastError", chrome.runtime.lastError);
+                } else {
+                    if (testLogging) console.log("bg created bookmark", bkmk);
                 }
-            } else {
-                // If there's no bookmarks folder, but there are entries in sync storage,
-                // then copy those entries to bookmarks and clear sync storage.  This will
-                // happen when the browser newly implements the bookmarks API.
-                if (logging) console.log("bg creating bookmarks folder");
-                let bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
-                if (chrome.runtime.lastError) console.log("bg sync lastError", chrome.runtime.lastError);
                 await parseBkmk(bkmk.id, callback, sendResponse);
             }
+        } else {
+            // If there's no bookmarks folder, but there are entries in sync storage,
+            // then copy those entries to bookmarks and clear sync storage.  This will
+            // happen when the browser newly implements the bookmarks API.
+            if (logging) console.log("bg creating bookmarks folder");
+            let bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
+            if (chrome.runtime.lastError) console.log("bg sync lastError", chrome.runtime.lastError);
+            await parseBkmk(bkmk.id, callback, sendResponse);
         }
+        createBookmarksFolder = true;
     }
 }
 async function parseBkmk(rootFolderId, callback, sendResponse) {
