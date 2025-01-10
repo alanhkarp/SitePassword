@@ -61,12 +61,12 @@ export const bgBaseDefault = {superpw: "", settings: baseDefaultSettings}; // Us
 Object.freeze(bgBaseDefault); // so the values can't be changed
 Object.freeze(bgBaseDefault.settings.xor); // so the array values can't be changed
 
-let commonBaseDefault = {"clearsuperpw": false, "hidesitepw": false, "defaultSettings": baseDefaultSettings};
+let commonBaseDefault = {"clearsuperpw": false, "hidesitepw": false, safeSuffixes: {}, "defaultSettings": baseDefaultSettings};
 Object.freeze(commonBaseDefault); // so the values can't be changed
 Object.freeze(commonBaseDefault.defaultSettings); // so the values can't be changed
 Object.freeze(commonBaseDefault.defaultSettings.xor); // so the array values can't be changed
 
-let databaseDefault = { "common": clone(commonBaseDefault), "domains": {}, "sites": {} };
+export let databaseDefault = { "common": clone(commonBaseDefault), "domains": {}, "sites": {} };
 var database = clone(databaseDefault);
 let bgDefault = clone(bgBaseDefault);
 var bg = clone(bgDefault);
@@ -160,6 +160,11 @@ async function setup() {
                 bg = request.bg;
                 database.common.clearsuperpw = request.clearsuperpw;
                 database.common.hidesitepw = request.hidesitepw;
+                database.common.safeSuffixes = request.safeSuffixes;
+                if (!request.sameacct && bg.settings.sitename) {
+                    database.domains[normalize(bg.settings.domainname)] = normalize(bg.settings.sitename);
+                    database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
+                }
                 superpw = bg.superpw || "";
                 await persistMetadata(sendResponse);
                 sendResponse("persisted");
