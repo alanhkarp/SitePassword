@@ -3,10 +3,11 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 // Set to true to run the tests in test.js then reload the extension.
 // Tests must be run on a page that has the content script, specifically,
 // http or https whether it has a password field or not.
-const testMode = false;
-const testLogging = false;
-const debugMode = false;
-const logging = false;
+let testMode = false;
+let testLogging = false;
+let debugMode = false;
+let logging = false;
+debugger;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
 let sitedataBookmark = "SitePasswordData";
@@ -22,6 +23,7 @@ var protocol; // VSCode says this is unused, but it is in function retrieved() b
 var rootFolder = {id: -1};
 var pwcount = 0;
 var createBookmarksFolder = true;
+var createBookmark = true;
 export const webpage = "https://sitepassword.info";
 export const config = {
     lower: "abcdefghijklmnopqrstuvwxyz",
@@ -59,12 +61,12 @@ export const bgBaseDefault = {superpw: "", settings: baseDefaultSettings}; // Us
 Object.freeze(bgBaseDefault); // so the values can't be changed
 Object.freeze(bgBaseDefault.settings.xor); // so the array values can't be changed
 
-let commonBaseDefault = {"clearsuperpw": false, "hidesitepw": false, "safeSuffixes": {}, "defaultSettings": baseDefaultSettings};
+let commonBaseDefault = {"clearsuperpw": false, "hidesitepw": false, "defaultSettings": baseDefaultSettings};
 Object.freeze(commonBaseDefault); // so the values can't be changed
 Object.freeze(commonBaseDefault.defaultSettings); // so the values can't be changed
 Object.freeze(commonBaseDefault.defaultSettings.xor); // so the array values can't be changed
 
-export let databaseDefault = { "common": clone(commonBaseDefault), "domains": {}, "sites": {} };
+let databaseDefault = { "common": clone(commonBaseDefault), "domains": {}, "sites": {} };
 var database = clone(databaseDefault);
 let bgDefault = clone(bgBaseDefault);
 var bg = clone(bgDefault);
@@ -155,16 +157,11 @@ async function setup() {
                 sendResponse("icon reset");        
             } else if (request.cmd === "siteData") {
                 if (logging) console.log("bg got site data", request);
-                bg = clone(request.bg);
+                bg = request.bg;
                 database.common.clearsuperpw = request.clearsuperpw;
                 database.common.hidesitepw = request.hidesitepw;
-                database.common.safeSuffixes = request.safeSuffixes || {};
-                if (!request.sameacct && bg.settings.sitename) {
-                    database.domains[normalize(bg.settings.domainname)] = bg.settings.sitename;
-                    database.sites[normalize(bg.settings.sitename)] = clone(bg.settings)
-                }                                
                 superpw = bg.superpw || "";
-                await persistMetadata(request.sameacct, sendResponse);
+                await persistMetadata(sendResponse);
                 sendResponse("persisted");
             } else if (request.cmd === "getPassword") {                
                 let domainname = getdomainname(sender.origin || sender.url);
@@ -175,7 +172,7 @@ async function setup() {
                 if (database.common.clearsuperpw) {
                     superpw = "";
                     bg.superpw = "";
-                    await persistMetadata(false, sendResponse);
+                    await persistMetadata(sendResponse);
                 } else {
                     await Promise.resolve(); // To match the await in the other branch
                 }
@@ -196,15 +193,13 @@ async function setup() {
                 if (testLogging) console.log("bg removing bookmarks folder for testing", defaultSettings.pwlength);
                 rootFolder = await getRootFolder(sendResponse);
                 await chrome.bookmarks.removeTree(rootFolder[0].id);
-                if (chrome.runtime.lastError) console.log("bg reset lastError", chrome.runtime.lastError);
                 createBookmarksFolder = true;
                 if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0].title, defaultSettings.pwlength);
                 sendResponse("reset");
             } else if (request.cmd === "newDefaults") {
                 if (logging) console.log("bg got new default settings", request.newDefaults);
-                defaultSettings = request.newDefaults;
-                database.common.defaultSettings = defaultSettings;
-                await persistMetadata(false, sendResponse);
+                database.common.defaultSettings = request.newDefaults;
+                await persistMetadata(sendResponse);
                 sendResponse("persisted");
             } else if (request.cmd === "forget") {
                 if (logging) console.log("bg forget", request.cmd);
@@ -212,7 +207,6 @@ async function setup() {
                 if (logging) console.log("bg forget rootFolder", rootFolder, request.toforget);
                 await forget(request.toforget, rootFolder[0], sendResponse);
                 if (logging) console.log("bg forget done");
-                sendResponse("forgot");
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
@@ -225,7 +219,7 @@ async function setup() {
                 await Promise.resolve(); // To match the awaits in the other branches
             } else if (request.onload) {
                 await onContentPageload(request, sender, sendResponse);
-                await persistMetadata(false, sendResponse);
+                await persistMetadata(sendResponse);
                 sendResponse("persisted");
             } else {
                 if (logging) console.log("bg got unknown request", request);
@@ -308,8 +302,6 @@ async function onContentPageload(request, sender, sendResponse) {
     }
     bg.settings.domainname = domainname;
     bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
-    if (testMode) bg.settings.pwdomainname = domainname;
-    if (bg.settings.pwdomainname === domainname) bg.settings.pwdomainname = "";
     let readyForClick = false;
     if (superpw && bg.settings.sitename && bg.settings.username) {
         readyForClick = true;
@@ -321,7 +313,7 @@ async function onContentPageload(request, sender, sendResponse) {
         "readyForClick": readyForClick
     });
 }
-async function persistMetadata(sameacct, sendResponse) {
+async function persistMetadata(sendResponse) {
     if (logging) console.log("bg persistMetadata", bg, database);
     superpw = bg.superpw;
     await chrome.storage.session.set({"superpw": superpw});
@@ -333,16 +325,17 @@ async function persistMetadata(sameacct, sendResponse) {
     if (sitename) {
         let oldsitename = db.domains[bg.settings.domainname];
         if ((!oldsitename) || sitename === oldsitename) {
-            db.domains[bg.settings.domainname] = sitename;
-            if (bg.settings.pwdomainname && bg.settings.pwdomainname !== bg.settings.domainname) {
-                db.domains[bg.settings.pwdomainname] = sitename;
+            db.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
+            if (!bg.settings.pwdomainname) bg.settings.pwdomainname = bg.settings.domainname;
+            if (bg.settings.pwdomainname !== bg.settings.domainname) {
+                db.domains[bg.settings.pwdomainname] = normalize(bg.settings.sitename);
             }
             db.sites[sitename] = bg.settings;
         } else {
             // Find all domains that point to oldsitename and have them point to
             // the new one
             for (let entry of Object.entries(db.domains)) {
-                if (db.domains[entry[0]] === oldsitename) db.domains[entry[0]] = sitename;
+                if (db.domains[entry[0]] === oldsitename) db.domains[entry[0]] = normalize(bg.settings.sitename);
             }
             db.sites[sitename] = bg.settings;
             // then remove the old site name from database.sites
@@ -370,21 +363,22 @@ async function persistMetadata(sameacct, sendResponse) {
         allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
         if (chrome.runtime.lastError) console.log("bg getChildren lastError", chrome.runtime.lastError);
     }
-    let domainBkmks = [];
-    let commonBkmks = [];
+    let commonSettings = [];
+    let domains = [];
     for (let i = 0; i < allchildren.length; i++) {
         // Bookmarks for Safari don't have a title
         if (allchildren[i].title === commonSettingsTitle) {
-            commonBkmks.push(allchildren[i]); // In case of duplicates
+            commonSettings.push(allchildren[i]); // In case of duplicates
         } else {
-            domainBkmks.push(allchildren[i]);
+            domains.push(allchildren[i]);
         }
     }
     let common = clone(db.common);
     if (logging) console.log("bg persistMetadata", common.defaultSettings.pwlength);
     // No merge for now
-    let url = "ssp://" + stringifyObject(common);
-    if (commonBkmks.length === 0) {
+    let url = "ssp://" + stringifySettings(common);
+    if (commonSettings.length === 0 && createBookmark) {
+        createBookmark = false;
         if (isSafari) {
             bkmksSafari[commonSettingsTitle] = {};
             bkmksSafari[commonSettingsTitle].title = commonSettingsTitle;
@@ -393,39 +387,30 @@ async function persistMetadata(sameacct, sendResponse) {
         } else {
             let commonBkmk = await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url });
             if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
-            if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonBkmks.pwlength);
+            if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonSettings.pwlength);
         }
+        createBookmark = true;
     } else {
-        let existing = parseURL(commonBkmks[0].url);
-        if (isLegacy(commonBkmks[0].url) || !identicalObjects(common, existing)) {
+        let existing = parseURL(commonSettings[0].url); // Common settings bookmark
+        if (isLegacy(commonSettings[0].url) || !identicalObjects(common, existing)) {
             if (isSafari) {
                 bkmksSafari[commonSettingsTitle].url = url;
                 await chrome.storage.sync.set(bkmksSafari);
             } else {
-                await chrome.bookmarks.update(commonBkmks[0].id, { "url": url });
+                await chrome.bookmarks.update(commonSettings[0].id, { "url": url });
                 if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
-                if (logging) console.log("bg updated bookmark", commonBkmks[0].id, url);
+                if (logging) console.log("bg updated bookmark", commonSettings[0].id, url);
             }
         }
     }
-    // Remove safe suffix if its count is less than 2
-    let domainnames = Object.keys(db.domains);
-    let suffixCounts = {};
-    let suffixes = clone(db.safeSuffixes || {});
-    for (let suffix in suffixes) {
-        suffixCounts[suffix] = 0;
-        for (let domain in db.domains) {
-            if (domain.endsWith(suffix)) suffixCounts[suffix]++;
-        }
-        if (suffixCounts[suffix] < 2) delete db.safeSuffixes[suffix];
-    }
     // Persist changes to domain settings
+    let domainnames = Object.keys(db.domains);
     for (let i = 0; i < domainnames.length; i++) {
         let sitename = db.domains[domainnames[i]];
         let settings = db.sites[sitename];
         settings.specials = array2string(settings.specials); // For legacy bookmarks
-        let url = webpage + "?bkmk=ssp://" + stringifyObject(settings);
-        let found = domainBkmks.find((item) => item.title === domainnames[i]);
+        let url = webpage + "?bkmk=ssp://" + stringifySettings(settings);
+        let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
             let foundSettings = parseURL(found.url);
             if (isLegacy(found.url) || !identicalObjects(settings, foundSettings)) {
@@ -442,12 +427,13 @@ async function persistMetadata(sameacct, sendResponse) {
                     if (chrome.runtime.lastError) console.log("bg update lastError", chrome.runtime.lastError, found);
                 }
             }
-        } else {
+        } else if (createBookmark) {
+            createBookmark = false;
             if (bg.settings.sitename && 
                 (domainnames[i] === bg.settings.domainname) ||
                 (domainnames[i] === bg.settings.pwdomainname)) {
                 let title = domainnames[i];
-                url = webpage + "?bkmk=ssp://" + stringifyObject(settings);
+                url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
                 if (logging) console.log("bg creating bookmark for", title);
                 if (isSafari) {
                     bkmksSafari[title] = {};
@@ -460,6 +446,7 @@ async function persistMetadata(sameacct, sendResponse) {
                     if (logging) console.log("bg created settings bookmark", e, title);
                 }
             }
+            createBookmark = true;
         }
     }
 }
@@ -477,40 +464,38 @@ async function retrieveMetadata(sendResponse, request, callback) {
         // updated the browser on all their machines.
         //chrome.storage.sync.clear();
         await parseBkmk(folders[0].id, callback, sendResponse);
-    } else if (folders.length === 0) {
+    } else if (folders.length === 0 && createBookmarksFolder) {
         // findpw.js sends the SiteData message twice, once for document.onload
         // and once for window.onload.  The latter can arrive while the bookmark
         // folder is being created, resulting in two of them.  My solution is to
         // use a flag to make sure I only create it once.
-        if (createBookmarksFolder) {
-            createBookmarksFolder = false;
-            if (logging || testLogging) console.log("bg creating SSP bookmark folder");
-            let bkmk = - 1;
-            if (isSafari) {
-                // Leaving the entries in sync storage protects against the case where a browser (Safari) 
-                // starts supporting the bookmarks API, but users haven't updated the browser on all their machines.
-                //chrome.storage.sync.clear();
-                // Nothing in sync storage unless using Safari
-                let values = await chrome.storage.sync.get();
-                for (let title in values) {
-                    let bkmk = await chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
-                    if (chrome.runtime.lastError) {
-                        console.log("bg sync create lastError", chrome.runtime.lastError);
-                    } else {
-                        if (testLogging) console.log("bg created bookmark", bkmk);
-                    }
-                    await parseBkmk(bkmk.id, callback, sendResponse);
+        createBookmarksFolder = false;
+        if (logging || testLogging) console.log("bg creating SSP bookmark folder");
+        if (isSafari) {
+            // Leaving the entries in sync storage protects against the case where a browser (Safari) 
+            // starts supporting the bookmarks API, but users haven't updated the browser on all their machines.
+            //chrome.storage.sync.clear();
+            // Nothing in sync storage unless using Safari
+            let values = await chrome.storage.sync.get();
+            for (let title in values) {
+                let bkmk = await chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
+                if (chrome.runtime.lastError) {
+                    console.log("bg sync create lastError", chrome.runtime.lastError);
+                } else {
+                    if (testLogging) console.log("bg created bookmark", bkmk);
                 }
-            } else {
-                // If there's no bookmarks folder, but there are entries in sync storage,
-                // then copy those entries to bookmarks and clear sync storage.  This will
-                // happen when the browser newly implements the bookmarks API.
-                if (logging) console.log("bg creating bookmarks folder");
-                let bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
-                if (chrome.runtime.lastError) console.log("bg sync lastError", chrome.runtime.lastError);
                 await parseBkmk(bkmk.id, callback, sendResponse);
             }
+        } else {
+            // If there's no bookmarks folder, but there are entries in sync storage,
+            // then copy those entries to bookmarks and clear sync storage.  This will
+            // happen when the browser newly implements the bookmarks API.
+            if (logging) console.log("bg creating bookmarks folder");
+            let bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
+            if (chrome.runtime.lastError) console.log("bg sync lastError", chrome.runtime.lastError);
+            await parseBkmk(bkmk.id, callback, sendResponse);
         }
+        createBookmarksFolder = true;
     }
 }
 async function parseBkmk(rootFolderId, callback, sendResponse) {
@@ -548,7 +533,6 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                     delete bkmksSafari[children[i]];
                 } else {
                     chrome.bookmarks.remove(children[i].id);
-                    if (chrome.runtime.lastError) console.log("bg remove duplicate lastError", chrome.runtime.lastError);
                 }
             } else {
                 sendResponse({"duplicate": children[i].title});
@@ -559,10 +543,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         if (title === commonSettingsTitle) {
             if (logging) console.log("bg common settings from bookmark", children[i]);
             let common = parseURL(children[i].url);
-            if (logging) console.log("bg common settings from bookmark", common.defaultSettings.pwlength);
-            newdb.common.clearsuperpw = common.clearsuperpw;
-            newdb.common.hidesitepw = common.hidesitepw;
-            newdb.common.safeSuffixes = common.safeSuffixes || {};
+            if (logging) console.log("bg common settings from bookmark", common);
             defaultSettings = common.defaultSettings || defaultSettings;
             common.defaultSettings = defaultSettings;
             newdb.common = common;
@@ -575,17 +556,6 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 newdb.sites[normalize(settings.sitename)] = settings;
             }
         }
-    }
-    // Count the number of times each safe suffix is appears in newdb.domains
-    for (let suffix in newdb.safeSuffixes) {
-        let sitename = newdb.safeSuffixes[suffix];
-        let count = 0;
-        for (let domain in newdb.domains) {
-            if (domain.endsWith(suffix) && newdb.domains[domain] === sitename) {
-                count++;
-            } 
-        }
-        if (count < 2) delete newdb.safeSuffixes[suffix];
     }
     database = newdb;
     await retrieved(callback);
@@ -658,8 +628,6 @@ async function forget(toforget, rootFolder, sendResponse) {
     for (const item of toforget)  {
         if (logging) console.log("bg forget item", item);
         delete database.domains[item];
-        // Can't decrement safe suffix count because user might 
-        // have deleted a bookmark
         if (logging) console.log("bg forget getting children", item, rootFolder);
         let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
         if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
@@ -681,12 +649,12 @@ async function forget(toforget, rootFolder, sendResponse) {
     }
     sendResponse("forgot");
 }
-function stringifyObject(object) {
-    let s = JSON.stringify(object);
+function stringifySettings(settings) {
+    let s = JSON.stringify(settings);
     try {
         return encodeURIComponent(s);
     } catch (e) {
-        console.log("bad URI", object);
+        console.log("bad URI", settings);
     }
 }
 function parseURL(url) {
