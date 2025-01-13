@@ -637,8 +637,10 @@ async function forget(toforget, rootFolder, sendResponse) {
                 await chrome.bookmarks.remove(child.id);
                 if (chrome.runtime.lastError) console.log("bg remove child lastError", chrome.runtime.lastError);
                 if (logging) console.log("bg removed bookmark for", item);
-                await chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
-                if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
+                if (isUrlMatch(activetab.url)) {
+                    await chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
+                    if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
+                }
                 if (logging) console.log("bg sent clear message");
             } else {
                 await Promise.resolve(); // To match the await in the other branch
@@ -655,6 +657,11 @@ function stringifySettings(settings) {
     } catch (e) {
         console.log("bad URI", settings);
     }
+}
+export function isUrlMatch(url) {
+    const manifest = chrome.runtime.getManifest();
+    const urlPatterns = manifest.content_scripts[0].matches;
+    return urlPatterns.some((pattern) => new RegExp(pattern).test(url));
 }
 function parseURL(url) {
     // Returns settings or common settings object

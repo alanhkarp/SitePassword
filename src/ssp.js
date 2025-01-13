@@ -1,5 +1,5 @@
 'use strict';
-import { bgBaseDefault, config, isSafari, webpage } from "./bg.js";
+import { bgBaseDefault, config, isUrlMatch, isSafari, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 
@@ -1064,8 +1064,10 @@ async function handleblur(element, field) {
     let u = get("username").value || "";
     let readyForClick = false;
     if (get("superpw").value && u) readyForClick = true;
-    await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
-    if (chrome.runtime.lastError) console.log("popup handleblur lastError", chrome.runtime.lastError);
+    if (isUrlMatch(activetab.url)) {
+        await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
+        if (chrome.runtime.lastError) console.log("popup handleblur lastError", chrome.runtime.lastError);
+    }
 }
 async function handleclick(which) {
     bg.settings["allow" + which] = get("allow" + which + "checkbox").checked;
@@ -1082,8 +1084,10 @@ async function changePlaceholder() {
     let readyForClick = false;
     if (get("superpw").value && u) readyForClick = true;
     await wakeup("changePlaceholder");
-    await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
-    if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
+    if (isUrlMatch(activetab.url)) {
+        await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
+        if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
+    }
 }
 function defaultfocus() {
     if (!get("username").value) get("username").focus();
