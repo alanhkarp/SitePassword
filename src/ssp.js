@@ -1,5 +1,5 @@
 'use strict';
-import { bgBaseDefault, config, databaseDefault, isSafari, webpage } from "./bg.js";
+import { bgBaseDefault, config, databaseDefault, isSafari, isUrlMatch, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 import { publicSuffixSet } from "./public_suffix_list.js";
@@ -1293,9 +1293,11 @@ async function handleblur(element, field) {
     setMeter("sitepw");
     updateExportButton(); 
     let u = $username.value || "";
-    let readyForClick = $superpw.value && u;
-    await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
-    if (chrome.runtime.lastError) console.log("popup handleblur lastError", chrome.runtime.lastError);
+    let readyForClick = pw && $superpw.value && u;
+    if (isUrlMatch(activetab.url)) {
+        await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
+        if (chrome.runtime.lastError) console.log("popup handleblur lastError", chrome.runtime.lastError);
+    }
 }
 async function handleclick(which) {
     bg.settings["allow" + which] = get("allow" + which + "checkbox").checked;
@@ -1312,8 +1314,10 @@ async function changePlaceholder() {
     let readyForClick = false;
     if ($superpw.value && u) readyForClick = true;
     await wakeup("changePlaceholder");
-    await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
-    if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
+    if (isUrlMatch(activetab.url)) {
+        await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
+        if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
+    }
 }
 function defaultfocus() {
     if (!$username.value) $username.focus();
