@@ -89,8 +89,25 @@ chrome.runtime.onInstalled.addListener(async function(details) {
             height:800,
             width:800
         });
+    } else if (details.reason === "update") {
+        reloadContentScripts();
     }
 });
+async function reloadContentScripts() {
+    let savedData = await getSavedData();
+    let start = performance.now();
+    let count = 0;
+    for (let tabstr in savedData) {
+        let tabid = Number(tabstr);
+        count++;
+        // The following needs scripting permission in the manifest and
+        // host_permissions for http://*/* and https://*/*.
+        chrome.scripting.executeScript({"target": {"tabId": tabid}, "files": ["src/findpw.js"]});
+        // chrome.tabs.reload(parseInt(tabid));
+        if (chrome.runtime.lastError) console.log("bg reload tab lastError", chrome.runtime.lastError);
+    }
+    console.log("bg reloaded tabs", count, performance.now() - start);
+}
 async function setup() {
     if (!isSafari) {
         let nodes = await chrome.bookmarks.getTree();
@@ -245,24 +262,21 @@ async function getMetadata(request, _sender, sendResponse) {
     // Don't lose database across async call
     let db = database;
     // Restores data stored the last time this page was loaded
-    let activetabUrl = activetab.url;
+    let activetabId = activetab.id;
     if (logging) console.log("bg got active tab", activetab);
-    let savedData = {};
-    let s = await chrome.storage.session.get(["savedData"]);
-    if (logging) console.log("bg got saved data", s);
-    if (s && Object.keys(s).length > 0) savedData = s.savedData;
+    let savedData = await getSavedData();
     // I don't create savedData in onContentPageLoad() for two reasons.
     //    1. Pages without a password field never send the message to trigger the save.
     //    2. file:/// pages don't get a content script to send that message.
     // In those cases s === {}, but I still need to send a response.
-    if (savedData[activetabUrl]) {
-        if (logging) console.log("bg got saved data for", activetabUrl, savedData[activetabUrl]);
-        pwcount = savedData[activetabUrl];
+    if (savedData[activetabId]) {
+        if (logging) console.log("bg got saved data for", activetabId, savedData[activetabId]);
+        pwcount = savedData[activetabId];
     } else {
-        if (logging) console.log("bg no saved data for", activetabUrl, savedData);
+        if (logging) console.log("bg no saved data for", activetabId, savedData);
         pwcount = 0;
     }
-    domainname = getdomainname(activetabUrl);
+    domainname = getdomainname(activetab.url);
     if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
     if (logging) console.log("bg sending metadata", pwcount, bg, db);
     sendResponse({"test" : testMode, "superpw": superpw || "", "pwcount": pwcount, "bg": bg, "database": db});
@@ -272,24 +286,10 @@ async function onContentPageload(request, sender, sendResponse) {
     activetab = sender.tab;
     pwcount = request.count;
     // Save data that service worker needs after it restarts
-    let savedData = {};
-    if (isSafari) {
-        let t = sessionStorage.getItem("savedData");
-        savedData = JSON.parse(t) || {};
-        await Promise.resolve(); // To match the await in the other branch
-    } else {
-        let s = await chrome.storage.session.get(["savedData"]);
-        if (Object.keys(s).length > 0) savedData = s.savedData;
-    }
-    savedData[activetab.url] = pwcount;
-    if (logging) console.log("bg saving data", savedData[activetab.url]);
-    if (isSafari) {
-        let s = JSON.stringify(savedData);
-        sessionStorage.setItem("savedData", s);
-        await Promise.resolve(); // To match the awaits in the other branches
-    } else {
-        await chrome.storage.session.set({"savedData": savedData}); 
-    }    
+    let savedData = await getSavedData();
+    savedData[activetab.id] = pwcount;
+    if (logging) console.log("bg saving data", activetab.url, savedData[activetab.id]);
+    setSavedData(savedData);
     let domainname = getdomainname(activetab.url);
     if (logging) console.log("bg domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
     let sitename = database.domains[domainname];
@@ -723,6 +723,27 @@ function getdomainname(url) {
 }
 function getprotocol(url) {
     return url.split(":")[0];
+}
+async function getSavedData() {
+    let savedData = {};
+    if (isSafari) {
+        let t = localStorage.getItem("savedData");
+        savedData = JSON.parse(t) || {};
+        await Promise.resolve(); // To match the await in the other branch
+    } else {
+        let s = await chrome.storage.local.get(["savedData"]);
+        if (s && Object.keys(s).length > 0) savedData = s.savedData;
+    }
+    return savedData;
+}
+async function setSavedData(savedData) {
+    if (isSafari) {
+        let s = JSON.stringify(savedData);
+        localStorage.setItem("savedData", s);
+        await Promise.resolve(); // To match the await in the other branch
+    } else {
+        await chrome.storage.local.set({"savedData": savedData});
+    }
 }
 /* 
 This code is a major modification of the code released with the

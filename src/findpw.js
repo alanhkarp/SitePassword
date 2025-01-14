@@ -451,7 +451,7 @@ async function wakeup() {
                 await Promise.resolve(); // To match the await in the other branch
             }
             resolve("wakeup");
-        });
+        });  
     });
 }
 /* 
