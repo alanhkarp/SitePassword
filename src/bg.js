@@ -3,10 +3,11 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 // Set to true to run the tests in test.js then reload the extension.
 // Tests must be run on a page that has the content script, specifically,
 // http or https whether it has a password field or not.
-const testMode = true;
+const testMode = false;
 const testLogging = false;
 const debugMode = false;
 const logging = false;
+const errorLogging = false;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
 let sitedataBookmark = "SitePasswordData";
@@ -92,6 +93,7 @@ chrome.runtime.onInstalled.addListener(async function(details) {
     } else if (details.reason === "update") {
         let tabs = await chrome.tabs.query({});
         let start = Date.now();
+        let count = 0;
         for (let i = 0; i < tabs.length; i++) {
             // The following needs scripting permission in the manifest and
             // host_permissions for http://*/* and https://*/*.
@@ -105,12 +107,13 @@ chrome.runtime.onInstalled.addListener(async function(details) {
                         "files": ["src/findpw.js"]});
                     if (logging) console.log("bg script executed successfully");
                 } catch(error) {
+                    count++;
                     let estring = error.toString();
-                    if (!estring.includes("showing error page")) console.log("bg reload tab error", tabs[i].url, error);
+                    if (errorLogging && !estring.includes("showing error page")) console.log("bg reload tab error", tabs[i].url, error, count, tabs.length);
                 }
             }
         }
-        console.log("bg reloaded tabs", Date.now() - start);
+        console.log("bg reloaded tabs in", Date.now() - start, "ms", count, tabs.length);
     }
 });
 async function setup() {
