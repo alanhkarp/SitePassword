@@ -2,10 +2,10 @@
     "manifest_version": 3,
     "name": "Site Password",
     "short_name": "Site Password for Chrome",
-    "description": "Don't remember your passwords. Don't store them.  Calculate them!",
+    "description": "Don't remember your passwords. Don't store them. Calculate them!",
     "version": "3.0.13",
     "background": {
-        "service_worker": "src/bg.js", 
+        "service_worker": "src/bg.js",
         "type": "module"
     },
     "action": {
@@ -17,7 +17,7 @@
             "matches": ["https://*/*", "http://*/*"],
             "run_at": "document_idle",
             "js": [
-                "src/findpw.js" 
+                "src/findpw.js"
             ],
             "all_frames": true
         }

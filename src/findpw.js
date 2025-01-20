@@ -56,10 +56,10 @@ setInterval(() => {
     }
 }, 2000);
 // Some sites change the page contents based on the fragment
-window.addEventListener("hashchange", (_href) => {
+window.addEventListener("hashchange", async (_href) => {
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from hash change listener");
     cpi = countpwid();
-    sendpageinfo(cpi, false, true);
+    await sendpageinfo(cpi, false, true);
 });
 // A few sites put their password fields in a shadow root to isolate it from the rest of the page.
 // The only way to find one is to walk the DOM.  That's expensive, so I only do it once.  That
@@ -76,12 +76,17 @@ function searchShadowRoots(element) {
 // Tell the service worker that the user has copied something to the clipboard
 // so it can clear the icon
 document.oncopy = async function () {
-    await wakeup();
+    if (!chrome.runtime?.id) return; // Extension has been removed
+    await wakeup("oncopy");
     await chrome.runtime.sendMessage({"cmd": "resetIcon"});
     if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw document.oncopy error", chrome.runtime.lastError);
     if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
 }
 function startup(sendPageInfo) {
+    if (!chrome.runtime?.id) {
+        mutationObserver = null;
+        return; // Extension has been removed
+    }
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
     // However, someone may have hosted the page at a different URL.  Hence, the test.
     // Don't do anything if this is a SitePasswordWeb page
@@ -166,7 +171,8 @@ function startup(sendPageInfo) {
     cpi = countpwid();
     if (sendPageInfo) sendpageinfo(cpi, false, true);
 }
-function handleMutations(mutations) {
+async function handleMutations(mutations) {
+    if (!chrome.runtime?.id) return; // Extension has been removed
     if (document.hidden || !mutations[0]) return;
     clearTimeout(lasttry);
     // Find password field if added late
@@ -174,7 +180,7 @@ function handleMutations(mutations) {
     if (oldpwfield && oldpwfield === cpi.pwfields[0]) return; // Stop looking once I've found a password field
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from mutation observer");
     cpi = countpwid();
-    sendpageinfo(cpi, false, true);
+    await sendpageinfo(cpi, false, true);
     oldpwfield = cpi.pwfields[0];
     let myMutations = mutationObserver.takeRecords();
     if (logging) console.log("findpw handleMutations my mutations", myMutations);
@@ -208,11 +214,12 @@ function makeEvent(field, type) {
     field.dispatchEvent(event);
 }
 async function sendpageinfo(cpi, clicked, onload) {
+    if (!chrome.runtime?.id) return; // Extension has been removed
     // No need to send page info if no password fields found.  User will have to open
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length);
-    await wakeup();
+    await wakeup("sendpageinfo");
     let response = await chrome.runtime.sendMessage({
         "count": cpi.pwfields.length,
         "clicked": clicked,
@@ -243,7 +250,7 @@ async function sendpageinfo(cpi, clicked, onload) {
     if (userid) fillfield(cpi.pwfields[0], "");
     let myMutations = mutationObserver.takeRecords();
     if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
-    handleMutations(mutations);
+    await handleMutations(mutations);
 }
 // Some sites use placeholders and tooltips to tell the user what to do.
 // I don't want to hide that information from the user, so I don't overwrite 
@@ -294,9 +301,10 @@ async function setPlaceholder(userid) {
     }
 }
 async function pwfieldOnclick(event) {
+    if (!chrome.runtime?.id) return; // Extension has been removed
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
     if (!(this.placeholder === clickSitePassword)) {
-        await wakeup();
+        await wakeup("pwfieldOnclick");
         let response = await chrome.runtime.sendMessage({ "cmd": "getPassword" });
         if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw pwfieldOnclick error", chrome.runtime.lastError);
         sitepw = response;
@@ -304,7 +312,7 @@ async function pwfieldOnclick(event) {
         fillfield(this, response);
         let myMutations = mutationObserver.takeRecords();
         if (logging) console.log(document.URL, Date.now() - start, "findpw got password", this, response, myMutations);
-        handleMutations(mutations);
+        await handleMutations(mutations);
     } else {
         // Because people don't always pay attention
         if (!this.placeholder || this.placeholder === clickSitePassword) alert(clickSitePassword);
@@ -312,6 +320,7 @@ async function pwfieldOnclick(event) {
     }
 }
 function countpwid() {
+    if (!chrome.runtime?.id) return; // Extension has been removed
     var useridfield = null;
     var visible = true;
     var pwfields = [];
@@ -382,7 +391,7 @@ function countpwid() {
     if (c === 0 && maybeUsernameFields.length === 1 && !maybeUsernameFields[0].value) {
         let maybeUsernameField = maybeUsernameFields[0];
         // Using await spreads async all over the place
-        wakeup().then(() => {
+        wakeup("getUsername").then(() => {
             chrome.runtime.sendMessage({ "cmd": "getUsername" }).then((response) => {
                 if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw getUsername error", chrome.runtime.lastError);
                 if (response) {
@@ -393,7 +402,7 @@ function countpwid() {
                         fillfield(this, response);
                         let myMutations = mutationObserver.takeRecords();
                         if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, response, myMutations);
-                        handleMutations(mutations);        
+                        await handleMutations(mutations);        
                     }
                 } else {
                     maybeUsernameField.ondblclick = null;
@@ -438,7 +447,9 @@ function overlaps(field, label) {
 // Multiple events can be lost if they are triggered fast enough,
 // so each one needs to send its own wakeup message.
 // Copied from ssp.js because I can't import it
-async function wakeup() {
+async function wakeup(caller, tries = 3) {
+    if (!chrome.runtime?.id) return; // Extension has been removed
+    tries--;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
     await new Promise((resolve, reject) => {
         if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
@@ -446,7 +457,7 @@ async function wakeup() {
             if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw wakeup error", chrome.runtime.lastError);
             if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup response", response);
             if (!response) {
-                await wakeup();
+                if (tries > 0) await wakeup("wakeup", tries);
             } else {
                 await Promise.resolve(); // To match the await in the other branch
             }
