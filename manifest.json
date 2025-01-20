@@ -5,7 +5,7 @@
     "description": "Don't remember your passwords. Don't store them.  Calculate them!",
     "version": "3.1.0",
     "background": {
-        "service_worker": "src/bg.js", 
+        "service_worker": "src/bg.js",
         "type": "module"
     },
     "action": {
@@ -17,10 +17,14 @@
             "matches": ["https://*/*", "http://*/*"],
             "run_at": "document_idle",
             "js": [
-                "src/findpw.js" 
+                "src/findpw.js"
             ],
             "all_frames": true
         }
+    ],
+    "host_permissions": [
+        "https://*/*",
+        "http://*/*"
     ],
     "icons": {
         "128": "images/icon128.png"
@@ -30,6 +34,7 @@
         "background",
         "bookmarks",
         "browsingData",
+        "scripting",
         "storage",
         "tabs"
     ]

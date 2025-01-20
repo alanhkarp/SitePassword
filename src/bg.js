@@ -3,11 +3,11 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 // Set to true to run the tests in test.js then reload the extension.
 // Tests must be run on a page that has the content script, specifically,
 // http or https whether it has a password field or not.
-let testMode = false;
-let testLogging = false;
-let debugMode = false;
-let logging = false;
-debugger;
+const testMode = false;
+const testLogging = false;
+const debugMode = false;
+const logging = false;
+const errorLogging = false;
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
 let sitedataBookmark = "SitePasswordData";
@@ -76,7 +76,7 @@ if (logging) console.log("bg isSafari", isSafari);
 
 let bkmksId;
 let bkmksSafari = {};
-// Need to clear cache following an update
+// Need to clear cache on install or following an update
 if (logging) console.log("bg running");
 chrome.runtime.onInstalled.addListener(async function(details) {
     if (logging) console.log("bg clearing browser cache because of", details);
@@ -90,6 +90,30 @@ chrome.runtime.onInstalled.addListener(async function(details) {
             height:800,
             width:800
         });
+    } else if (details.reason === "update") {
+        let tabs = await chrome.tabs.query({});
+        let start = Date.now();
+        let count = 0;
+        for (let i = 0; i < tabs.length; i++) {
+            // The following needs scripting permission in the manifest and
+            // host_permissions for http://*/* and https://*/*.
+            if (isUrlMatch(tabs[i].url) && tabs[i].status === "complete") {
+                try {
+                    await chrome.scripting.executeScript({
+                        "target": {
+                            "tabId": tabs[i].id, 
+                            "frameIds": [0]
+                        },
+                        "files": ["src/findpw.js"]});
+                    if (logging) console.log("bg script executed successfully");
+                } catch(error) {
+                    count++;
+                    let estring = error.toString();
+                    if (errorLogging && !estring.includes("showing error page")) console.log("bg reload tab error", tabs[i].url, error, count, tabs.length);
+                }
+            }
+        }
+        console.log("bg reloaded tabs in", Date.now() - start, "ms", count, tabs.length);
     }
 });
 async function setup() {
@@ -251,24 +275,9 @@ async function getMetadata(request, _sender, sendResponse) {
     // Don't lose database across async call
     let db = database;
     // Restores data stored the last time this page was loaded
-    let activetabUrl = activetab.url;
+    let activetabId = activetab.id;
     if (logging) console.log("bg got active tab", activetab);
-    let savedData = {};
-    let s = await chrome.storage.session.get(["savedData"]);
-    if (logging) console.log("bg got saved data", s);
-    if (s && Object.keys(s).length > 0) savedData = s.savedData;
-    // I don't create savedData in onContentPageLoad() for two reasons.
-    //    1. Pages without a password field never send the message to trigger the save.
-    //    2. file:/// pages don't get a content script to send that message.
-    // In those cases s === {}, but I still need to send a response.
-    if (savedData[activetabUrl]) {
-        if (logging) console.log("bg got saved data for", activetabUrl, savedData[activetabUrl]);
-        pwcount = savedData[activetabUrl];
-    } else {
-        if (logging) console.log("bg no saved data for", activetabUrl, savedData);
-        pwcount = 0;
-    }
-    domainname = getdomainname(activetabUrl);
+    domainname = getdomainname(activetab.url);
     if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
     if (logging) console.log("bg sending metadata", pwcount, bg, db);
     sendResponse({"test" : testMode, "superpw": superpw || "", "pwcount": pwcount, "bg": bg, "database": db});
@@ -277,25 +286,6 @@ async function onContentPageload(request, sender, sendResponse) {
     if (logging) console.log("bg onContentPageLoad", bg, request, sender);
     activetab = sender.tab;
     pwcount = request.count;
-    // Save data that service worker needs after it restarts
-    let savedData = {};
-    if (isSafari) {
-        let t = sessionStorage.getItem("savedData");
-        savedData = JSON.parse(t) || {};
-        await Promise.resolve(); // To match the await in the other branch
-    } else {
-        let s = await chrome.storage.session.get(["savedData"]);
-        if (Object.keys(s).length > 0) savedData = s.savedData;
-    }
-    savedData[activetab.url] = pwcount;
-    if (logging) console.log("bg saving data", savedData[activetab.url]);
-    if (isSafari) {
-        let s = JSON.stringify(savedData);
-        sessionStorage.setItem("savedData", s);
-        await Promise.resolve(); // To match the awaits in the other branches
-    } else {
-        await chrome.storage.session.set({"savedData": savedData}); 
-    }    
     let domainname = getdomainname(activetab.url);
     if (logging) console.log("bg domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
     let sitename = database.domains[domainname];
