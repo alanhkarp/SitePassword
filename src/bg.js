@@ -113,7 +113,7 @@ chrome.runtime.onInstalled.addListener(async function(details) {
                 }
             }
         }
-        console.log("bg reloaded tabs in", Date.now() - start, "ms", count, tabs.length);
+        if (logging) console.log("bg reloaded tabs in", Date.now() - start, "ms", count, tabs.length);
     }
 });
 async function setup() {
