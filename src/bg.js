@@ -3,7 +3,7 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 // Set to true to run the tests in test.js then reload the extension.
 // Tests must be run on a page that has the content script, specifically,
 // http or https whether it has a password field or not.
-const testMode = false;
+const testMode = true;
 const testLogging = false;
 const debugMode = false;
 const logging = false;
@@ -113,7 +113,7 @@ chrome.runtime.onInstalled.addListener(async function(details) {
                 }
             }
         }
-        console.log("bg reloaded tabs in", Date.now() - start, "ms", count, tabs.length);
+        if (logging) console.log("bg reloaded tabs in", Date.now() - start, "ms", count, tabs.length);
     }
 });
 async function setup() {
@@ -236,6 +236,7 @@ async function setup() {
                 if (logging) console.log("bg forget rootFolder", rootFolder, request.toforget);
                 await forget(request.toforget, rootFolder[0], sendResponse);
                 if (logging) console.log("bg forget done");
+                sendResponse("forgot");
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
@@ -398,8 +399,18 @@ async function persistMetadata(sendResponse) {
             }
         }
     }
-    // Persist changes to domain settings
+    // Remove safe suffix if its count is less than 2
     let domainnames = Object.keys(db.domains);
+    let suffixCounts = {};
+    let suffixes = clone(db.common.safeSuffixes || {});
+    for (let suffix in suffixes) {
+        suffixCounts[suffix] = 0;
+        for (let domain in db.domains) {
+            if (domain.endsWith(suffix)) suffixCounts[suffix]++;
+        }
+        if (suffixCounts[suffix] < 2) delete db.common.safeSuffixes[suffix];
+    }
+    // Persist changes to domain settings
     for (let i = 0; i < domainnames.length; i++) {
         let sitename = db.domains[domainnames[i]];
         let settings = db.sites[sitename];
@@ -551,6 +562,17 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 newdb.sites[normalize(settings.sitename)] = settings;
             }
         }
+    }
+    // Count the number of times each safe suffix is appears in newdb.domains
+    for (let suffix in newdb.common.safeSuffixes) {
+        let sitename = newdb.common.safeSuffixes[suffix];
+        let count = 0;
+        for (let domain in newdb.domains) {
+            if (domain.endsWith(suffix) && newdb.domains[domain] === sitename) {
+                count++;
+            } 
+        }
+        if (count < 2) delete newdb.common.safeSuffixes[suffix];
     }
     database = newdb;
     await retrieved(callback);

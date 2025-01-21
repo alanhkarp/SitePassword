@@ -450,18 +450,18 @@ function overlaps(field, label) {
 async function wakeup(caller, tries = 3) {
     if (!chrome.runtime?.id) return; // Extension has been removed
     tries--;
-    if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
+    if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup", caller);
     await new Promise((resolve, reject) => {
-        if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
+        if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup, caller");
         chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
             if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw wakeup error", chrome.runtime.lastError);
-            if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup response", response);
+            if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup response", caller, response);
             if (!response) {
-                if (tries > 0) await wakeup("wakeup", tries);
+                if (tries > 0) await wakeup("wakeup", caller, tries);
             } else {
                 await Promise.resolve(); // To match the await in the other branch
             }
-            resolve("wakeup");
+            resolve("wakeup " + caller);
         });  
     });
 }
