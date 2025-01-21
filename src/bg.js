@@ -627,11 +627,15 @@ async function forget(toforget, rootFolder, sendResponse) {
                 if (logging) console.log("bg removing bookmark for", child.title);
                 await chrome.bookmarks.remove(child.id);
                 if (chrome.runtime.lastError) console.log("bg remove child lastError", chrome.runtime.lastError);
-                if (logging) console.log("bg removed bookmark for", item);
-                if (isUrlMatch(activetab.url)) {
-                    await chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
+                try {
+                    if (isUrlMatch(activetab.url)) {
+                        await chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
+                        if (logging) console.log("bg sent clear message");
+                    }
+                } catch (error) {
                     if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
                 }
+                if (logging) console.log("bg removed bookmark for", item);
                 if (logging) console.log("bg sent clear message");
             } else {
                 await Promise.resolve(); // To match the await in the other branch
