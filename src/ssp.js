@@ -1295,8 +1295,11 @@ async function handleblur(element, field) {
     let u = $username.value || "";
     let readyForClick = pw && $superpw.value && u;
     if (isUrlMatch(activetab.url)) {
-        await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
-        if (chrome.runtime.lastError) console.log("popup handleblur lastError", chrome.runtime.lastError);
+        try {
+            await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
+        } catch (error) {
+            if (chrome.runtime.lastError) console.log("popup handleblur lastError", chrome.runtime.lastError);
+        }
     }
 }
 async function handleclick(which) {
@@ -1315,8 +1318,11 @@ async function changePlaceholder() {
     if ($superpw.value && u) readyForClick = true;
     await wakeup("changePlaceholder");
     if (isUrlMatch(activetab.url)) {
-        await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
-        if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
+        try {
+            await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
+        } catch (error) {
+            if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
+        }
     }
 }
 function defaultfocus() {
