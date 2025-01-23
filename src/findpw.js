@@ -45,10 +45,14 @@ window.onload = function () {
     if (logging) console.log(document.URL, Date.now() - start, "findpw running window.onload");
     startup(false);
 }
+window.onerror = function (message, source, lineno, colno, error) {
+    console.log(document.URL, Date.now() - start, "findpw error", message, source, lineno, colno, error);
+    return chrome.runtime.id ? true : false; // Don't suppress errors if the extension has not been removed
+}
 // Other pages add additional CSS at runtime that makes a password field visible
 // Modified from https://www.phpied.com/when-is-a-stylesheet-really-loaded/
 var cssnum = document.styleSheets.length;
-setInterval(() => {
+let startupInterval = setInterval(() => {
     if (!document.hidden && document.styleSheets.length > cssnum) {
         cssnum = document.styleSheets.length;
         if (logging) console.log(document.URL, Date.now() - start, "findpw css added", cssnum);
@@ -76,7 +80,10 @@ function searchShadowRoots(element) {
 // Tell the service worker that the user has copied something to the clipboard
 // so it can clear the icon
 document.oncopy = async function () {
-    if (!chrome.runtime?.id) return; // Extension has been removed
+    if (!chrome.runtime?.id) {
+        cleanup();
+        return;
+    }; // Extension has been removed
     await wakeup("oncopy");
     await chrome.runtime.sendMessage({"cmd": "resetIcon"});
     if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw document.oncopy error", chrome.runtime.lastError);
@@ -84,9 +91,9 @@ document.oncopy = async function () {
 }
 function startup(sendPageInfo) {
     if (!chrome.runtime?.id) {
-        mutationObserver = null;
-        return; // Extension has been removed
-    }
+        cleanup();
+        return;
+    }; // Extension has been removed
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
     // However, someone may have hosted the page at a different URL.  Hence, the test.
     // Don't do anything if this is a SitePasswordWeb page
@@ -110,6 +117,10 @@ function startup(sendPageInfo) {
         // }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button
         document.body.onclick = function () {
+            if (!chrome.runtime?.id) {
+                cleanup();
+                return;
+            }; // Extension has been removed
             if (logging) console.log("findpw click on body");
             setTimeout(() => {
                 if (logging) console.log("findpw body.onclick");
@@ -146,13 +157,13 @@ function startup(sendPageInfo) {
                     break;
                 case "count":
                     let pwdomain = document.location.hostname;
-                    let count = cpi.pwfields.length;
+                    let count = cpi.pwfields.length || 0;
                     if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", count, pwdomain);
                     sendResponse({ "pwcount": count, "pwdomain": pwdomain });
                     break;
                 case "clear":
                     if (cpi.idfield) cpi.idfield.value = "";
-                    for (let i = 0; i < cpi.pwfields.length; i++) {
+                    for (let i = 0; i < cpi.pwfields.length || 0; i++) {
                         cpi.pwfields[i].value = "";
                     }
                     setPlaceholder("");
@@ -172,7 +183,10 @@ function startup(sendPageInfo) {
     if (sendPageInfo) sendpageinfo(cpi, false, true);
 }
 async function handleMutations(mutations) {
-    if (!chrome.runtime?.id) return; // Extension has been removed
+    if (!chrome.runtime?.id) {
+        cleanup();
+        return;
+    }; // Extension has been removed
     if (document.hidden || !mutations[0]) return;
     clearTimeout(lasttry);
     // Find password field if added late
@@ -214,14 +228,17 @@ function makeEvent(field, type) {
     field.dispatchEvent(event);
 }
 async function sendpageinfo(cpi, clicked, onload) {
-    if (!chrome.runtime?.id) return; // Extension has been removed
+    if (!chrome.runtime?.id) {
+        cleanup();
+        return;
+    }; // Extension has been removed
     // No need to send page info if no password fields found.  User will have to open
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
-    if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length);
+    if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length || 0);
     await wakeup("sendpageinfo");
     let response = await chrome.runtime.sendMessage({
-        "count": cpi.pwfields.length,
+        "count": cpi.pwfields.length || 0,
         "clicked": clicked,
         "onload": onload
         });
@@ -301,7 +318,10 @@ async function setPlaceholder(userid) {
     }
 }
 async function pwfieldOnclick(event) {
-    if (!chrome.runtime?.id) return; // Extension has been removed
+    if (!chrome.runtime?.id) {
+        cleanup();
+        return;
+    }; // Extension has been removed
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
     if (!(this.placeholder === clickSitePassword)) {
         await wakeup("pwfieldOnclick");
@@ -320,7 +340,10 @@ async function pwfieldOnclick(event) {
     }
 }
 function countpwid() {
-    if (!chrome.runtime?.id) return; // Extension has been removed
+    if (!chrome.runtime?.id) {
+        cleanup();
+        return;
+    }; // Extension has been removed
     var useridfield = null;
     var visible = true;
     var pwfields = [];
@@ -392,6 +415,10 @@ function countpwid() {
         let maybeUsernameField = maybeUsernameFields[0];
         // Using await spreads async all over the place
         wakeup("getUsername").then(() => {
+            if (!chrome.runtime?.id) {
+                cleanup();
+                return;
+            }; // Extension has been removed
             chrome.runtime.sendMessage({ "cmd": "getUsername" }).then((response) => {
                 if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw getUsername error", chrome.runtime.lastError);
                 if (response) {
@@ -448,7 +475,10 @@ function overlaps(field, label) {
 // so each one needs to send its own wakeup message.
 // Copied from ssp.js because I can't import it
 async function wakeup(caller, tries = 3) {
-    if (!chrome.runtime?.id) return; // Extension has been removed
+    if (!chrome.runtime?.id) {
+        cleanup();
+        return;
+    }; // Extension has been removed
     tries--;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
     await new Promise((resolve, reject) => {
@@ -465,6 +495,32 @@ async function wakeup(caller, tries = 3) {
         });  
     });
 }
+// A content script keeps running even after it's replaced with exectuteScript.
+// This function cleans up all the event listeners, timers, and the mutation observer.
+function cleanup() {
+    if (logging) console.log(document.URL, Date.now() - start, "findpw cleanup");
+    if (mutationObserver) {
+        mutationObserver.disconnect();
+        mutationObserver = null;
+    }
+    if (document.body) document.body.onclick = null;
+    if (document.oncopy) document.oncopy = null;
+    if (window.onerror) window.onerror = null;
+    if (window.onload) window.onload = null;
+    if (window.onhashchange) window.onhashchange = null;
+    if (document.readyState !== "loading") document.onload = null;
+
+    if (cpi.idfield) cpi.idfield.onclick = null;
+
+    for (let pwfield of cpi.pwfields) {
+        pwfield.onclick = null;
+        pwfield.ondblclick = null;
+    }
+
+    if (startupInterval) clearInterval(startupInterval);
+    if (lasttry) clearTimeout(lasttry);
+    chrome.runtime?.onMessage.removeListener();
+}   
 /* 
 This code is a major modification of the code released with the
 following licence.  Neither Hewlett-Packard Company nor Hewlett-Packard
