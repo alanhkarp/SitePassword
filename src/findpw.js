@@ -509,14 +509,15 @@ function cleanup() {
     if (window.onload) window.onload = null;
     if (window.onhashchange) window.onhashchange = null;
     if (document.readyState !== "loading") document.onload = null;
-
-    if (cpi.idfield) cpi.idfield.onclick = null;
-
-    for (let pwfield of cpi.pwfields) {
-        pwfield.onclick = null;
-        pwfield.ondblclick = null;
+    try {
+        cpi.idfield.onclick = null;
+        for (let pwfield of cpi.pwfields) {
+            pwfield.onclick = null;
+            pwfield.ondblclick = null;
+        }
+    } catch (error) {
+        console.log(document.URL, Date.now() - start, "findpw cleanup error", error);
     }
-
     if (startupInterval) clearInterval(startupInterval);
     if (lasttry) clearTimeout(lasttry);
     chrome.runtime?.onMessage.removeListener();

@@ -62,7 +62,7 @@ export async function runTests() {
     const $sitenamemenuforget = get("sitenamemenuforget");
     const $username3bluedots = get("username3bluedots");
     const $usernamemenuforget = get("usernamemenuforget");
-    const $warnings = get("warnings");
+    const $forget = get("forget");
     // #endregion
     let passed = 0;
     let failed = 0;
@@ -290,7 +290,7 @@ export async function runTests() {
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
         await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
         await forgetDomainname();
-        test = $warnings.style.display === "none";
+        test = $forget.style.display === "none";
         if (test) {
             console.log("Passed: Forget without leaving popup no warning");
             passed += 1;
