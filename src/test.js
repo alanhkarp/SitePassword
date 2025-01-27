@@ -325,6 +325,27 @@ async function testForget() {
         console.warn("Failed: Forget by username");
         failed += 1;
     } 
+    // See if forget works even if you don't leave the popup
+    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+    await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+    await forgetDomainname();
+    test = $forget.style.display === "none";
+    if (test) {
+        console.log("Passed: Forget without leaving popup no warning");
+        passed += 1;
+    } else {
+        console.warn("Failed: Forget without leaving popup warning");
+        failed += 1;
+    }
+    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "");
+    test = $username.value === "";
+    if (test) {
+        console.log("Passed: Forget without leaving popup no username");
+        passed += 1;
+    } else {
+        console.warn("Failed: Forget without leaving popup username");
+        failed += 1;
+    }
 }
 // Test proper handling of duplicate bookmarks
 async function testDuplicateBkmks() {

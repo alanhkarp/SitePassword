@@ -34,7 +34,6 @@
         "background",
         "bookmarks",
         "browsingData",
-        "notifications",
         "scripting",
         "storage",
         "tabs"
