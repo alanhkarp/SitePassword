@@ -3,11 +3,17 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 // Set to true to run the tests in test.js then reload the extension.
 // Tests must be run on a page that has the content script, specifically,
 // http or https whether it has a password field or not.
+
+// Only one of these can be true at a time
 const testMode = false;
-const testLogging = false;
 const debugMode = false;
+const demoMode = false;
+
+const testLogging = false;
+const demoLogging = false;
 const logging = false;
 const errorLogging = false;
+
 const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
 let sitedataBookmark = "SitePasswordData";
@@ -15,6 +21,8 @@ if (testMode) {
     sitedataBookmark = "SitePasswordDataTest";
 } else if (debugMode) {
     sitedataBookmark = "SitePasswordDataDebug";
+} else if (demoMode) {
+    sitedataBookmark = "SitePasswordDataDemo";
 }
 var superpw = "";
 var activetab;
@@ -79,6 +87,26 @@ let bkmksSafari = {};
 // Need to clear cache on install or following an update
 if (logging) console.log("bg running");
 chrome.runtime.onInstalled.addListener(async function(details) {
+    // Check for consistency of the xMode flags
+    if (testMode && debugMode || testMode && demoMode || debugMode && demoMode) {
+        let developererror = chrome.runtime.getURL("developererror.html");
+        chrome.windows.create({
+            url: developererror,
+            type:"normal",
+            height:800,
+            width:800
+        });
+        return;
+    }
+    if (testMode) {
+        let developertest = chrome.runtime.getURL("developertest.html");
+        chrome.windows.create({
+            url: developertest,
+            type:"normal",
+            height:800,
+            width:800
+        });
+    }
     if (logging) console.log("bg clearing browser cache because of", details);
     await chrome.browsingData.removeCache({});
     if (logging) console.log("bg cleared the browser cache");

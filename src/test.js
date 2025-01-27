@@ -71,7 +71,7 @@ const $superpw = get("superpw");
 const $username = get("username");
 const $username3bluedots = get("username3bluedots");
 const $usernamemenuforget = get("usernamemenuforget");
-const $warnings = get("warnings");
+const $forget = get("forget");
 // #endregion
 
 let passed = 0;
