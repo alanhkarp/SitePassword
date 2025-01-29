@@ -1414,7 +1414,7 @@ function sitedataHTMLDoc(doc, sorted) {
     }
     function addRow(tr, domainname) {
         let sitename = database.domains[domainname];
-        let s = database.sites[sitename];
+        let s = database.sites[normalize(sitename)];
         let bkmk = JSON.stringify(s);
         let td = addElement(tr, "td");
         let a = addElement(td, "a");
