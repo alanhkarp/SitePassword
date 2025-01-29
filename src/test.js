@@ -120,11 +120,11 @@ async function testCalculation() {
     let actual = $sitepw.value;
     if (actual === expectedpw) {
         console.log("Passed: Calculation");
-        passed += 1;
+        passed++;
     } else {
         let inputs = {"expectedpw": expectedpw, "actual": actual, "superpw": $superpw.value, "sitename": $sitename.value, "username": $username.value};
         console.warn("Failed: Calculation", inputs);
-        failed += 1;
+        failed++;
     }
 }
 // Test change password
@@ -144,10 +144,10 @@ async function testChangePassword() {
     let test = $sitename.value === "Guru2" && $username.value === "alan" && $sitepw.value === actual;
     if (test) {
         console.log("Passed: Change password");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Change password", "Guru2", "alan", actual, $sitename.value, $username.value, $sitepw.value);
-        failed += 1;
+        failed++;
     }
 }
 async function testRememberForm() {
@@ -164,10 +164,10 @@ async function testRememberForm() {
     tests = tests && $username.value === "alan";
     if (tests) {
         console.log("Passed: Remember form");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Remember form", "Guru", "alan", "|" + $sitename.value + "|");
-        failed += 1;
+        failed++;
     }
 }
 async function testProvidedpw() {
@@ -192,10 +192,10 @@ async function testProvidedpw() {
     let test = $sitepw.value === expectedpw
     if (test) {
         console.log("Passed: Provide pw");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Provide pw", expectedpw, "|" + $sitepw.value + "|");
-        failed += 1;
+        failed++;
     }
 }
 // Test phishing
@@ -205,10 +205,10 @@ async function testPhishing() {
     let test = $phishing.style.display === "block";
     if (test) {
         console.log("Passed: Phishing warning is showing.");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Phishing warning not showing.");
-        failed += 1;
+        failed++;
     }
     // There's a test on the web page for clicking the cancelwarning button that
     // makes no sense for the extension because the extension loads the home page.
@@ -220,10 +220,10 @@ async function testPhishing() {
         && document.activeElement === $sitename;
     if (test) {
         console.log("Passed: Phishing new site name");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Phishing new site name");
-        failed += 1;
+        failed++;
     }
     // Does same account option work?
     await phishingSetup();
@@ -236,10 +236,10 @@ async function testPhishing() {
     test = test && $username.value === "alan";
     if (test) {
         console.log("Passed: Phishing same account");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Phishing same account");
-        failed += 1;
+        failed++;
     }
     clearForm();
     await fillForm("", "allantheguru.alanhkarp.com", "", "");
@@ -247,10 +247,10 @@ async function testPhishing() {
     test = $sitename.value === normalize("Guru") && $username.value === "alan";
         if (test) {
         console.log("Passed: Phishing remembered same account");
-        passed += 1;
+        passed++;
     } else {    
         console.warn("Failed: Phishing remembered same account");
-        failed += 1;
+        failed++;
     }
 }
 // Test forget
@@ -267,10 +267,10 @@ async function testForget() {
     let test = $sitename.value === "" && $username.value === "";
     if (test) {
         console.log("Passed: Forget by domain name");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Forget by domain name");
-        failed += 1;
+        failed++;
     }
     // See if database still has site name if it should
     await phishingSetup();
@@ -282,10 +282,10 @@ async function testForget() {
     test = $sitename.value === "" && $username.value === "";
     if (test) {
         console.log("Passed: Forget site name when it should");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Did not forget site name when it should");
-        failed += 1;
+        failed++;
     }
     // See if forget by site name works
     await phishingSetup();
@@ -300,10 +300,10 @@ async function testForget() {
     test = test && $sitename.value === "" && $username.value === "";
     if (test) {
         console.log("Passed: Forget by site name");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Forget by site name");
-        failed += 1;
+        failed++;
     }
     // See if forget by username works
     await phishingSetup();
@@ -320,10 +320,10 @@ async function testForget() {
     test = test && $sitename.value === "" && $username.value === "";
     if (test) {
         console.log("Passed: Forget by username");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Forget by username");
-        failed += 1;
+        failed++;
     } 
     // See if forget works even if you don't leave the popup
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
@@ -332,19 +332,19 @@ async function testForget() {
     test = $forget.style.display === "none";
     if (test) {
         console.log("Passed: Forget without leaving popup no warning");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Forget without leaving popup warning");
-        failed += 1;
+        failed++;
     }
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "");
     test = $username.value === "";
     if (test) {
         console.log("Passed: Forget without leaving popup no username");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Forget without leaving popup username");
-        failed += 1;
+        failed++;
     }
 }
 // Test proper handling of duplicate bookmarks
@@ -364,10 +364,10 @@ async function testDuplicateBkmks() {
     let test = children.length === 2; // because of the common settings bookmark
     if (test) {
         console.log("Passed: Identical duplicate bookmark handled");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Identical duplicate bookmark not handled");
-        failed += 1;
+        failed++;
     }
     // Create a duplicate bookmark with different settings
     let newUrl = url.replace("fred", "barney");
@@ -378,10 +378,10 @@ async function testDuplicateBkmks() {
     test = children.length === 3; // because of the common settings bookmark
     if (test) {
         console.log("Passed: Different duplicate bookmark handled");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Different duplicate bookmark not handled");
-        failed += 1;
+        failed++;
     }
     // Test duplicate common settings bookmark
     await resetState();
@@ -398,10 +398,10 @@ async function testDuplicateBkmks() {
     test = children.length === 2; 
     if (test) {
         console.log("Passed: Identical duplicate common settings bookmark handled");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Identical duplicate common settings bookmark not handled");
-        failed += 1;
+        failed++;
     }
     newUrl = url.replace("12", "15");
     if (loggingDuplicateBkmks) console.log("testDuplicateBkmks creating different duplicate common settings bookmark");
@@ -411,10 +411,10 @@ async function testDuplicateBkmks() {
     test = children.length === 3; // because of the common settings bookmark
     if (test) {
         console.log("Passed: Different duplicate common settings bookmark handled");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Different duplicate common settings bookmark not handled");
-        failed += 1;
+        failed++;
     }
 }
 // Test clear superpw
@@ -432,10 +432,10 @@ async function testClearSuperpw() {
     let test = $superpw.value === "" && response === expectedpw;
     if (test) {
         console.log("Passed: Clear superpw");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Clear superpw");
-        failed += 1;
+        failed++;
     }
 }
 // Test hide sitepw
@@ -449,10 +449,10 @@ async function testHideSitepw() {
     let test = $sitepw.type === "password";
     if (test) {
         console.log("Passed: Hide sitepw");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Hide sitepw");
-        failed += 1;
+        failed++;
     }
 }
 // Test updating legacy bookmarks
@@ -468,10 +468,10 @@ async function testLegacyBkmks() {
     let test = children[0].url.indexOf("{") === -1;
     if (test) {
         console.log("Passed: Legacy bookmark updated");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Legacy bookmark not updated");
-        failed += 1;
+        failed++;
     }
 }
 // Test safe suffixes
@@ -491,10 +491,10 @@ async function testSafeSuffixes() {
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
     if (test) {
         console.log("Passed: Safe suffix");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Safe suffix");
-        failed += 1;
+        failed++;
     }
     // Test that you do get a phishing warning with an unsafe suffix
     restoreForTesting();
@@ -503,10 +503,10 @@ async function testSafeSuffixes() {
     test = $username.value === "" && $phishing.style.display === "block";
     if (test) {
         console.log("Passed: Unsafe suffixes");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Unsafe suffixes");
-        failed += 1;
+        failed++;
     }
     // Test that you don't get an entry in the public suffix list in the safe suffixes
     restoreForTesting();
@@ -521,10 +521,10 @@ async function testSafeSuffixes() {
     get("phishing").style.display = "none";
     if (test) {
         console.log("Passed: Not in safe suffixes");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Not in safe suffixes");
-        failed += 1;
+        failed++;
     }
 }
 // Test reassign account
@@ -544,10 +544,10 @@ async function testChangeAccount() {
     }
     if (test) {
         console.log("Passed: Change account open");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Change account not open");
-        failed += 1;
+        failed++;
     }
     restoreForTesting();
     $sitepwmenu.style.display = "none";
@@ -557,10 +557,10 @@ async function testChangeAccount() {
     test = test && normalize($sitename.value) === "guru";
     if (test) {
         console.log("Passed: Change account cancel");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Change account cancel");
-        failed += 1;
+        failed++;
     }
     restoreForTesting();
     $sitepwmenu.style.display = "none";
@@ -579,10 +579,10 @@ async function testChangeAccount() {
     test = test && normalize($sitename.value) === normalize("newGuru");
     if (test) {
         console.log("Passed: Change account save");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Change account save");
-        failed += 1;
+        failed++;
     }
     restoreForTesting();
     $sitepwmenu.style.display = "none";
@@ -600,10 +600,10 @@ async function testChangeAccount() {
     test = test && normalize($sitename.value) === normalize("guru");
     if (test) {
         console.log("Passed: Change account new");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Change account new");
-        failed += 1;
+        failed++;
     }
 } 
 // Test save as default
@@ -635,10 +635,10 @@ async function testSaveAsDefault2() {
     tests = tests && $specials.value === "%^&";
     if (tests) {
         console.log("Passed: Save as default");
-        passed += 1;
+        passed++;
     } else {
         console.warn("Failed: Save as default |" + $pwlength.value + "|" + $specials.value + "|" + $allowspecialcheckbox.checked + "|");
-        failed += 1;
+        failed++;
     }
 }
 // Utility functions
