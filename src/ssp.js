@@ -1552,8 +1552,8 @@ function sitedataHTMLDoc(doc, sorted) {
 
             // Sort each row
             const sortedRows = rows.sort(function (a, b) {
-                const aColText = a.querySelector(\`td:nth-child(\${which + 1})\`).innerHTML.trim().toLowerCase();
-                const bColText = b.querySelector(\`td:nth-child(\${which + 1})\`).innerHTML.trim().toLowerCase();
+                const aColText = a.querySelector(\`td:nth-child(\${which + 1})\`).innerText.trim().toLowerCase();
+                const bColText = b.querySelector(\`td:nth-child(\${which + 1})\`).innerText.trim().toLowerCase();
                 console.log("sortTable", aColText, bColText);
                 return aColText > bColText ? (1 * dirModifier) : (-1 * dirModifier);
             });
