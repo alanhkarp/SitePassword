@@ -7,7 +7,7 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 // Only one of these can be true at a time
 const testMode = false;
 const debugMode = false;
-const demoMode = true;
+const demoMode = false;
 
 const testLogging = false;
 const demoLogging = false;
