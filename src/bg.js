@@ -7,7 +7,7 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 // Only one of these can be true at a time
 const testMode = false;
 const debugMode = false;
-const demoMode = false;
+const demoMode = true;
 
 const testLogging = false;
 const demoLogging = false;
@@ -29,7 +29,6 @@ var activetab;
 var domainname = "";
 var protocol; // VSCode says this is unused, but it is in function retrieved() below.
 var rootFolder = {id: -1};
-var pwcount = 0;
 var createBookmarksFolder = true;
 var createBookmark = true;
 export const webpage = "https://sitepassword.info";
@@ -302,13 +301,12 @@ async function getMetadata(request, _sender, sendResponse) {
     if (logging) console.log("bg got active tab", activetab);
     domainname = getdomainname(activetab.url);
     if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
-    if (logging) console.log("bg sending metadata", pwcount, bg, db);
-    sendResponse({"test" : testMode, "superpw": superpw || "", "pwcount": pwcount, "bg": bg, "database": db});
+    if (logging) console.log("bg sending metadata", bg, db);
+    sendResponse({"test" : testMode, "superpw": superpw || "", "bg": bg, "database": db});
 }
 async function onContentPageload(request, sender, sendResponse) {
     if (logging) console.log("bg onContentPageLoad", bg, request, sender);
     activetab = sender.tab;
-    pwcount = request.count;
     let domainname = getdomainname(activetab.url);
     if (logging) console.log("bg domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
     let sitename = database.domains[domainname];
