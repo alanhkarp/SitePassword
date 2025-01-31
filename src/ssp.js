@@ -147,7 +147,6 @@ if (logging) console.log("popup starting");
 // popup window closes before the message it sends gets delivered.
 
 window.onload = async function () {
-    debugger;
     if (logging) console.log("popup check clipboard");
     let v = await chrome.storage.local.get("onClipboard");
     if (v.onClipboard) {
@@ -179,7 +178,15 @@ window.onload = async function () {
     if (logging) console.log("popup", activetab.url, isUrlMatch(activetab.url));
     if (chrome.runtime?.id && isUrlMatch(activetab.url)) {
         try {
-            let result = await chrome.tabs.sendMessage(activetab.id, {"cmd": "count"});
+            let result = await chrome.tabs.sendMessage(activetab.id, {"cmd": "count", "domainname": domainname});
+            if (logging) console.log("popup get count", result);
+            let n = 0;
+            while (result.pwdomain !== domainname) {
+                n++;
+                chrome.tabs.sendMessage(activetab.id, {"cmd": "count", "domainname": domainname});
+                console.com("popup get count, tries", count, n);
+                if (n > 20) break;  
+            }
             let pwcount = result.pwcount;
             message("multiple", pwcount > 1);
             message("zero", pwcount === 0);

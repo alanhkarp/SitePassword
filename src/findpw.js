@@ -241,7 +241,7 @@ async function sendpageinfo(cpi, clicked, onload) {
         "count": cpi.pwfields.length || 0,
         "clicked": clicked,
         "onload": onload
-        });
+    });
     if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw senpageinfo error", chrome.runtime.lastError);
     if (response === "multiple") {
         alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
