@@ -423,7 +423,8 @@ async function persistMetadata(sendResponse) {
     let domainnames = Object.keys(db.domains);
     for (let i = 0; i < domainnames.length; i++) {
         let sitename = db.domains[domainnames[i]];
-        let settings = db.sites[sitename];
+        let settings = clone(db.sites[sitename]);
+        settings.domainname = domainnames[i];
         settings.specials = array2string(settings.specials); // For legacy bookmarks
         let url = webpage + "?bkmk=ssp://" + stringifySettings(settings);
         let found = domains.find((item) => item.title === domainnames[i]);
@@ -449,7 +450,6 @@ async function persistMetadata(sendResponse) {
                 (domainnames[i] === bg.settings.domainname) ||
                 (domainnames[i] === bg.settings.pwdomainname)) {
                 let title = domainnames[i];
-                url = webpage + "?bkmk=ssp://" + JSON.stringify(settings);
                 if (logging) console.log("bg creating bookmark for", title);
                 if (isSafari) {
                     bkmksSafari[title] = {};
