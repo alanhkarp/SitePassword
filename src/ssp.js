@@ -177,22 +177,13 @@ window.onload = async function () {
     // Get pwcount from content script because service worker might have forgotten it
     if (logging) console.log("popup", activetab.url, isUrlMatch(activetab.url));
     if (chrome.runtime?.id && isUrlMatch(activetab.url)) {
-        try {
-            let result = await chrome.tabs.sendMessage(activetab.id, {"cmd": "count", "domainname": domainname});
-            if (logging) console.log("popup get count", result);
-            let n = 0;
-            while (result.pwdomain !== domainname) {
-                n++;
-                chrome.tabs.sendMessage(activetab.id, {"cmd": "count", "domainname": domainname});
-                console.com("popup get count, tries", count, n);
-                if (n > 20) break;  
-            }
-            let pwcount = result.pwcount;
-            message("multiple", pwcount > 1);
-            message("zero", pwcount === 0);
-        } catch (error) {
-            if (chrome.runtime.lastError) console.log("popup sendMessage lastError", chrome.runtime.lastError);
-        }
+        if (logging) console.log("popup sending count message to content script");
+        let result = await chrome.tabs.sendMessage(activetab.id, {"cmd": "count"});
+        if (logging) console.log("popup get count", result);
+        let pwcount = result.pwcount;
+        message("multiple", pwcount > 1);
+        message("zero", pwcount === 0);
+        changePlaceholder();
     }
     if (logging) console.log("popup tab", activetab);
     let protocol = activetab.url.split(":")[0];
@@ -1329,12 +1320,14 @@ async function handleclick(which) {
     await ask2generate();
 }
 async function changePlaceholder() {
+    let p = $superpw.value || "";
+    let n = $sitename.value || "";
     let u = $username.value || "";
     let readyForClick = false;
-    if ($superpw.value && u) readyForClick = true;
-    await wakeup("changePlaceholder");
+    if (p && n && u) readyForClick = true;
     if (isUrlMatch(activetab.url)) {
         try {
+            await wakeup("changePlaceholder");
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
         } catch (error) {
             if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);

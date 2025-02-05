@@ -136,6 +136,7 @@ function startup(sendPageInfo) {
             cpi = countpwid();
             switch (request.cmd) {
                 case "fillfields":
+                    if (logging) console.log(document.URL, Date.now() - start, "findpw fillfields", cpi, request);
                     userid = request.u;
                     fillfield(cpi.idfield, userid);
                     fillfield(cpi.pwfields[0], request.p);
@@ -157,9 +158,10 @@ function startup(sendPageInfo) {
                     break;
                 case "count":
                     let pwdomain = document.location.hostname;
-                    let count = cpi.pwfields.length || 0;
-                    if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", count, pwdomain);
-                    sendResponse({ "pwcount": count, "pwdomain": pwdomain });
+                    let pwcount = cpi.pwfields.length || 0;
+                    let uid = cpi.idfield ? cpi.idfield.value : "";
+                    console.log(document.URL, Date.now() - start, "findpw got count request", pwcount, pwdomain);
+                    sendResponse({ "pwcount": pwcount, "id": uid, "pwdomain": pwdomain });
                     break;
                 case "clear":
                     if (cpi.idfield) cpi.idfield.value = "";
@@ -181,6 +183,7 @@ function startup(sendPageInfo) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
     cpi = countpwid();
     if (sendPageInfo) sendpageinfo(cpi, false, true);
+    return true;
 }
 async function handleMutations(mutations) {
     if (!chrome.runtime?.id) {
