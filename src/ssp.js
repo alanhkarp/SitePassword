@@ -73,18 +73,6 @@ window.onload = async function () {
     if (logging) console.log("popup getting active tab");
     let tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     activetab = tabs[0];
-    // Get pwcount from content script because service worker might have forgotten it
-    if (logging) console.log("popup", activetab.url, isUrlMatch(activetab.url));
-    if (chrome.runtime?.id && isUrlMatch(activetab.url)) {
-        try {
-            let result = await chrome.tabs.sendMessage(activetab.id, {"cmd": "count"});
-            let pwcount = result.pwcount;
-            message("multiple", pwcount > 1);
-            message("zero", pwcount === 0);
-        } catch (error) {
-            if (chrome.runtime.lastError) console.log("popup sendMessage lastError", chrome.runtime.lastError);
-        }
-    }
     if (logging) console.log("popup tab", activetab);
     let protocol = activetab.url.split(":")[0];
     if ( protocol === "file") {
@@ -164,6 +152,7 @@ export async function getsettings(testdomainname) {
         return;
     }
     bg = response.bg;
+    let pwcount = response.pwcount;
     database = response.database;
     hidesitepw();
     if (!bg.settings.sitename) {
@@ -172,6 +161,8 @@ export async function getsettings(testdomainname) {
     get("superpw").value = response.superpw || "";
     await init();
     if (logging) console.log("popup got metadata", bg, database);
+    message("multiple", pwcount > 1);
+    message("zero", pwcount === 0);
     if (!testMode && response.test) { // Only run tests once
         testMode = true;
         runTests();
