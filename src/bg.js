@@ -27,6 +27,7 @@ if (testMode) {
 var superpw = "";
 var activetab;
 var domainname = "";
+var pwcount = 0;
 var protocol; // VSCode says this is unused, but it is in function retrieved() below.
 var rootFolder = {id: -1};
 var createBookmarksFolder = true;
