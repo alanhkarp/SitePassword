@@ -35,6 +35,7 @@ if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw 
 // Most pages work if I start looking for password fields as soon as the basic HTML is loaded
 if (document.readyState !== "loading") {
     if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw running", document.readyState);
+    // alert("findpw document readyState");
     startup(true);
 } else {
     if (logging) console.log(document.URL, Date.now() - start, "findpw running document.onload");
@@ -43,6 +44,7 @@ if (document.readyState !== "loading") {
 // A few other pages don't find the password fields until all downloads have completed
 window.onload = function () {
     if (logging) console.log(document.URL, Date.now() - start, "findpw running window.onload");
+    // alert("findpw document window.onload");
     startup(false);
 }
 window.onerror = function (message, source, lineno, colno, error) {
@@ -56,6 +58,7 @@ let startupInterval = setInterval(() => {
     if (!document.hidden && document.styleSheets.length > cssnum) {
         cssnum = document.styleSheets.length;
         if (logging) console.log(document.URL, Date.now() - start, "findpw css added", cssnum);
+        // alert("findpw document startupInterval");
         startup(true);
     }
 }, 2000);
@@ -124,6 +127,7 @@ function startup(sendPageInfo) {
             if (logging) console.log("findpw click on body");
             setTimeout(() => {
                 if (logging) console.log("findpw body.onclick");
+                // alert("findpw document startup");
                 startup(true);
             }, 500);
         };
@@ -455,12 +459,40 @@ function clearLabel(field) {
         }
     }
 }
+// Thanks, Copilot
 function isHidden(field) {
-    // Elements with position=fixed do not have an offsetParent
-    let hidden = (field.style.position !== "fixed" && field.offsetParent === null) ||
-                 (field.style.opacity && Number(field.style.opacity) < Number("0.5")) ||
-                 (window.getComputedStyle(field).display === 'none');
-    return hidden;
+    if (!field) return true;
+
+    const style = window.getComputedStyle(field);
+
+    // Check if the element is hidden via CSS properties
+    if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+        return true;
+    }
+
+    // Check if the element is within the viewport
+    const rect = field.getBoundingClientRect();
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+    if (rect.top >= viewportHeight || rect.bottom <= 0 || rect.left >= viewportWidth || rect.right <= 0) {
+        return true;
+    }
+
+    // Check if the element is hidden by its parent
+    if (field.offsetParent === null && style.position !== 'fixed') {
+        return true;
+    }
+
+    // Check if the element is covered by another element
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const topElement = document.elementFromPoint(centerX, centerY);
+    if (topElement && topElement !== field && !field.contains(topElement) && !topElement.contains(field)) {
+        return true;
+    }
+
+    return false;
 }
 function overlaps(field, label) {
     // Only worry about labels above or to the left of the field

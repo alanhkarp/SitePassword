@@ -65,7 +65,7 @@ export const baseDefaultSettings = clone(defaultSettings); // Exported for testi
 Object.freeze(baseDefaultSettings); // so the values can't be changed
 Object.freeze(baseDefaultSettings.xor); // so the array values can't be changed
 
-export const bgBaseDefault = {superpw: "", settings: baseDefaultSettings}; // Used in ssp.js
+export const bgBaseDefault = {"superpw": "", "pwcount": 0, "settings": baseDefaultSettings}; // Used in ssp.js
 Object.freeze(bgBaseDefault); // so the values can't be changed
 Object.freeze(bgBaseDefault.settings.xor); // so the array values can't be changed
 
@@ -195,7 +195,7 @@ async function setup() {
             if (logging) console.log("bg listener back from retrieveMetadata", database);
             superpw = "";
             let value = await chrome.storage.session.get(["superpw"]);
-            superpw = value.superpw;
+            superpw = value.superpw || "";
             if (logging) console.log("bg got superpw", superpw);
             superpw = superpw || "";
             bg.superpw = superpw;
@@ -295,11 +295,18 @@ async function getMetadata(request, _sender, sendResponse) {
     // Domain name comes from popup, which is trusted not to spoof it
     bg.settings.domainname = request.domainname;
     activetab = request.activetab;
+    if (logging) console.log("bg got active tab", activetab);
     // Don't lose database across async call
     let db = database;
     // Restores data stored the last time this page was loaded
-    let activetabId = activetab.id;
     if (logging) console.log("bg got active tab", activetab);
+    let s = await chrome.storage.session.get(["savedData"]); // Returns {} if nothing is saved
+    let savedData = s.savedData;
+    if (logging) console.log("bg got saved data", s);
+    if (s && Object.keys(s).length > 0) savedData = s.savedData;
+    pwcount = savedData[activetab.url] || 0;
+    if (logging) console.log("bg got saved data for", activetab.url, savedData[activetab.url]);
+    bg.pwcount = pwcount;
     domainname = getdomainname(activetab.url);
     if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
     if (logging) console.log("bg sending metadata", bg, db);
@@ -308,7 +315,26 @@ async function getMetadata(request, _sender, sendResponse) {
 async function onContentPageload(request, sender, sendResponse) {
     if (logging) console.log("bg onContentPageLoad", bg, request, sender);
     activetab = sender.tab;
-    pwcount = request.pwcount;
+    pwcount = request.count;
+    // Save data that service worker needs after it restarts
+    let savedData = {};
+    if (isSafari) {
+        let t = sessionStorage.getItem("savedData");
+        if (t) savedData = JSON.parse(t);
+        await Promise.resolve(); // To match the await in the other branch
+    } else {
+        let s = await chrome.storage.session.get(["savedData"]);
+        if (Object.keys(s).length > 0) savedData = s.savedData;
+    }
+    if (pwcount) savedData[activetab.url] = pwcount || 0;
+    if (logging) console.log("bg saving data", savedData[activetab.url]);
+    if (isSafari) {
+        let s = JSON.stringify(savedData);
+        sessionStorage.setItem("savedData", s);
+        await Promise.resolve(); // To match the awaits in the other branches
+    } else {
+        if (pwcount) await chrome.storage.session.set({"savedData": savedData}); 
+    }    
     let domainname = getdomainname(activetab.url);
     if (logging) console.log("bg domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
     let sitename = database.domains[domainname];
