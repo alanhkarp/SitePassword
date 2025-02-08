@@ -798,7 +798,7 @@ get("forgetbutton").onclick = async function () {
     bg = clone(bgDefault);
     bg.superpw = superpw;
     if (logging) console.log("popup forgetbutton sending forget", list);
-     let response = await retrySendMessage({"cmd": "forget", "toforget": list});
+    let response = await retrySendMessage({"cmd": "forget", "toforget": list});
     if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
     if (logging) console.log("popup forget response", response);
     if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
@@ -1084,7 +1084,7 @@ async function changePlaceholder() {
     if (get("superpw").value && u) readyForClick = true;
     if (isUrlMatch(activetab.url)) {
         try {
-            await retrySendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
+            await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
         } catch (error) {
             if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
         }
