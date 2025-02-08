@@ -182,12 +182,6 @@ async function setup() {
     if (logging) console.log("bg adding listener");
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         if (logging || testLogging) console.log("bg got message request, sender", request, sender);
-        // No need to retrieve metadata for a wakeup message
-        if (request.cmd === "wakeup") {
-            if (logging) console.log("bg sending awake");
-            sendResponse("awake");
-            return true;
-        }
         // Start with a new database in case something changed while the service worker stayed open
         database = clone(databaseDefault);
         bg = clone(bgDefault);

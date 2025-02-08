@@ -248,8 +248,7 @@ function clearDatalist(listid) {
 export async function getsettings(testdomainname) {
     if (testMode) domainname = testdomainname;
     if (logging) console.log("popup getsettings", domainname);
-    await wakeup("getsettings");
-    let response =  await chrome.runtime.sendMessage({
+    let response =  await retrySendMessage({
             "cmd": "getMetadata",
             "domainname": domainname,
             "activetab": activetab
@@ -325,16 +324,13 @@ $mainpanel.onmouseleave = async function (event) {
         let sitename = $sitename.value;
         changePlaceholder();
         if (logging) console.log("popup sending siteData", bg.settings, database);
-        await wakeup("mouseleave");
-        let response = await chrome.runtime.sendMessage({
-                "cmd": "siteData",
-                "sitename": sitename,
-                "clearsuperpw": $clearsuperpw.checked,
-                "hidesitepw": $hidesitepw.checked,
-                "safeSuffixes": database.common.safeSuffixes || {},
-                "sameacct": sameacct,
-                "bg": bg,
-            });
+        let response = await retrySendMessage({
+            "cmd": "siteData",
+            "sitename": sitename,
+            "clearsuperpw": get("clearsuperpw").checked,
+            "hidesitepw": get("hidesitepw").checked,
+            "bg": bg,
+        });
         if (chrome.runtime.lastError) console.log("popup mouseleave lastError", chrome.runtime.lastError);
         if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
         if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
@@ -890,8 +886,7 @@ $makedefaultbutton.onclick = async function () {
         minspecial: $minspecial.value,
         specials: $specials.value,
     }
-    await wakeup("defaultbutton");
-    await chrome.runtime.sendMessage({"cmd": "newDefaults", "newDefaults": newDefaults});
+    await retrySendMessage({"cmd": "newDefaults", "newDefaults": newDefaults});
     if (chrome.runtime.lastError) console.log("popup makedefaultbutton lastError", chrome.runtime.lastError);
     if (logging) console.log("popup newDefaults sent", newDefaults);
     if (resolvers.makedefaultResolver) resolvers.makedefaultResolver("makedefaultbuttonPromise");
@@ -989,8 +984,7 @@ $forgetbutton.onclick = async function () {
     bg = clone(bgDefault);
     bg.superpw = superpw;
     if (logging) console.log("popup forgetbutton sending forget", list);
-    await wakeup("foregetbutton");
-    let response = await chrome.runtime.sendMessage({"cmd": "forget", "toforget": list});
+     let response = await retrySendMessage({"cmd": "forget", "toforget": list});
     if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
     if (logging) console.log("popup forget response", response);
     $forgetcancelbutton.click();
@@ -1324,11 +1318,10 @@ async function changePlaceholder() {
     let n = $sitename.value || "";
     let u = $username.value || "";
     let readyForClick = false;
-    if (p && n && u) readyForClick = true;
+    if (get("superpw").value && u) readyForClick = true;
     if (isUrlMatch(activetab.url)) {
         try {
-            await wakeup("changePlaceholder");
-            await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
+            await retrySendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
         } catch (error) {
             if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
         }
@@ -1799,20 +1792,31 @@ function closeAllInstructions() {
     }
     saveSettings = false;
 }
-// Make sure the service worker is running
-// Multiple events can be lost if they are triggered fast enough,
-// so each one needs to send its own wakeup message.
-// Copied to findpw.js because I can't import it there
-async function wakeup(caller) {
-    if (logging) console.log("popup sending wakeup", caller, $domainname.value);
-    await new Promise((resolve) => {
-        chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
-            if (chrome.runtime.lastError) console.log("popup wakeup lastError", caller, chrome.runtime.lastError);
-            if (logging) console.log("popup wakeup response", caller, $domainname.value, response);
-            if (!response) await wakeup(caller);
-            resolve("wakeup");
-        });
-    });
+// Sometimes messages fail because the receiving side isn't quite ready.
+// That's most often the serice worker as it's starting up.
+/**
+ * Retry sending a message.
+ * @param {object} message - The message to send.
+ * @param {number} retries - The number of retry attempts.
+ * @param {number} delay - The delay between retries in milliseconds.
+ * @returns {Promise} - A promise that resolves when the message is successfully sent or rejects after all retries fail.
+ */
+async function retrySendMessage(message, retries = 5, delay = 100) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const response = await chrome.runtime.sendMessage(message);
+            return response; // Message sent successfully
+        } catch (error) {
+            if (chrome.runtime.lastError) {
+                console.error(`Attempt ${attempt} failed:`, chrome.runtime.lastError.message);
+            }
+            if (attempt < retries) {
+                await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
+            } else {
+                throw new Error(`Failed to send message after ${retries} attempts`);
+            }
+        }
+    }
 }
 /* 
 This code is a major modification of the code released with the
