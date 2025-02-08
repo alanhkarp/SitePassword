@@ -87,8 +87,7 @@ document.oncopy = async function () {
         cleanup();
         return;
     }; // Extension has been removed
-    await wakeup("oncopy");
-    await chrome.runtime.sendMessage({"cmd": "resetIcon"});
+    await retrySendMessage({"cmd": "resetIcon"});
     if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw document.oncopy error", chrome.runtime.lastError);
     if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
 }
@@ -240,8 +239,7 @@ async function sendpageinfo(cpi, clicked, onload) {
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length || 0);
-    await wakeup("sendpageinfo");
-    let response = await chrome.runtime.sendMessage({
+    let response = await retrySendMessage({
         "count": cpi.pwfields.length || 0,
         "clicked": clicked,
         "onload": onload
@@ -328,8 +326,7 @@ async function pwfieldOnclick(event) {
     }; // Extension has been removed
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
     if (!(this.placeholder === clickSitePassword)) {
-        await wakeup("pwfieldOnclick");
-        let response = await chrome.runtime.sendMessage({ "cmd": "getPassword" });
+        let response = await retrySendMessage({ "cmd": "getPassword" });
         if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw pwfieldOnclick error", chrome.runtime.lastError);
         sitepw = response;
         let mutations = mutationObserver.takeRecords();
@@ -418,27 +415,25 @@ function countpwid() {
     if (c === 0 && maybeUsernameFields.length === 1 && !maybeUsernameFields[0].value) {
         let maybeUsernameField = maybeUsernameFields[0];
         // Using await spreads async all over the place
-        wakeup("getUsername").then(() => {
-            if (!chrome.runtime?.id) {
-                cleanup();
-                return;
-            }; // Extension has been removed
-            chrome.runtime.sendMessage({ "cmd": "getUsername" }).then((response) => {
-                if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw getUsername error", chrome.runtime.lastError);
-                if (response) {
-                    if (!maybeUsernameField.placeholder) maybeUsernameField.placeholder = insertUsername;
-                    if (!maybeUsernameField.title) maybeUsernameField.title = insertUsername;
-                    maybeUsernameField.ondblclick = async function () {
-                        let mutations = mutationObserver.takeRecords();
-                        fillfield(this, response);
-                        let myMutations = mutationObserver.takeRecords();
-                        if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, response, myMutations);
-                        await handleMutations(mutations);        
-                    }
-                } else {
-                    maybeUsernameField.ondblclick = null;
+        if (!chrome.runtime?.id) {
+            cleanup();
+            return;
+        }; // Extension has been removed
+        retrySendMessage({ "cmd": "getUsername" }).then((response) => {
+            if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw getUsername error", chrome.runtime.lastError);
+            if (response) {
+                if (!maybeUsernameField.placeholder) maybeUsernameField.placeholder = insertUsername;
+                if (!maybeUsernameField.title) maybeUsernameField.title = insertUsername;
+                maybeUsernameField.ondblclick = async function () {
+                    let mutations = mutationObserver.takeRecords();
+                    fillfield(this, response);
+                    let myMutations = mutationObserver.takeRecords();
+                    if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, response, myMutations);
+                    await handleMutations(mutations);        
                 }
-            });
+            } else {
+                maybeUsernameField.ondblclick = null;
+            }
         });
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, useridfield);
@@ -502,30 +497,31 @@ function overlaps(field, label) {
     if (floc.left >= lloc.right) return false;
     return true;
 }
-// Make sure the service worker is running
-// Multiple events can be lost if they are triggered fast enough,
-// so each one needs to send its own wakeup message.
-// Copied from ssp.js because I can't import it
-async function wakeup(caller, tries = 3) {
-    if (!chrome.runtime?.id) {
-        cleanup();
-        return;
-    }; // Extension has been removed
-    tries--;
-    if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
-    await new Promise((resolve, reject) => {
-        if (logging) console.log(document.URL, Date.now() - start, "findpw sending wakeup");
-        chrome.runtime.sendMessage({ "cmd": "wakeup" }, async (response) => {
-            if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw wakeup error", chrome.runtime.lastError);
-            if (logging) console.log(document.URL, Date.now() - start, "findpw wakeup response", response);
-            if (!response) {
-                if (tries > 0) await wakeup("wakeup", tries);
-            } else {
-                await Promise.resolve(); // To match the await in the other branch
+// Sometimes messages fail because the receiving side isn't quite ready.
+// That's most often the serice worker as it's starting up.
+/**
+ * Retry sending a message.
+ * @param {object} message - The message to send.
+ * @param {number} retries - The number of retry attempts.
+ * @param {number} delay - The delay between retries in milliseconds.
+ * @returns {Promise} - A promise that resolves when the message is successfully sent or rejects after all retries fail.
+ */
+async function retrySendMessage(message, retries = 5, delay = 100) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const response = await chrome.runtime.sendMessage(message);
+            return response; // Message sent successfully
+        } catch (error) {
+            if (chrome.runtime.lastError) {
+                console.error(`Attempt ${attempt} failed:`, chrome.runtime.lastError.message);
             }
-            resolve("wakeup");
-        });  
-    });
+            if (attempt < retries) {
+                await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
+            } else {
+                throw new Error(`Failed to send message after ${retries} attempts`);
+            }
+        }
+    }
 }
 // A content script keeps running even after it's replaced with exectuteScript.
 // This function cleans up all the event listeners, timers, and the mutation observer.
