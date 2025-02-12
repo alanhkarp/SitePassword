@@ -86,6 +86,41 @@ let bkmksId;
 let bkmksSafari = {};
 // Need to clear cache on install or following an update
 if (logging) console.log("bg running");
+async function updateTab(tab) {
+    if (isUrlMatch(tab.url)) {
+        if (tab.status === "complete") {
+            try {
+                // The following needs scripting permission in the manifest and
+                // host_permissions for http://*/* and https://*/*.
+                await chrome.scripting.executeScript({
+                    target: { tabId: tab.id, frameIds: [0] },
+                    files: ["src/findpw.js"]
+                });
+                if (logging) console.log("bg script executed successfully on tab activation");
+            } catch (error) {
+                throw(error);
+            }
+        } else {
+            // Listen for the tab to complete loading (Thanks, Copilot!)
+            chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo, updatedTab) {
+                if (tabId === tab.id && changeInfo.status === "complete") {
+                    chrome.tabs.onUpdated.removeListener(listener);
+                    updateTab(updatedTab); // Retry updating the tab
+                }
+            });
+        }
+    }
+}
+// Listen for tab activation
+chrome.tabs.onActivated.addListener(async function(activeInfo) {
+    try {
+        let tab = await chrome.tabs.get(activeInfo.tabId);
+        await updateTab(tab);
+    } catch (error) {
+        if (errorLogging) console.log("Error handling tab activation", error);
+        await Promise.resolve();
+    }
+})
 chrome.runtime.onInstalled.addListener(async function(details) {
     // Check for consistency of the xMode flags
     if (testMode && debugMode || testMode && demoMode || debugMode && demoMode) {
@@ -123,22 +158,13 @@ chrome.runtime.onInstalled.addListener(async function(details) {
         let start = Date.now();
         let count = 0;
         for (let i = 0; i < tabs.length; i++) {
-            // The following needs scripting permission in the manifest and
-            // host_permissions for http://*/* and https://*/*.
-            if (isUrlMatch(tabs[i].url) && tabs[i].status === "complete") {
-                try {
-                    await chrome.scripting.executeScript({
-                        "target": {
-                            "tabId": tabs[i].id, 
-                            "frameIds": [0]
-                        },
-                        "files": ["src/findpw.js"]});
-                    if (logging) console.log("bg script executed successfully");
-                } catch(error) {
-                    count++;
-                    let estring = error.toString();
-                    if (errorLogging && !estring.includes("showing error page")) console.log("bg reload tab error", tabs[i].url, error, count, tabs.length);
-                }
+            try {
+                await updateTab(tabs[i]);
+                if (logging) console.log("bg script executed successfully");
+            } catch(error) {
+                count++;
+                let estring = error.toString();
+                if (errorLogging && !estring.includes("showing error page")) console.log("bg reload tab error", tabs[i].url, error, count, tabs.length);
             }
         }
         if (logging) console.log("bg reloaded tabs in", Date.now() - start, "ms", count, tabs.length);
