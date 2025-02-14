@@ -170,6 +170,16 @@ chrome.runtime.onInstalled.addListener(async function(details) {
         if (logging) console.log("bg reloaded tabs in", Date.now() - start, "ms", count, tabs.length);
     }
 });
+// Listen for tab activation
+chrome.tabs.onActivated.addListener(async function(activeInfo) {
+    try {
+        let tab = await chrome.tabs.get(activeInfo.tabId);
+        await updateTab(tab);
+    } catch (error) {
+        if (errorLogging) console.log("Error handling tab activation", error);
+        await Promise.resolve();
+    }
+});
 async function setup() {
     if (!isSafari) {
         let nodes = await chrome.bookmarks.getTree();
