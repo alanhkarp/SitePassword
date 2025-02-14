@@ -87,8 +87,11 @@ document.oncopy = async function () {
         cleanup();
         return;
     }; // Extension has been removed
-    await retrySendMessage({"cmd": "resetIcon"});
-    if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw document.oncopy error", chrome.runtime.lastError);
+    try {
+        await retrySendMessage({"cmd": "resetIcon"});
+    } catch (error) {
+        console.error(document.URL, Date.now() - start, "findpw document.oncopy error", error);
+    }
     if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
 }
 async function startup(sendPageInfo) {
@@ -241,12 +244,15 @@ async function sendpageinfo(cpi, clicked, onload) {
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length || 0);
-    let response = await retrySendMessage({
-        "count": cpi.pwfields.length || 0,
-        "clicked": clicked,
-        "onload": onload
+    try {
+        let response = await retrySendMessage({
+            "count": cpi.pwfields.length || 0,
+            "clicked": clicked,
+            "onload": onload
         });
-    if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw senpageinfo error", chrome.runtime.lastError);
+    } catch (error) {
+        console.error(document.URL, Date.now() - start, "findpw sendpageinfo error", error);
+    }
     if (response === "multiple") {
         alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
         return;
@@ -261,7 +267,6 @@ async function sendpageinfo(cpi, clicked, onload) {
         alert(alertString);
         return;
     }
-    if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
     if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
     readyForClick = response.readyForClick;
     userid = response.u;
@@ -328,8 +333,13 @@ async function pwfieldOnclick(event) {
     }; // Extension has been removed
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
     if (!(this.placeholder === clickSitePassword)) {
-        let response = await retrySendMessage({ "cmd": "getPassword" });
-        if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw pwfieldOnclick error", chrome.runtime.lastError);
+        let response;
+        try {
+            response = await retrySendMessage({ "cmd": "getPassword" });
+        } catch (error) {
+            console.error(document.URL, Date.now() - start, "findpw pwfieldOnclick error", error);
+            return;
+        }
         sitepw = response;
         let mutations = mutationObserver.takeRecords();
         fillfield(this, response);
@@ -423,8 +433,12 @@ async function countpwid() {
         }; // Extension has been removed
         // No need to send getUsername message if no userid field found.
         if (document.hasFocus() && useridfield > 0) {
-            let response = await retrySendMessage({ "cmd": "getUsername" });
-            if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw getUsername error", chrome.runtime.lastError);
+            let response = null;
+            try {
+                response = await retrySendMessage({ "cmd": "getUsername" });
+            } catch (error) {
+                console.log(document.URL, Date.now() - start, "findpw getUsername error", error);
+            }
             if (response) {
                 if (!maybeUsernameField.placeholder) maybeUsernameField.placeholder = insertUsername;
                 if (!maybeUsernameField.title) maybeUsernameField.title = insertUsername;
@@ -516,9 +530,7 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
             const response = await chrome.runtime.sendMessage(message);
             return response; // Message sent successfully
         } catch (error) {
-            if (chrome.runtime.lastError) {
-                console.error(`Attempt ${attempt} failed:`, chrome.runtime.lastError.message);
-            }
+            console.error(`Attempt ${attempt} failed:`, message);
             if (attempt < retries) {
                 await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
             } else {

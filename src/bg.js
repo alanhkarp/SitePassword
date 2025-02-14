@@ -182,9 +182,14 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
 });
 async function setup() {
     if (!isSafari) {
-        let nodes = await chrome.bookmarks.getTree();
-        if (chrome.runtime.lastError) console.log("bg bkmksid lastError", chrome.runtime.lastError);
-        bkmksId = nodes[0].children[0].id;
+        let nodes;
+        try {
+            nodes = await chrome.bookmarks.getTree();
+        } catch (error) {
+            if (errorLogging) console.log("Error getting bookmarks tree", error);
+            nodes = [];
+        }
+        bkmksId = nodes[0] ? nodes[0].children[0].id : -1;
     } else {
         // Safari
         await Promise.resolve(); // Force timing to be the same as the other branch
@@ -434,8 +439,11 @@ async function persistMetadata(sendResponse) {
         allchildren = Object.values(bkmksSafari);
         await Promise.resolve(); // To match the await in the other branch
     } else {
-        allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
-        if (chrome.runtime.lastError) console.log("bg getChildren lastError", chrome.runtime.lastError);
+        try {
+            allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
+        } catch (error) {
+            console.error("bg getChildren error", error);
+        }
     }
     let commonSettings = [];
     let domains = [];
@@ -459,9 +467,12 @@ async function persistMetadata(sendResponse) {
             bkmksSafari[commonSettingsTitle].url = url;
             await chrome.storage.sync.set(bkmksSafari);
         } else {
-            let commonBkmk = await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url });
-            if (chrome.runtime.lastError) console.log("bg create root folder lastError", chrome.runtime.lastError);
-            if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonSettings.pwlength);
+            try {
+                let commonBkmk = await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": commonSettingsTitle, "url": url });
+                if (logging) console.log("bg created common settings bookmark", commonBkmk.title, commonSettings.pwlength);
+            } catch (error) {
+                console.error("Error creating common settings bookmark:", error);
+            }
         }
         createBookmark = true;
     } else {
@@ -471,8 +482,11 @@ async function persistMetadata(sendResponse) {
                 bkmksSafari[commonSettingsTitle].url = url;
                 await chrome.storage.sync.set(bkmksSafari);
             } else {
-                await chrome.bookmarks.update(commonSettings[0].id, { "url": url });
-                if (chrome.runtime.lastError) console.log("bg update commonSettings lastError", chrome.runtime.lastError);
+                try {
+                    await chrome.bookmarks.update(commonSettings[0].id, { "url": url });
+                } catch (error) {
+                    console.error("Error updating common settings bookmark:", error);
+                }
                 if (logging) console.log("bg updated bookmark", commonSettings[0].id, url);
             }
         }
@@ -498,8 +512,11 @@ async function persistMetadata(sendResponse) {
                         await Promise.resolve(); // To match the await in the other branch
                     }
                 } else {
-                    await chrome.bookmarks.update(found.id, { "url": url });
-                    if (chrome.runtime.lastError) console.log("bg update lastError", chrome.runtime.lastError, found);
+                    try {
+                        await chrome.bookmarks.update(found.id, { "url": url });
+                    } catch (error) {
+                        console.error("Error updating bookmark:", error);
+                    }
                 }
             }
         } else if (createBookmark) {
@@ -515,8 +532,11 @@ async function persistMetadata(sendResponse) {
                     bkmksSafari[title].url = url;
                     await chrome.storage.sync.set(bkmksSafari);
                 } else {
-                    await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
-                    if (chrome.runtime.lastError) console.log("bg create bookmark lastError", chrome.runtime.lastError);
+                    try {
+                        await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
+                    } catch (error) {
+                        console.error("Error creating bookmark:", error);
+                    }
                     if (logging) console.log("bg created settings bookmark", e, title);
                 }
             }
@@ -552,11 +572,12 @@ async function retrieveMetadata(sendResponse, request, callback) {
             // Nothing in sync storage unless using Safari
             let values = await chrome.storage.sync.get();
             for (let title in values) {
-                let bkmk = await chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
-                if (chrome.runtime.lastError) {
-                    console.log("bg sync create lastError", chrome.runtime.lastError);
-                } else {
+                try {
+                    let bkmk = await chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
                     if (testLogging) console.log("bg created bookmark", bkmk);
+                    await parseBkmk(bkmk.id, callback, sendResponse);
+                } catch (error) {
+                    console.error("Error creating bookmark:", error);
                 }
                 await parseBkmk(bkmk.id, callback, sendResponse);
             }
@@ -565,9 +586,12 @@ async function retrieveMetadata(sendResponse, request, callback) {
             // then copy those entries to bookmarks and clear sync storage.  This will
             // happen when the browser newly implements the bookmarks API.
             if (logging) console.log("bg creating bookmarks folder");
-            let bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
-            if (chrome.runtime.lastError) console.log("bg sync lastError", chrome.runtime.lastError);
-            await parseBkmk(bkmk.id, callback, sendResponse);
+            try {
+                let bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
+                await parseBkmk(bkmk.id, callback, sendResponse);
+            } catch (error) {
+                console.error("Error creating bookmarks folder:", error);
+            }
         }
         createBookmarksFolder = true;
     }
@@ -579,8 +603,11 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         Object.values(bkmksSafari);
         await Promise.resolve(); // To match the await in the other branch
     } else {
-        children = await chrome.bookmarks.getChildren(rootFolderId);
-        if (chrome.runtime.lastError) console.log("bg parseBkmk lastError", chrome.runtime.lastError);
+        try {
+            children = await chrome.bookmarks.getChildren(rootFolderId);
+        } catch (error) {
+            console.error("Error getting children bookmarks:", error);
+        }
     }
     if (logging) console.log("bg cleaning bookmarks", children);
     let seenTitles = {};
@@ -592,11 +619,17 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
             if (logging) console.log("bg removing legacy bookmark", children[i]);
             if (isSafari) {
                 delete bkmksSafari[children[i]];
-                await chrome.storage.sync.set(bkmksSafari);
-                if (chrome.runtime.lastError) console.log("bg remove legacy Safari lastError", chrome.runtime.lastError);
+                try {
+                    await chrome.storage.sync.set(bkmksSafari);
+                } catch (error) {
+                    console.error("Error setting Safari storage:", error);
+                }
             } else {
-                await chrome.bookmarks.remove(children[i].id);
-                if (chrome.runtime.lastError) console.log("bg remove legacy lastError", chrome.runtime.lastError);
+                try {
+                    await chrome.bookmarks.remove(children[i].id);
+                } catch (error) {
+                    console.error("Error removing legacy bookmark:", error);
+                }
             }
         }
         if (seenTitles[title]) {
@@ -643,22 +676,26 @@ export async function getRootFolder(sendResponse) { // Exported for testing
         await Promise.resolve(); // To match the await in the other branch
         return [bkmksSafari];
     } else {
-        let candidates = await chrome.bookmarks.search({ "title": sitedataBookmark });
-        if (chrome.runtime.lastError) console.log("bg search lastError", chrome.runtime.lastError);
-        if (logging) console.log("bg search candidates", candidates);
-        let folders = [];
-        for (let i = 0; i < candidates.length; i++) {
-            if (candidates[i].parentId === bkmksId &&
-                candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
+        try {
+            let candidates = await chrome.bookmarks.search({ "title": sitedataBookmark });
+            if (logging) console.log("bg search candidates", candidates);
+            let folders = [];
+            for (let i = 0; i < candidates.length; i++) {
+                if (candidates[i].parentId === bkmksId &&
+                    candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
+            }
+            if (folders.length > 1) {
+                if (logging) console.log("bg found multiple", sitedataBookmark, "folders", folders);
+                if (sendResponse) sendResponse("multiple");
+            } else if (folders.length === 0) {
+                if (logging) console.log("bg found no", sitedataBookmark, "folders");
+            }
+            if (logging) console.log("bg getRootFolder returning", folders);
+            return folders;
+        } catch (error) {
+            console.error("Error searching bookmarks:", error);
+            return [];
         }
-        if (folders.length > 1) {
-            if (logging) console.log("bg found multiple", sitedataBookmark, "folders", folders);
-            if (sendResponse) sendResponse("multiple");
-        } else if (folders.length === 0) {
-            if (logging) console.log("bg found no", sitedataBookmark, "folders");
-        }
-        if (logging) console.log("bg getRootFolder returning", folders);
-        return folders;
     }
 }
 async function retrieved(callback) {
@@ -703,27 +740,23 @@ async function forget(toforget, rootFolder, sendResponse) {
         if (logging) console.log("bg forget item", item);
         delete database.domains[item];
         if (logging) console.log("bg forget getting children", item, rootFolder);
-        let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
-        if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
-        if (logging) console.log("bg forget got children", allchildren);
-        for (let child of allchildren) {
-            if (child.title === item) {
-                if (logging) console.log("bg removing bookmark for", child.title);
-                await chrome.bookmarks.remove(child.id);
-                if (chrome.runtime.lastError) console.log("bg remove child lastError", chrome.runtime.lastError);
-                try {
-                    if (isUrlMatch(activetab.url)) {
-                        await chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
-                        if (logging) console.log("bg sent clear message");
-                    }
-                } catch (error) {
-                    if (chrome.runtime.lastError) console.log("bg forget lastError", chrome.runtime.lastError);
+        try {
+            let allchildren = await chrome.bookmarks.getChildren(rootFolder.id);
+            if (logging) console.log("bg forget got children", allchildren);
+            for (let child of allchildren) {
+                if (child.title === item) {
+                    if (logging) console.log("bg removing bookmark for", child.title);
+                    await chrome.bookmarks.remove(child.id);
+                        if (isUrlMatch(activetab.url)) {
+                            await chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
+                            if (logging) console.log("bg sent clear message");
+                        }
+                    if (logging) console.log("bg removed bookmark for", item);
+                    if (logging) console.log("bg sent clear message");
                 }
-                if (logging) console.log("bg removed bookmark for", item);
-                if (logging) console.log("bg sent clear message");
-            } else {
-                await Promise.resolve(); // To match the await in the other branch
             }
+        } catch (error) {
+            console.error("Error forgetting:", error);
         }
         if (logging) console.log("bg forget done", item);
     }

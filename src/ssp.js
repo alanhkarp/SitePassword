@@ -136,12 +136,16 @@ function clearDatalist(listid) {
 export async function getsettings(testdomainname) {
     if (testMode) domainname = testdomainname;
     if (logging) console.log("popup getsettings", domainname);
-    let response =  await retrySendMessage({
+    let response;
+    try {
+        response = await retrySendMessage({
             "cmd": "getMetadata",
             "domainname": domainname,
             "activetab": activetab
         });
-    if (chrome.runtime.lastError) console.log("popup getsettings lastError", chrome.runtime.lastError);
+    } catch (error) {
+        console.error("Error getting metadata:", error);
+    }
     if (logging) console.log("popup getsettings response", response);
     if (response && response.duplicate) {
         let alertString = "You have multiple bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.\n\n";
@@ -215,16 +219,20 @@ get("mainpanel").onmouseleave = async function (event) {
         let sitename = get("sitename").value;
         changePlaceholder();
         if (logging) console.log("popup sending siteData", bg.settings, database);
-        let response = await retrySendMessage({
-            "cmd": "siteData",
-            "sitename": sitename,
-            "clearsuperpw": get("clearsuperpw").checked,
-            "hidesitepw": get("hidesitepw").checked,
-            "bg": bg,
-        });
-        if (chrome.runtime.lastError) console.log("popup mouseleave lastError", chrome.runtime.lastError);
-        if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
-        if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
+        let response;
+        try {
+            let response = await retrySendMessage({
+                "cmd": "siteData",
+                "sitename": sitename,
+                "clearsuperpw": get("clearsuperpw").checked,
+                "hidesitepw": get("hidesitepw").checked,
+                "bg": bg,
+            });
+            if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
+            if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
+        } catch (error) {
+            console.error("Error sending siteData message:", error);
+        }
     } else {
         if (logging) console.log("popup no bg.settings mouseleave resolve", resolvers);
         if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
@@ -730,8 +738,11 @@ get("makedefaultbutton").onclick = async function () {
         minspecial: get("minspecial").value,
         specials: get("specials").value,
     }
-    await retrySendMessage({"cmd": "newDefaults", "newDefaults": newDefaults});
-    if (chrome.runtime.lastError) console.log("popup makedefaultbutton lastError", chrome.runtime.lastError);
+    try {
+        await retrySendMessage({"cmd": "newDefaults", "newDefaults": newDefaults});
+    } catch (error) {
+        console.error("Error sending newDefaults message:", error);
+    }
     if (logging) console.log("popup newDefaults sent", newDefaults);
     if (resolvers.makedefaultResolver) resolvers.makedefaultResolver("makedefaultbuttonPromise");
 }
@@ -798,11 +809,14 @@ get("forgetbutton").onclick = async function () {
     bg = clone(bgDefault);
     bg.superpw = superpw;
     if (logging) console.log("popup forgetbutton sending forget", list);
-    let response = await retrySendMessage({"cmd": "forget", "toforget": list});
-    if (chrome.runtime.lastError) console.log("popup forget lastError", chrome.runtime.lastError);
-    if (logging) console.log("popup forget response", response);
-    if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
-    get("cancelbutton").click();
+    try {
+        let response = await retrySendMessage({"cmd": "forget", "toforget": list});
+        if (logging) console.log("popup forget response", response);
+        if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
+        get("cancelbutton").click();
+    } catch (error) {
+        console.error("Error sending forget message:", error);
+    }
 }
 get("cancelbutton").onclick = function () {
     while ( get("toforgetlist").firstChild ) {
@@ -1064,7 +1078,7 @@ async function handleblur(element, field) {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
         } catch (error) {
-            if (chrome.runtime.lastError) console.log("popup handleblur lastError", chrome.runtime.lastError);
+            console.error("popup handleblur error", error);
         }
     }
 }
@@ -1086,7 +1100,7 @@ async function changePlaceholder() {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
         } catch (error) {
-            if (chrome.runtime.lastError) console.log("popup changePlaceholder lastError", chrome.runtime.lastError);
+            console.error("popup changePlaceholder error", error);
         }
     }
 }
@@ -1591,9 +1605,7 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
             const response = await chrome.runtime.sendMessage(message);
             return response; // Message sent successfully
         } catch (error) {
-            if (chrome.runtime.lastError) {
-                console.error(`Attempt ${attempt} failed:`, chrome.runtime.lastError.message);
-            }
+            console.error(`Attempt ${attempt} failed:`, error);
             if (attempt < retries) {
                 await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
             } else {

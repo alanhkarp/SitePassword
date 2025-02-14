@@ -472,8 +472,16 @@ export async function runTests() {
         if (loggingReset) console.log("resetState");
         if (isSafari) await chrome.storage.sync.clear();
         if (loggingReset) console.log("resetState send reset message");
-        let response = await chrome.runtime.sendMessage({"cmd": "reset"}, );
-        if (chrome.runtime.lastError) console.error("resetState reset message error", chrome.runtime.lastError);
+        try {
+            let response = await chrome.runtime.sendMessage({"cmd": "reset"});
+            if (loggingReset) console.log("resetState reset message response", response);
+            clearForm();
+            restoreForTesting();
+            await getsettings("");
+            if (loggingClear) console.log("resetState done", $pwlength.value);
+        } catch (error) {
+            console.error("Error resetting state:", error);
+        }
         if (loggingReset) console.log("resetState reset message response", response);
         clearForm();
         restoreForTesting();
