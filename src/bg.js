@@ -331,10 +331,10 @@ async function getMetadata(request, _sender, sendResponse) {
     // Restores data stored the last time this page was loaded
     if (logging) console.log("bg got active tab", activetab);
     let s = await chrome.storage.session.get(["savedData"]); // Returns {} if nothing is saved
-    let savedData = s.savedData;
+    let savedData = s.savedData || {};
     if (logging) console.log("bg got saved data", s);
     if (s && Object.keys(s).length > 0) savedData = s.savedData;
-    pwcount = savedData[activetab.url] || 0;
+    pwcount = savedData[activetab.url] || {};
     if (logging) console.log("bg got saved data for", activetab.url, savedData[activetab.url]);
     bg.pwcount = pwcount;
     domainname = getdomainname(activetab.url);
