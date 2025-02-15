@@ -146,11 +146,20 @@ export async function getsettings() {
         console.error("Error getting metadata:", error);
     }
     if (logging) console.log("popup getsettings response", response);
-    if (response && response.duplicate) {
-        let alertString = "You have multiple bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.\n\n";
-        alertString += "The easiest way to see what's in the duplicate bookmarks is to dbl-click on them.  "
-        alertString += "They will open sitepassword.info with the settings for that bookmark.";
-        alert(alertString);
+    if (response.duplicate) {
+        alertString += "You have duplicate bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.\n\n";
+        if (response.duplicate === "CommonSettings") {
+            alertString += "You can see what's in each of them by mousing over the entry by opening the Bookmarks Manager,";
+            alertString += "clicking on the SitePasswordData folder, and mousing over the CommonSettings entry.";
+        } else {
+            alertString += "An easier way to see what's in the other duplicate bookmarks is to dbl-click on them.  "
+            alertString += "They will open sitepassword.info with the settings for that bookmark.";
+        }
+        return;
+    }
+    if (response.multiple) {
+        alertString += "You have multiple bookmark folders with the title '" + response.multiple + "'.  Please delete one and try again.\n\n";
+        alertString += "You can look at which bookmarks are in the folders to decide which one you want to keep.";
         return;
     }
     bg = response.bg;
