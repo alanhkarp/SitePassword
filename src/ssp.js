@@ -89,7 +89,7 @@ window.onload = async function () {
     if (logging) console.log("popup getting metadata");
     instructionSetup();
     sectionrefSetup();
-    await getsettings(domainname);
+    await getsettings();
 }
 async function init() {
     get("superpw").value = bg.superpw || "";
@@ -133,8 +133,7 @@ function clearDatalist(listid) {
     get("main").classList.remove("datalist-open");
     get("main").classList.add("datalist-closed");
 }
-export async function getsettings(testdomainname) {
-    if (testMode) domainname = testdomainname;
+export async function getsettings() {
     if (logging) console.log("popup getsettings", domainname);
     let response;
     try {
@@ -251,7 +250,7 @@ get("title").onclick = function () {
 get("domainname").onblur = async function (e) {
     get("sitename").value = "";
     if (testMode) domainname = get("domainname").value;
-    await getsettings(domainname);
+    await getsettings();
     await fill();
     if (resolvers.domainnameblurResolver) resolvers.domainnameblurResolver("domainnameblurPromise");
 }
@@ -782,6 +781,7 @@ get("warningbutton").onclick = async function () {
     get("username").value = bg.settings.username;
     await ask2generate();
     autoclose = false;
+    saveSettings = true;
     if (resolvers.warningbuttonResolver) resolvers.warningbuttonResolver("warningbuttonPromise");
 }
 get("nicknamebutton").onclick = function () {

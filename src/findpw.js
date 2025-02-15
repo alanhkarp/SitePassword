@@ -186,7 +186,7 @@ async function startup(sendPageInfo) {
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
     cpi = await countpwid();
-    if (sendPageInfo) sendpageinfo(cpi, false, true);
+    if (sendPageInfo) await sendpageinfo(cpi, false, true);
 }
 async function handleMutations(mutations) {
     if (!chrome.runtime?.id) {
@@ -244,8 +244,9 @@ async function sendpageinfo(cpi, clicked, onload) {
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length || 0);
+    let response;
     try {
-        let response = await retrySendMessage({
+        response = await retrySendMessage({
             "count": cpi.pwfields.length || 0,
             "clicked": clicked,
             "onload": onload
