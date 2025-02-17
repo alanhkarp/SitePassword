@@ -247,7 +247,7 @@ async function sendpageinfo(cpi, clicked, onload) {
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length || 0);
-    let response;
+    let response = {};
     try {
         response = await retrySendMessage({
             "count": cpi.pwfields.length || 0,
@@ -256,6 +256,7 @@ async function sendpageinfo(cpi, clicked, onload) {
         });
     } catch (error) {
         console.error(document.URL, Date.now() - start, "findpw sendpageinfo error", error);
+        return;
     }
     if (response === "multiple") {
         alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");

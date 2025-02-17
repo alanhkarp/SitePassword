@@ -226,7 +226,7 @@ async function setup() {
         // Start with a new database in case something changed while the service worker stayed open
         database = clone(databaseDefault);
         bg = clone(bgDefault);
-        retrieveMetadata(sendResponse, request, async () => {
+        retrieveMetadata(sendResponse, request, sender, async () => {
             if (logging) console.log("bg listener back from retrieveMetadata", database);
             superpw = "";
             let value = await chrome.storage.session.get(["superpw"]);
@@ -297,7 +297,7 @@ async function setup() {
                 if (logging) console.log("bg forget", request.cmd);
                 rootFolder = await getRootFolder(sendResponse);
                 if (logging) console.log("bg forget rootFolder", rootFolder, request.toforget);
-                await forget(request.toforget, rootFolder[0], sendResponse);
+                await forget(request.toforget, rootFolder[0], sender, sendResponse);
                 if (logging) console.log("bg forget done");
                 sendResponse("forgot");
             } else if (request.clicked) {
@@ -325,6 +325,7 @@ async function setup() {
     });
 }
 setup();
+// sender argument for debugging
 async function getMetadata(request, _sender, sendResponse) {
     if (logging) console.log("bg getMetadata", bg, request);
     let sitename = database.domains[request.domainname];
@@ -353,6 +354,7 @@ async function getMetadata(request, _sender, sendResponse) {
     if (logging) console.log("bg sending metadata", bg, db);
     sendResponse({"test" : testMode, "superpw": superpw || "", "pwcount": pwcount, "bg": bg, "database": db});
 }
+// sender argument for debugging
 async function onContentPageload(request, sender, sendResponse) {
     if (logging) console.log("bg onContentPageLoad", bg, request, sender);
     activetab = sender.tab;
@@ -504,7 +506,7 @@ async function persistMetadata(sendResponse) {
     for (let suffix in suffixes) {
         suffixCounts[suffix] = 0;
         for (let domain in db.domains) {
-            if (domain.endsWith(suffix)) suffixCounts[suffix]++;
+            if (hasSuffix(domain, suffix)) suffixCounts[suffix]++;
         }
         if (suffixCounts[suffix] < 2) delete db.common.safeSuffixes[suffix];
     }
@@ -560,7 +562,8 @@ async function persistMetadata(sendResponse) {
         }
     }
 }
-async function retrieveMetadata(sendResponse, request, callback) {
+// sender argument for debugging
+async function retrieveMetadata(sendResponse, request, sender, callback) {
     database = clone(databaseDefault); // Start with an empty database
     bg = clone(bgDefault); // and settings
     if (logging) console.log("bg find SSP bookmark folder", request);
@@ -573,7 +576,7 @@ async function retrieveMetadata(sendResponse, request, callback) {
         // starts supporting the bookmarks API, but users haven't
         // updated the browser on all their machines.
         //chrome.storage.sync.clear();
-        await parseBkmk(folders[0].id, callback, sendResponse);
+        await parseBkmk(folders[0].id, callback, sender, sendResponse);
     } else if (folders.length === 0 && createBookmarksFolder) {
         // findpw.js sends the SiteData message twice, once for document.onload
         // and once for window.onload.  The latter can arrive while the bookmark
@@ -591,11 +594,11 @@ async function retrieveMetadata(sendResponse, request, callback) {
                 try {
                     let bkmk = await chrome.bookmarks.create({"parentId": bkmk.id, "title": title, "url": values[title].url});
                     if (testLogging) console.log("bg created bookmark", bkmk);
-                    await parseBkmk(bkmk.id, callback, sendResponse);
+                    await parseBkmk(bkmk.id, callback, sender, sendResponse);
                 } catch (error) {
                     console.error("Error creating bookmark:", error);
                 }
-                await parseBkmk(bkmk.id, callback, sendResponse);
+                await parseBkmk(bkmk.id, callback, sender, sendResponse);
             }
         } else {
             // If there's no bookmarks folder, but there are entries in sync storage,
@@ -604,7 +607,7 @@ async function retrieveMetadata(sendResponse, request, callback) {
             if (logging) console.log("bg creating bookmarks folder");
             try {
                 let bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
-                await parseBkmk(bkmk.id, callback, sendResponse);
+                await parseBkmk(bkmk.id, callback, sender, sendResponse);
             } catch (error) {
                 console.error("Error creating bookmarks folder:", error);
             }
@@ -612,7 +615,8 @@ async function retrieveMetadata(sendResponse, request, callback) {
         createBookmarksFolder = true;
     }
 }
-async function parseBkmk(rootFolderId, callback, sendResponse) {
+// sender argument for debugging
+async function parseBkmk(rootFolderId, callback, _sender, sendResponse) {
     if (logging) console.log("bg parsing bookmark");
     let children = [];
     if (isSafari) {
@@ -655,7 +659,11 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
                 if (isSafari) {
                     delete bkmksSafari[children[i]];
                 } else {
-                    chrome.bookmarks.remove(children[i].id);
+                    try {
+                        chrome.bookmarks.remove(children[i].id);
+                    } catch (error) {
+                        console.error("Error removing duplicate bookmark:", error);
+                    }
                 }
             } else {
                 sendResponse({"duplicate": children[i].title});
@@ -685,7 +693,7 @@ async function parseBkmk(rootFolderId, callback, sendResponse) {
         let sitename = newdb.common.safeSuffixes[suffix];
         let count = 0;
         for (let domain in newdb.domains) {
-            if (domain.endsWith(suffix) && newdb.domains[domain] === sitename) {
+            if (hasSuffix(domain, suffix) && newdb.domains[domain] === sitename) {
                 count++;
             } 
         }
@@ -761,7 +769,7 @@ function bgsettings(domainname) {
     }
     return bg.settings;
 }
-async function forget(toforget, rootFolder, sendResponse) {
+async function forget(toforget, rootFolder, _sender, sendResponse) {
     if (logging) console.log("bg forget", toforget);
     for (const item of toforget)  {
         if (logging) console.log("bg forget item", item);
@@ -773,13 +781,17 @@ async function forget(toforget, rootFolder, sendResponse) {
             for (let child of allchildren) {
                 if (child.title === item) {
                     if (logging) console.log("bg removing bookmark for", child.title);
-                    await chrome.bookmarks.remove(child.id);
+                    try {
+                        await chrome.bookmarks.remove(child.id);
                         if (isUrlMatch(activetab.url)) {
                             await chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
                             if (logging) console.log("bg sent clear message");
                         }
-                    if (logging) console.log("bg removed bookmark for", item);
-                    if (logging) console.log("bg sent clear message");
+                        if (logging) console.log("bg removed bookmark for", item);
+                        if (logging) console.log("bg sent clear message");
+                    } catch (error) {
+                        console.error("Error removing bookmark:", error);
+                    }
                 }
             }
         } catch (error) {
@@ -838,6 +850,9 @@ function identicalObjects(a, b) {
         }
     }
     return true;
+}
+function hasSuffix(domainname, suffix) {
+    return domainname.endsWith(suffix);
 }
 // Legacy bookmarks did not do URI encoding correctly.  This function
 // checks for the presence of a curly brace to determine if the bookmark

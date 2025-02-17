@@ -258,6 +258,7 @@ export async function getsettings() {
         console.error("Error getting metadata:", error);
     }
     if (logging) console.log("popup getsettings response", response);
+    let alertString = "";
     if (response.duplicate) {
         alertString += "You have duplicate bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.\n\n";
         if (response.duplicate === "CommonSettings") {
@@ -336,13 +337,14 @@ $mainpanel.onmouseleave = async function (event) {
         let sitename = $sitename.value;
         changePlaceholder();
         if (logging) console.log("popup sending siteData", bg.settings, database);
-        let response;
         try {
             let response = await retrySendMessage({
                 "cmd": "siteData",
                 "sitename": sitename,
                 "clearsuperpw": get("clearsuperpw").checked,
                 "hidesitepw": get("hidesitepw").checked,
+                "safeSuffixes": database.common.safeSuffixes,
+                "sameacct": sameacct,
                 "bg": bg,
             });
             if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
@@ -495,8 +497,6 @@ $sitename.onblur = async function (e) {
         await handleblur("sitename", "sitename");
         await changePlaceholder();
         if (isChanged) {
-            msgon("sitenamechange");
-        } else {
             bg.settings = clone(database.sites[normalize(sitename)] || bg.settings || bgDefault.settings);
             $sitename.value = bg.settings.sitename || sitename;
             $username.value = bg.settings.username || $username.value;
@@ -932,6 +932,7 @@ $cancelwarning.onclick = async function () {
         await chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
         window.close();
     }
+    sameacct = false;
     if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver("cancelwarningPromise");
 }
 $sameacctbutton.onclick = async function (e) {
@@ -947,14 +948,8 @@ $sameacctbutton.onclick = async function (e) {
     }
     let d = await getPhishingDomain(bg.settings.sitename);
     let suffix = commonSuffix(d, bg.settings.domainname);
-    if (suffix) {
-        if (database.common.safeSuffixes[suffix]) {
-            if (database.common.safeSuffixes[suffix] !== sitename) {
-                alert("Something is wrong. " + sitename + " is not the same as " + database.common.safeSuffixes[suffix]); 
-            }
-        } else {
+    if (suffix && !database.common.safeSuffixes[suffix]) {
             database.common.safeSuffixes[suffix] = sitename;
-        }
     }
     bg.settings = clone(database.sites[sitename]);
     bg.settings.sitename = $sitename.value;
@@ -964,7 +959,8 @@ $sameacctbutton.onclick = async function (e) {
     await ask2generate();
     autoclose = false;
     saveSettings = true;
-    if (resolvers.warningbuttonResolver) resolvers.warningbuttonResolver("warningbuttonPromise");
+    sameacct = true;
+    if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
 }
 $nicknamebutton.onclick = function (e) {
     $superpw.disabled = false;
@@ -975,7 +971,7 @@ $nicknamebutton.onclick = function (e) {
     msgoff("phishing");
     saveSettings = false;
     autoclose = false;
-    saveSettings = false;
+    sameacct = false;
 }
 // Phishing methods when there is a safe suffix
 $suffixcancelbutton.onclick = function (e) {
@@ -1319,7 +1315,7 @@ async function handleblur(element, field) {
     setMeter("sitepw");
     updateExportButton(); 
     let u = $username.value || "";
-    let readyForClick = pw && $superpw.value && u;
+    let readyForClick = !!(pw && $superpw.value && u);
     if (isUrlMatch(activetab.url)) {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
