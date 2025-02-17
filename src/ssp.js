@@ -105,7 +105,7 @@ import { publicSuffixSet } from "./public_suffix_list.js";
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
 const debugMode = false;
-const demoMode = true;
+const demoMode = false;
 let logging = false;
 if (logging) console.log("Version 3.0");
 let autoclose = true;
@@ -148,7 +148,6 @@ if (logging) console.log("popup starting");
 // popup window closes before the message it sends gets delivered.
 
 window.onload = async function () {
-    logging = true;
     if (logging) console.log("popup check clipboard");
     let v = await chrome.storage.local.get("onClipboard");
     if (v.onClipboard) {
@@ -209,7 +208,6 @@ window.onload = async function () {
     instructionSetup();
     sectionrefSetup();
     await getsettings();
-    logging = false;
 }
 async function init() {
     $superpw.value = bg.superpw || "";
