@@ -105,6 +105,7 @@ import { publicSuffixSet } from "./public_suffix_list.js";
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
 const debugMode = false;
+const demoMode = true;
 let logging = false;
 if (logging) console.log("Version 3.0");
 let autoclose = true;
@@ -147,6 +148,7 @@ if (logging) console.log("popup starting");
 // popup window closes before the message it sends gets delivered.
 
 window.onload = async function () {
+    logging = true;
     if (logging) console.log("popup check clipboard");
     let v = await chrome.storage.local.get("onClipboard");
     if (v.onClipboard) {
@@ -178,9 +180,14 @@ window.onload = async function () {
     if (logging) console.log("popup", activetab.url, isUrlMatch(activetab.url));
     if (chrome.runtime?.id && isUrlMatch(activetab.url)) {
         if (logging) console.log("popup sending count message to content script");
-        let result = await chrome.tabs.sendMessage(activetab.id, {"cmd": "count"});
-        if (logging) console.log("popup get count", result);
-        let pwcount = result.pwcount;
+        let pwcount = demoMode? 1: 0;
+        try {
+            let result = await chrome.tabs.sendMessage(activetab.id, {"cmd": "count"});
+            if (logging) console.log("popup get count", result);
+            pwcount = result.pwcount;
+        } catch (error) {
+            if (!demoMode) console.error("Error sending count message:", demoMode, error);
+        }
         message("multiple", pwcount > 1);
         message("zero", pwcount === 0);
         changePlaceholder();
@@ -202,6 +209,7 @@ window.onload = async function () {
     instructionSetup();
     sectionrefSetup();
     await getsettings();
+    logging = false;
 }
 async function init() {
     $superpw.value = bg.superpw || "";
@@ -1320,7 +1328,7 @@ async function handleblur(element, field) {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
         } catch (error) {
-            console.error("popup handleblur error", error);
+            if (!demoMode) console.error("popup handleblur error", error);
         }
     }
 }
@@ -1344,7 +1352,7 @@ async function changePlaceholder() {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
         } catch (error) {
-            console.error("popup changePlaceholder error", error);
+            if (!demoMode) console.error("popup changePlaceholder error", error);
         }
     }
 }
