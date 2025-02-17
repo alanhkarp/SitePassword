@@ -65,7 +65,7 @@ let startupInterval = setInterval(() => {
 // Some sites change the page contents based on the fragment
 window.addEventListener("hashchange", async (_href) => {
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from hash change listener");
-    cpi = countpwid();
+    cpi = await countpwid();
     await sendpageinfo(cpi, false, true);
 });
 // A few sites put their password fields in a shadow root to isolate it from the rest of the page.
@@ -87,11 +87,14 @@ document.oncopy = async function () {
         cleanup();
         return;
     }; // Extension has been removed
-    await retrySendMessage({"cmd": "resetIcon"});
-    if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw document.oncopy error", chrome.runtime.lastError);
+    try {
+        await retrySendMessage({"cmd": "resetIcon"});
+    } catch (error) {
+        console.error(document.URL, Date.now() - start, "findpw document.oncopy error", error);
+    }
     if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
 }
-function startup(sendPageInfo) {
+async function startup(sendPageInfo) {
     if (!chrome.runtime?.id) {
         cleanup();
         return;
@@ -103,7 +106,7 @@ function startup(sendPageInfo) {
     // The code in this function used to be called once, but now it's called several times.
     // There is no reason to declare new mutation observers and listeners on every call.
     if (!mutationObserver) {
-        cpi = countpwid();
+        cpi = await countpwid();
         // Firefox doesn't preserve sessionStorage across restarts of
         // the service worker.  Sending periodic messages keeps it
         // alive, but there's no point to keep sending if there's an error.
@@ -132,11 +135,11 @@ function startup(sendPageInfo) {
         };
         mutationObserver = new MutationObserver(handleMutations);
         mutationObserver.observe(document.body, observerOptions);
-        chrome.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
+        chrome.runtime.onMessage.addListener(async function (request, _sender, sendResponse) {
             if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
             readyForClick = request.readyForClick;
             let mutations = mutationObserver.takeRecords();
-            cpi = countpwid();
+            cpi = await countpwid();
             switch (request.cmd) {
                 case "fillfields":
                     if (logging) console.log(document.URL, Date.now() - start, "findpw fillfields", cpi, request);
@@ -184,8 +187,8 @@ function startup(sendPageInfo) {
         });
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
-    cpi = countpwid();
-    if (sendPageInfo) sendpageinfo(cpi, false, true);
+    cpi = await countpwid();
+    if (sendPageInfo) await sendpageinfo(cpi, false, true);
     return true;
 }
 async function handleMutations(mutations) {
@@ -199,7 +202,7 @@ async function handleMutations(mutations) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
     if (oldpwfield && oldpwfield === cpi.pwfields[0]) return; // Stop looking once I've found a password field
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from mutation observer");
-    cpi = countpwid();
+    cpi = await countpwid();
     await sendpageinfo(cpi, false, true);
     oldpwfield = cpi.pwfields[0];
     let myMutations = mutationObserver.takeRecords();
@@ -238,16 +241,22 @@ async function sendpageinfo(cpi, clicked, onload) {
         cleanup();
         return;
     }; // Extension has been removed
-    // No need to send page info if no password fields found.  User will have to open
+    // Only send page info if this tab has focus
+    if (!document.hasFocus()) return;
+    // No need to send page info if no password fields found.  The user will have to open
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length || 0);
-    let response = await retrySendMessage({
-        "count": cpi.pwfields.length || 0,
-        "clicked": clicked,
-        "onload": onload
-    });
-    if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw senpageinfo error", chrome.runtime.lastError);
+    let response;
+    try {
+        response = await retrySendMessage({
+            "count": cpi.pwfields.length || 0,
+            "clicked": clicked,
+            "onload": onload
+        });
+    } catch (error) {
+        console.error(document.URL, Date.now() - start, "findpw sendpageinfo error", error);
+    }
     if (response === "multiple") {
         alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
         return;
@@ -262,7 +271,6 @@ async function sendpageinfo(cpi, clicked, onload) {
         alert(alertString);
         return;
     }
-    if (chrome.runtime.lastError) if (logging) console.log(document.URL, Date.now() - start, "findpw error", chrome.runtime.lastError);
     if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
     readyForClick = response.readyForClick;
     userid = response.u;
@@ -329,8 +337,13 @@ async function pwfieldOnclick(event) {
     }; // Extension has been removed
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
     if (!(this.placeholder === clickSitePassword)) {
-        let response = await retrySendMessage({ "cmd": "getPassword" });
-        if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw pwfieldOnclick error", chrome.runtime.lastError);
+        let response;
+        try {
+            response = await retrySendMessage({ "cmd": "getPassword" });
+        } catch (error) {
+            console.error(document.URL, Date.now() - start, "findpw pwfieldOnclick error", error);
+            return;
+        }
         sitepw = response;
         let mutations = mutationObserver.takeRecords();
         fillfield(this, response);
@@ -343,7 +356,7 @@ async function pwfieldOnclick(event) {
         await Promise.resolve(); // To match the await in the other branch
     }
 }
-function countpwid() {
+async function countpwid() {
     if (!chrome.runtime?.id) {
         cleanup();
         return;
@@ -422,8 +435,14 @@ function countpwid() {
             cleanup();
             return;
         }; // Extension has been removed
-        retrySendMessage({ "cmd": "getUsername" }).then((response) => {
-            if (chrome.runtime.lastError) console.log(document.URL, Date.now() - start, "findpw getUsername error", chrome.runtime.lastError);
+        // No need to send getUsername message if no userid field found.
+        if (document.hasFocus() && useridfield > 0) {
+            let response = null;
+            try {
+                response = await retrySendMessage({ "cmd": "getUsername" });
+            } catch (error) {
+                console.log(document.URL, Date.now() - start, "findpw getUsername error", error);
+            }
             if (response) {
                 if (!maybeUsernameField.placeholder) maybeUsernameField.placeholder = insertUsername;
                 if (!maybeUsernameField.title) maybeUsernameField.title = insertUsername;
@@ -437,7 +456,7 @@ function countpwid() {
             } else {
                 maybeUsernameField.ondblclick = null;
             }
-        });
+        };
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, useridfield);
     return { pwfields: pwfields, idfield: useridfield };
@@ -515,9 +534,7 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
             const response = await chrome.runtime.sendMessage(message);
             return response; // Message sent successfully
         } catch (error) {
-            if (chrome.runtime.lastError) {
-                console.error(`Attempt ${attempt} failed:`, chrome.runtime.lastError.message);
-            }
+            console.error(`Attempt ${attempt} failed:`, message);
             if (attempt < retries) {
                 await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
             } else {
