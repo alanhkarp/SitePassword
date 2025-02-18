@@ -54,7 +54,7 @@ window.onerror = function (message, source, lineno, colno, error) {
 // Other pages add additional CSS at runtime that makes a password field visible
 // Modified from https://www.phpied.com/when-is-a-stylesheet-really-loaded/
 var cssnum = document.styleSheets.length;
-let startupInterval = setInterval(() => {
+if (!startupInterval) var startupInterval = setInterval(() => {
     if (!document.hidden && document.styleSheets.length > cssnum) {
         cssnum = document.styleSheets.length;
         if (logging) console.log(document.URL, Date.now() - start, "findpw css added", cssnum);
@@ -242,7 +242,18 @@ async function sendpageinfo(cpi, clicked, onload) {
         return;
     }; // Extension has been removed
     // Only send page info if this tab has focus
-    if (!document.hasFocus()) return;
+    if (document.hasFocus() && !document.hidden) {
+        await sendpageinfoRest(cpi, clicked, onload);
+    } else {
+        const visHandler = document.addEventListener("visibilitychange", async () => {
+            if (document.hidden) return;
+            document.removeEventListener("visibilitychange", visHandler);
+            await sendpageinfoRest(cpi, clicked, onload);
+        });
+    }
+}
+// Needed to avoid recursion in visibility change test
+async function sendpageinfoRest(cpi, clicked, onload) {
     // No need to send page info if no password fields found.  The user will have to open
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
@@ -535,11 +546,11 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
             const response = await chrome.runtime.sendMessage(message);
             return response; // Message sent successfully
         } catch (error) {
-            console.error(`Attempt ${attempt} failed:`, message);
+            console.log(`Attempt ${attempt} failed:`, message);
             if (attempt < retries) {
                 await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
             } else {
-                throw new Error(`Failed to send message after ${retries} attempts`);
+                throw new (`Failed to send message after ${retries} attempts`);
             }
         }
     }
@@ -559,7 +570,7 @@ function cleanup() {
     if (window.onhashchange) window.onhashchange = null;
     if (document.readyState !== "loading") document.onload = null;
     try {
-        cpi.idfield.onclick = null;
+        if (cpi && cpi.idfield) cpi.idfield.onclick = null;
         for (let pwfield of cpi.pwfields) {
             pwfield.onclick = null;
             pwfield.ondblclick = null;

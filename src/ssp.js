@@ -106,6 +106,7 @@ import { publicSuffixSet } from "./public_suffix_list.js";
 let testMode = false;
 const debugMode = false;
 const demoMode = false;
+
 let logging = false;
 if (logging) console.log("Version 3.0");
 let autoclose = true;
@@ -141,7 +142,7 @@ setTimeout(() => {
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
 let database = clone(databaseDefault);
-if (logging) console.log("popup starting");
+if (logging) console.log("popup starting", database);
 // window.onunload appears to only work for background pages, which
 // no longer work.  Fortunately, using the password requires a click
 // outside the popup window.  I can't use window.onblur because the 
@@ -966,6 +967,7 @@ $sameacctbutton.onclick = async function (e) {
     autoclose = false;
     saveSettings = true;
     sameacct = true;
+    $mainpanel.onmouseleave(e); // So it runs in the same turn
     if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
 }
 $nicknamebutton.onclick = function (e) {
@@ -1834,7 +1836,7 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
             const response = await chrome.runtime.sendMessage(message);
             return response; // Message sent successfully
         } catch (error) {
-            console.error(`Attempt ${attempt} failed:`, error);
+            console.log(`Attempt ${attempt} failed:`, error);
             if (attempt < retries) {
                 await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
             } else {
