@@ -387,15 +387,14 @@ async function testDuplicateBkmks() {
     await resetState();
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
     rootFolder = await getRootFolder();
-    await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
-    url = "ssp://%7B%22clearsuperpw%22%3Afalse%2C%22hidesitepw%22%3Afalse%2C%22safeSuffixes%22%3A%7B%7D%2C%22defaultSettings%22%3A%7B%22sitename%22%3A%22%22%2C%22username%22%3A%22%22%2C%22providesitepw%22%3Afalse%2C%22xor%22%3A%5B0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%5D%2C%22pwlength%22%3A12%2C%22domainname%22%3A%22%22%2C%22pwdomainname%22%3A%22%22%2C%22startwithletter%22%3Atrue%2C%22allowlower%22%3Atrue%2C%22allowupper%22%3Atrue%2C%22allownumber%22%3Atrue%2C%22allowspecial%22%3Afalse%2C%22minlower%22%3A1%2C%22minupper%22%3A1%2C%22minnumber%22%3A1%2C%22minspecial%22%3A1%2C%22specials%22%3A%22%24%2F!%3D%40%3F._-%22%7D%7D";
-    title = "CommonSettings";
     // Create a duplicate common settings bookmark}
     if (loggingDuplicateBkmks) console.log("testDuplicateBkmks creating identical duplicate common settings bookmark");
+    url = "ssp://%7B%22clearsuperpw%22%3Afalse%2C%22hidesitepw%22%3Afalse%2C%22safeSuffixes%22%3A%7B%7D%2C%22defaultSettings%22%3A%7B%22sitename%22%3A%22%22%2C%22username%22%3A%22%22%2C%22providesitepw%22%3Afalse%2C%22xor%22%3A%5B0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%5D%2C%22pwlength%22%3A12%2C%22domainname%22%3A%22%22%2C%22pwdomainname%22%3A%22%22%2C%22startwithletter%22%3Atrue%2C%22allowlower%22%3Atrue%2C%22allowupper%22%3Atrue%2C%22allownumber%22%3Atrue%2C%22allowspecial%22%3Afalse%2C%22minlower%22%3A1%2C%22minupper%22%3A1%2C%22minnumber%22%3A1%2C%22minspecial%22%3A1%2C%22specials%22%3A%22%24%2F!%3D%40%3F._-%22%7D%7D";
+    title = "CommonSettings";
     await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
     children = await chrome.bookmarks.getChildren(rootFolder[0].id);
-    test = children.length === 2; 
+    test = children.length === 1; 
     if (test) {
         console.log("Passed: Identical duplicate common settings bookmark handled");
         passed++;
@@ -408,7 +407,7 @@ async function testDuplicateBkmks() {
     await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": newUrl });
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
     children = await chrome.bookmarks.getChildren(rootFolder[0].id);
-    test = children.length === 3; // because of the common settings bookmark
+    test = children.length === 2;
     if (test) {
         console.log("Passed: Different duplicate common settings bookmark handled");
         passed++;

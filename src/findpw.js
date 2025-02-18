@@ -249,6 +249,7 @@ async function sendpageinfo(cpi, clicked, onload) {
             if (document.hidden) return;
             document.removeEventListener("visibilitychange", visHandler);
             await sendpageinfoRest(cpi, clicked, onload);
+            return;
         });
     }
 }
@@ -550,7 +551,7 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
             if (attempt < retries) {
                 await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
             } else {
-                throw new (`Failed to send message after ${retries} attempts`);
+                throw new Error(`Failed to send message after ${retries} attempts`);
             }
         }
     }
