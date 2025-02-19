@@ -49,7 +49,7 @@ window.onload = function () {
 }
 window.onerror = function (message, source, lineno, colno, error) {
     console.log(document.URL, Date.now() - start, "findpw error", message, source, lineno, colno, error);
-    return chrome.runtime.id ? true : false; // Don't suppress errors if the extension has not been removed
+    return chrome.runtime?.id ? true : false; // Don't suppress errors if the extension has not been removed
 }
 // Other pages add additional CSS at runtime that makes a password field visible
 // Modified from https://www.phpied.com/when-is-a-stylesheet-really-loaded/
@@ -73,12 +73,22 @@ window.addEventListener("hashchange", async (_href) => {
 // means I'll miss a shadow root if it's added late.
 // From Domi at https://stackoverflow.com/questions/38701803/how-to-get-element-in-user-agent-shadow-root-with-javascript
 function searchShadowRoots(element) {
-    //return []; // Turned off because too much overhead for sites that have frequent changes, e.g.,
-    let shadows = Array.from(element.querySelectorAll('*'))
-        .map(el => el.shadowRoot).filter(Boolean);
-    let childResults = shadows.map(child => searchShadowRoots(child));
-    let result = Array.from(element.querySelectorAll("input"));
-    return result.concat(childResults).flat();
+    if (!element || !chrome.runtime?.id) return [];
+    if (logging) console.log("findpw searchShadowRoots", document.location.origin, element);
+    // This code results in an security policy error on some pages that doesn't hit
+    // the catch block because it's not a JavaScript error.
+    try {
+        let shadows = Array.from(element.querySelectorAll('*')).reduce((acc, el) => {
+            if (el.shadowRoot) acc.push(el.shadowRoot);
+            return acc;
+        }, []);
+        let childResults = shadows.map(child => searchShadowRoots(child));
+        let result = Array.from(element.querySelectorAll("input"));
+        return result.concat(childResults).flat();
+    } catch (error) {
+        console.log("Error searching shadow roots:", error);
+        return [];
+    }
 }
 // Tell the service worker that the user has copied something to the clipboard
 // so it can clear the icon
@@ -121,11 +131,11 @@ async function startup(sendPageInfo) {
         //     });
         // }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button
+        if (!chrome.runtime?.id || !document.body) {
+            cleanup();
+            return;
+        }; // Extension has been removed
         document.body.onclick = function () {
-            if (!chrome.runtime?.id) {
-                cleanup();
-                return;
-            }; // Extension has been removed
             if (logging) console.log("findpw click on body");
             setTimeout(() => {
                 if (logging) console.log("findpw body.onclick");
@@ -166,7 +176,7 @@ async function startup(sendPageInfo) {
                     let pwdomain = document.location.hostname;
                     let pwcount = cpi.pwfields.length || 0;
                     let uid = cpi.idfield ? cpi.idfield.value : "";
-                    console.log(document.URL, Date.now() - start, "findpw got count request", pwcount, pwdomain);
+                    if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", pwcount, pwdomain);
                     sendResponse({ "pwcount": pwcount, "id": uid, "pwdomain": pwdomain });
                     break;
                 case "clear":
@@ -443,13 +453,8 @@ async function countpwid() {
     // I already fill in the username if there are any password fields
     if (c === 0 && maybeUsernameFields.length === 1 && !maybeUsernameFields[0].value) {
         let maybeUsernameField = maybeUsernameFields[0];
-        // Using await spreads async all over the place
-        if (!chrome.runtime?.id) {
-            cleanup();
-            return;
-        }; // Extension has been removed
         // No need to send getUsername message if no userid field found.
-        if (document.hasFocus() && useridfield > 0) {
+        if (document.hasFocus() && maybeUsernameField && !useridfield) {
             let response = null;
             try {
                 response = await retrySendMessage({ "cmd": "getUsername" });
