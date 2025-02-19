@@ -967,7 +967,15 @@ $sameacctbutton.onclick = async function (e) {
     autoclose = false;
     saveSettings = true;
     sameacct = true;
-    $mainpanel.onmouseleave(e); // So it runs in the same turn
+    // Invoke mouseleave event on $mainpanel
+    const mouseleaveEvent = new MouseEvent('mouseleave', {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+        clientX: 0, // You can set the coordinates as needed
+        clientY: 0  // You can set the coordinates as needed
+    });
+    $mainpanel.dispatchEvent(mouseleaveEvent);
     if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
 }
 $nicknamebutton.onclick = function (e) {
