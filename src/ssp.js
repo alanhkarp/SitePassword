@@ -668,6 +668,7 @@ $sitepw.onblur = async function (e) {
     let provided = $sitepw.value;
     let computed = await ask2generate(bg)
     bg.settings.xor = xorStrings(provided, computed);
+    saveSettings = true;
     if (resolvers.sitepwblurResolver) resolvers.sitepwblurResolver("sitepwblurPromise"); 
 }
 $sitepw.onkeyup = function () {
