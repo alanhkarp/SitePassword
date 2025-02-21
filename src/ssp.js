@@ -105,7 +105,6 @@ import { publicSuffixSet } from "./public_suffix_list.js";
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
 const debugMode = false;
-const demoMode = false;
 
 let logging = false;
 if (logging) console.log("Version 3.0");
@@ -180,13 +179,14 @@ window.onload = async function () {
     if (logging) console.log("popup", activetab.url, isUrlMatch(activetab.url));
     if (chrome.runtime?.id && isUrlMatch(activetab.url)) {
         if (logging) console.log("popup sending count message to content script");
-        let pwcount = demoMode? 1: 0;
+        let pwcount = 0;
         try {
             let result = await chrome.tabs.sendMessage(activetab.id, {"cmd": "count"});
             if (logging) console.log("popup get count", result);
             pwcount = result.pwcount;
         } catch (error) {
-            if (!demoMode) console.error("Error sending count message:", demoMode, error);
+            pwcount = 1; // Assume failure means there is no content script so don't show warning
+            if (logging) console.error("Error sending count message:", error);
         }
         message("multiple", pwcount > 1);
         message("zero", pwcount === 0);
@@ -1337,7 +1337,7 @@ async function handleblur(element, field) {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
         } catch (error) {
-            if (!demoMode) console.error("popup handleblur error", error);
+            if (logging) console.error("popup handleblur error", error);
         }
     }
 }
@@ -1361,7 +1361,7 @@ async function changePlaceholder() {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
         } catch (error) {
-            if (!demoMode) console.error("popup changePlaceholder error", error);
+            if (logging) console.error("popup changePlaceholder error", error);
         }
     }
 }
