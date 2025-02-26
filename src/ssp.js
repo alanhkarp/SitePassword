@@ -997,6 +997,8 @@ $suffixcancelbutton.onclick = function (e) {
     $sitename.disabled = false;
     $username.disabled = false;
     $sitename.focus();
+    saveSettings = false;
+    autoclose = false;
 }
 $suffixacceptbutton.onclick = async function (e) {
     msgoff("suffix");

@@ -69,12 +69,20 @@ export const bgBaseDefault = {"superpw": "", "pwcount": 0, "settings": baseDefau
 Object.freeze(bgBaseDefault); // so the values can't be changed
 Object.freeze(bgBaseDefault.settings.xor); // so the array values can't be changed
 
-let commonBaseDefault = {"clearsuperpw": false, "hidesitepw": false, safeSuffixes: {}, "defaultSettings": baseDefaultSettings};
+let commonBaseDefault = {"clearsuperpw": false, "hidesitepw": false, "safeSuffixes": {}, "defaultSettings": baseDefaultSettings};
 Object.freeze(commonBaseDefault); // so the values can't be changed
 Object.freeze(commonBaseDefault.defaultSettings); // so the values can't be changed
 Object.freeze(commonBaseDefault.defaultSettings.xor); // so the array values can't be changed
 
 export let databaseDefault = { "common": clone(commonBaseDefault), "domains": {}, "sites": {} };
+Object.freeze(databaseDefault); // so the values can't be changed
+Object.freeze(databaseDefault.common); // so the values can't be changed
+Object.freeze(databaseDefault.common.defaultSettings); // so the values can't be changed
+Object.freeze(databaseDefault.common.defaultSettings.xor); // so the array values can't be changed
+Object.freeze(databaseDefault.common.safeSuffixes); // so the values can't be changed
+Object.freeze(databaseDefault.domains); // so the values can't be changed
+Object.freeze(databaseDefault.sites); // so the values can't be changed
+
 var database = clone(databaseDefault);
 let bgDefault = clone(bgBaseDefault);
 var bg = clone(bgDefault);
