@@ -276,7 +276,31 @@ to change all occurrences if ![](images...) to <img> tags.
       </div>
       <div id="instructionpanel" class="sticky side-panel" style="display: none">
         <div id="sections">
-          <section id="overviewinfo" name="instructions" class="instructionpaneltext">
+          <section id="whoinfo" name="instructions">
+            <svg id="openwho" class="accordian" style="display: block;" width="24px" height="24px" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 11 3 3 3-3" />
+            </svg>
+            <svg id="closewho" class="accordian" style="display: none;" width="24px" height="24px" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 13 3-3 3 3" />
+            </svg>
+            <h3>What is SitePassword?</h3>
+            <div id="whodiv" style="display: none;">
+              <p>
+                SitePassword is a password manager that calculates your passwords
+                from a super password and a per account nickname and username.
+                It also allows you to specify a password when you don't want to use the computed one.
+              </p>
+            </div>
+          </section>
+        <section id="overviewinfo" name="instructions" class="instructionpaneltext">
             <svg id="openoverview" class="accordian" style="display: block;" width="24px" height="24px"
               viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
               <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -1151,7 +1175,58 @@ to change all occurrences if ![](images...) to <img> tags.
               </p>
             </div>
           </section>
-        </div>
+          <section id="creditsinfo" name="instructions">
+            <svg id="opencredits" class="accordian" style="display: block;" width="24px" height="24px"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 11 3 3 3-3" />
+            </svg>
+            <svg id="closecredits" class="accordian" style="display: none;" width="24px" height="24px"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 13 3-3 3 3" />
+            </svg>
+            <h3>Credits</h3>
+            <div id="creditsdiv" style="display: none;">
+              <ul>
+                <li>
+                  Alan Karp is the princple culprit.  He stared with a very simple password calculator 
+                  in 2002 that he turned into a Chrome extension in 2012. What you see today is the result
+                  of many improvements over the years, a lot of them suggested by the other contributors.  
+                  Don't blame anyone else for bugs or usablity problems, but do credit them with the 
+                  improvements they suggested.  Please send any feedback to  
+                  <a class="udrline" href="mailto:alanhkarp&#064gmail&#046com">alanhkarp&#064gmail&#046com</a>.
+                </li>
+                <li>
+                  Douglas Crockford provided useful suggestions for improvements, many of which were resisted but 
+                  make SitePassword much better, both in terms of functionality and usability.  Two features 
+                  stand out: the ability to provide your own account password and the Forget menu option.  The 
+                  look and feel is much improved due to Doug's constant nitpicking of seeminly minor details.
+                  It's what takes a tool from "Meh" to "Yeah."  
+                  That kind of feedback is almost impossible to get even if you offer to pay.  Getting that kind of 
+                  feedback for free is rare. 
+                </li>
+                <li>
+                  Dale Schumacker wrote most of the code for this web page and made many useful suggestions. 
+                  His code has been changed enough that he is not responsible for any issues, but he deserves 
+                  kudos for its overall design.  As an early user of SitePassword, Dale provide critical 
+                  feedback.
+                </li>
+                <li>
+                  Michael Josefik provided the professional design for this web page.  He showed remarkable 
+                  patience as his ideas were resisted but then implemented when he was proven right.
+                </li>
+                <li>
+                  Important security improvements came from the people at the Stanford Security Lunch.
+                  They did not do anything approaching a security review and are not responsible for any vulnerabilities.  
+                </li>
+              </ul>
+          </section>
+      </div>
       </div>
       <div id="settings" class="sticky side-panel" style="display: none; width: 25em">
         <h1 style="text-align: left;">Additional Settings</h1>
