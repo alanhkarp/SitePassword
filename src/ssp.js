@@ -514,7 +514,7 @@ $sitename.onblur = async function (e) {
     if (resolvers.sitenameblurResolver) resolvers.sitenameblurResolver("sitenameblurPromise");
 }
 $sitename3bluedots.onmouseover = function (e) {
-    if ($sitename.value && $sitepw.value) {
+    if ($sitename.value) {
         $sitenamemenuforget.style.opacity = "1";
         $sitenamemenuaccount.style.opacity = "1";
     } else {
@@ -666,8 +666,10 @@ $sitepw.onblur = async function (e) {
     menuOff("sitepw", e);
     if ($sitepw.readOnly || !$sitepw.value) return;
     let provided = $sitepw.value;
+    if (provided.length > bg.settings.pwlength) bg.settings.pwlength = provided.length;
     let computed = await ask2generate(bg)
     bg.settings.xor = xorStrings(provided, computed);
+    console.log("popup sitepw onblur", bg.settings.pwlength);
     saveSettings = true;
     if (resolvers.sitepwblurResolver) resolvers.sitepwblurResolver("sitepwblurPromise"); 
 }
@@ -804,6 +806,8 @@ $providesitepw.onclick = async function () {
         $sitepwmenucopy.classList.add("menu-icon-blue");
         $sitepwmenuhelp.classList.add("menu-icon-blue");
         $sitepw.placeholder = "Your site password";
+        bg.settings.pwlength = database.common.defaultSettings.pwlength;
+        $pwlength.value = bg.settings.pwlength;
         await ask2generate();
         defaultfocus();
     }

@@ -265,7 +265,11 @@ async function sendpageinfo(cpi, clicked, onload) {
 }
 // Needed to avoid recursion in visibility change test
 async function sendpageinfoRest(cpi, clicked, onload) {
-    // No need to send page info if no password fields found.  The user will have to open
+    if (!chrome.runtime?.id) {
+        cleanup();
+        return;
+    }; // Extension has been removed
+   // No need to send page info if no password fields found.  The user will have to open
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length || 0);
