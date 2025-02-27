@@ -148,6 +148,10 @@ if (logging) console.log("popup starting", database);
 // popup window closes before the message it sends gets delivered.
 
 window.onload = async function () {
+    if (!chrome.runtime?.id) {
+        cleanup();
+        return;
+    }; // Extension has been removed
     if (logging) console.log("popup check clipboard");
     let v = await chrome.storage.local.get("onClipboard");
     if (v.onClipboard) {
@@ -669,7 +673,7 @@ $sitepw.onblur = async function (e) {
     if (provided.length > bg.settings.pwlength) bg.settings.pwlength = provided.length;
     let computed = await ask2generate(bg)
     bg.settings.xor = xorStrings(provided, computed);
-    console.log("popup sitepw onblur", bg.settings.pwlength);
+    if (logging) console.log("popup sitepw onblur", bg.settings.pwlength);
     saveSettings = true;
     if (resolvers.sitepwblurResolver) resolvers.sitepwblurResolver("sitepwblurPromise"); 
 }

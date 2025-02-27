@@ -73,7 +73,11 @@ window.addEventListener("hashchange", async (_href) => {
 // means I'll miss a shadow root if it's added late.
 // From Domi at https://stackoverflow.com/questions/38701803/how-to-get-element-in-user-agent-shadow-root-with-javascript
 function searchShadowRoots(element) {
-    if (!element || !chrome.runtime?.id) return [];
+    if (!chrome.runtime?.id) {
+        cleanup();
+        return;
+    }; // Extension has been removed
+    if (!element) return [];
     if (logging) console.log("findpw searchShadowRoots", document.location.origin, element);
     // This code results in an security policy error on some pages that doesn't hit
     // the catch block because it's not a JavaScript error.
@@ -556,11 +560,11 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
             const response = await chrome.runtime.sendMessage(message);
             return response; // Message sent successfully
         } catch (error) {
-            console.log(`Attempt ${attempt} failed:`, message);
+            console.log(`Attempt ${attempt} failed:`, message, error);
             if (attempt < retries) {
                 await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
             } else {
-                throw new Error(`Failed to send message after ${retries} attempts`);
+                throw new Error(`Failed to send message after ${retries} attempts`, error);
             }
         }
     }

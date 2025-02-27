@@ -541,7 +541,7 @@ async function persistMetadata(sendResponse) {
                     try {
                         await chrome.bookmarks.update(found.id, { "url": url });
                     } catch (error) {
-                        console.error("Error updating bookmark:", error);
+                        console.error(`Error getting children bookmarks: |${rootFolderId}|`, error);
                     }
                 }
             }
@@ -634,7 +634,7 @@ async function parseBkmk(rootFolderId, callback, _sender, sendResponse) {
         try {
             children = await chrome.bookmarks.getChildren(rootFolderId);
         } catch (error) {
-            console.error("Error getting children bookmarks:", error);
+            console.error(`Error getting children bookmarks: |${rootFolderId}|`, error);
         }
     }
     if (logging) console.log("bg cleaning bookmarks", children);
