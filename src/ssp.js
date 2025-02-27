@@ -522,12 +522,13 @@ get("usernamehelptextmore").onclick = function (e) {
 // Site Password
 get("sitepw").onblur = async function (e) {
     menuOff("sitepw", e);
+    let $sitepw = get("sitepw");
     if ($sitepw.readOnly || !$sitepw.value) return;
     let provided = $sitepw.value;
     if (provided.length > bg.settings.pwlength) bg.settings.pwlength = provided.length;
     let computed = await ask2generate(bg)
     bg.settings.xor = xorStrings(provided, computed);
-    console.log("popup sitepw onblur", bg.settings.pwlength);
+    if (logging) console.log("popup sitepw onblur", bg.settings.pwlength);
     saveSettings = true;
     if (resolvers.sitepwblurResolver) resolvers.sitepwblurResolver("sitepwblurPromise"); 
 }
@@ -634,15 +635,16 @@ get("providesitepw").onclick = async function () {
         get("sitepw").placeholder = "Enter your site password";
         await Promise.resolve(); // To match the await of the other branch
     } else {
+        let $sitepw = get("sitepw");
         $sitepw.readOnly = true;
         $sitepw.style.backgroundColor = "rgb(136, 204, 255, 20%)";
-        $sitepwmenushow.classList.add("menu-icon-blue");
-        $sitepwmenuhide.classList.add("menu-icon-blue");
-        $sitepwmenucopy.classList.add("menu-icon-blue");
-        $sitepwmenuhelp.classList.add("menu-icon-blue");
+        get("sitepwmenushow").classList.add("menu-icon-blue");
+        get("sitepwmenuhide").classList.add("menu-icon-blue");
+        get("sitepwmenucopy").classList.add("menu-icon-blue");
+        get("sitepwmenuhelp").classList.add("menu-icon-blue");
         $sitepw.placeholder = "Your site password";
         bg.settings.pwlength = database.common.defaultSettings.pwlength;
-        $pwlength.value = bg.settings.pwlength;
+        get("pwlength").value = bg.settings.pwlength;
         await ask2generate();
         defaultfocus();
     }
