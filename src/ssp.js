@@ -177,7 +177,13 @@ window.onload = async function () {
         if (!chrome.bookmarks) element.classList.add("nodisplay");
     }
     if (logging) console.log("popup getting active tab");
-    let tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    let tabs;
+    try {
+        tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    } catch (error) {
+        console.error("Error querying active tab window onload:", error);
+        return;
+    }
     activetab = tabs[0];
     // Get pwcount from content script because service worker might have forgotten it
     if (logging) console.log("popup", activetab.url, isUrlMatch(activetab.url));

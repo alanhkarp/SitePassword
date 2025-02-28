@@ -162,7 +162,13 @@ chrome.runtime.onInstalled.addListener(async function(details) {
             width:800
         });
     } else if (details.reason === "update") {
-        let tabs = await chrome.tabs.query({});
+        let tabs;
+        try {
+            tabs = await chrome.tabs.query({});
+        } catch (error) {
+            if (errorLogging) console.log("Error querying tabs onInstalled listener", error);
+            tabs = [];
+        }
         let start = Date.now();
         let count = 0;
         for (let i = 0; i < tabs.length; i++) {
