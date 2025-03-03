@@ -1584,6 +1584,7 @@ async function sitedataHTML() {
         console.log("popup sitedataHTML error", e);
         alert("SitePassword data could not be exported.");
     }
+    autoclose = false;
     return;
 }
 function sitedataHTMLDoc(doc, sorted) {
