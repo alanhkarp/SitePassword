@@ -1862,11 +1862,15 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
             const response = await chrome.runtime.sendMessage(message);
             return response; // Message sent successfully
         } catch (error) {
-            console.log(`Attempt ${attempt} failed:`, error);
+            console.log(`popup attempt ${attempt} failed:`, error);
             if (attempt < retries) {
                 await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
             } else {
-                throw new Error(`Failed to send message after ${retries} attempts`);
+                if (!error.includes("Could not establish connection")) {
+                    throw new Error(`Failed to send message ${message} after ${retries} attempts`);
+                } else {
+                    console.log("popup retrySendMessage error", message, error);
+                }
             }
         }
     }
