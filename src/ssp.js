@@ -1848,7 +1848,7 @@ function closeAllInstructions() {
     saveSettings = false;
 }
 // Sometimes messages fail because the receiving side isn't quite ready.
-// That's most often the serice worker as it's starting up.
+// That's most often the service worker as it's starting up.
 /**
  * Retry sending a message.
  * @param {object} message - The message to send.
