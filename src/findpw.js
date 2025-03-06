@@ -149,7 +149,7 @@ async function startup(sendPageInfo) {
         };
         mutationObserver = new MutationObserver(handleMutations);
         mutationObserver.observe(document.body, observerOptions);
-        chrome.runtime.onMessage.addListener(async function (request, _sender, sendResponse) {
+        chrome.runtime?.onMessage.addListener(async function (request, _sender, sendResponse) {
             if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
             readyForClick = request.readyForClick;
             let mutations = mutationObserver.takeRecords();
