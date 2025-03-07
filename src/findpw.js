@@ -216,11 +216,19 @@ async function handleMutations(mutations) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
     if (oldpwfield && oldpwfield === cpi.pwfields[0]) return; // Stop looking once I've found a password field
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from mutation observer");
-    cpi = await countpwid();
-    await sendpageinfo(cpi, false, true);
-    oldpwfield = cpi.pwfields[0];
-    let myMutations = mutationObserver.takeRecords();
-    if (logging) console.log("findpw handleMutations my mutations", myMutations);
+    // Without this delay, certain warnings from the page get reported as coming from isHidden().
+    // (See https://www.fastcompany.com/91277240/how-to-spot-fake-job-postings-and-avoid-scams.)
+    // The problem is that element style properities are evaluated lazily, and my code is the 
+    // first to do that after the mutation.  The delay gives the page a chance to check 
+    // the style properties before I do.  As a result, the warning gets reported as coming 
+    // from the page, not the content script.
+    setTimeout(async () => {
+        cpi = await countpwid();
+        await sendpageinfo(cpi, false, true);
+        oldpwfield = cpi.pwfields[0];
+        let myMutations = mutationObserver.takeRecords();
+        if (logging) console.log("findpw handleMutations my mutations", myMutations);
+    }, 10); // A delay of 0 didn't work, so 10 ms might not be long enough.
 }
 function fillfield(field, text) {
     // Don't change unless there is a different value to avoid mutationObserver cycling
