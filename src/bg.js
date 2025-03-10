@@ -1,17 +1,13 @@
 'use strict';
 import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } from "./generate.js";
-// Set to true to run the tests in test.js then reload the extension.
-// Tests must be run on a page that has the content script, specifically,
-// http or https whether it has a password field or not.
 
-// Only one of these can be true at a time
-const testMode = false;
-const debugMode = false;
-const demoMode = false;
+// Only one of these can be true at a time; reload the extension after changing them.
+const testMode  = false; // Set to true to run the tests in test.js.
+const debugMode = false; // Set to true to run SitePassword with the debug bookmarks folder.
+const demoMode  = false; // Set to true to run the SitePassword demo with the demo bookmarks folder.
 
-const testLogging = false;
-const demoLogging = false;
 const logging = false;
+const testLogging = false;
 const errorLogging = false;
 
 const commonSettingsTitle = "CommonSettings";
