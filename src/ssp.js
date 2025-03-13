@@ -339,7 +339,6 @@ $mainpanel.onmouseleave = async function (event) {
         if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
         return;
     }
-    $superpw.focus();
     if (logging) console.log("popup mainpanel mouseleave update bg", document.activeElement.id, bg);
     // window.onblur fires before I even have a chance to see the window, much less focus it
     if (bg && bg.settings) {
@@ -434,12 +433,12 @@ $superpw.onkeyup = async function (e) {
     await ask2generate()
     setMeter("superpw");
     setMeter("sitepw");
-    await handlekeyup("superpw", "superpw");
+    await handlekeyup(e, "superpw");
     if (resolvers.superpwkeyupResolver) resolvers.superpwkeyupResolver("superpwkeyupPromise");
 }
 $superpw.onblur = async function (e) {
     if (logging) console.log("popup superpw onmouseout");
-    await handleblur("superpw", "superpw");
+    await handleblur(e, "superpw");
     await changePlaceholder();
     if (resolvers.superpwblurResolve) resolvers.superpwblurResolver("superpwblurPromise");
 }
@@ -497,8 +496,8 @@ $sitename.onfocus = function (e) {
     if (logging) console.log("popup sitename onfocus", database.sites, list);
     setupdatalist(this, list);
 }
-$sitename.onkeyup = async function () {
-    await handlekeyup("sitename", "sitename");
+$sitename.onkeyup = async function (e) {
+    await handlekeyup(e, "sitename");
     clearDatalist("sitenames");
     $sitename.onfocus();
     if (resolvers.sitenamekeyupResolver) resolvers.sitenamekeyupResolver("sitenamekeyupPromise");
@@ -511,7 +510,7 @@ $sitename.onblur = async function (e) {
         $superpw.disabled = false;
         $username.disabled = false;
         let isChanged = sitename !== bg.settings.sitename;
-        await handleblur("sitename", "sitename");
+        await handleblur(e, "sitename");
         await changePlaceholder();
         if (isChanged) {
             bg.settings = clone(database.sites[normalize(sitename)] || bg.settings || bgDefault.settings);
@@ -604,14 +603,14 @@ $username.onfocus = function (e) {
     let list = sortList([... set]);
     setupdatalist(this, list);
 }
-$username.onkeyup = async function () {
-    await handlekeyup("username", "username");
+$username.onkeyup = async function (e) {
+    await handlekeyup(e, "username");
     clearDatalist("usernames");
     $username.onfocus();
     if (resolvers.usernamekeyupResolver) resolvers.usernamekeyupResolver("usernamekeyupPromise");
 }
 $username.onblur = async function (e) {
-    handleblur("username", "username");
+    handleblur(e, "username");
     clearDatalist("usernames");
     await changePlaceholder();
 }
@@ -832,14 +831,18 @@ $hidesitepw.onclick = function () {
     hidesitepw();
     if (resolvers.hidesitepwResolver) resolvers.hidesitepwResolver("hidesitepwPromise");
 }
-$pwlength.onmouseout = async function () {
-    await handleblur("pwlength", "pwlength");
+$pwlength.onmouseout = async function (e) {
+    await handleblur(e, "pwlength");
     if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurPromise("pwlengthblurPromise");
 }
-$pwlength.onblur = async function () {
-    await handleblur("pwlength", "pwlength");
+$pwlength.onblur = async function (e) {
+    await handleblur(e, "pwlength");
     if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurResolver("pwlengthblurPromise");
 }
+$pwlength.onkeyup = async function(e) { 
+    bg.settings.pwlength = $pwlength.value;
+    $mainpanel.onmouseleave(e); // Force save while typing
+}; 
 $startwithletter.onclick = function () {
     bg.settings.startwithletter = $startwithletter.checked;
     ask2generate();
@@ -860,37 +863,53 @@ $allowspecialcheckbox.onclick = async function () {
     await handleclick("special");
     if (resolvers.allowspecialclickResolver) resolvers.allowspecialclickResolver("allowspecialclickPromise");
 }
-$minlower.onmouseout = function () {
-    handleblur("minlower", "minlower");
+$minlower.onmouseout = function (e) {
+    handleblur(e, "minlower");
 }
-$minlower.onblur = function () {
-    handleblur("minlower", "minlower");
+$minlower.onblur = function (e) {
+    handleblur(e, "minlower");
 }
-$minupper.onmouseout = function () {
-    handleblur("minupper", "minupper");
+$minlower.onkeyup = async function(e) { 
+    bg.settings.minlower = $minlower.value;
+    $mainpanel.onmouseleave(e); // Force save while typing
+}; 
+$minupper.onmouseout = function (e) {
+    handleblur(e, "minupper");
 }
-$minupper.onblur = function () {
-    handleblur("minupper", "minupper");
+$minupper.onblur = function (e) {
+    handleblur(e, "minupper");
 }
-$minnumber.onmouseout = function () {
-    handleblur("minnumber", "minnumber");
+$minupper.onkeyup = async function(e) { 
+    bg.settings.minupper = $minupper.value;
+    $mainpanel.onmouseleave(e); // Force save while typing
+}; 
+$minnumber.onmouseout = function (e) {
+    handleblur(e, "minnumber");
 }
-$minnumber.onblur = function () {
-    handleblur("minnumber", "minnumber");
+$minnumber.onblur = function (e) {
+    handleblur(e, "minnumber");
 }
-$minspecial.onmouseout = function () {
-    handleblur("minspecial", "minspecial");
+$minnumber.onkeyup = async function(e) { 
+    bg.settings.minnumber = $minnumber.value;
+    $mainpanel.onmouseleave(e); // Force save while typing
+}; 
+$minspecial.onmouseout = function (e) {
+    handleblur(e, "minspecial");
 }
-$minspecial.onblur = function () {
-    handleblur("minspecial", "minspecial");
+$minspecial.onblur = function (e) {
+    handleblur(e, "minspecial");
 }
+$minspecial.onkeyup = async function(e) { 
+    bg.settings.minspecial = $minspecial.value;
+    $mainpanel.onmouseleave(e); // Force save while typing
+}; 
 // In an older version I needed to limit the number of 
 // specials because generate() computed a number between 
 // 0 and 63 to index into the characters array.  That's 
 // no longer the case, but I don't want to risk
 // generating different passwords.
 const alphanumerics = /[0-9A-Za-z]/g;
-$specials.onblur = async function() {
+$specials.onblur = async function(e) {
     if (!$specials.value) {
         alert("You must enter at least one special character.");
         $specials.value = bg.settings.specials;
@@ -900,9 +919,13 @@ $specials.onblur = async function() {
         .replace(alphanumerics, '')  // eliminate alphanumerics
         .substring(0, 12);  // limit to 12 specials
     bg.settings.specials = $specials.value;
-    await handlekeyup("specials", "specials");
+    await handlekeyup(e, "specials");
     if (resolvers.specialsblurResolver) resolvers.specialsblurResolver("specialsblurPromise");
 }
+$specials.onkeyup = async function(e) { 
+    bg.settings.specials = $specials.value;
+    $mainpanel.onmouseleave(e); // Force save while typing
+}; 
 $makedefaultbutton.onclick = async function () {
     let newDefaults = {
         sitename: "",
@@ -1328,14 +1351,14 @@ function setMeter(which) {
     }
 }
 
-async function handlekeyup(element, field) {
-    await handleblur(element, field);
+async function handlekeyup(event, element) {
+    await handleblur(event, element);
 }
-async function handleblur(element, field) {
+async function handleblur(event, element) {
     if (element === "superpw") {
         bg.superpw = get(element).value;
     } else {
-        bg.settings[field] = get(element).value;
+        bg.settings[element] = get(element).value;
     }
     if ($superpw.value && $sitename.value && $username.value) {
         $providesitepw.disabled = false;
@@ -1356,6 +1379,7 @@ async function handleblur(element, field) {
             if (logging) console.error("popup handleblur error", error);
         }
     }
+    $mainpanel.onmouseleave(event); // So it runs in the same turn
 }
 async function handleclick(which) {
     bg.settings["allow" + which] = get("allow" + which + "checkbox").checked;
