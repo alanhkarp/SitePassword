@@ -840,8 +840,7 @@ $pwlength.onblur = async function (e) {
     if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurResolver("pwlengthblurPromise");
 }
 $pwlength.onkeyup = async function(e) { 
-    bg.settings.pwlength = $pwlength.value;
-    $mainpanel.onmouseleave(e); // Force save while typing
+    handlekeyupnopw(e, "pwlength");
 }; 
 $startwithletter.onclick = function () {
     bg.settings.startwithletter = $startwithletter.checked;
@@ -870,9 +869,8 @@ $minlower.onblur = function (e) {
     handleblur(e, "minlower");
 }
 $minlower.onkeyup = async function(e) { 
-    bg.settings.minlower = $minlower.value;
-    $mainpanel.onmouseleave(e); // Force save while typing
-}; 
+    handlekeyupnopw(e, "minlower");
+}
 $minupper.onmouseout = function (e) {
     handleblur(e, "minupper");
 }
@@ -890,9 +888,8 @@ $minnumber.onblur = function (e) {
     handleblur(e, "minnumber");
 }
 $minnumber.onkeyup = async function(e) { 
-    bg.settings.minnumber = $minnumber.value;
-    $mainpanel.onmouseleave(e); // Force save while typing
-}; 
+    handlekeyupnopw(e, "minnumber");
+} 
 $minspecial.onmouseout = function (e) {
     handleblur(e, "minspecial");
 }
@@ -900,9 +897,8 @@ $minspecial.onblur = function (e) {
     handleblur(e, "minspecial");
 }
 $minspecial.onkeyup = async function(e) { 
-    bg.settings.minspecial = $minspecial.value;
-    $mainpanel.onmouseleave(e); // Force save while typing
-}; 
+    handlekeyupnopw(e, "minspecial");
+}
 // In an older version I needed to limit the number of 
 // specials because generate() computed a number between 
 // 0 and 63 to index into the characters array.  That's 
@@ -923,9 +919,8 @@ $specials.onblur = async function(e) {
     if (resolvers.specialsblurResolver) resolvers.specialsblurResolver("specialsblurPromise");
 }
 $specials.onkeyup = async function(e) { 
-    bg.settings.specials = $specials.value;
-    $mainpanel.onmouseleave(e); // Force save while typing
-}; 
+    handlekeyupnopw(e, "specials");
+} 
 $makedefaultbutton.onclick = async function () {
     let newDefaults = {
         sitename: "",
@@ -1349,6 +1344,12 @@ function setMeter(which) {
         if (labels.minutes == 1) return " (" + labels.minutes + " minute to guess)";
         if (labels.minutes < 1) return " (less than a minute to guess)";
     }
+}
+// For those keyup events where I don't want to generate a password
+// that might produce an error, but I do want to save the settings.
+async function handlekeyupnopw(event, element) {
+    bg.settings[element] = get(element).value;
+    $mainpanel.onmouseleave(event); // Force save while typing
 }
 
 async function handlekeyup(event, element) {
