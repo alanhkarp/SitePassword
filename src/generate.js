@@ -30,7 +30,7 @@ export async function generatePassword(bg) {
 }
 export function isSuperPw(superpw) {
     if (superpw) return "SuperPW";
-    else return "No SuperPW";
+    else return "NoSuperPW";
 }
 async function computePassword(superpw, salt, settings) {
     if (!(settings.allowupper || settings.allowlower || settings.allownumber)) {

@@ -102,16 +102,21 @@ async function updateTab(tab) {
                 });
                 if (logging) console.log("bg script executed successfully on tab activation");
             } catch (error) {
-                throw(error);
+                let estring = error.toString();
+                if (errorLogging && !estring.includes("showing error page")) console.log("bg reload tab error", tabs[i].url, error, count, tabs.length);
             }
         } else {
-            // Listen for the tab to complete loading (Thanks, Copilot!)
-            chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo, updatedTab) {
-                if (tabId === tab.id && changeInfo.status === "complete") {
-                    chrome.tabs.onUpdated.removeListener(listener);
-                    updateTab(updatedTab); // Retry updating the tab
-                }
-            });
+            try {
+                chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo, updatedTab) {
+                    if (tabId === tab.id && changeInfo.status === "complete") {
+                        chrome.tabs.onUpdated.removeListener(listener);
+                        updateTab(updatedTab); // Retry updating the tab
+                    }
+                });
+            } catch (error) {
+                if (errorLogging) console.log("Error adding onUpdated listener", error);
+            }
+            await Promise.resolve(); // To match the await in the other branch}
         }
     }
 }
@@ -206,11 +211,7 @@ async function setup() {
         bkmksId = -1;
         if (logging) console.log("bg got Safari bookmarks", bkmksSafari);
      }
-
-    if (logging) console.log("bg clear superpw");
-
     if (logging) console.log("bg starting with database", database);
-
     // Check reminder clock set in ssp.js.  If too much time has passed, 
     // clear superpw so user has to reenter it as an aid in not forgetting it.
     let value = await chrome.storage.local.get("reminder");
@@ -229,6 +230,10 @@ async function setup() {
             await Promise.resolve(); // To match the await in the other branch
         }
     }
+    // Retrieve superpw from session storage
+    value = await chrome.storage.session.get("superpw");
+    superpw = value.superpw || "";
+    if (logging) console.log("bg setup retrieved superpw", isSuperPw(superpw));
     // Add message listener
     if (logging) console.log("bg adding listener");
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -236,14 +241,10 @@ async function setup() {
         // Start with a new database in case something changed while the service worker stayed open
         database = clone(databaseDefault);
         bg = clone(bgDefault);
+        if (logging) console.log("bg got message", isSuperPw(superpw), request);
+        bg.superpw = superpw;
         retrieveMetadata(sendResponse, request, sender, async () => {
             if (logging) console.log("bg listener back from retrieveMetadata", database);
-            superpw = "";
-            let value = await chrome.storage.session.get(["superpw"]);
-            superpw = value.superpw || "";
-            if (logging) console.log("bg got superpw", superpw);
-            superpw = superpw || "";
-            bg.superpw = superpw;
             if (logging) console.log("bg got ssp", isSuperPw(superpw));
             if (request.cmd === "getMetadata") {
                 await getMetadata(request, sender, sendResponse);
@@ -263,6 +264,7 @@ async function setup() {
                     database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
                 }
                 superpw = bg.superpw || "";
+                if (logging) console.log("bg process siteData request", isSuperPw(superpw))
                 await persistMetadata(sendResponse);
                 sendResponse("persisted");
             } else if (request.cmd === "getPassword") {                
@@ -272,13 +274,14 @@ async function setup() {
                 let p = await generatePassword(bg);
                 p = stringXorArray(p, bg.settings.xor);
                 if (database.common.clearsuperpw) {
+                    if (logging) console.log("bg clear superpw")
                     superpw = "";
                     bg.superpw = "";
                     await persistMetadata(sendResponse);
                 } else {
                     await Promise.resolve(); // To match the await in the other branch
                 }
-                if (logging) console.log("bg calculated sitepw", bg, database, p, isSuperPw(superpw));
+                if (logging) console.log("bg calculated sitepw", isSuperPw(bg.superpw), bg.settings, database, p, isSuperPw(superpw));
                 sendResponse(p);
                 await Promise.resolve(); // To match the awaits in the other branches
             } else if (request.cmd == "getUsername") {
@@ -313,7 +316,7 @@ async function setup() {
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin || sender.url);
                 bg.domainname = domainname;
-                if (logging) console.log("bg clicked: sending response", bg);
+                if (logging) console.log("bg clicked: sending response", isSuperPw(bg.superpw), bg.settings);
                 if (database.common.clearsuperpw) {
                     superpw = "";
                     if (logging) console.log("bg clear superpw", isSuperPw(superpw));
@@ -322,6 +325,8 @@ async function setup() {
                 await Promise.resolve(); // To match the awaits in the other branches
             } else if (request.onload) {
                 await onContentPageload(request, sender, sendResponse);
+                bg.superpw = superpw;
+                if (logging) console.log("bg onload", isSuperPw(superpw), bg.settings);
                 await persistMetadata(sendResponse);
                 sendResponse("persisted");
             } else {
@@ -337,12 +342,14 @@ async function setup() {
 setup();
 // sender argument for debugging
 async function getMetadata(request, _sender, sendResponse) {
-    if (logging) console.log("bg getMetadata", bg, request);
+    if (logging) console.log("bg getMetadata", isSuperPw(bg.superpw), bg.settings, request);
     let sitename = database.domains[request.domainname];
     if (sitename) {
         bg.settings = database.sites[sitename];
     } else {
         bg.settings = clone(defaultSettings);
+        bg.superpw = superpw;
+        if (logging) console.log("bg getMetadata", isSuperPw(superpw))
     }
     // Domain name comes from popup, which is trusted not to spoof it
     bg.settings.domainname = request.domainname;
@@ -356,17 +363,17 @@ async function getMetadata(request, _sender, sendResponse) {
     let savedData = s.savedData || {};
     if (logging) console.log("bg got saved data", s);
     if (s && Object.keys(s).length > 0) savedData = s.savedData;
-    pwcount = savedData[activetab.url] || {};
+    pwcount = savedData[activetab.url] || 0;
     if (logging) console.log("bg got saved data for", activetab.url, savedData[activetab.url]);
     bg.pwcount = pwcount;
     domainname = getdomainname(activetab.url);
     if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
-    if (logging) console.log("bg sending metadata", bg, db);
+    if (logging) console.log("bg sending metadata", isSuperPw(bg.superpw), bg.settings, db);
     sendResponse({"test" : testMode, "superpw": superpw || "", "pwcount": pwcount, "bg": bg, "database": db});
 }
 // sender argument for debugging
 async function onContentPageload(request, sender, sendResponse) {
-    if (logging) console.log("bg onContentPageLoad", bg, request, sender);
+    if (logging) console.log("bg onContentPageLoad", isSuperPw(bg.superpw), bg.settings, request, sender);
     activetab = sender.tab;
     pwcount = request.count;
     // Save data that service worker needs after it restarts
@@ -411,7 +418,7 @@ async function onContentPageload(request, sender, sendResponse) {
     });
 }
 async function persistMetadata(sendResponse) {
-    if (logging) console.log("bg persistMetadata", bg, database);
+    if (logging) console.log("bg persistMetadata", isSuperPw(bg.superpw), bg.settings, database);
     superpw = bg.superpw;
     await chrome.storage.session.set({"superpw": superpw});
     let db = clone(database);
@@ -764,8 +771,9 @@ async function retrieved(callback) {
     }
     if (activetab) protocol = getprotocol(activetab.url);
     if (!bg.settings) bg.settings = settings; 
+    if (logging) console.log("bg retrieved", isSuperPw(superpw));
     bg.superpw = superpw || "";
-    if (logging) console.log("bg leaving retrieived", bg, database);
+    if (logging) console.log("bg leaving retrieived", isSuperPw(bg.superpw), bg.settings, database);
     await callback();
 }
 function bgsettings(domainname) {

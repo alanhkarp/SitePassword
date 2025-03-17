@@ -271,6 +271,7 @@ export async function getsettings() {
             "domainname": domainname,
             "activetab": activetab
         });
+        response.duplicate; // Force an error if response is null
     } catch (error) {
         console.error("Error getting metadata:", error);
     }
@@ -1050,6 +1051,7 @@ $forgetbutton.onclick = async function () {
     $sitename.value = "";
     $username.value = "";
     let superpw = bg.superpw;
+    if (logging) console.log("popup forgetbuttononclick", isSuperPw(superpw));
     bg = clone(bgDefault);
     bg.superpw = superpw;
     if (logging) console.log("popup forgetbutton sending forget", list);
