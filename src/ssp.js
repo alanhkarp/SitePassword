@@ -300,6 +300,7 @@ export async function getsettings() {
         bg.settings.sitename = "";
     }
     $superpw.value = response.superpw || "";
+    bg.superpw = response.superpw || "";
     await init();
     if (logging) console.log("popup got metadata", bg, database);
     if (!testMode && response.test) { // Only run tests once
