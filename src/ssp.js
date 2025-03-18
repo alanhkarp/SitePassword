@@ -681,6 +681,7 @@ $sitepw.onblur = async function (e) {
     bg.settings.xor = xorStrings(provided, computed);
     if (logging) console.log("popup sitepw onblur", bg.settings.pwlength);
     saveSettings = true;
+    $mainpanel.onmouseleave(e);
     if (resolvers.sitepwblurResolver) resolvers.sitepwblurResolver("sitepwblurPromise"); 
 }
 $sitepw.onkeyup = function () {
@@ -1353,10 +1354,10 @@ async function handlekeyupnopw(event, element) {
     bg.settings[element] = get(element).value;
     $mainpanel.onmouseleave(event); // Force save while typing
 }
-
 async function handlekeyup(event, element) {
     await handleblur(event, element);
 }
+let delay;
 async function handleblur(event, element) {
     if (element === "superpw") {
         bg.superpw = get(element).value;
@@ -1382,7 +1383,13 @@ async function handleblur(event, element) {
             if (logging) console.error("popup handleblur error", error);
         }
     }
-    $mainpanel.onmouseleave(event); // So it runs in the same turn
+    // If I handle every keystroke, the database gets updated while you type,
+    // which means you can get a phishing warning while typing a site name.
+    if (delay) clearTimeout(delay);
+    delay = setTimeout(() => {
+        if (logging) console.log(Date.now(), "popup handleblur timeout");
+        $mainpanel.onmouseleave(event); 
+    }, 1000);
 }
 async function handleclick(which) {
     bg.settings["allow" + which] = get("allow" + which + "checkbox").checked;
