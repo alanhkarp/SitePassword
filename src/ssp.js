@@ -845,24 +845,23 @@ $pwlength.onblur = async function (e) {
 $pwlength.onkeyup = async function(e) { 
     handlekeyupnopw(e, "pwlength");
 }; 
-$startwithletter.onclick = function () {
-    bg.settings.startwithletter = $startwithletter.checked;
-    ask2generate();
+$startwithletter.onclick = function (e) {
+    handleblur(e, "startwithletter");
 }
-$allowlowercheckbox.onclick = function () {
+$allowlowercheckbox.onclick = function (e) {
     restrictStartsWithLetter();
     $minlower.disabled = false;
-    handleclick("lower");
+    handleclick(e, "lower");
 }
-$allowuppercheckbox.onclick = function () {
+$allowuppercheckbox.onclick = function (e) {
     restrictStartsWithLetter();
-    handleclick("upper");
+    handleclick(e, "upper");
 }
-$allownumbercheckbox.onclick = function () {
-    handleclick("number");
+$allownumbercheckbox.onclick = function (e) {
+    handleclick(e, "number");
 }
-$allowspecialcheckbox.onclick = async function () {
-    await handleclick("special");
+$allowspecialcheckbox.onclick = async function (e) {
+    await handleclick(e, "special");
     if (resolvers.allowspecialclickResolver) resolvers.allowspecialclickResolver("allowspecialclickPromise");
 }
 $minlower.onmouseout = function (e) {
@@ -1011,7 +1010,7 @@ $sameacctbutton.onclick = async function (e) {
         clientX: 0, // You can set the coordinates as needed
         clientY: 0  // You can set the coordinates as needed
     });
-    $mainpanel.dispatchEvent(mouseleaveEvent);
+    $mainpanel.onmouseleave(e); // So it runs in the same turn
     if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
 }
 $nicknamebutton.onclick = function (e) {
@@ -1362,6 +1361,13 @@ let delay;
 async function handleblur(event, element) {
     if (element === "superpw") {
         bg.superpw = get(element).value;
+    } else if (element.startsWith("allow")) {
+        if (!(bg.settings.allowupper || bg.settings.allowlower)) {
+            bg.settings.startwithletter = false;
+            $startwithletter.checked = false;
+        }
+    } else if (element === "startwithletter") {
+        bg.settings.startwithletter = $startwithletter.checked;
     } else {
         bg.settings[element] = get(element).value;
     }
@@ -1379,7 +1385,7 @@ async function handleblur(event, element) {
     let readyForClick = !!(pw && $superpw.value && u);
     if (isUrlMatch(activetab.url)) {
         try {
-            await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": pw, "readyForClick": readyForClick });
+            await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": "", "readyForClick": readyForClick });
         } catch (error) {
             if (logging) console.error("popup handleblur error", error);
         }
@@ -1393,15 +1399,15 @@ async function handleblur(event, element) {
         $mainpanel.onmouseleave(event); 
     }, 1000);
 }
-async function handleclick(which) {
-    bg.settings["allow" + which] = get("allow" + which + "checkbox").checked;
+async function handleclick(e, which) {
+    let element = "allow" + which;
+    bg.settings[element] = get(element + "checkbox").checked;
     pwoptions([which]);
     if (!(bg.settings.allowupper || bg.settings.allowlower)) {
         bg.settings.startwithletter = false;
         $startwithletter.checked = false;
     }
-    bg.settings.characters = characters(bg.settings, database)
-    await ask2generate();
+    handleblur(e, element);
 }
 async function changePlaceholder() {
     let p = $superpw.value || "";
