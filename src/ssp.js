@@ -796,9 +796,8 @@ document.oncopy = function (e) {
     }
 }
 $settingssave.onclick = hidesettings;
-$providesitepw.onclick = async function () {
+$providesitepw.onclick = async function (e) {
     if (!($sitename.value && $username.value)) return;
-    bg.settings.providesitepw = $providesitepw.checked;
     if ($providesitepw.checked) {
         $sitepw.readOnly = false;
         $sitepw.value = "";
@@ -820,9 +819,8 @@ $providesitepw.onclick = async function () {
         $sitepw.placeholder = "Your site password";
         bg.settings.pwlength = database.common.defaultSettings.pwlength;
         $pwlength.value = bg.settings.pwlength;
-        await ask2generate();
-        defaultfocus();
     }
+    await handleblur(e, "providesitepw");
     if (resolvers.providesitepwResolver) resolvers.providesitepwResolver("providesitepwPromise");
 }
 $clearsuperpw.onclick = function () {
@@ -1368,6 +1366,8 @@ async function handleblur(event, element) {
         }
     } else if (element === "startwithletter") {
         bg.settings.startwithletter = $startwithletter.checked;
+    } else if (element === "providesitepw") {
+        bg.settings.providesitepw = $providesitepw.checked;
     } else {
         bg.settings[element] = get(element).value;
     }
