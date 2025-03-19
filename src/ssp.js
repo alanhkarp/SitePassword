@@ -1387,8 +1387,9 @@ async function handleblur(event, element) {
     // If I handle every keystroke, the database gets updated while you type,
     // which means you can get a phishing warning while typing a site name.
     if (delay) clearTimeout(delay);
-    delay = setTimeout(() => {
+    delay = setTimeout(async () => {
         if (logging) console.log(Date.now(), "popup handleblur timeout");
+        await changePlaceholder();
         $mainpanel.onmouseleave(event); 
     }, 1000);
 }
