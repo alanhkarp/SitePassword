@@ -965,6 +965,8 @@ $maininfo.onclick = function () {
 // Phishing buttons
 $cancelwarning.onclick = async function () {
     msgoff("phishing");
+    $domainnamemenuforget.onclick(); // So it runs in the same turn
+    $forgetbutton.onclick(); // So it runs in the same turn
     $domainname.value = "";
     $sitename.value = "";
     $username.value = "";
