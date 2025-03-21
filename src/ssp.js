@@ -963,17 +963,13 @@ $maininfo.onclick = function () {
     autoclose = false;
 }
 // Phishing buttons
-$cancelwarning.onclick = async function () {
+$cancelwarning.onclick = async function (e) {
     msgoff("phishing");
     $domainnamemenuforget.onclick(); // So it runs in the same turn
-    $forgetbutton.onclick(); // So it runs in the same turn
+    $forgetbutton.onclick(e); // So it runs in the same turn
     $domainname.value = "";
     $sitename.value = "";
     $username.value = "";
-    if (!testMode) {
-        await chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
-        window.close();
-    }
     sameacct = false;
     if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver("cancelwarningPromise");
 }
@@ -1040,7 +1036,7 @@ $suffixacceptbutton.onclick = async function (e) {
     if (resolvers.suffixacceptbuttonResolver) resolvers.suffixacceptbuttonResolver("suffixacceptbuttonPromise");
 }
 // Forget buttons
-$forgetbutton.onclick = async function () {
+$forgetbutton.onclick = async function (e) {
     if (logging) console.log("popup forgetbutton");
     let list = [];
     let children = $toforgetlist.children;

@@ -802,11 +802,13 @@ async function forget(toforget, rootFolder, _sender, sendResponse) {
                     try {
                         await chrome.bookmarks.remove(child.id);
                         if (isUrlMatch(activetab.url)) {
+                            if (logging) console.log("bg send clear message");
                             await chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
-                            if (logging) console.log("bg sent clear message");
                         }
                         if (logging) console.log("bg removed bookmark for", item);
-                        if (logging) console.log("bg sent clear message");
+                        if (!testMode) {
+                            await chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
+                        }
                     } catch (error) {
                         console.error("Error removing bookmark:", error);
                     }
