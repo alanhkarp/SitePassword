@@ -187,6 +187,7 @@ async function testProvidedpw() {
     // See if it remembers
     clearForm();
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
+    document.activeElement.blur(); // So sitepw field is not the active element
     await triggerEvent("blur", $domainname, "domainnameblurResolver");
     if (loggingProvide) console.log("testProvidedpw domainname blur", $sitepw.value, $providesitepw.checked);
     let test = $sitepw.value === expectedpw

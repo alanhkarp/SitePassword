@@ -111,6 +111,7 @@ if (logging) console.log("Version 3.0");
 let autoclose = true;
 let exporting = false;
 let sameacct = true;
+let showWarning = true;
 let activetab;
 let domainname;
 let mainPanelTimer;
@@ -130,9 +131,8 @@ export function restoreForTesting() {
     exporting = false;
     saveSettings = true;
     warningMsg = false;
-    messages.forEach(msg => msg.ison = false);
+    warnings.forEach(msg => msg.ison = false);
 }
-
 // I can't get the debugger statement to work unless I wait at least 1 second on Chrome
 let timeout = debugMode ? 1000 : 0;     
 setTimeout(() => {
@@ -146,7 +146,6 @@ if (logging) console.log("popup starting", database);
 // no longer work.  Fortunately, using the password requires a click
 // outside the popup window.  I can't use window.onblur because the 
 // popup window closes before the message it sends gets delivered.
-
 window.onload = async function () {
     if (!chrome.runtime?.id) {
         cleanup();
@@ -198,8 +197,8 @@ window.onload = async function () {
             pwcount = 1; // Assume failure means there is no content script so don't show warning
             if (logging) console.error("Error sending count message:", error);
         }
-        message("multiple", pwcount > 1);
-        message("zero", pwcount === 0);
+        warning("multiple", pwcount > 1);
+        warning("zero", pwcount === 0);
         changePlaceholder();
     }
     if (logging) console.log("popup tab", activetab);
@@ -227,7 +226,7 @@ async function init() {
     await fill();
     let protocol = activetab.url.split(":")[0];
     if (logging) console.log("popup testing for http", protocol);
-    message("http", protocol !== "https");
+    warning("http", protocol !== "https");
     if ($superpw.value) {
         setMeter("superpw");
         setMeter("sitepw");
@@ -324,6 +323,10 @@ $root.onmouseleave = function (event) {
         }, 750);
     }
 }
+$root.onmouseenter = function (e) {
+    $root.style.opacity = 1; 
+    clearTimeout(mainPanelTimer);
+}
 $mainpanel.onmouseleave = async function (event) {
     if (logging) console.log("popup mainpanel mouseleave", event);
     if (warningMsg) {   
@@ -361,7 +364,7 @@ $mainpanel.onmouseleave = async function (event) {
                 "sitename": sitename,
                 "clearsuperpw": get("clearsuperpw").checked,
                 "hidesitepw": get("hidesitepw").checked,
-                "safeSuffixes": database.common.safeSuffixes,
+                "safeSuffixes": database.common.safeSuffixes || {},
                 "sameacct": sameacct,
                 "bg": bg,
             });
@@ -374,10 +377,6 @@ $mainpanel.onmouseleave = async function (event) {
         if (logging) console.log("popup no bg.settings mouseleave resolve", resolvers);
         if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
     }
-}
-$root.onmouseenter = function (e) {
-    $root.style.opacity = 1; 
-    clearTimeout(mainPanelTimer);
 }
 $title.onclick = function () {
     window.open("https://sitepassword.info", "_blank", "noopener,noreferrer");
@@ -499,12 +498,14 @@ $sitename.onfocus = function (e) {
     setupdatalist(this, list);
 }
 $sitename.onkeyup = async function (e) {
+    showWarning = false;
     await handlekeyup(e, "sitename");
     clearDatalist("sitenames");
-    $sitename.onfocus();
+    $sitename.onfocus(); // So it runs in the same turn
     if (resolvers.sitenamekeyupResolver) resolvers.sitenamekeyupResolver("sitenamekeyupPromise");
 }
 $sitename.onblur = async function (e) {
+    showWarning = true;
     let sitename = $sitename.value;
     let d = await getPhishingDomain(sitename);
     if (!openPhishingWarning(d)) {
@@ -685,8 +686,8 @@ $sitepw.onblur = async function (e) {
     $mainpanel.onmouseleave(e);
     if (resolvers.sitepwblurResolver) resolvers.sitepwblurResolver("sitepwblurPromise"); 
 }
-$sitepw.onkeyup = function () {
-    $sitepw.onblur();
+$sitepw.onkeyup = function (e) {
+    $sitepw.onblur(e);
 }
 $sitepwmenu.onmouseleave = function (e) {
     menuOff("sitepw", e);
@@ -1197,6 +1198,7 @@ async function getPhishingDomain(sitename) {
     return phishing;
 }
 function openPhishingWarning(d) {
+    if (!showWarning) return false;
     if (!d) return false;
     let domainname = $domainname.value;
     let suffix = commonSuffix(d, domainname);
@@ -1353,7 +1355,6 @@ async function handlekeyupnopw(event, element) {
 async function handlekeyup(event, element) {
     await handleblur(event, element);
 }
-let delay;
 async function handleblur(event, element) {
     if (element === "superpw") {
         bg.superpw = get(element).value;
@@ -1388,14 +1389,9 @@ async function handleblur(event, element) {
             if (logging) console.error("popup handleblur error", error);
         }
     }
-    // If I handle every keystroke, the database gets updated while you type,
-    // which means you can get a phishing warning while typing a site name.
-    if (delay) clearTimeout(delay);
-    delay = setTimeout(async () => {
-        if (logging) console.log(Date.now(), "popup handleblur timeout");
-        await changePlaceholder();
-        $mainpanel.onmouseleave(event); 
-    }, 1000);
+    if (logging) console.log(Date.now(), "popup handleblur timeout");
+    await changePlaceholder();
+    await $mainpanel.onmouseleave(event); 
 }
 async function handleclick(e, which) {
     let element = "allow" + which;
@@ -1470,12 +1466,12 @@ async function fill() {
     }
     if ($providesitepw.checked && $superpw.value && $sitename.value && $username.value) {
         $sitepw.readOnly = false;
-        $sitepw.placeholder = "Enter your super password";
+        $sitepw.placeholder = "Enter your account password";
         $sitepw.style.backgroundColor = "white";
         $superpw.focus();
     } else {
         $sitepw.readOnly = true;
-        $sitepw.placeholder = "Your site password";
+        $sitepw.placeholder = "Your account password";
         $sitepw.style.backgroundColor = "rgb(136, 204, 255, 20%)";
         defaultfocus();
     }
@@ -1600,7 +1596,7 @@ async function exportPasswords() {
     } catch (e) {
         alert("Export error: Close SitePassword and try again.");
         console.log("popup exportPasswords error", e);
-        exportbutton.innerText = "Export passwords";
+        $exportbutton.innerText = "Export passwords";
         exporting = false;
     }
 }
@@ -1773,7 +1769,7 @@ function clone(object) {
     return JSON.parse(JSON.stringify(object))
 }
 // Messages in priority order high to low
-var messages = [
+var warnings = [
     { name: "forget", ison: false, transient: false },
     { name: "phishing", ison: false, transient: false },
     { name: "suffix", ison: false, transient: false },
@@ -1784,18 +1780,19 @@ var messages = [
     { name: "multiple", ison: false, transient: false }
 ];
 function msgon(msgname) {
-    message(msgname, true);
+    warning(msgname, true);
     autoclose = false;
 }
 function msgoff(msgname) {
-    message(msgname, false);
+    warning(msgname, false);
     autoclose = true;
 }
 // Show only the highest priority message that is on
-function message(msgname, turnon) {
+function warning(msgname, turnon) {
+    if (turnon && !showWarning) return;
     var ison = false;
-    for (var i = 0; i < messages.length; i++) {
-        var msg = messages[i];
+    for (var i = 0; i < warnings.length; i++) {
+        var msg = warnings[i];
         if (msg.name == msgname) msg.ison = turnon;
         get(msg.name).style.display = msg.ison ? "block" : "none";
         if (ison) get(msg.name).style.display = "none";

@@ -258,7 +258,7 @@ async function setup() {
                 bg = request.bg;
                 database.common.clearsuperpw = request.clearsuperpw;
                 database.common.hidesitepw = request.hidesitepw;
-                database.common.safeSuffixes = request.safeSuffixes;
+                database.common.safeSuffixes = request.safeSuffixes || {};
                 if (!request.sameacct && bg.settings.sitename) {
                     database.domains[normalize(bg.settings.domainname)] = normalize(bg.settings.sitename);
                     database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
@@ -459,7 +459,7 @@ async function persistMetadata(sendResponse) {
     if (logging) console.log("bg root folder", rootFolder);
     // The databae is saved as one bookmark for the common settings
     // and a bookmark for each domain name.
-    let allchildren;
+    let allchildren = [];
     if (isSafari) {
         allchildren = Object.values(bkmksSafari);
         await Promise.resolve(); // To match the await in the other branch
