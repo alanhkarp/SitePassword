@@ -907,17 +907,23 @@ $minspecial.onkeyup = async function(e) {
 // generating different passwords.
 const alphanumerics = /[0-9A-Za-z]/g;
 $specials.onblur = async function(e) {
+    $specials.value = $specials.value
+        .replace(alphanumerics, '')  // eliminate alphanumerics and spaces
+        .replace(/\s+/g, "") // eliminate spaces
+        .replace(/[^ -~]/g, "") // eliminate non-printable characters
+        .substring(0, 12);  // limit to 12 specials
+    $specials.value = [...new Set($specials.value.split(""))].join(""); // eliminate duplicates
     if (!$specials.value) {
         alert("You must enter at least one special character.");
-        $specials.value = bg.settings.specials;
+        $specials.value = database.common.defaultSettings.specials;
         return;
     }
-    $specials.value = $specials.value
-        .replace(alphanumerics, '')  // eliminate alphanumerics
-        .substring(0, 12);  // limit to 12 specials
     bg.settings.specials = $specials.value;
     await handlekeyup(e, "specials");
     if (resolvers.specialsblurResolver) resolvers.specialsblurResolver("specialsblurPromise");
+}
+$specials.onmouseleave = async function(e) {
+    await $specials.onblur(e); // So it runs in the same turn
 }
 $specials.onkeyup = async function(e) { 
     handlekeyupnopw(e, "specials");

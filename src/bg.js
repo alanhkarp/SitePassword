@@ -844,11 +844,9 @@ function parseURL(url) {
         settings = JSON.parse(str.replace(/%22/g, '"').replace(/%20/g, " "));
     }
     if (settings.specials) { // For regular legacy bookmarks
-        settings.specials = array2string(settings.specials);
-    } else { // For common settings legacy bookmarks
-        settings.defaultSettings.specials = array2string(settings.defaultSettings.specials);
+        settings.specials = array2string(settings.specials); // To handle legacy bookmarks
     }
-    return settings; // To handle legacy bookmarks
+    return settings;
 }
 function identicalObjects(a, b) {
     if (!a || !b) return false;  // Assumes one or the other is set
