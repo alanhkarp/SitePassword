@@ -3,6 +3,7 @@ import { bgBaseDefault, config, databaseDefault, isSafari, isUrlMatch, webpage }
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 import { publicSuffixSet } from "./public_suffix_list.js";
+import { isSharedCredentials } from "./sharedCredentials.js";  
 // #region
     const $root = get("root");
     const $mainpanel = get("mainpanel");
@@ -1005,14 +1006,6 @@ $sameacctbutton.onclick = async function (e) {
     autoclose = false;
     saveSettings = true;
     sameacct = true;
-    // Invoke mouseleave event on $mainpanel
-    const mouseleaveEvent = new MouseEvent('mouseleave', {
-        view: window,
-        bubbles: true,
-        cancelable: true,
-        clientX: 0, // You can set the coordinates as needed
-        clientY: 0  // You can set the coordinates as needed
-    });
     $mainpanel.onmouseleave(e); // So it runs in the same turn
     if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
 }
@@ -1184,15 +1177,18 @@ function hideInstructions() {
 }
 // End of generic code for menus: other utility functions
 async function getPhishingDomain(sitename) {
+    let sitenamenorm = normalize(sitename);
     let domainname = $domainname.value;
-    // Can't be phishing if the domain name is in the database with this sitename,
-    if (!sitename || normalize(database.domains[domainname]) === normalize(sitename)) return "";
+    if (!domainname) return ""; // No domain name to check
+    // Can't be phishing if the domain name is in the database with tshis sitename,
+    if (!sitenamenorm || normalize(database.domains[domainname]) === sitenamenorm) return "";
+    let settings = database.sites[sitenamenorm];
+    if (!settings) return ""; // No settings for this sitename
     let domains = Object.keys(database.domains);
     let phishing = "";
     domains.forEach(function (d) {
-        if (normalize(database.domains[d]) === normalize(sitename)) {
+        if (normalize(database.domains[d]) === sitenamenorm) {
             if (d !== domainname) {
-                let settings = database.sites[normalize(sitename)];
                 if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
                     if (!phishing || settings.pwdomainname.length < phishing.length) phishing = settings.pwdomainname;
                 } else {
@@ -1204,6 +1200,10 @@ async function getPhishingDomain(sitename) {
     return phishing;
 }
 function openPhishingWarning(d) {
+    if (isSharedCredentials(d, $domainname.value)) {
+        $sameacctbutton.onclick(); // So it runs in the same turn
+        return false;
+    }
     if (!showWarning) return false;
     if (!d) return false;
     let domainname = $domainname.value;

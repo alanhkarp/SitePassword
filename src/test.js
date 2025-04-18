@@ -92,6 +92,7 @@ export async function runTests() {
         await testRememberForm();
         await testProvidedpw();
         await testPhishing();
+        await testSharedCredentials();
         await testForget();
         await testClearSuperpw();
         await testHideSitepw();
@@ -251,6 +252,29 @@ async function testPhishing() {
         passed++;
     } else {    
         console.warn("Failed: Phishing remembered same account");
+        failed++;
+    }
+}
+// Test shared credentials
+async function testSharedCredentials() {
+    await resetState();
+    await fillForm("qwerty", "disney.com", "Disney", "alan");
+    let expected = $sitepw.value;
+    restoreForTesting();
+    await fillForm("qwerty", "hulu.com", "Disney", "");
+    await triggerEvent("blur", $sitename, "sitenameblurResolver");
+    restoreForTesting();
+    await fillForm("qwerty", "hulu.com", "", "");
+    await triggerEvent("blur", $domainname, "domainnameblurResolver");
+    let test = $phishing.style.display === "none";
+    test = test && $username.value === "alan";
+    test = test && $sitepw.value === expected;
+    if (test) {
+        console.log("Passed: Shared credentials");
+        passed++;
+    }
+    else {
+        console.warn("Failed: Shared credentials");
         failed++;
     }
 }
@@ -682,16 +706,23 @@ function clearForm() {
 }
 async function fillForm(superpw, domainname, sitename, username) {
     if (loggingFill) console.log("fillForm", superpw, domainname, sitename, username);
+    clearForm();
     $domainname.value = domainname;
-    $superpw.value = superpw;
-    await triggerEvent("keyup", $superpw, "superpwkeyupResolver");
-    if (loggingFill) console.log("fillForm superpw");
-    $sitename.value = sitename;
-    await triggerEvent("keyup", $sitename, "sitenamekeyupResolver");
-    if (loggingFill) console.log("fillForm sitename");
-    $username.value = username;
-    await triggerEvent("keyup", $username, "usernamekeyupResolver");
-    if (loggingFill) console.log("fillForm username");
+    if (superpw) {
+        $superpw.value = superpw;
+        await triggerEvent("keyup", $superpw, "superpwkeyupResolver");
+        if (loggingFill) console.log("fillForm superpw");
+    }
+    if (sitename) {
+        $sitename.value = sitename;
+        await triggerEvent("keyup", $sitename, "sitenamekeyupResolver");
+        if (loggingFill) console.log("fillForm sitename");
+    }
+    if (username) {
+        $username.value = username;
+        await triggerEvent("keyup", $username, "usernamekeyupResolver");
+        if (loggingFill) console.log("fillForm username");
+    }
     if (loggingFill) console.log("fillForm", $domainname.value, $superpw.value, $sitename.value, $username.value);
 }
 async function forgetDomainname() {
@@ -722,7 +753,6 @@ async function phishingSetup() {
     if (loggingPhishing) console.log("phishingSetup state reset");
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
     if (loggingPhishing) console.log("phishingSetup mouseleave", $domainname.value, $sitename.value, $username.value);
-    if (isSafari) await chrome.storage.sync.clear();
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
     restoreForTesting();
     // if (loggingPhishing) console.log("phishingSetup domainname blur", $sitename.value, $username.value);

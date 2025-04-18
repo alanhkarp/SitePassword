@@ -810,7 +810,7 @@ async function forget(toforget, rootFolder, _sender, sendResponse) {
                             await chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
                         }
                     } catch (error) {
-                        console.error("Error removing bookmark:", error);
+                        console.error("Error removing bookmark", child.title + ":", error);
                     }
                 }
             }
