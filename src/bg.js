@@ -1,5 +1,6 @@
 'use strict';
 import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } from "./generate.js";
+import { isSharedCredentials } from "./sharedCredentials.js";
 
 // Only one of these can be true at a time; reload the extension after changing them.
 const testMode  = false; // Set to true to run the tests in test.js.
@@ -402,7 +403,17 @@ async function onContentPageload(request, sender, sendResponse) {
     if (sitename) {
         bg.settings = database.sites[sitename];
     } else {
-        bg.settings = clone(defaultSettings);
+        // Check for shared credentials
+        let sharedDomainname = Object.keys(database.domains).find((domain) => {
+            return isSharedCredentials(domain, domainname);
+        });
+        if (sharedDomainname) {
+            let sharedSitename = database.domains[sharedDomainname];
+            bg.settings = database.sites[sharedSitename];
+            database.domains[domainname] = sharedSitename;
+        } else {
+            bg.settings = clone(defaultSettings);
+        }
     }
     bg.settings.domainname = domainname;
     bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
