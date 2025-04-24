@@ -506,12 +506,20 @@ meter::-webkit-meter-bar {
 /*  const strengthColor = { 0: "black", 1: "red", 2: "yellow", 3: "orange", 4: "green" }  */
 /*  const strengthColor = { 0: "#bbb", 1: "#f06", 2: "#f90", 3: "#093", 4: "#036" }  */
 /* Webkit based browsers */
+meter::-webkit-meter-optimum-value,
+meter::-webkit-meter-suboptimum-value, 
+meter::-webkit-meter-even-less-good-value {
+  background: var(--meter-value-color) !important;
+}
 meter[value="0"]::-webkit-meter-optimum-value { background: #bbb; }
 meter[value="1"]::-webkit-meter-optimum-value { background: #f06; }
 meter[value="2"]::-webkit-meter-optimum-value { background: #f90; }
 meter[value="3"]::-webkit-meter-optimum-value { background: #093; }
 meter[value="4"]::-webkit-meter-optimum-value { background: #036; }
 /* Gecko based browsers */
+meter::-moz-meter-bar {
+  background: var(--meter-value-color) !important;
+}
 meter[value="0"]::-moz-meter-bar { background: #bbb; }
 meter[value="1"]::-moz-meter-bar { background: #f06; }
 meter[value="2"]::-moz-meter-bar { background: #f90; }
