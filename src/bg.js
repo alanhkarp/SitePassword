@@ -242,8 +242,8 @@ async function setup() {
         // Start with a new database in case something changed while the service worker stayed open
         database = clone(databaseDefault);
         bg = clone(bgDefault);
-        if (logging) console.log("bg got message", isSuperPw(superpw), request);
         bg.superpw = superpw;
+        if (logging) console.log("bg got message", isSuperPw(superpw), request);
         retrieveMetadata(sendResponse, request, sender, async () => {
             if (logging) console.log("bg listener back from retrieveMetadata", database);
             if (logging) console.log("bg got ssp", isSuperPw(superpw));
@@ -592,8 +592,6 @@ async function persistMetadata(sendResponse) {
 }
 // sender argument for debugging
 async function retrieveMetadata(sendResponse, request, sender, callback) {
-    database = clone(databaseDefault); // Start with an empty database
-    bg = clone(bgDefault); // and settings
     if (logging) console.log("bg find SSP bookmark folder", request);
     let folders = await getRootFolder(sendResponse);
     if (folders.length === 1) {
