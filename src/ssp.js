@@ -1280,7 +1280,6 @@ function setMeter(which) {
     let index = Math.floor(score/5);
     $meter.value = ($input.value && score) ? score : 1;
     $meter.style.setProperty("--meter-value-color", strengthColor[index]);
-    console.log("popup setMeter", getComputedStyle($meter, '::-webkit-meter-optimum-value').color)
     $meter.title = strengthText[index] + guessLabel(years);
     $input.style.color = strengthColor[index];
     function getScore(years) {
