@@ -158,7 +158,7 @@ window.onload = async function () {
     activetab = tabs[0];
     if (!isSupportedProtocol(activetab.url)) {
         window.close();
-        alert("SitePassword only supports HTTP and HTTPS domains.");
+        alert("SitePassword only supports HTTP and HTTPS pages.  Use sitepassword.info for other protocols.");
         return;
     }
     if (logging) console.log("popup check clipboard");

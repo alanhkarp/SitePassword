@@ -538,6 +538,14 @@ async function persistMetadata(sendResponse) {
         }
         if (suffixCounts[suffix] < 2) delete db.common.safeSuffixes[suffix];
     }
+    // Clean up unused site names
+    let usedSitenames = new Set(Object.values(db.domains));
+    let sitenames = Object.keys(db.sites);
+    for (sitename of sitenames) {
+        if (!usedSitenames.has(sitename)) {
+            delete db.sites[sitenames];
+        }
+    }
     // Persist changes to domain settings
     for (let i = 0; i < domainnames.length; i++) {
         let sitename = db.domains[domainnames[i]];
