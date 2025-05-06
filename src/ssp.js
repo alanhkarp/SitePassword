@@ -148,10 +148,19 @@ if (logging) console.log("popup starting", database);
 // outside the popup window.  I can't use window.onblur because the 
 // popup window closes before the message it sends gets delivered.
 window.onload = async function () {
-    if (!chrome.runtime?.id) {
-        cleanup();
+    let tabs;
+    try {
+        tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    } catch (error) {
+        console.error("Error querying active tab window onload:", error);
         return;
-    }; // Extension has been removed
+    }
+    activetab = tabs[0];
+    if (!isSupportedProtocol(activetab.url)) {
+        window.close();
+        alert("SitePassword only supports HTTP and HTTPS domains.");
+        return;
+    }
     if (logging) console.log("popup check clipboard");
     let v = await chrome.storage.local.get("onClipboard");
     if (v.onClipboard) {
@@ -177,14 +186,6 @@ window.onload = async function () {
         if (!chrome.bookmarks) element.classList.add("nodisplay");
     }
     if (logging) console.log("popup getting active tab");
-    let tabs;
-    try {
-        tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    } catch (error) {
-        console.error("Error querying active tab window onload:", error);
-        return;
-    }
-    activetab = tabs[0];
     // Get pwcount from content script because service worker might have forgotten it
     if (logging) console.log("popup", activetab.url, isUrlMatch(activetab.url));
     if (chrome.runtime?.id && isUrlMatch(activetab.url)) {
@@ -990,7 +991,7 @@ $sameacctbutton.onclick = async function (e) {
     let sitename = normalize($sitename.value);
     if (testMode) {
         bg.settings.domainname = domainname;
-        database.sites[sitename]["domainname"] = domainname;
+        database.sites[sitename].domainname = domainname;
     }
     let d = await getPhishingDomain(bg.settings.sitename);
     let suffix = commonSuffix(d, bg.settings.domainname);
@@ -1200,12 +1201,12 @@ async function getPhishingDomain(sitename) {
     return phishing;
 }
 function openPhishingWarning(d) {
+    if (!d) return false;
     if (isSharedCredentials(d, $domainname.value)) {
         $sameacctbutton.onclick(); // So it runs in the same turn
         return false;
     }
     if (!showWarning) return false;
-    if (!d) return false;
     let domainname = $domainname.value;
     let suffix = commonSuffix(d, domainname);
     if (database.common.safeSuffixes[suffix]) {
@@ -1774,6 +1775,12 @@ function get(element) {
 function clone(object) {
     return JSON.parse(JSON.stringify(object))
 }
+function isSupportedProtocol(v) {
+    if (!v) return false;
+    let protocol = v.split("://")[0];
+    if (protocol === "http" || protocol === "https") return true;
+    return false;
+ }
 // Messages in priority order high to low
 var warnings = [
     { name: "forget", ison: false, transient: false },

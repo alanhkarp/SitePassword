@@ -815,10 +815,7 @@ async function forget(toforget, rootFolder, _sender, sendResponse) {
                             await chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
                         }
                         if (logging) console.log("bg removed bookmark for", item);
-                        if (!testMode) {
-                            await chrome.tabs.update(activetab.id, { url: "chrome://newtab" });
-                        }
-                    } catch (error) {
+                   } catch (error) {
                         console.error("Error removing bookmark", child.title + ":", error);
                     }
                 }
