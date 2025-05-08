@@ -156,11 +156,6 @@ window.onload = async function () {
         return;
     }
     activetab = tabs[0];
-    if (!isSupportedProtocol(activetab.url)) {
-        window.close();
-        alert("SitePassword only supports HTTP and HTTPS pages.  Use sitepassword.info for other protocols.");
-        return;
-    }
     if (logging) console.log("popup check clipboard");
     let v = await chrome.storage.local.get("onClipboard");
     if (v.onClipboard) {
@@ -307,6 +302,10 @@ export async function getsettings() {
     if (!testMode && response.test) { // Only run tests once
         testMode = true;
         runTests();
+    } else if (!testMode && !isSupportedProtocol(activetab.url)) {
+        window.close();
+        alert("SitePassword only supports HTTP and HTTPS pages.  Use sitepassword.info for other protocols.");
+        return;
     }
 }
 //}
