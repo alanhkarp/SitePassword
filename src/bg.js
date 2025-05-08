@@ -5,7 +5,7 @@ import { isSharedCredentials } from "./sharedCredentials.js";
 // Only one of these can be true at a time; reload the extension after changing them.
 const testMode  = false; // Set to true to run the tests in test.js.
 const debugMode = false; // Set to true to run SitePassword with the debug bookmarks folder.
-const demoMode  = false; // Set to true to run the SitePassword demo with the demo bookmarks folder.
+const demoMode  = true; // Set to true to run the SitePassword demo with the demo bookmarks folder.
 
 const logging = false;
 const testLogging = false;
@@ -552,6 +552,7 @@ async function persistMetadata(sendResponse) {
         let settings = clone(db.sites[sitename]);
         settings.domainname = domainnames[i];
         settings.specials = array2string(settings.specials); // For legacy bookmarks
+        settings.defaultSettings = db.common.defaultSettings; // So I can use V3.0.12 with the new bookmarks
         let url = webpage + "?bkmk=ssp://" + stringifySettings(settings);
         let found = domains.find((item) => item.title === domainnames[i]);
         if (found) {
