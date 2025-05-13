@@ -353,7 +353,8 @@ async function getMetadata(request, _sender, sendResponse) {
         if (logging) console.log("bg getMetadata", isSuperPw(superpw))
     }
     // Domain name comes from popup, which is trusted not to spoof it
-    bg.settings.domainname = request.domainname;
+    bg.domainname = bg.domainname;
+    bg.settings.domainname = bg.domainname; // Leave here so I don't mess up legacy bookmarks
     activetab = request.activetab;
     if (logging) console.log("bg got active tab", activetab);
     // Don't lose database across async call
@@ -415,7 +416,9 @@ async function onContentPageload(request, sender, sendResponse) {
             bg.settings = clone(defaultSettings);
         }
     }
-    bg.settings.domainname = domainname;
+    bg.domainname = domainname;
+    bg.pwdomainname = getdomainname(sender.origin || sender.url);
+    bg.settings.domainname = domainname; // Leave here so I don't mess up legacy bookmarks
     bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
     let readyForClick = false;
     if (superpw && bg.settings.sitename && bg.settings.username) {
