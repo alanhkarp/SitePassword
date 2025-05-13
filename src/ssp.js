@@ -355,7 +355,7 @@ $mainpanel.onmouseleave = async function (event) {
         bg.settings.username = $username.value || "";
         if (bg.settings.sitename) {
             database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
-            database.domains[bg.settings.domainname] = bg.settings.sitename;
+            database.domains[bg.domainname] = bg.settings.sitename;
         }
         let sitename = $sitename.value;
         changePlaceholder();
@@ -994,7 +994,7 @@ $sameacctbutton.onclick = async function (e) {
         database.sites[sitename].domainname = domainname;
     }
     let d = await getPhishingDomain(bg.settings.sitename);
-    let suffix = commonSuffix(d, bg.settings.domainname);
+    let suffix = commonSuffix(d, bg.domainname);
     if (suffix && !database.common.safeSuffixes[suffix]) {
             database.common.safeSuffixes[suffix] = sitename;
     }
@@ -1463,7 +1463,7 @@ async function fill() {
     }
     $superpw.value = bg.superpw || "";
     $providesitepw.checked = bg.settings.providesitepw;
-    if (logging) console.log("popup fill with", bg.settings.domainname, isSuperPw(bg.superpw), bg.settings.sitename, bg.settings.username);
+    if (logging) console.log("popup fill with", bg.domainname, isSuperPw(bg.superpw), bg.settings.sitename, bg.settings.username);
     if ($superpw.value && $sitename.value && $username.value) {
         $providesitepw.disabled = false;
         $providesitepwlabel.style.opacity = 1.0;
