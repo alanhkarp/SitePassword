@@ -581,8 +581,8 @@ async function persistMetadata(sendResponse) {
         } else if (createBookmark) {
             createBookmark = false;
             if (bg.settings.sitename && 
-                (domainnames[i] === bg.settings.domainname) ||
-                (domainnames[i] === bg.settings.pwdomainname)) {
+                (domainnames[i] === bg.domainname) ||
+                (domainnames[i] === bg.pwdomainname)) {
                 let title = domainnames[i];
                 if (logging) console.log("bg creating bookmark for", title);
                 if (isSafari) {
