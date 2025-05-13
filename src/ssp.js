@@ -349,6 +349,7 @@ $mainpanel.onmouseleave = async function (event) {
     // window.onblur fires before I even have a chance to see the window, much less focus it
     if (bg && bg.settings) {
         bg.superpw = $superpw.value || "";
+        bg.domainname = $domainname.value || "";
         bg.settings.domainname = $domainname.value || "";
         bg.settings.sitename = $sitename.value || "";
         bg.settings.username = $username.value || "";
