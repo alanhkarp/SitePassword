@@ -450,7 +450,7 @@ async function testClearSuperpw() {
     await triggerEvent("click", $clearsuperpw, "clearsuperpwResolver");
     restoreForTesting();
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
-    let response = await chrome.runtime.sendMessage({"cmd": "getPassword"});
+    let response = await chrome.runtime.sendMessage({"cmd": "getPassword", "domainname": "alantheguru.alanhkarp.com"});
     await triggerEvent("blur", $domainname, "domainnameblurResolver");
     if (loggingClearsuperpw || logging) console.log("testClearSuperpw getPassword", response);
     let test = $superpw.value === "" && response === expectedpw;

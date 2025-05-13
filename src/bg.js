@@ -270,7 +270,8 @@ async function setup() {
                 sendResponse("persisted");
             } else if (request.cmd === "getPassword") {                
                 let domainname = getdomainname(sender.origin || sender.url);
-                if (testMode) domainname = "alantheguru.alanhkarp.com";
+                bg.domainname = domainname;
+                if (testMode) domainname = request.domainname;
                 bg.settings = bgsettings(domainname);
                 let p = await generatePassword(bg);
                 p = stringXorArray(p, bg.settings.xor);
@@ -441,12 +442,12 @@ async function persistMetadata(sendResponse) {
     rootFolder = found[0];
     let sitename = normalize(bg.settings.sitename);
     if (sitename) {
-        let oldsitename = db.domains[bg.settings.domainname];
+        let oldsitename = db.domains[bg.domainname];
         if ((!oldsitename) || sitename === oldsitename) {
-            db.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
-            if (!bg.settings.pwdomainname) bg.settings.pwdomainname = bg.settings.domainname;
-            if (bg.settings.pwdomainname !== bg.settings.domainname) {
-                db.domains[bg.settings.pwdomainname] = normalize(bg.settings.sitename);
+            db.domains[bg.domainname] = normalize(bg.settings.sitename);
+            if (!bg.pwdomainname) bg.pwdomainname = bg.domainname;
+            if (bg.pwdomainname !== bg.domainname) {
+                db.domains[bg.pwdomainname] = normalize(bg.sitename);
             }
             db.sites[sitename] = bg.settings;
         } else {
