@@ -1181,23 +1181,14 @@ async function getPhishingDomain(sitename) {
     let sitenamenorm = normalize(sitename);
     let domainname = $domainname.value;
     if (!domainname) return ""; // No domain name to check
-    // Can't be phishing if the domain name is in the database with tshis sitename,
+    // Can't be phishing if the domain name is in the database with this sitename,
     if (!sitenamenorm || normalize(database.domains[domainname]) === sitenamenorm) return "";
     let settings = database.sites[sitenamenorm];
     if (!settings) return ""; // No settings for this sitename
-    let domains = Object.keys(database.domains);
-    let phishing = "";
-    domains.forEach(function (d) {
-        if (normalize(database.domains[d]) === sitenamenorm) {
-            if (d !== domainname) {
-                if (settings.pwdomainname && settings.domainname !== settings.pwdomainname) {
-                    if (!phishing || settings.pwdomainname.length < phishing.length) phishing = settings.pwdomainname;
-                } else {
-                    if (!phishing || d.length < phishing.length) phishing = d;
-                }
-            }
-        }
-    });
+    // Return a list of all domain names in domains that have sitenamenorm as a value
+    let matches = Object.keys(database.domains).filter((d) => 
+        normalize(database.domains[d]) === sitenamenorm && d !== domainname);
+    let phishing = matches.length > 0 ? matches.reduce((a, b) => a[0].length <= b[0].length ? a : b, matches[0]) : "";
     return phishing;
 }
 function openPhishingWarning(d) {
