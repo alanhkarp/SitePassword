@@ -1415,7 +1415,12 @@ async function changePlaceholder() {
         }
     }
 }
+// A nice usability feature is to focus on the first field the user should fill in.
+// Unfortunately, that lets the user fill in the form without the mouse ever entering 
+// the popup.  Since I can't detect when the popup closes, those changes are lost. 
+// By not focusing on the first field, I force the user to click on the popup.
 function defaultfocus() {
+    return;
     if (!$username.value) $username.focus();
     if (!$sitename.value) $sitename.focus();
     if (!$superpw.value) $superpw.focus();
