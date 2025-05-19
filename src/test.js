@@ -259,10 +259,12 @@ async function testPhishing() {
 async function testSharedCredentials() {
     await resetState();
     await fillForm("qwerty", "disney.com", "Disney", "alan");
+    await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");  // $mainpanel.onmouseleave(); saves the settings
     let expected = $sitepw.value;
     restoreForTesting();
     await fillForm("qwerty", "hulu.com", "Disney", "");
     await triggerEvent("blur", $sitename, "sitenameblurResolver");
+    await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");  // $mainpanel.onmouseleave(); saves the settings
     restoreForTesting();
     await fillForm("qwerty", "hulu.com", "", "");
     await triggerEvent("blur", $domainname, "domainnameblurResolver");

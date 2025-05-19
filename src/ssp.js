@@ -112,7 +112,6 @@ if (logging) console.log("Version 3.0");
 let autoclose = true;
 let exporting = false;
 let sameacct = true;
-let showWarning = true;
 let activetab;
 let domainname;
 let mainPanelTimer;
@@ -120,7 +119,6 @@ const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 const defaultTitle = "SitePassword";
 
-let saveSettings = true;
 let warningMsg = false;
 const bgDefault = clone(bgBaseDefault);
 let bg = clone(bgDefault);
@@ -130,7 +128,6 @@ let bg = clone(bgDefault);
 export function restoreForTesting() {
     autoclose = true;
     exporting = false;
-    saveSettings = true;
     warningMsg = false;
     warnings.forEach(msg => msg.ison = false);
 }
@@ -328,20 +325,32 @@ $root.onmouseenter = function (e) {
     $root.style.opacity = 1; 
     clearTimeout(mainPanelTimer);
 }
+$mainpanel.onmouseenter = function (e) {
+    // Let the user type if the mouse reenters the popup
+    if (logging) console.log("popup mainpanel mouseenter", e);
+    $superpw.disabled = false;
+    $sitename.disabled = false;
+    $username.disabled = false;
+}
 $mainpanel.onmouseleave = async function (event) {
     if (logging) console.log("popup mainpanel mouseleave", event);
+    let element = event ? (event.pageX ? document.elementFromPoint(event.pageX || 0, event.pageY || 0) : null) : null;
+    // In caes the user tries to type when the mouse is outside the popup
+    if (!element) {
+        $superpw.disabled = true;
+        $sitename.disabled = true;
+        $username.disabled = true;
+    }
     if (warningMsg) {   
         autoclose = false;
     } 
     let phishingDomain = await getPhishingDomain($sitename.value);
     if (logging) console.log("popup mainpanel mouseleave", phishingDomain);
-    if (phishingDomain && saveSettings) openPhishingWarning(phishingDomain);
-    let element = event ? (event.pageX ? document.elementFromPoint(event.pageX || 0, event.pageY || 0) : null) : null;
+    if (phishingDomain) openPhishingWarning(phishingDomain);
     if (logging) console.log("popup onmouseleave", phishingDomain, exporting, element);
     // Don't persist if: phishing sites, exporting, the mouse is in the panel, or if event triggered by closing a help or instruction panel
-    if (phishingDomain || exporting || element || !saveSettings) {
+    if (phishingDomain || exporting || element) {
         if (logging) console.log("popup phishing mouseleave resolve mouseleaveResolver", phishingDomain, resolvers);
-        saveSettings = true;
         if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
         return;
     }
@@ -500,14 +509,12 @@ $sitename.onfocus = function (e) {
     setupdatalist(this, list);
 }
 $sitename.onkeyup = async function (e) {
-    showWarning = false;
     await handlekeyup(e, "sitename");
     clearDatalist("sitenames");
     $sitename.onfocus(); // So it runs in the same turn
     if (resolvers.sitenamekeyupResolver) resolvers.sitenamekeyupResolver("sitenamekeyupPromise");
 }
 $sitename.onblur = async function (e) {
-    showWarning = true;
     let sitename = $sitename.value;
     let d = await getPhishingDomain(sitename);
     if (!openPhishingWarning(d)) {
@@ -684,8 +691,6 @@ $sitepw.onblur = async function (e) {
     let computed = await ask2generate(bg)
     bg.settings.xor = xorStrings(provided, computed);
     if (logging) console.log("popup sitepw onblur", bg.settings.pwlength);
-    saveSettings = true;
-    $mainpanel.onmouseleave(e);
     if (resolvers.sitepwblurResolver) resolvers.sitepwblurResolver("sitepwblurPromise"); 
 }
 $sitepw.onkeyup = function (e) {
@@ -881,8 +886,7 @@ $minupper.onblur = function (e) {
     handleblur(e, "minupper");
 }
 $minupper.onkeyup = async function(e) { 
-    bg.settings.minupper = $minupper.value;
-    $mainpanel.onmouseleave(e); // Force save while typing
+    handlekeyupnopw(e, "minupper");
 }; 
 $minnumber.onmouseout = function (e) {
     handleblur(e, "minnumber");
@@ -974,12 +978,11 @@ $maininfo.onclick = function () {
 // Phishing buttons
 $cancelwarning.onclick = async function (e) {
     msgoff("phishing");
-    $domainnamemenuforget.onclick(); // So it runs in the same turn
-    $forgetbutton.onclick(e); // So it runs in the same turn
     $domainname.value = "";
     $sitename.value = "";
     $username.value = "";
     sameacct = false;
+    chrome.tabs.update(activetab.id, {url: "chrome://newtab"});
     if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver("cancelwarningPromise");
 }
 $sameacctbutton.onclick = async function (e) {
@@ -994,7 +997,7 @@ $sameacctbutton.onclick = async function (e) {
         database.sites[sitename].domainname = domainname;
     }
     let d = await getPhishingDomain(bg.settings.sitename);
-    let suffix = commonSuffix(d, bg.domainname);
+    let suffix = commonSuffix(d, domainname);
     if (suffix && !database.common.safeSuffixes[suffix]) {
             database.common.safeSuffixes[suffix] = sitename;
     }
@@ -1005,9 +1008,7 @@ $sameacctbutton.onclick = async function (e) {
     $username.value = bg.settings.username;
     await ask2generate();
     autoclose = false;
-    saveSettings = true;
     sameacct = true;
-    $mainpanel.onmouseleave(e); // So it runs in the same turn
     if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
 }
 $nicknamebutton.onclick = function (e) {
@@ -1017,7 +1018,6 @@ $nicknamebutton.onclick = function (e) {
     $sitename.focus();
     clearDatalist("sitenames");
     msgoff("phishing");
-    saveSettings = false;
     autoclose = false;
     sameacct = false;
 }
@@ -1028,7 +1028,6 @@ $suffixcancelbutton.onclick = function (e) {
     $sitename.disabled = false;
     $username.disabled = false;
     $sitename.focus();
-    saveSettings = false;
     autoclose = false;
 }
 $suffixacceptbutton.onclick = async function (e) {
@@ -1071,7 +1070,6 @@ $forgetcancelbutton.onclick = function () {
     msgoff("forget");
     defaultfocus();
     autoclose = false;
-    saveSettings = false;
 }
 // Handle external links in the instructions and help
 document.addEventListener('DOMContentLoaded', function () {
@@ -1137,7 +1135,6 @@ function helpItemOff(which) {
     $helptext.style.display = "none";
     get(which).style.display = "none";
     autoclose = false;
-    saveSettings = false;
 }
 function helpAllOff() {
     let helps = document.getElementsByName("help");
@@ -1197,7 +1194,6 @@ function openPhishingWarning(d) {
         $sameacctbutton.onclick(); // So it runs in the same turn
         return false;
     }
-    if (!showWarning) return false;
     let domainname = $domainname.value;
     let suffix = commonSuffix(d, domainname);
     if (database.common.safeSuffixes[suffix]) {
@@ -1348,7 +1344,6 @@ function setMeter(which) {
 // that might produce an error, but I do want to save the settings.
 async function handlekeyupnopw(event, element) {
     bg.settings[element] = get(element).value;
-    $mainpanel.onmouseleave(event); // Force save while typing
 }
 async function handlekeyup(event, element) {
     await handleblur(event, element);
@@ -1389,7 +1384,6 @@ async function handleblur(event, element) {
     }
     if (logging) console.log(Date.now(), "popup handleblur timeout");
     await changePlaceholder();
-    await $mainpanel.onmouseleave(event); 
 }
 async function handleclick(e, which) {
     let element = "allow" + which;
@@ -1521,7 +1515,6 @@ function hidesettings() {
     $settings.style.display = "none";
     let height = mainHeight();
     $main.style.height = height + "px";
-    saveSettings = false;
 }
 function pwoptions(options) {
     for (var x in options) {
@@ -1798,7 +1791,6 @@ function msgoff(msgname) {
 }
 // Show only the highest priority message that is on
 function warning(msgname, turnon) {
-    if (turnon && !showWarning) return;
     var ison = false;
     for (var i = 0; i < warnings.length; i++) {
         var msg = warnings[i];
@@ -1891,7 +1883,6 @@ function closeAllInstructions() {
         let section = instruction.id.replace("info", "");
         closeInstructionSection(section);
     }
-    saveSettings = false;
 }
 // Sometimes messages fail because the receiving side isn't quite ready.
 // That's most often the service worker as it's starting up.
