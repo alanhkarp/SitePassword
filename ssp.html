@@ -1432,7 +1432,7 @@ to change all occurrences if ![](images...) to <img> tags.
           <img id="logo" class="logo" src="images/icon128.png" />
           <img id="logopw" class="logo" src="images/icon128pw.png" style="display: none;">
           <span style="flex: 1"></span>
-          <button id="title" onclick="window.location='https://sitepassword.info'"
+          <button id="title" onclick="window.location='https://sitepassword.info'" tabindex="-1"
             title="Use https://sitepassword.info when you can't use the extension.">
             <span class="btn-txt" style="text-decoration: underline;">SitePassword.info</span>
           </button>
@@ -1445,7 +1445,7 @@ to change all occurrences if ![](images...) to <img> tags.
             Domain Name
           </label>
           <input id="domainname" class="fixed" style="background-color: rgb(136, 204, 255, 20%)" readonly="readonly"
-            type="text" title="Domain Name" value="" placeholder="Domain name" />
+            tabindex="-1" type="text" title="Domain Name" value="" placeholder="Domain name" />
           <div id="domainname3bluedots" class="icon inner-icon-1" 
             title=" Click for menu" style="display: block">
             <img src="images/3bluedots.png" class="dots">
@@ -1469,7 +1469,7 @@ to change all occurrences if ![](images...) to <img> tags.
             <meter max="20" id="superpw-strength-meter""></meter>
             Strength 
           </label>
-          <input id="superpw" class="fixed" type="password" autocomplete="off" value=""
+          <input id="superpw" class="fixed" type="password" autocomplete="off" value="" tabindex="-1"
             placeholder="A strong super password" title="Choose a strong super password" />
           <div id="superpw3bluedots" class="icon inner-icon-1" 
             title=" Click for menu" style="display: block">
@@ -1499,7 +1499,7 @@ to change all occurrences if ![](images...) to <img> tags.
           <label for="sitename" class="label">
             Account Nickname
           </label>
-          <input id="sitename" list="sitenames" class="sans" type="text" autocomplete="off"
+          <input id="sitename" list="sitenames" class="sans" type="text" autocomplete="off" tabindex="-1"
             title="A unique nickname you associate with this account.  For example, use the same nickname for www.example.com and login.example.com."
             value="" placeholder="A unique nickname for this account" />
           <div id="sitename3bluedots" class="icon inner-icon-1" 
@@ -1525,7 +1525,7 @@ to change all occurrences if ![](images...) to <img> tags.
         <div id="usernamerow" class="form-row">
           <label for="username" class="label">User Name
           </label>
-          <input id="username" list="usernames" class="sans" type="text" title="Your user-id for this account"
+          <input id="username" list="usernames" class="sans" type="text" title="Your user-id for this account" tabindex="-1"
             autocomplete="off" value="" placeholder="Your user-id for this account" />
           <div id="usernamecopied" class="inner-icon-2 copied nodisplay">copied!</div>
           <div id="usernamenotcopied" class="inner-icon-2 copied nodisplay">Not copied!</div>
@@ -1556,7 +1556,7 @@ to change all occurrences if ![](images...) to <img> tags.
             <meter max="20" id="sitepw-strength-meter""></meter>
             Strength 
           </label>
-          <input id="sitepw" class="fixed" style="background-color: rgb(136, 204, 255, 20%)" readonly="readonly" 
+          <input id="sitepw" class="fixed" style="background-color: rgb(136, 204, 255, 20%)" readonly="readonly" tabindex="-1"
             type="text" title="Your password for this account" autocomplete="off" value="" placeholder="Your account password" />
             <div id="sitepwcopied" class="inner-icon-2 copied nodisplay">copied!</div>
             <div id="sitepwnotcopied" class="inner-icon-2 copied nodisplay">Not copied!</div>

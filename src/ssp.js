@@ -331,6 +331,9 @@ $mainpanel.onmouseenter = function (e) {
     $superpw.disabled = false;
     $sitename.disabled = false;
     $username.disabled = false;
+    $superpw.tabIndex = 0;
+    $sitename.tabIndex = 0;
+    $username.tabIndex = 0;
 }
 $mainpanel.onmouseleave = async function (event) {
     if (logging) console.log("popup mainpanel mouseleave", event);
@@ -340,6 +343,9 @@ $mainpanel.onmouseleave = async function (event) {
         $superpw.disabled = true;
         $sitename.disabled = true;
         $username.disabled = true;
+        $superpw.tabIndex = -1;
+        $sitename.tabIndex = -1;
+        $username.tabIndex = -1;
     }
     if (warningMsg) {   
         autoclose = false;
