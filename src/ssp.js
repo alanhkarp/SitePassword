@@ -343,12 +343,13 @@ $mainpanel.onmouseleave = async function (event) {
     // window.onblur fires before I even have a chance to see the window, much less focus it
     if (bg && bg.settings) {
         bg.superpw = $superpw.value || "";
-        bg.settings.domainname = $domainname.value || "";
+        bg.settings.domainname = $domainname.value || ""; // Keep for compatibility with V3.0.12
+        bg.domainname = $domainname.value || "";
         bg.settings.sitename = $sitename.value || "";
         bg.settings.username = $username.value || "";
         if (bg.settings.sitename) {
             database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
-            database.domains[bg.settings.domainname] = bg.settings.sitename;
+            database.domains[bg.domainname] = bg.settings.sitename;
         }
         let sitename = $sitename.value;
         changePlaceholder();
@@ -977,7 +978,8 @@ $sameacctbutton.onclick = async function (e) {
     let domainname = $domainname.value;
     let sitename = normalize($sitename.value);
     if (testMode) {
-        bg.settings.domainname = domainname;
+        bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
+        bg.domainname = domainname;
         database.sites[sitename].domainname = domainname;
     }
     let d = await getPhishingDomain(bg.settings.sitename);
@@ -987,7 +989,7 @@ $sameacctbutton.onclick = async function (e) {
     }
     bg.settings = clone(database.sites[sitename]);
     bg.settings.sitename = $sitename.value;
-    if (testMode) bg.settings.domainname = $domainname.value;
+    if (testMode) bg.domainname = $domainname.value;
     database.domains[$domainname.value] = bg.settings.sitename;
     $username.value = bg.settings.username;
     await ask2generate();
@@ -1431,13 +1433,14 @@ async function fill() {
         if (!$username.value) $username.value = bg.settings.username;
         if (!$sitename.value) $sitename.value = bg.settings.sitename;
     } else {
-        bg.settings.domainname = normalize($domainname.value);
+        bg.settings.domainname = normalize($domainname.value); // Keep for compatibility with V3.0.12
+        bg.domainname = normalize($domainname.value);
         bg.settings.sitename = normalize($sitename.value);
         bg.settings.username = normalize($username.value);
     }
     $superpw.value = bg.superpw || "";
     $providesitepw.checked = bg.settings.providesitepw;
-    if (logging) console.log("popup fill with", bg.settings.domainname, isSuperPw(bg.superpw), bg.settings.sitename, bg.settings.username);
+    if (logging) console.log("popup fill with", bg.domainname, isSuperPw(bg.superpw), bg.settings.sitename, bg.settings.username);
     if ($superpw.value && $sitename.value && $username.value) {
         $providesitepw.disabled = false;
         $providesitepwlabel.style.opacity = 1.0;
