@@ -145,6 +145,8 @@ if (logging) console.log("popup starting", database);
 // outside the popup window.  I can't use window.onblur because the 
 // popup window closes before the message it sends gets delivered.
 window.onload = async function () {
+    if (timeout) await new Promise(resolve => setTimeout(resolve, 3000)); // 3 second delay
+    debugger;
     let tabs;
     try {
         tabs = await chrome.tabs.query({ active: true, currentWindow: true });
