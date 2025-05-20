@@ -261,7 +261,7 @@ async function setup() {
                 database.common.hidesitepw = request.hidesitepw;
                 database.common.safeSuffixes = request.safeSuffixes || {};
                 if (!request.sameacct && bg.settings.sitename) {
-                    database.domains[normalize(bg.domainname)] = normalize(bg.settings.sitename);
+                    database.domains[normalize(bg.settings.domainname)] = normalize(bg.settings.sitename);
                     database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
                 }
                 superpw = bg.superpw || "";
@@ -270,7 +270,7 @@ async function setup() {
                 sendResponse("persisted");
             } else if (request.cmd === "getPassword") {                
                 let domainname = getdomainname(sender.origin || sender.url);
-                bg.domainname = domainname;
+                bg.settings.domainname = domainname;
                 if (testMode) domainname = request.domainname;
                 bg.settings = bgsettings(domainname);
                 let p = await generatePassword(bg);
@@ -317,7 +317,7 @@ async function setup() {
                 sendResponse("forgot");
             } else if (request.clicked) {
                 domainname = getdomainname(sender.origin || sender.url);
-                bg.domainname = domainname;
+                bg.settings.domainname = domainname;
                 if (logging) console.log("bg clicked: sending response", isSuperPw(bg.superpw), bg.settings);
                 if (database.common.clearsuperpw) {
                     superpw = "";
@@ -354,8 +354,7 @@ async function getMetadata(request, _sender, sendResponse) {
         if (logging) console.log("bg getMetadata", isSuperPw(superpw))
     }
     // Domain name comes from popup, which is trusted not to spoof it
-    bg.domainname = bg.domainname;
-    bg.settings.domainname = bg.domainname; // Leave here so I don't mess up legacy bookmarks
+    bg.settings.domainname = request.domainname;
     activetab = request.activetab;
     if (logging) console.log("bg got active tab", activetab);
     // Don't lose database across async call
@@ -417,9 +416,7 @@ async function onContentPageload(request, sender, sendResponse) {
             bg.settings = clone(defaultSettings);
         }
     }
-    bg.domainname = domainname;
-    bg.pwdomainname = getdomainname(sender.origin || sender.url);
-    bg.settings.domainname = domainname; // Leave here so I don't mess up legacy bookmarks
+    bg.settings.domainname = domainname;
     bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
     let readyForClick = false;
     if (superpw && bg.settings.sitename && bg.settings.username) {
@@ -442,12 +439,12 @@ async function persistMetadata(sendResponse) {
     rootFolder = found[0];
     let sitename = normalize(bg.settings.sitename);
     if (sitename) {
-        let oldsitename = db.domains[bg.domainname];
+        let oldsitename = db.domains[bg.settings.domainname];
         if ((!oldsitename) || sitename === oldsitename) {
-            db.domains[bg.domainname] = normalize(bg.settings.sitename);
-            if (!bg.pwdomainname) bg.pwdomainname = bg.domainname;
-            if (bg.pwdomainname !== bg.domainname) {
-                db.domains[bg.pwdomainname] = normalize(bg.sitename);
+            db.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
+            if (!bg.settings.pwdomainname) bg.settings.pwdomainname = bg.settings.domainname;
+            if (bg.settings.pwdomainname !== bg.settings.domainname) {
+                db.domains[bg.settings.pwdomainname] = normalize(bg.settings.sitename);
             }
             db.sites[sitename] = bg.settings;
         } else {
@@ -581,8 +578,8 @@ async function persistMetadata(sendResponse) {
         } else if (createBookmark) {
             createBookmark = false;
             if (bg.settings.sitename && 
-                (domainnames[i] === bg.domainname) ||
-                (domainnames[i] === bg.pwdomainname)) {
+                (domainnames[i] === bg.settings.domainname) ||
+                (domainnames[i] === bg.settings.pwdomainname)) {
                 let title = domainnames[i];
                 if (logging) console.log("bg creating bookmark for", title);
                 if (isSafari) {

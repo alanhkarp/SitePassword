@@ -131,11 +131,6 @@ export function restoreForTesting() {
     warningMsg = false;
     warnings.forEach(msg => msg.ison = false);
 }
-// I can't get the debugger statement to work unless I wait at least 1 second on Chrome
-let timeout = debugMode ? 1000 : 0;     
-setTimeout(() => {
-    if (debugMode) debugger;
-}, timeout);
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
 let database = clone(databaseDefault);
@@ -145,7 +140,7 @@ if (logging) console.log("popup starting", database);
 // outside the popup window.  I can't use window.onblur because the 
 // popup window closes before the message it sends gets delivered.
 window.onload = async function () {
-    if (timeout) await new Promise(resolve => setTimeout(resolve, 3000)); // 3 second delay
+    if (debugMode) await new Promise(resolve => setTimeout(resolve, 3000)); // 3 second delay
     debugger;
     let tabs;
     try {
@@ -178,24 +173,6 @@ window.onload = async function () {
     let tohide = document.getElementsByName("hideifnobookmarks");
     for (let element of tohide) {
         if (!chrome.bookmarks) element.classList.add("nodisplay");
-    }
-    if (logging) console.log("popup getting active tab");
-    // Get pwcount from content script because service worker might have forgotten it
-    if (logging) console.log("popup", activetab.url, isUrlMatch(activetab.url));
-    if (chrome.runtime?.id && isUrlMatch(activetab.url)) {
-        if (logging) console.log("popup sending count message to content script");
-        let pwcount = 0;
-        try {
-            let result = await chrome.tabs.sendMessage(activetab.id, {"cmd": "count"});
-            if (logging) console.log("popup get count", result);
-            pwcount = result.pwcount;
-        } catch (error) {
-            pwcount = 1; // Assume failure means there is no content script so don't show warning
-            if (logging) console.error("Error sending count message:", error);
-        }
-        warning("multiple", pwcount > 1);
-        warning("zero", pwcount === 0);
-        changePlaceholder();
     }
     if (logging) console.log("popup tab", activetab);
     let protocol = activetab.url.split(":")[0];
@@ -366,13 +343,12 @@ $mainpanel.onmouseleave = async function (event) {
     // window.onblur fires before I even have a chance to see the window, much less focus it
     if (bg && bg.settings) {
         bg.superpw = $superpw.value || "";
-        bg.domainname = $domainname.value || "";
         bg.settings.domainname = $domainname.value || "";
         bg.settings.sitename = $sitename.value || "";
         bg.settings.username = $username.value || "";
         if (bg.settings.sitename) {
             database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
-            database.domains[bg.domainname] = bg.settings.sitename;
+            database.domains[bg.settings.domainname] = bg.settings.sitename;
         }
         let sitename = $sitename.value;
         changePlaceholder();
@@ -1461,7 +1437,7 @@ async function fill() {
     }
     $superpw.value = bg.superpw || "";
     $providesitepw.checked = bg.settings.providesitepw;
-    if (logging) console.log("popup fill with", bg.domainname, isSuperPw(bg.superpw), bg.settings.sitename, bg.settings.username);
+    if (logging) console.log("popup fill with", bg.settings.domainname, isSuperPw(bg.superpw), bg.settings.sitename, bg.settings.username);
     if ($superpw.value && $sitename.value && $username.value) {
         $providesitepw.disabled = false;
         $providesitepwlabel.style.opacity = 1.0;
