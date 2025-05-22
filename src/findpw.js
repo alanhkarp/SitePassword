@@ -534,11 +534,14 @@ function isHidden(field) {
     if (field.offsetParent === null && style.position !== 'fixed') {
         return true;
     }
-
     // Check if the element is covered by another element
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     const topElement = document.elementFromPoint(centerX, centerY);
+    // Checking if the element is covered by another element
+    // doesn't work for shadow DOM elements.
+    let pointerEvents = window.getComputedStyle(field).pointerEvents;
+    if (isInShadowRoot(field) && pointerEvents !== "none") return false;
     if (topElement && topElement !== field && !field.contains(topElement) && !topElement.contains(field)) {
         return true;
     }
@@ -552,6 +555,9 @@ function overlaps(field, label) {
     if (floc.top >= lloc.bottom) return false;
     if (floc.left >= lloc.right) return false;
     return true;
+}
+function isInShadowRoot(element) {
+    return element && element.getRootNode() instanceof ShadowRoot;
 }
 // Sometimes messages fail because the receiving side isn't quite ready.
 // That's most often the serice worker as it's starting up.
