@@ -1,27 +1,27 @@
 // Content script for ssp
 'use strict';
-var logging = false;
-var hideLabels = true; // Make it easy to turn off label hiding
-var clickSitePassword = "Click SitePassword";
-var clickSitePasswordTitle = "Click on the SitePassword icon"
-var clickHere = "Click here for password";
-var pasteHere = "Dbl-click or paste your password";
-var insertUsername = "Dbl-click for user name";
-var sitepw = "";
-var userid = "";
-var maxidfields = 0;
-var keyPressed = false;
-var dupNotified = false;
-var cleared = false; // Has password been cleared from the clipboars
-var cpi = { count: 0, pwfields: [], idfield: null };
-var readyForClick = false;
-var mutationObserver;
-var oldpwfield = null;
-var savedPlaceholder = "";
-var lasttry = setTimeout(() => { // I want to be able to cancel without it firing
+let logging = false;
+let hideLabels = true; // Make it easy to turn off label hiding
+let clickSitePassword = "Click SitePassword";
+let clickSitePasswordTitle = "Click on the SitePassword icon"
+let clickHere = "Click here for password";
+let pasteHere = "Dbl-click or paste your password";
+let insertUsername = "Dbl-click for user name";
+let sitepw = "";
+let userid = "";
+let maxidfields = 0;
+let keyPressed = false;
+let dupNotified = false;
+let cleared = false; // Has password been cleared from the clipboars
+let cpi = { count: 0, pwfields: [], idfield: null };
+let readyForClick = false;
+let mutationObserver;
+let oldpwfield = null;
+let savedPlaceholder = "";
+let lasttry = setTimeout(() => { // I want to be able to cancel without it firing
     if (logging) console.log("findpw initialize last try timer")
 }, 1000000);
-var observerOptions = {
+let observerOptions = {
     attributes: true,
     characterData: false,
     childList: true,
@@ -30,7 +30,7 @@ var observerOptions = {
     characterDataOldValue: false
 };
 if (logging) console.log(document.URL, Date.now(), "findpw starting", mutationObserver);
-var start = Date.now();
+let start = Date.now();
 if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw starting");
 // Most pages work if I start looking for password fields as soon as the basic HTML is loaded
 if (document.readyState !== "loading") {
@@ -53,7 +53,8 @@ window.onerror = function (message, source, lineno, colno, error) {
 }
 // Other pages add additional CSS at runtime that makes a password field visible
 // Modified from https://www.phpied.com/when-is-a-stylesheet-really-loaded/
-var cssnum = document.styleSheets.length;
+let cssnum = document.styleSheets.length;
+// Need var because you can only use let inside a block
 if (!startupInterval) var startupInterval = setInterval(() => {
     if (!document.hidden && document.styleSheets.length > cssnum) {
         cssnum = document.styleSheets.length;
@@ -400,15 +401,15 @@ async function countpwid() {
         cleanup();
         return;
     }; // Extension has been removed
-    var useridfield = null;
-    var visible = true;
-    var pwfields = [];
-    var found = -1;
-    var c = 0;
+    let useridfield = null;
+    let visible = true;
+    let pwfields = [];
+    let found = -1;
+    let c = 0;
     let maybeUsernameFields = [];
     let inputs = document.getElementsByTagName("input");
     if (cpi.pwfields.length === 0 && inputs.length === 0) inputs = searchShadowRoots(document.body);
-    for (var i = 0; i < inputs.length; i++) {
+    for (let i = 0; i < inputs.length; i++) {
         visible = !isHidden(inputs[i]);
         // I'm only interested in visible text and email fields, 
         // and splitting the condition makes it easier to debug
@@ -451,7 +452,7 @@ async function countpwid() {
     // the password with the userid.
     if (c > maxidfields) maxidfields = c;
     if (maxidfields == 1) {
-        for (var i = found - 1; i >= 0; i--) {
+        for (let i = found - 1; i >= 0; i--) {
             // Skip over invisible input fields above the password field
             visible = !isHidden(inputs[i]);
             if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {

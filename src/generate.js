@@ -7,8 +7,8 @@ const logging = false;
 
 export async function generatePassword(bg) {
     let settings = bg.settings;
-    var n = normalize(settings.sitename || "");
-    var u = normalize(settings.username || "");
+    let n = normalize(settings.sitename || "");
+    let u = normalize(settings.username || "");
     let m = bg.superpw;
     if (!m || !isConsistent(settings)) {
         return "";

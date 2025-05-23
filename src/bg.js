@@ -21,14 +21,14 @@ if (testMode) {
 } else if (demoMode) {
     sitedataBookmark = "SitePasswordDataDemo";
 }
-var superpw = "";
-var activetab;
-var domainname = "";
-var pwcount = 0;
-var protocol; // VSCode says this is unused, but it is in function retrieved() below.
-var rootFolder = {id: -1};
-var createBookmarksFolder = true;
-var createBookmark = true;
+let superpw = "";
+let activetab;
+let domainname = "";
+let pwcount = 0;
+let protocol; // VSCode says this is unused, but it is in function retrieved() below.
+let rootFolder = {id: -1};
+let createBookmarksFolder = true;
+let createBookmark = true;
 export const webpage = "https://sitepassword.info";
 export const config = {
     lower: "abcdefghijklmnopqrstuvwxyz",
@@ -80,9 +80,9 @@ Object.freeze(databaseDefault.common.safeSuffixes); // so the values can't be ch
 Object.freeze(databaseDefault.domains); // so the values can't be changed
 Object.freeze(databaseDefault.sites); // so the values can't be changed
 
-var database = clone(databaseDefault);
+let database = clone(databaseDefault);
 let bgDefault = clone(bgBaseDefault);
-var bg = clone(bgDefault);
+let bg = clone(bgDefault);
 
 export const isSafari = typeof chrome.bookmarks === "undefined";
 if (logging) console.log("bg isSafari", isSafari);

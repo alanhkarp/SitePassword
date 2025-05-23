@@ -1059,7 +1059,7 @@ $forgetcancelbutton.onclick = function () {
 }
 // Handle external links in the instructions and help
 document.addEventListener('DOMContentLoaded', function () {
-    var links = document.querySelectorAll('.external-link');
+    let links = document.querySelectorAll('.external-link');
     links.forEach(function(link) {
         link.addEventListener('click', function(event) {
             event.preventDefault();
@@ -1504,10 +1504,10 @@ function hidesettings() {
     $main.style.height = height + "px";
 }
 function pwoptions(options) {
-    for (var x in options) {
-        var which = options[x];
-        var allow = get("allow" + which);
-        var require = get("require" + which);
+    for (let x in options) {
+        let which = options[x];
+        let allow = get("allow" + which);
+        let require = get("require" + which);
         get("allow" + which + "checkbox").checked = bg.settings["allow" + which];
         if (bg.settings["allow" + which]) {
             allow.style.display = "none";
@@ -1584,8 +1584,8 @@ async function exportPasswords() {
     }
 }
 async function sitedataHTML() {
-    var domainnames = database.domains
-    var sorted = Object.keys(domainnames).sort(function (x, y) {
+    let domainnames = database.domains
+    let sorted = Object.keys(domainnames).sort(function (x, y) {
         if (x.toLowerCase() < y.toLowerCase()) return -1;
         if (x.toLowerCase() == y.toLowerCase()) return 0;
         return 1;
@@ -1758,7 +1758,7 @@ function isSupportedProtocol(v) {
     return false;
  }
 // Messages in priority order high to low
-var warnings = [
+let warnings = [
     { name: "forget", ison: false, transient: false },
     { name: "phishing", ison: false, transient: false },
     { name: "suffix", ison: false, transient: false },
@@ -1778,9 +1778,9 @@ function msgoff(msgname) {
 }
 // Show only the highest priority message that is on
 function warning(msgname, turnon) {
-    var ison = false;
-    for (var i = 0; i < warnings.length; i++) {
-        var msg = warnings[i];
+    let ison = false;
+    for (let i = 0; i < warnings.length; i++) {
+        let msg = warnings[i];
         if (msg.name == msgname) msg.ison = turnon;
         get(msg.name).style.display = msg.ison ? "block" : "none";
         if (ison) get(msg.name).style.display = "none";
