@@ -984,15 +984,6 @@ to change all occurrences if ![](images...) to <img> tags.
                 <b>You must turn on synchronization in your browser to use this feature.</b>
               </p>
             </div>
-            <div id="syncSafaridiv" style="display:none">
-              <p>
-                If you go to the same login page on a different machine that
-                you synchronize with,
-                you'll see your user name for the account filled in for you.
-                That's because SitePassword uses the browser to synchronize
-                your settings.
-              </p>
-            </div>
           </section>
           <section id="sharedinfo" name="instructions" class="instructionpaneltext">
             <svg id="openshared" class="accordian" style="display: block;" width="24px" height="24px"
@@ -1125,19 +1116,6 @@ to change all occurrences if ![](images...) to <img> tags.
                 web page for more information.
               </p>
             </div>
-            <div id="extensionSafaridiv" style="display: none;">
-              <p>
-                There will be times when you are on a device that doesn't have
-                SitePassword installed, such as at a friend's house or on your mobile
-                device. You can still get your passwords by going to
-                <a class="external-link" href="https://sitepassword.info">https://sitepassword.info</a> or
-                <a class="external-link" href="https://github.com/alanhkarp/SitePasswordWeb">the page on Github</a>.
-              </p>
-              <p>
-                See the instructions on the <a class="external-link" href="https://sitepassword.info">https://sitepassword.info</a>
-                web page for more information.
-              </p>
-            </div>
           </section>
           <section id="autofillinfo" name="instructions" class="instructionpaneltext">
             <svg id="openautofill" class="accordian" style="display: block;" width="24px" height="24px"
@@ -1210,22 +1188,26 @@ to change all occurrences if ![](images...) to <img> tags.
             <h3 id="#developers">Developers</h3>
             <div id="developersdiv" style="display: none">
               <p>
-                The SitePassword extension can be installed for Firefox, Safari, and most Chromium browsers using the code here.  
-                (Testing is sparse on Firefox and nearly non-existent on Safari.)  Simply rename the appropriate manifest file to 
-                manifest.json, and 
-                install the extension using the mechanism provided by your browser.
+                The SitePassword extension can be installed for Firefox most Chromium browsers using the code here.  
+                (Testing is sparse on Firefox.)  Simply rename the manifestFirefox.json file to 
+                manifest.json, and install the extension using the mechanism provided by your browser.
               </p>
               <p>
                 You may find a need to debug the extension.  The service worker, bg.js, and the content script, findpw.js, 
                 work normally, but the popup, ssp.js, won't stop at breakpoints hit early in its startup on Chrome.  
-                Setting the constant *debugMode* to true will make the popup stop at a *debugger* statement early in the load process.
+                Setting the constant <em>debugMode = true</em> in ssp.js to true will make the popup stop at a <em>debugger</em> 
+                statement early in the load process.  This setting also stops the popup from closing automatically when 
+                you mouse out of it.  This mode also uses a different bookmarks file, allowing you to debug without 
+                risking your real bookmarks.
               </p>
               <p>  
                 A number of tests are included with the distribution.  In keeping with the
                 philosophy of avoiding dependencies, the tests don't use any frameworks.  To run the tests, edit bg.js and set 
-                the constant *testMode* to true.  Then reload the extension, go to a new page, and Inspect the popup.  You'll 
-                get an alert that tests are running to make it harder for you to forget to turn off testing.  
-                Test results appear on the console.
+                the constant <em>testMode = true</em>.  Then reload the extension.  A page will open in a new window. 
+                Right click on the SitePassword icon and inspect the popup.  Test results appear on the console.
+              </p>
+              <p>
+                You can set <em>demoMode = true</em> to use a separate set of bookmarks for demos.
               </p>
             </div>
           </section>

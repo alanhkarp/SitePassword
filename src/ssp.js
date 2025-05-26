@@ -1,5 +1,5 @@
 'use strict';
-import { bgBaseDefault, config, databaseDefault, isSafari, isUrlMatch, webpage } from "./bg.js";
+import { bgBaseDefault, config, databaseDefault, isUrlMatch, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 import { publicSuffixSet } from "./public_suffix_list.js";
@@ -1818,23 +1818,7 @@ function instructionSetup() {
     if (logging) console.log("popup instructions", instructions);
     for (let instruction of instructions) {
         let section = instruction.id.replace("info", "");
-        if (section === "shared" && isSafari) {
-            $sharedinfo.style.display = "none";
-        } else if (section === "sync") {
-            if (!isSafari) {
-                instruction.onclick = function () { sectionClick("sync"); }
-            } else {
-                instruction.onclick = function () { sectionClick("syncSafari"); }
-            }
-        } else if (section === "extension") {
-            if (!isSafari) {
-                instruction.onclick = function () { sectionClick("extension"); }
-            } else {
-                instruction.onclick = function () { sectionClick("extensionSafari"); }
-            }
-        } else {
-            instruction.onclick = function () { sectionClick(section); }
-        }
+        instruction.onclick = function () { sectionClick(section); }
     }
 }
 function sectionClick(which) {
