@@ -1,27 +1,27 @@
 // Content script for ssp
 'use strict';
-var logging = false;
-var hideLabels = true; // Make it easy to turn off label hiding
-var clickSitePassword = "Click SitePassword";
-var clickSitePasswordTitle = "Click on the SitePassword icon"
-var clickHere = "Click here for password";
-var pasteHere = "Dbl-click or paste your password";
-var insertUsername = "Dbl-click for user name";
-var sitepw = "";
-var userid = "";
-var maxidfields = 0;
-var keyPressed = false;
-var dupNotified = false;
-var cleared = false; // Has password been cleared from the clipboars
-var cpi = { count: 0, pwfields: [], idfield: null };
-var readyForClick = false;
-var mutationObserver;
-var oldpwfield = null;
-var savedPlaceholder = "";
-var lasttry = setTimeout(() => { // I want to be able to cancel without it firing
+let logging = false;
+let hideLabels = true; // Make it easy to turn off label hiding
+let clickSitePassword = "Click SitePassword";
+let clickSitePasswordTitle = "Click on the SitePassword icon"
+let clickHere = "Click here for password";
+let pasteHere = "Dbl-click or paste your password";
+let insertUsername = "Dbl-click for user name";
+let sitepw = "";
+let userid = "";
+let maxidfields = 0;
+let keyPressed = false;
+let dupNotified = false;
+let cleared = false; // Has password been cleared from the clipboars
+let cpi = { count: 0, pwfields: [], idfield: null };
+let readyForClick = false;
+let mutationObserver;
+let oldpwfield = null;
+let savedPlaceholder = "";
+let lasttry = setTimeout(() => { // I want to be able to cancel without it firing
     if (logging) console.log("findpw initialize last try timer")
 }, 1000000);
-var observerOptions = {
+let observerOptions = {
     attributes: true,
     characterData: false,
     childList: true,
@@ -30,7 +30,7 @@ var observerOptions = {
     characterDataOldValue: false
 };
 if (logging) console.log(document.URL, Date.now(), "findpw starting", mutationObserver);
-var start = Date.now();
+let start = Date.now();
 if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw starting");
 // Most pages work if I start looking for password fields as soon as the basic HTML is loaded
 if (document.readyState !== "loading") {
@@ -49,12 +49,13 @@ window.onload = function () {
 }
 window.onerror = function (message, source, lineno, colno, error) {
     console.log(document.URL, Date.now() - start, "findpw error", message, source, lineno, colno, error);
-    return chrome.runtime.id ? true : false; // Don't suppress errors if the extension has not been removed
+    return chrome.runtime?.id ? true : false; // Don't suppress errors if the extension has not been removed
 }
 // Other pages add additional CSS at runtime that makes a password field visible
 // Modified from https://www.phpied.com/when-is-a-stylesheet-really-loaded/
-var cssnum = document.styleSheets.length;
-let startupInterval = setInterval(() => {
+let cssnum = document.styleSheets.length;
+// Need var because you can only use let inside a block
+if (!startupInterval) var startupInterval = setInterval(() => {
     if (!document.hidden && document.styleSheets.length > cssnum) {
         cssnum = document.styleSheets.length;
         if (logging) console.log(document.URL, Date.now() - start, "findpw css added", cssnum);
@@ -73,12 +74,26 @@ window.addEventListener("hashchange", async (_href) => {
 // means I'll miss a shadow root if it's added late.
 // From Domi at https://stackoverflow.com/questions/38701803/how-to-get-element-in-user-agent-shadow-root-with-javascript
 function searchShadowRoots(element) {
-    //return []; // Turned off because too much overhead for sites that have frequent changes, e.g.,
-    let shadows = Array.from(element.querySelectorAll('*'))
-        .map(el => el.shadowRoot).filter(Boolean);
-    let childResults = shadows.map(child => searchShadowRoots(child));
-    let result = Array.from(element.querySelectorAll("input"));
-    return result.concat(childResults).flat();
+    if (!chrome.runtime?.id) {
+        cleanup();
+        return;
+    }; // Extension has been removed
+    if (!element) return [];
+    if (logging) console.log("findpw searchShadowRoots", document.location.origin, element);
+    // This code results in an security policy error on some pages that doesn't hit
+    // the catch block because it's not a JavaScript error.
+    try {
+        let shadows = Array.from(element.querySelectorAll('*')).reduce((acc, el) => {
+            if (el.shadowRoot) acc.push(el.shadowRoot);
+            return acc;
+        }, []);
+        let childResults = shadows.map(child => searchShadowRoots(child));
+        let result = Array.from(element.querySelectorAll("input"));
+        return result.concat(childResults).flat();
+    } catch (error) {
+        console.log("Error searching shadow roots:", error);
+        return [];
+    }
 }
 // Tell the service worker that the user has copied something to the clipboard
 // so it can clear the icon
@@ -121,11 +136,11 @@ async function startup(sendPageInfo) {
         //     });
         // }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button
+        if (!chrome.runtime?.id || !document.body) {
+            cleanup();
+            return;
+        }; // Extension has been removed
         document.body.onclick = function () {
-            if (!chrome.runtime?.id) {
-                cleanup();
-                return;
-            }; // Extension has been removed
             if (logging) console.log("findpw click on body");
             setTimeout(() => {
                 if (logging) console.log("findpw body.onclick");
@@ -135,13 +150,14 @@ async function startup(sendPageInfo) {
         };
         mutationObserver = new MutationObserver(handleMutations);
         mutationObserver.observe(document.body, observerOptions);
-        chrome.runtime.onMessage.addListener(async function (request, _sender, sendResponse) {
+        chrome.runtime?.onMessage.addListener(async function (request, _sender, sendResponse) {
             if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
             readyForClick = request.readyForClick;
             let mutations = mutationObserver.takeRecords();
             cpi = await countpwid();
             switch (request.cmd) {
                 case "fillfields":
+                    if (logging) console.log(document.URL, Date.now() - start, "findpw fillfields", cpi, request);
                     userid = request.u;
                     fillfield(cpi.idfield, userid);
                     fillfield(cpi.pwfields[0], request.p);
@@ -163,9 +179,10 @@ async function startup(sendPageInfo) {
                     break;
                 case "count":
                     let pwdomain = document.location.hostname;
-                    let count = cpi.pwfields.length || 0;
-                    if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", count, pwdomain);
-                    sendResponse({ "pwcount": count, "pwdomain": pwdomain });
+                    let pwcount = cpi.pwfields.length || 0;
+                    let uid = cpi.idfield ? cpi.idfield.value : "";
+                    if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", pwcount, pwdomain);
+                    sendResponse({ "pwcount": pwcount, "id": uid, "pwdomain": pwdomain });
                     break;
                 case "clear":
                     if (cpi.idfield) cpi.idfield.value = "";
@@ -187,6 +204,7 @@ async function startup(sendPageInfo) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
     cpi = await countpwid();
     if (sendPageInfo) await sendpageinfo(cpi, false, true);
+    return true;
 }
 async function handleMutations(mutations) {
     if (!chrome.runtime?.id) {
@@ -199,11 +217,19 @@ async function handleMutations(mutations) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
     if (oldpwfield && oldpwfield === cpi.pwfields[0]) return; // Stop looking once I've found a password field
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from mutation observer");
-    cpi = await countpwid();
-    await sendpageinfo(cpi, false, true);
-    oldpwfield = cpi.pwfields[0];
-    let myMutations = mutationObserver.takeRecords();
-    if (logging) console.log("findpw handleMutations my mutations", myMutations);
+    // Without this delay, certain warnings from the page get reported as coming from isHidden().
+    // (See https://www.fastcompany.com/91277240/how-to-spot-fake-job-postings-and-avoid-scams.)
+    // The problem is that element style properities are evaluated lazily, and my code is the 
+    // first to do that after the mutation.  The delay gives the page a chance to check 
+    // the style properties before I do.  As a result, the warning gets reported as coming 
+    // from the page, not the content script.
+    setTimeout(async () => {
+        cpi = await countpwid();
+        await sendpageinfo(cpi, false, true);
+        oldpwfield = cpi.pwfields[0];
+        let myMutations = mutationObserver.takeRecords();
+        if (logging) console.log("findpw handleMutations my mutations", myMutations);
+    }, 10); // A delay of 0 didn't work, so 10 ms might not be long enough.
 }
 function fillfield(field, text) {
     // Don't change unless there is a different value to avoid mutationObserver cycling
@@ -239,12 +265,28 @@ async function sendpageinfo(cpi, clicked, onload) {
         return;
     }; // Extension has been removed
     // Only send page info if this tab has focus
-    if (!document.hasFocus()) return;
-    // No need to send page info if no password fields found.  The user will have to open
+    if (document.hasFocus() && !document.hidden) {
+        await sendpageinfoRest(cpi, clicked, onload);
+    } else {
+        const visHandler = document.addEventListener("visibilitychange", async () => {
+            if (document.hidden) return;
+            document.removeEventListener("visibilitychange", visHandler);
+            await sendpageinfoRest(cpi, clicked, onload);
+            return;
+        });
+    }
+}
+// Needed to avoid recursion in visibility change test
+async function sendpageinfoRest(cpi, clicked, onload) {
+    if (!chrome.runtime?.id) {
+        cleanup();
+        return;
+    }; // Extension has been removed
+   // No need to send page info if no password fields found.  The user will have to open
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length || 0);
-    let response;
+    let response = {};
     try {
         response = await retrySendMessage({
             "count": cpi.pwfields.length || 0,
@@ -253,6 +295,7 @@ async function sendpageinfo(cpi, clicked, onload) {
         });
     } catch (error) {
         console.error(document.URL, Date.now() - start, "findpw sendpageinfo error", error);
+        return;
     }
     if (response === "multiple") {
         alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
@@ -358,15 +401,15 @@ async function countpwid() {
         cleanup();
         return;
     }; // Extension has been removed
-    var useridfield = null;
-    var visible = true;
-    var pwfields = [];
-    var found = -1;
-    var c = 0;
+    let useridfield = null;
+    let visible = true;
+    let pwfields = [];
+    let found = -1;
+    let c = 0;
     let maybeUsernameFields = [];
     let inputs = document.getElementsByTagName("input");
     if (cpi.pwfields.length === 0 && inputs.length === 0) inputs = searchShadowRoots(document.body);
-    for (var i = 0; i < inputs.length; i++) {
+    for (let i = 0; i < inputs.length; i++) {
         visible = !isHidden(inputs[i]);
         // I'm only interested in visible text and email fields, 
         // and splitting the condition makes it easier to debug
@@ -409,7 +452,7 @@ async function countpwid() {
     // the password with the userid.
     if (c > maxidfields) maxidfields = c;
     if (maxidfields == 1) {
-        for (var i = found - 1; i >= 0; i--) {
+        for (let i = found - 1; i >= 0; i--) {
             // Skip over invisible input fields above the password field
             visible = !isHidden(inputs[i]);
             if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
@@ -427,13 +470,8 @@ async function countpwid() {
     // I already fill in the username if there are any password fields
     if (c === 0 && maybeUsernameFields.length === 1 && !maybeUsernameFields[0].value) {
         let maybeUsernameField = maybeUsernameFields[0];
-        // Using await spreads async all over the place
-        if (!chrome.runtime?.id) {
-            cleanup();
-            return;
-        }; // Extension has been removed
         // No need to send getUsername message if no userid field found.
-        if (document.hasFocus() && useridfield > 0) {
+        if (document.hasFocus() && maybeUsernameField && !useridfield) {
             let response = null;
             try {
                 response = await retrySendMessage({ "cmd": "getUsername" });
@@ -497,11 +535,14 @@ function isHidden(field) {
     if (field.offsetParent === null && style.position !== 'fixed') {
         return true;
     }
-
     // Check if the element is covered by another element
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     const topElement = document.elementFromPoint(centerX, centerY);
+    // Checking if the element is covered by another element
+    // doesn't work for shadow DOM elements.
+    let pointerEvents = window.getComputedStyle(field).pointerEvents;
+    if (isInShadowRoot(field) && pointerEvents !== "none") return false;
     if (topElement && topElement !== field && !field.contains(topElement) && !topElement.contains(field)) {
         return true;
     }
@@ -515,6 +556,9 @@ function overlaps(field, label) {
     if (floc.top >= lloc.bottom) return false;
     if (floc.left >= lloc.right) return false;
     return true;
+}
+function isInShadowRoot(element) {
+    return element && element.getRootNode() instanceof ShadowRoot;
 }
 // Sometimes messages fail because the receiving side isn't quite ready.
 // That's most often the serice worker as it's starting up.
@@ -531,11 +575,11 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
             const response = await chrome.runtime.sendMessage(message);
             return response; // Message sent successfully
         } catch (error) {
-            console.error(`Attempt ${attempt} failed:`, message);
+            console.log(`Attempt ${attempt} failed:`, message, error);
             if (attempt < retries) {
                 await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
             } else {
-                throw new Error(`Failed to send message after ${retries} attempts`);
+                throw new Error(`Failed to send message after ${retries} attempts`, error);
             }
         }
     }
@@ -555,7 +599,7 @@ function cleanup() {
     if (window.onhashchange) window.onhashchange = null;
     if (document.readyState !== "loading") document.onload = null;
     try {
-        cpi.idfield.onclick = null;
+        if (cpi && cpi.idfield) cpi.idfield.onclick = null;
         for (let pwfield of cpi.pwfields) {
             pwfield.onclick = null;
             pwfield.ondblclick = null;

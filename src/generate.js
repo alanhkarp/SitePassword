@@ -7,8 +7,8 @@ const logging = false;
 
 export async function generatePassword(bg) {
     let settings = bg.settings;
-    var n = normalize(settings.sitename || "");
-    var u = normalize(settings.username || "");
+    let n = normalize(settings.sitename || "");
+    let u = normalize(settings.username || "");
     let m = bg.superpw;
     if (!m || !isConsistent(settings)) {
         return "";
@@ -30,7 +30,7 @@ export async function generatePassword(bg) {
 }
 export function isSuperPw(superpw) {
     if (superpw) return "SuperPW";
-    else return "No SuperPW";
+    else return "NoSuperPW";
 }
 async function computePassword(superpw, salt, settings) {
     if (!(settings.allowupper || settings.allowlower || settings.allownumber)) {

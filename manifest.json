@@ -2,8 +2,8 @@
     "manifest_version": 3,
     "name": "Site Password",
     "short_name": "Site Password for Chrome",
-    "description": "Don't remember your passwords. Don't store them. Calculate them!",
-    "version": "3.0.13",
+    "description": "Don't remember your passwords. Don't store them.  Calculate them!",
+    "version": "3.1.0",
     "background": {
         "service_worker": "src/bg.js",
         "type": "module"
@@ -34,7 +34,6 @@
         "background",
         "bookmarks",
         "browsingData",
-        "notifications",
         "scripting",
         "storage",
         "tabs"

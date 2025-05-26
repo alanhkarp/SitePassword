@@ -258,9 +258,56 @@ button:enabled {
 }
 button:enabled:hover {
   background-color: rgb(136, 204, 255, 80%);
+  color: black
 }
 button:enabled:active {
   background-color: rgb(136, 204, 255, 100%);
+}
+.buttonsafe:enabled {
+  background-color: #21973f;
+  margin: auto;
+  color: white;
+  width: 100%;
+}
+.buttonsafe:enabled:hover {
+  background-color: rgb(33, 151, 63, 80%);
+  color: white;
+}
+.buttonwarning:enabled {
+  background-color: rgb(246, 206, 87, 100%);
+  margin: auto;
+  color: black;
+  width: 100%;
+}
+.buttonwarning:enabled:hover {
+  background-color: rgb(246, 206, 87, 80%);
+  color: black;
+}
+.buttondangerous:enabled {
+  background-color: rgb(213, 28, 36);
+  margin: auto;
+  color: white;
+  width: 100%;
+}
+.buttondangerous:enabled:hover {
+  background-color: rgb(213, 28, 36, 80%);
+  color: white;
+}
+.buttonretry:enabled {
+  background-color: rgb(25, 100, 220, 100%);
+  margin: auto;
+  color: white;
+  width: 100%;
+}
+.buttonretry:enabled:hover {
+  background-color: rgb(25, 100, 220, 80%);
+  color: white;
+}
+.buttonretry:disabled {
+  background-color: rgb(25, 100, 220, 60%);
+  margin: auto;
+  color: black;
+  width: 100%;
 }
 .checkbox-label {
   display: inline-block;
@@ -459,12 +506,20 @@ meter::-webkit-meter-bar {
 /*  const strengthColor = { 0: "black", 1: "red", 2: "yellow", 3: "orange", 4: "green" }  */
 /*  const strengthColor = { 0: "#bbb", 1: "#f06", 2: "#f90", 3: "#093", 4: "#036" }  */
 /* Webkit based browsers */
+meter::-webkit-meter-optimum-value,
+meter::-webkit-meter-suboptimum-value, 
+meter::-webkit-meter-even-less-good-value {
+  background: var(--meter-value-color) !important;
+}
 meter[value="0"]::-webkit-meter-optimum-value { background: #bbb; }
 meter[value="1"]::-webkit-meter-optimum-value { background: #f06; }
 meter[value="2"]::-webkit-meter-optimum-value { background: #f90; }
 meter[value="3"]::-webkit-meter-optimum-value { background: #093; }
 meter[value="4"]::-webkit-meter-optimum-value { background: #036; }
 /* Gecko based browsers */
+meter::-moz-meter-bar {
+  background: var(--meter-value-color) !important;
+}
 meter[value="0"]::-moz-meter-bar { background: #bbb; }
 meter[value="1"]::-moz-meter-bar { background: #f06; }
 meter[value="2"]::-moz-meter-bar { background: #f90; }
