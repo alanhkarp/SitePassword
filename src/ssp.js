@@ -278,13 +278,8 @@ export async function getsettings() {
     if (!testMode && response.test) { // Only run tests once
         testMode = true;
         runTests();
-    } else if (!testMode && !isSupportedProtocol(activetab.url)) {
-        window.close();
-        alert("SitePassword only supports HTTP and HTTPS pages.  Use sitepassword.info for other protocols.");
-        return;
     }
 }
-//}
 // This function sends a message to the service worker when the mouse leaves the 
 // outermost div on the window.  When the user clicks outside the popup, the window
 // loses focus and closes.  Any messages in flight will be lost.  That means there
