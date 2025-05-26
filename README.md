@@ -178,7 +178,7 @@ If you are worried that SitePassword might go away, you can download the source 
 
 ### Developers
 
-The SitePassword extension can be installed for Firefox, Safari, and most Chromium browsers using the code here. (Testing is sparse on Firefox and nearly non-existent on Safari.) Simply rename the appropriate manifest file to manifest.json, and install the extension using the mechanism provided by your browser.
+The SitePassword extension can be installed for Firefox and most Chromium browsers using the code here. (Testing is sparse on Firefox.) Simply rename the appropriate manifest file to manifest.json, and install the extension using the mechanism provided by your browser.
 
 You may find a need to debug the extension. The service worker, bg.js, and the content script, findpw.js, work normally, but the popup, ssp.js, won't stop at breakpoints hit early in its startup on Chrome. Setting the constant \*debugMode\* to true will make the popup stop at a \*debugger\* statement early in the load process.
 
