@@ -56,7 +56,7 @@ window.onerror = function (message, source, lineno, colno, error) {
 let cssnum = document.styleSheets.length;
 // Need var because you can only use let inside a block
 if (!startupInterval) var startupInterval = setInterval(() => {
-    if (!document.hidden && document.styleSheets.length > cssnum) {
+    if (!document.hidden && document.hasFocus && document.styleSheets.length > cssnum) {
         cssnum = document.styleSheets.length;
         if (logging) console.log(document.URL, Date.now() - start, "findpw css added", cssnum);
         // alert("findpw document startupInterval");
@@ -114,6 +114,7 @@ async function startup(sendPageInfo) {
         cleanup();
         return;
     }; // Extension has been removed
+    if (!document.hasFocus() || document.hidden) return; // Don't do anything if the page is not visible
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
     // However, someone may have hosted the page at a different URL.  Hence, the test.
     // Don't do anything if this is a SitePasswordWeb page
@@ -211,7 +212,7 @@ async function handleMutations(mutations) {
         cleanup();
         return;
     }; // Extension has been removed
-    if (document.hidden || !mutations[0]) return;
+    if (!document.hasFocus || document.hidden || !mutations[0]) return;
     clearTimeout(lasttry);
     // Find password field if added late
     if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
@@ -225,8 +226,8 @@ async function handleMutations(mutations) {
     // from the page, not the content script.
     setTimeout(async () => {
         cpi = await countpwid();
-        await sendpageinfo(cpi, false, true);
         oldpwfield = cpi.pwfields[0];
+        await sendpageinfo(cpi, false, true);
         let myMutations = mutationObserver.takeRecords();
         if (logging) console.log("findpw handleMutations my mutations", myMutations);
     }, 10); // A delay of 0 didn't work, so 10 ms might not be long enough.
@@ -282,7 +283,8 @@ async function sendpageinfoRest(cpi, clicked, onload) {
         cleanup();
         return;
     }; // Extension has been removed
-   // No need to send page info if no password fields found.  The user will have to open
+    if (!document.hasFocus || document.hidden) return; // Don't do anything if the page is not visible
+    // No need to send page info if no password fields found.  The user will have to open
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
     if (logging) console.log(document.URL, Date.now() - start, "findpw sending page info: pwcount = ", cpi.pwfields.length || 0);
