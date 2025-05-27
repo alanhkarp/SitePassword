@@ -205,7 +205,6 @@ async function init() {
         setMeter("sitepw");
     }
     $main.style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
-    defaultfocus();
     updateExportButton();
 }
 function setupdatalist(element, list) {
@@ -297,6 +296,7 @@ $root.onmouseleave = function (event) {
 }
 $root.onmouseenter = function (e) {
     $root.style.opacity = 1; 
+    defaultfocus();
     clearTimeout(mainPanelTimer);
 }
 $mainpanel.onmouseenter = function (e) {
@@ -1037,7 +1037,7 @@ $forgetbutton.onclick = async function (e) {
         let response = await retrySendMessage({"cmd": "forget", "toforget": list});
         if (logging) console.log("popup forget response", response);
         if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
-        $forgetcancelbutton.click();
+        $forgetcancelbutton.onclick(); // So it runs in the same turn
     } catch (error) {
         console.error("Error sending forget message:", error);
     }
@@ -1049,8 +1049,6 @@ $forgetcancelbutton.onclick = function () {
         $toforgetlist.removeChild($toforgetlist.firstChild);
     }
     msgoff("forget");
-    defaultfocus();
-    autoclose = false;
 }
 // Handle external links in the instructions and help
 document.addEventListener('DOMContentLoaded', function () {
@@ -1395,7 +1393,6 @@ async function changePlaceholder() {
 // the popup.  Since I can't detect when the popup closes, those changes are lost. 
 // By not focusing on the first field, I force the user to click on the popup.
 function defaultfocus() {
-    return;
     if (!$username.value) $username.focus();
     if (!$sitename.value) $sitename.focus();
     if (!$superpw.value) $superpw.focus();
@@ -1452,7 +1449,6 @@ async function fill() {
         $sitepw.readOnly = true;
         $sitepw.placeholder = "Your account password";
         $sitepw.style.backgroundColor = "rgb(136, 204, 255, 20%)";
-        defaultfocus();
     }
     $clearsuperpw.checked = database.common.clearsuperpw;
     $hidesitepw.checked =  database.common.hidesitepw;
