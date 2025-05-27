@@ -137,7 +137,7 @@ async function startup(sendPageInfo) {
         //     });
         // }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button
-        if (!chrome.runtime?.id || !document.body) {
+        if (!chrome.runtime?.id || !document.body || !chrome.runtime.onMessage) {
             cleanup();
             return;
         }; // Extension has been removed
@@ -611,7 +611,7 @@ function cleanup() {
     }
     if (startupInterval) clearInterval(startupInterval);
     if (lasttry) clearTimeout(lasttry);
-    chrome.runtime?.onMessage.removeListener();
+    if (chrome.runtime?.onMessage) chrome.runtime?.onMessage.removeListener();
 }   
 /* 
 This code is a major modification of the code released with the
