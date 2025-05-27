@@ -42,9 +42,9 @@ SitePassword cannot retrieve your super password. You should make sure it's some
 
 You refer to an account by assigning it a nickname that should be easy to remember, such as 'amazon' for amazon.com, but it doesn't have to be that simple. For example, you might want to append the year if you must change your password annually.
 
-Your settings are associated with the account nickname. If you change one of the settings, that change will apply for all domain names associated with that account. If you change a nickname, all domain names associatd with the old nickname will be associated with the new one.
+Your settings are associated with the account nickname. If you change one of the settings, that change will apply for all domain names associated with that account. If you change a nickname, all domain names associated with the old nickname will be associated with the new one.
 
-You [change an account password](#changing-a-site-password) by changing the nickname. All your settings will then be associated with the new nickname.
+You [change an account password](#changing-an-account-password) by changing the nickname. All your settings will then be associated with the new nickname.
 
 ### Your User Name
 
@@ -63,7 +63,7 @@ SitePassword will attempt to fill in the userid field of a login form. If you do
 3.  SitePassword incorrectly guessed the location of the userid field.
 4.  SitePassword couldn't find the userid field.
 
-In the last two cases, you'll have to fill in your userid manually, which you can do by copying it to the clipboard using the <img src="images/clipboard.png" style="width: 16px; height: 16px; vertical-align: middle;"> icon in the userid field.
+In the last two cases, you'll have to fill in your userid manually, which you can do by typing it in or copying it to the clipboard using the <img src="images/clipboard.png" style="width: 16px; height: 16px; vertical-align: middle;"> icon in the userid field.
 
 ### Your Account Password
 
@@ -85,7 +85,7 @@ The password you provide is encrypted with the computed account password as a ke
 
 ### Input Field Menus
 
-Each of the input fields has a menu that shows up when you mouse over (or tap on a touchscreen) the 3 dots (<img src="images/3bluedots.png" style="width: 16px; height: 16px; vertical-align: middle;">) in the right side of the field. Each field has a particular set of menu items. If an icon is grayed out, that function is not available for that field. For example, you can't show your super password if the field is empty.
+Each of the input fields has a menu that shows up when you mouse over (or tap on a touchscreen) the 3 dots (<img src="images/3bluedots.png" style="width: 6px; height: 16px; vertical-align: middle;">) in the right side of the field. Each field has a particular set of menu items. If an icon is grayed out, that function is not available for that field. For example, you can't show your super password if the field is empty.
 
 <img src="images/help.png" style="width: 16px; height: 16px; vertical-align: middle;">   Every field has a help option, which provides a brief summary of the information provided in these Instructions.
 
@@ -185,7 +185,7 @@ If you are worried that SitePassword might go away, you can download the source 
 
 The SitePassword extension can be installed for Firefox most Chromium browsers using the code here. (Testing is sparse on Firefox.) Simply rename the manifestFirefox.json file to manifest.json, and install the extension using the mechanism provided by your browser.
 
-You may find a need to debug the extension. The service worker, bg.js, and the content script, findpw.js, work normally, but on the Chrome browser the popup, ssp.js, won't stop at breakpoints hit early in its startup. Setting the constant _debugMode = true_ in ssp.js to true will make the popup stop at a _debugger_ statement early in the load process. This setting also stops the popup from closing automatically when you mouse out of it. This mode also uses a different bookmarks file, allowing you to debug without risking your real bookmarks.
+You may find a need to debug the extension. The service worker, bg.js, and the content script, findpw.js, work normally, but on the Chrome browser the popup, ssp.js, won't stop at breakpoints hit early in its startup. Setting the constant _debugMode = true_ in ssp.js will make the popup stop at a _debugger_ statement early in the load process. This setting also stops the popup from closing automatically when you mouse out of it. This mode also uses a different bookmarks file, allowing you to debug without risking your real bookmarks.
 
 A number of tests are included with the distribution. In keeping with the philosophy of avoiding dependencies, the tests don't use any frameworks. To run the tests, edit bg.js and set the constant _testMode = true_. Then reload the extension. A page will open in a new window. Right click on the SitePassword icon and inspect the popup. Test results appear on the console.
 
