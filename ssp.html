@@ -641,16 +641,16 @@ to change all occurrences if ![](images...) to <img> tags.
                 password field you want to fill in or paste your password from the clipboard.
               </p>
               <p>
-                SitePassword could generate a weak account password just by chance.
-                To let you know that has happened, it uses the same strength
-                meter that appears above your super password
-                to tell you how strong your account password is.  A tooltip tells you how long it 
-                would take a determined adversary to guess your account password.
-              </p>
-              <p>
                 When the generated password can't be used, say if you've been given one that
                 you're not allowed to change, SitePassword can remember one you provide, as
                 explained in <span id="provideref" name="sectionref"><a href="#providing-a-password">Providing a Password</a></span>.  
+              </p>
+              <p>
+                Short account passwords and those you create yourself might be weak.
+                SitePassword uses a strength
+                meter that appears above your accout password
+                to tell you how strong it is.  The meter's tooltip tells you how long it 
+                would take a determined adversary to guess it.
               </p>
               <p>
                 You can also get your passwords without the extension. Go to
@@ -790,7 +790,7 @@ to change all occurrences if ![](images...) to <img> tags.
                 Check the <em>Hide account password by default</em> button to hide it.
               </p>
               <p>
-                The next section controls how SitePassword computes your account password and is 
+                How SitePassword uses these settings to compute your account password is 
                 explained in <span id="acceptableref" name="sectionref"><a href="#computing-an-acceptable-password">Computing an Acceptable Password</a></span>.
               <p>
                 The <em>Download site data</em> button is explained in 
@@ -823,18 +823,14 @@ to change all occurrences if ![](images...) to <img> tags.
                 characters are allowed. 
               </p>
               <p>
-                If you run into a site that doesn't
-                accept the calculated password, click
-                <img src="images/gear.png" alt="forget" style="width: 16px; height: 16px; vertical-align: middle;"/>
+                SitePassword can calculate a password that is acceptable to most
+                sites with the default settings.  You can change these settings 
+                if you run into a site that doesn't accept the
+                calculated password. Click
+                <img src="images/gear.png" alt="settings" style="width: 16px; height: 16px; vertical-align: middle;"/>
                 and change the appropriate menu entries. SitePassword
                 was tested on hundreds of web sites to make sure it can almost always
                 compute a valid password.
-              </p>
-              <p>
-                The defaults 
-                were chosen because SitePassword can calculate a password that is acceptable to most
-                sites with them.  You can change these settings if you run into a site that doesn't accept the
-                calculated password. 
               </p>
               <p>
                 Although these settings produce valid passwords for most sites, you might feel more comfortable generating
@@ -867,6 +863,14 @@ to change all occurrences if ![](images...) to <img> tags.
                 your password, you could change the nickname to
                 <em>MyBank2</em>. Your new account password will be completely different
                 from the old one.
+              </p>
+              <p>
+                If you forget this trick for changing your account password, you can open 
+                the menu for the nickname or account password field and click the 
+                account icon 
+                <img src="images/account.png" alt="account" style="width: 16px; height: 16px; vertical-align: middle;"/>.  
+                You 
+                will see a change password form.
               </p>
             </div>
           </section>
@@ -940,16 +944,15 @@ to change all occurrences if ![](images...) to <img> tags.
                 to make sure it's a login page for the account you think it is.
               </p>
               <p>
-                Some sites use many different domain names for logging into the same 
-                account.  After the first big scary warning, you will see a less scary 
-                one.  It's telling you that the new domain name has the same suffix 
+                If a site uses more than two domain names for logging into your account, you will see a less scary 
+                warning after the first one.  It's telling you that the new domain name has the same suffix 
                 as domain names you said belong to this account. 
               </p> 
               <p>  
                 You still need to be 
                 careful.  Some domains provide subdomains for different services.  For
                 example, a college might host sites for students.  You wouldn't 
-                want RandomStudent.mycollege.edu to have your password for mycollege.edu.
+                want evilstudent.mycollege.edu to have your password for mycollege.edu.
               </p>
             </div>
           </section>
@@ -1194,7 +1197,7 @@ to change all occurrences if ![](images...) to <img> tags.
               </p>
               <p>
                 You may find a need to debug the extension.  The service worker, bg.js, and the content script, findpw.js, 
-                work normally, but the popup, ssp.js, won't stop at breakpoints hit early in its startup on Chrome.  
+                work normally, but on the Chrome browser the popup, ssp.js, won't stop at breakpoints hit early in its startup.  
                 Setting the constant <em>debugMode = true</em> in ssp.js to true will make the popup stop at a <em>debugger</em> 
                 statement early in the load process.  This setting also stops the popup from closing automatically when 
                 you mouse out of it.  This mode also uses a different bookmarks file, allowing you to debug without 
@@ -1273,7 +1276,9 @@ to change all occurrences if ![](images...) to <img> tags.
                   feedback for free is rare. 
                 </li>
                 <li>
-                  Dale Schumacker wrote most of the code for this web page and made many useful suggestions. 
+                  Dale Schumacker wrote most of the code for
+                  <a class="external-link" href="https://sitepassword.info">https://sitepassword.info</a> 
+                  and made many useful suggestions. 
                   His code has been changed enough that he is not responsible for any issues, but he deserves 
                   kudos for its overall design.  As an early user of SitePassword, Dale provide critical 
                   feedback.
