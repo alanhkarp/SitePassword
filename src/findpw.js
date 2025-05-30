@@ -56,7 +56,7 @@ window.onerror = function (message, source, lineno, colno, error) {
 let cssnum = document.styleSheets.length;
 // Need var because you can only use let inside a block
 if (!startupInterval) var startupInterval = setInterval(() => {
-    if (!document.hidden && document.styleSheets.length > cssnum) {
+    if (!document.hidden && document.hasFocus() && document.styleSheets.length > cssnum) {
         cssnum = document.styleSheets.length;
         if (logging) console.log(document.URL, Date.now() - start, "findpw css added", cssnum);
         // alert("findpw document startupInterval");
@@ -114,7 +114,7 @@ async function startup(sendPageInfo) {
         cleanup();
         return;
     }; // Extension has been removed
-    if (document.hidden) return; // Don't do anything if the page is not visible
+    if (document.hidden && document.hasFocus()) return; // Don't do anything if the page is not visible
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
     // However, someone may have hosted the page at a different URL.  Hence, the test.
     // Don't do anything if this is a SitePasswordWeb page
@@ -212,7 +212,7 @@ async function handleMutations(mutations) {
         cleanup();
         return;
     }; // Extension has been removed
-    if (document.hidden || !mutations[0]) return;
+    if (document.hidden && document.hasFocus() || !mutations[0]) return;
     clearTimeout(lasttry);
     // Find password field if added late
     if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
@@ -266,11 +266,11 @@ async function sendpageinfo(cpi, clicked, onload) {
         return;
     }; // Extension has been removed
     // Only send page info if this tab has focus
-    if (!document.hidden) {
+    if (!document.hidden && document.hasFocus()) {
         await sendpageinfoRest(cpi, clicked, onload);
     } else {
         const visHandler = document.addEventListener("visibilitychange", async () => {
-            if (document.hidden) return;
+            if (document.hidden && document.hasFocus()) return;
             document.removeEventListener("visibilitychange", visHandler);
             await sendpageinfoRest(cpi, clicked, onload);
             return;
@@ -283,7 +283,7 @@ async function sendpageinfoRest(cpi, clicked, onload) {
         cleanup();
         return;
     }; // Extension has been removed
-    if (document.hidden) return; // Don't do anything if the page is not visible
+    if (document.hidden && document.hasFocus()) return; // Don't do anything if the page is not visible
     // No need to send page info if no password fields found.  The user will have to open
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
@@ -472,9 +472,10 @@ async function countpwid() {
     // I already fill in the username if there are any password fields
     if (c === 0 && maybeUsernameFields.length === 1 && !maybeUsernameFields[0].value) {
         let maybeUsernameField = maybeUsernameFields[0];
-        // No need to send getUsername message if no userid field found.
-        if (!document.hidden && maybeUsernameField && !useridfield) {
+        // No need to send getUsername message if no potential userid field found.
+        if (!document.hidden && document.hasFocus() && maybeUsernameField && !useridfield) {
             let response = null;
+            console.log
             try {
                 response = await retrySendMessage({ "cmd": "getUsername" });
             } catch (error) {
@@ -576,7 +577,7 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
         cleanup();
         return;
     }; // Extension has been removed
-    if (document.hidden) return; // Don't send messages if the page is not visible
+    if (document.hidden && document.hasFocus()) return; // Don't send messages if the page is not visible
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
             const response = await chrome.runtime.sendMessage(message);
