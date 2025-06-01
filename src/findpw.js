@@ -212,11 +212,11 @@ async function handleMutations(mutations) {
         cleanup();
         return;
     }; // Extension has been removed
+    if (!mutationObserver) return; // No need to handle mutations if the observer has been removed
     if (document.hidden && document.hasFocus() || !mutations[0]) return;
     clearTimeout(lasttry);
     // Find password field if added late
     if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
-    if (oldpwfield && oldpwfield === cpi.pwfields[0]) return; // Stop looking once I've found a password field
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from mutation observer");
     // Without this delay, certain warnings from the page get reported as coming from isHidden().
     // (See https://www.fastcompany.com/91277240/how-to-spot-fake-job-postings-and-avoid-scams.)
@@ -226,6 +226,7 @@ async function handleMutations(mutations) {
     // from the page, not the content script.
     setTimeout(async () => {
         cpi = await countpwid();
+        if (!cpi) return; // Should never happen, but it does
         oldpwfield = cpi.pwfields[0];
         await sendpageinfo(cpi, false, true);
         let myMutations = mutationObserver.takeRecords();
@@ -299,6 +300,7 @@ async function sendpageinfoRest(cpi, clicked, onload) {
         console.error(document.URL, Date.now() - start, "findpw sendpageinfo error", error);
         return;
     }
+    if (!response) return; // No response means something went wrong
     if (response === "multiple") {
         alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
         return;
@@ -415,7 +417,7 @@ async function countpwid() {
         visible = !isHidden(inputs[i]);
         // I'm only interested in visible text and email fields, 
         // and splitting the condition makes it easier to debug
-        if (visible && inputs[i].type === "text" || inputs[i].type === "email") {
+        if (visible && (inputs[i].type === "text" || inputs[i].type === "email")) {
             maybeUsernameFields.push(inputs[i]);
         }
         if (visible && inputs[i].type && (inputs[i].type.toLowerCase() === "password")) {
@@ -468,33 +470,29 @@ async function countpwid() {
             }
         }
     }
-    // Allow dbl click to fill in the username
-    // I already fill in the username if there are any password fields
+    // Allow dbl click to fill in the username if there is exactly one text field,
+    // no password fields, and the text field is empty.
     if (c === 0 && maybeUsernameFields.length === 1 && !maybeUsernameFields[0].value) {
-        let maybeUsernameField = maybeUsernameFields[0];
-        // No need to send getUsername message if no potential userid field found.
-        if (!document.hidden && document.hasFocus() && maybeUsernameField && !useridfield) {
-            let response = null;
-            console.log
+        maybeUsernameFields[0].ondblclick = async function () {
+        if (!chrome.runtime?.id) {
+            cleanup();
+            return;
+        }; // Extension has been removed
+           let response;
             try {
+                if (logging) console.log(document.URL, Date.now() - start, "findpw getUsername", maybeUsernameFields[0]);
                 response = await retrySendMessage({ "cmd": "getUsername" });
             } catch (error) {
-                console.log(document.URL, Date.now() - start, "findpw getUsername error", error);
+                console.error(document.URL, Date.now() - start, "findpw getUsername error", error);
+                return;
             }
-            if (response) {
-                if (!maybeUsernameField.placeholder) maybeUsernameField.placeholder = insertUsername;
-                if (!maybeUsernameField.title) maybeUsernameField.title = insertUsername;
-                maybeUsernameField.ondblclick = async function () {
-                    let mutations = mutationObserver.takeRecords();
-                    fillfield(this, response);
-                    let myMutations = mutationObserver.takeRecords();
-                    if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, response, myMutations);
-                    await handleMutations(mutations);        
-                }
-            } else {
-                maybeUsernameField.ondblclick = null;
-            }
-        };
+            if (!response) return; // No response means something went wrong
+            let mutations = mutationObserver.takeRecords();
+            fillfield(this, response);
+            let myMutations = mutationObserver.takeRecords();
+            if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, response, myMutations);
+            await handleMutations(mutations);    
+        }    
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, useridfield);
     return { pwfields: pwfields, idfield: useridfield };
@@ -577,7 +575,7 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
         cleanup();
         return;
     }; // Extension has been removed
-    if (document.hidden && document.hasFocus()) return; // Don't send messages if the page is not visible
+    if (document.hidden && !document.hasFocus()) return; // Don't send messages if the page is not visible
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
             const response = await chrome.runtime.sendMessage(message);
