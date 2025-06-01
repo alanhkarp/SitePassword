@@ -74,10 +74,7 @@ window.addEventListener("hashchange", async (_href) => {
 // means I'll miss a shadow root if it's added late.
 // From Domi at https://stackoverflow.com/questions/38701803/how-to-get-element-in-user-agent-shadow-root-with-javascript
 function searchShadowRoots(element) {
-    if (!chrome.runtime?.id) {
-        cleanup();
-        return;
-    }; // Extension has been removed
+    if (extensionRemoved()) return []; // Don't do anything if the extension has been removed
     if (!element) return [];
     if (logging) console.log("findpw searchShadowRoots", document.location.origin, element);
     // This code results in an security policy error on some pages that doesn't hit
@@ -98,10 +95,7 @@ function searchShadowRoots(element) {
 // Tell the service worker that the user has copied something to the clipboard
 // so it can clear the icon
 document.oncopy = async function () {
-    if (!chrome.runtime?.id) {
-        cleanup();
-        return;
-    }; // Extension has been removed
+    if (extensionRemoved()) return; // Don't do anything if the extension has been removed
     try {
         await retrySendMessage({"cmd": "resetIcon"});
     } catch (error) {
@@ -110,10 +104,7 @@ document.oncopy = async function () {
     if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
 }
 async function startup(sendPageInfo) {
-    if (!chrome.runtime?.id) {
-        cleanup();
-        return;
-    }; // Extension has been removed
+    if (extensionRemoved()) return true; // Don't do anything if the extension has been removed
     if (document.hidden && document.hasFocus()) return; // Don't do anything if the page is not visible
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
     // However, someone may have hosted the page at a different URL.  Hence, the test.
@@ -137,10 +128,6 @@ async function startup(sendPageInfo) {
         //     });
         // }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button
-        if (!chrome.runtime?.id || !document.body || !chrome.runtime.onMessage) {
-            cleanup();
-            return;
-        }; // Extension has been removed
         document.body.onclick = function () {
             if (logging) console.log("findpw click on body");
             setTimeout(() => {
@@ -208,10 +195,7 @@ async function startup(sendPageInfo) {
     return true;
 }
 async function handleMutations(mutations) {
-    if (!chrome.runtime?.id) {
-        cleanup();
-        return;
-    }; // Extension has been removed
+    if (extensionRemoved()) return; // Don't do anything if the extension has been removed
     if (!mutationObserver) return; // No need to handle mutations if the observer has been removed
     if (document.hidden && document.hasFocus() || !mutations[0]) return;
     clearTimeout(lasttry);
@@ -262,10 +246,7 @@ function makeEvent(field, type) {
     field.dispatchEvent(event);
 }
 async function sendpageinfo(cpi, clicked, onload) {
-    if (!chrome.runtime?.id) {
-        cleanup();
-        return;
-    }; // Extension has been removed
+    if (extensionRemoved()) return; // Don't do anything if the extension has been removed
     // Only send page info if this tab has focus
     if (!document.hidden && document.hasFocus()) {
         await sendpageinfoRest(cpi, clicked, onload);
@@ -280,10 +261,7 @@ async function sendpageinfo(cpi, clicked, onload) {
 }
 // Needed to avoid recursion in visibility change test
 async function sendpageinfoRest(cpi, clicked, onload) {
-    if (!chrome.runtime?.id) {
-        cleanup();
-        return;
-    }; // Extension has been removed
+    if (extensionRemoved()) return; // Don't do anything if the extension has been removed
     if (document.hidden && document.hasFocus()) return; // Don't do anything if the page is not visible
     // No need to send page info if no password fields found.  The user will have to open
     // the popup, which will supply the needed data
@@ -375,10 +353,7 @@ async function setPlaceholder(userid) {
     }
 }
 async function pwfieldOnclick(event) {
-    if (!chrome.runtime?.id) {
-        cleanup();
-        return;
-    }; // Extension has been removed
+    if (extensionRemoved()) return; // Don't do anything if the extension has been removed
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
     if (!(this.placeholder === clickSitePassword)) {
         let response;
@@ -401,10 +376,7 @@ async function pwfieldOnclick(event) {
     }
 }
 async function countpwid() {
-    if (!chrome.runtime?.id) {
-        cleanup();
-        return;
-    }; // Extension has been removed
+    if (extensionRemoved()) return {pwfields: [], idfield: null}; // Don't do anything if the extension has been removed
     let useridfield = null;
     let visible = true;
     let pwfields = [];
@@ -474,10 +446,7 @@ async function countpwid() {
     // no password fields, and the text field is empty.
     if (c === 0 && maybeUsernameFields.length === 1 && !maybeUsernameFields[0].value) {
         maybeUsernameFields[0].ondblclick = async function () {
-        if (!chrome.runtime?.id) {
-            cleanup();
-            return;
-        }; // Extension has been removed
+            if (extensionRemoved()) return; // Don't do anything if the extension has been removed
            let response;
             try {
                 if (logging) console.log(document.URL, Date.now() - start, "findpw getUsername", maybeUsernameFields[0]);
@@ -571,10 +540,7 @@ function isInShadowRoot(element) {
  * @returns {Promise} - A promise that resolves when the message is successfully sent or rejects after all retries fail.
  */
 async function retrySendMessage(message, retries = 5, delay = 100) {
-    if (!chrome.runtime?.id) {
-        cleanup();
-        return;
-    }; // Extension has been removed
+    if (extensionRemoved()) return null; // Don't do anything if the extension has been removed
     if (document.hidden && !document.hasFocus()) return; // Don't send messages if the page is not visible
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
@@ -592,7 +558,13 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
 }
 // A content script keeps running even after it's replaced with exectuteScript.
 // This function cleans up all the event listeners, timers, and the mutation observer.
-function cleanup() {
+function extensionRemoved() {
+    try {
+        chrome.runtime.id
+        return false
+    } catch (error) {
+        // The extension has been removed
+    }
     if (logging) console.log(document.URL, Date.now() - start, "findpw cleanup");
     if (mutationObserver) {
         mutationObserver.disconnect();
@@ -616,6 +588,7 @@ function cleanup() {
     if (startupInterval) clearInterval(startupInterval);
     if (lasttry) clearTimeout(lasttry);
     if (chrome.runtime?.onMessage) chrome.runtime?.onMessage.removeListener();
+    return true; // Indicate that the extension has been removed
 }   
 /* 
 This code is a major modification of the code released with the
