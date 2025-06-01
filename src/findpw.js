@@ -364,6 +364,7 @@ async function pwfieldOnclick(event) {
             return;
         }
         sitepw = response;
+        console.log(document.URL, Date.now() - start, "findpw response", response);
         let mutations = mutationObserver.takeRecords();
         fillfield(this, response);
         let myMutations = mutationObserver.takeRecords();
@@ -559,12 +560,7 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
 // A content script keeps running even after it's replaced with exectuteScript.
 // This function cleans up all the event listeners, timers, and the mutation observer.
 function extensionRemoved() {
-    try {
-        chrome.runtime.id
-        return false
-    } catch (error) {
-        // The extension has been removed
-    }
+    if (chrome.runtime?.id !== undefined) return false; // The extension is still installed
     if (logging) console.log(document.URL, Date.now() - start, "findpw cleanup");
     if (mutationObserver) {
         mutationObserver.disconnect();
