@@ -140,16 +140,19 @@ if (logging) console.log("popup starting", database);
 // outside the popup window.  I can't use window.onblur because the 
 // popup window closes before the message it sends gets delivered.
 window.onload = async function () {
-    if (debugMode) await new Promise(resolve => setTimeout(resolve, 3000)); // 3 second delay
-    debugger;
-    let tabs;
+    // I need to set activetab before the await if I'm in debug mode.
+    // Otherwise, activetab is undefined when the popup opens.
     try {
-        tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        let tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        activetab = tabs[0];
     } catch (error) {
         console.error("Error querying active tab window onload:", error);
         return;
     }
-    activetab = tabs[0];
+    if (debugMode) {
+        await new Promise(resolve => setTimeout(resolve, 3000)); // 3 second delay
+        debugger;
+    }
     if (logging) console.log("popup check clipboard");
     let v = await chrome.storage.local.get("onClipboard");
     if (v.onClipboard) {

@@ -213,8 +213,11 @@ async function handleMutations(mutations) {
         if (!cpi) return; // Should never happen, but it does
         oldpwfield = cpi.pwfields[0];
         await sendpageinfo(cpi, false, true);
-        let myMutations = mutationObserver.takeRecords();
-        if (logging) console.log("findpw handleMutations my mutations", myMutations);
+        // The mutation observer can be null if the extension has been removed
+        if (mutationObserver) {
+            let myMutations = mutationObserver.takeRecords();
+            if (logging) console.log("findpw handleMutations my mutations", myMutations);
+        }
     }, 10); // A delay of 0 didn't work, so 10 ms might not be long enough.
 }
 function fillfield(field, text) {
