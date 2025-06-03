@@ -276,6 +276,14 @@ export async function getsettings() {
     $superpw.value = response.superpw || "";
     bg.superpw = response.superpw || "";
     await init();
+    let pw = ask2generate();
+    let u = $username.value || "";
+    let readyForClick = !!(pw && $superpw.value && u);
+    try {
+        await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": "", "readyForClick": readyForClick });
+    } catch (error) {
+        if (logging) console.error("popup handleblur error", error);
+    }
     if (logging) console.log("popup got metadata", bg, database);
     if (!testMode && response.test) { // Only run tests once
         testMode = true;
