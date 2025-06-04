@@ -35,17 +35,17 @@ if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw 
 // Most pages work if I start looking for password fields as soon as the basic HTML is loaded
 if (document.readyState !== "loading") {
     if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw running", document.readyState);
-    // alert("findpw document readyState");
-    startup(true);
+    // Don't startup until the DOM is ready
+    document.addEventListener("DOMContentLoaded", () => startup(true));
 } else {
     if (logging) console.log(document.URL, Date.now() - start, "findpw running document.onload");
-    document.onload = startup;
+    startup(true);
 }
 // A few other pages don't find the password fields until all downloads have completed
 window.onload = function () {
     if (logging) console.log(document.URL, Date.now() - start, "findpw running window.onload");
-    // alert("findpw document window.onload");
-    startup(false);
+    // Don't startup until the DOM is ready
+    document.addEventListener("DOMContentLoaded", () => startup(false));
 }
 window.onerror = function (message, source, lineno, colno, error) {
     console.log(document.URL, Date.now() - start, "findpw error", message, source, lineno, colno, error);
@@ -331,7 +331,7 @@ async function setPlaceholder(userid) {
         for (let i = 0; i < cpi.pwfields.length; i++) {
             if (cpi.pwfields.length > 1 ) {
                 cpi.pwfields[i].onclick = null;
-                cpi.pwfields[i].ondblclick = pwfieldOnclick;
+                if (!cpi.pwfields[i].ondblclick) cpi.pwfields[i].ondblclick = pwfieldOnclick;
             }
             if (!hasPlaceholder || cpi.pwfields.length === 1) {
                 cpi.pwfields[i].placeholder = placeholder;
@@ -447,8 +447,8 @@ async function countpwid() {
         }
     }
     // Allow dbl click to fill in the username if there is exactly one text field,
-    // no password fields, and the text field is empty.
-    if (c === 0 && maybeUsernameFields.length === 1 && !maybeUsernameFields[0].value) {
+    // no password fields, the text field is empty, and there is no ondblclick handler.
+    if (c === 0 && maybeUsernameFields.length === 1 && !maybeUsernameFields[0].value && !maybeUsernameFields[0].ondblclick) {
         maybeUsernameFields[0].ondblclick = async function () {
             if (extensionRemoved()) return; // Don't do anything if the extension has been removed
            let response;
