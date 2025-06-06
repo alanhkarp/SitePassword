@@ -276,11 +276,25 @@ export async function getsettings() {
     $superpw.value = response.superpw || "";
     bg.superpw = response.superpw || "";
     await init();
-    let pw = ask2generate();
+    let pw = await ask2generate();
     let u = $username.value || "";
     let readyForClick = !!(pw && $superpw.value && u);
     try {
-        await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": "", "readyForClick": readyForClick });
+        if (logging) console.log("popup sending update", activetab.url, u, readyForClick);
+        // Get all frames in the active tab
+        const frames = await chrome.webNavigation.getAllFrames({ tabId: activetab.id });
+        for (const frame of frames) {
+            try {
+                // Do not send a password in this message since it goes to all frames
+                await chrome.tabs.sendMessage(
+                    activetab.id,
+                    { "cmd": "update", "u": u, "p": "", "readyForClick": readyForClick },
+                    { frameId: frame.frameId }
+                );
+            } catch (err) {
+                if (logging) console.warn("popup: could not send message to frame", frame.frameId, err);
+            }
+        }
     } catch (error) {
         if (logging) console.error("popup handleblur error", error);
     }

@@ -42,7 +42,7 @@ let defaultSettings = {
     username: "",
     providesitepw: false,
     xor: new Array(12).fill(0),
-    pwlength: 12,
+    pwlength: 12, // Default password length
     domainname: "",     // Domain name from the tab
     pwdomainname: "",   // Domain name from iframe with password field
     startwithletter: true,
@@ -94,7 +94,7 @@ async function updateTab(tab) {
                 // The following needs scripting permission in the manifest and
                 // host_permissions for http://*/* and https://*/*.
                 await chrome.scripting.executeScript({
-                    target: { tabId: tab.id, frameIds: [0] },
+                    target: { tabId: tab.id, allFrames: true },
                     files: ["src/findpw.js"]
                 });
                 if (logging) console.log("bg script executed successfully on tab activation");
@@ -257,7 +257,7 @@ async function setup() {
                 if (logging) console.log("bg process siteData request", isSuperPw(superpw))
                 await persistMetadata(sendResponse);
                 sendResponse("persisted");
-            } else if (request.cmd === "getPassword") {                
+            } else if (request.cmd === "getPassword") { 
                 let domainname = getdomainname(sender.origin || sender.url);
                 bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
                 bg.domainname = domainname;
@@ -399,7 +399,6 @@ async function onContentPageload(request, sender, sendResponse) {
     bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
     bg.settings.pwdomainname = getdomainname(sender.origin || sender.url); // Keep for compatibility with V3.0.12
     bg.domainname = domainname;
-    bg.pwdomainname = getdomainname(sender.origin || sender.url);
     bg.pwdomainname = getdomainname(sender.origin || sender.url);
     let readyForClick = false;
     if (superpw && bg.settings.sitename && bg.settings.username) {
