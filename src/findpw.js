@@ -29,23 +29,23 @@ let observerOptions = {
     attributeOldValue: false,
     characterDataOldValue: false
 };
-if (logging) console.log(document.URL, Date.now(), "findpw starting", mutationObserver);
 let start = Date.now();
 if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw starting");
 // Most pages work if I start looking for password fields as soon as the basic HTML is loaded
-if (document.readyState !== "loading") {
-    if (logging) if (logging) console.log(document.URL, Date.now() - start, "findpw running", document.readyState);
-    // Don't startup until the DOM is ready
-    document.addEventListener("DOMContentLoaded", () => startup(true));
-} else {
-    if (logging) console.log(document.URL, Date.now() - start, "findpw running document.onload");
-    startup(true);
+let started = false;
+function startupOnce() {
+    document.removeEventListener("DOMContentLoaded", startupOnce);
+    if (started) return;
+    if (document.readyState === "interactive" || document.readyState === "complete") {
+        started = true;
+        startup();
+    }
 }
-// A few other pages don't find the password fields until all downloads have completed
+document.addEventListener("DOMContentLoaded", startupOnce); // In case DOM is not ready
+startupOnce();                                              // In case DOM is ready
+// Some other pages don't find the password fields until all downloads have completed.
 window.onload = function () {
-    if (logging) console.log(document.URL, Date.now() - start, "findpw running window.onload");
-    // Don't startup until the DOM is ready
-    document.addEventListener("DOMContentLoaded", () => startup(false));
+    if (cpi.pwfields.length === 0) startup(); // In case DOM is already ready
 }
 window.onerror = function (message, source, lineno, colno, error) {
     console.log(document.URL, Date.now() - start, "findpw error", message, source, lineno, colno, error);
@@ -60,7 +60,7 @@ if (!startupInterval) var startupInterval = setInterval(() => {
         cssnum = document.styleSheets.length;
         if (logging) console.log(document.URL, Date.now() - start, "findpw css added", cssnum);
         // alert("findpw document startupInterval");
-        startup(true);
+        startup();
     }
 }, 2000);
 // Some sites change the page contents based on the fragment
@@ -103,7 +103,8 @@ document.oncopy = async function () {
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
 }
-async function startup(sendPageInfo) {
+async function startup() {
+    if (logging) console.log(document.URL, Date.now() - start, "findpw startup");
     if (extensionRemoved()) return true; // Don't do anything if the extension has been removed
     if (document.hidden && document.hasFocus()) return; // Don't do anything if the page is not visible
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
@@ -132,8 +133,7 @@ async function startup(sendPageInfo) {
             if (logging) console.log("findpw click on body");
             setTimeout(() => {
                 if (logging) console.log("findpw body.onclick");
-                // alert("findpw document startup");
-                startup(true);
+                startup();
             }, 500);
         };
         mutationObserver = new MutationObserver(handleMutations);
@@ -191,7 +191,7 @@ async function startup(sendPageInfo) {
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
     cpi = await countpwid();
-    if (sendPageInfo) await sendpageinfo(cpi, false, true);
+    await sendpageinfo(cpi, false, true);
     return true;
 }
 async function handleMutations(mutations) {
@@ -367,7 +367,7 @@ async function pwfieldOnclick(event) {
             return;
         }
         sitepw = response;
-        console.log(document.URL, Date.now() - start, "findpw response", response);
+        if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
         let mutations = mutationObserver.takeRecords();
         fillfield(this, response);
         let myMutations = mutationObserver.takeRecords();
