@@ -104,6 +104,7 @@ document.oncopy = async function () {
     if (logging) console.log(document.URL, Date.now() - start, "findpw reset icon");
 }
 async function startup() {
+    if (!document || !document.body) return; // Don't do anything if the document is not ready
     if (logging) console.log(document.URL, Date.now() - start, "findpw startup");
     if (extensionRemoved()) return true; // Don't do anything if the extension has been removed
     if (document.hidden && document.hasFocus()) return; // Don't do anything if the page is not visible
