@@ -587,7 +587,12 @@ function extensionRemoved() {
     }
     if (startupInterval) clearInterval(startupInterval);
     if (lasttry) clearTimeout(lasttry);
-    if (chrome.runtime?.onMessage) chrome.runtime?.onMessage.removeListener();
+    if (typeof chrome !== "undefined" &&
+        chrome.runtime &&
+        typeof chrome.runtime.id !== "undefined" &&
+        chrome.runtime.onMessage) {
+        chrome.runtime.onMessage.removeListener();
+    }
     return true; // Indicate that the extension has been removed
 }   
 /* 
