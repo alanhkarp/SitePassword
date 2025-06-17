@@ -2,8 +2,8 @@
 import { bgBaseDefault, config, databaseDefault, isUrlMatch, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
-import { publicSuffixSet } from "./public_suffix_list.js";
-import { isSharedCredentials } from "./sharedCredentials.js";  
+import { isSharedCredentials } from "./sharedCredentials.js"; 
+import { commonSuffix } from "./public_suffix_list.js"; 
 // #region
     const $root = get("root");
     const $mainpanel = get("mainpanel");
@@ -105,7 +105,7 @@ import { isSharedCredentials } from "./sharedCredentials.js";
 // #endregion
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
-const debugMode = false;
+const debugMode = false; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
 
 let logging = false;
 if (logging) console.log("Version 3.0");
@@ -187,7 +187,6 @@ window.onload = async function () {
         domainname = activetab.url.split("/")[2]
     }
     $domainname.value = domainname;
-    // Ignore the page domain name when testing
     $sitepw.value = "";
     if (logging) console.log("popup got tab", domainname, activetab);
     if (logging) console.log("popup getting metadata");
@@ -1217,23 +1216,6 @@ function openPhishingWarning(d) {
     $sitepw.value = "";
     hidesettings();
     return true;
-}
-// Thanks, Copilot
-export function commonSuffix(domain1, domain2) {
-    const parts1 = domain1.split('.').reverse();
-    const parts2 = domain2.split('.').reverse();
-    const length = Math.min(parts1.length, parts2.length);
-    let suffix = [];
-    for (let i = 0; i < length; i++) {
-        if (parts1[i] === parts2[i]) {
-            suffix.push(parts1[i]);
-        } else {
-            break;
-        }
-    }
-    let common = suffix.reverse().join('.');
-    if (publicSuffixSet.has(common)) return "";
-    return common;
 }
 function sortList(list) {
     return list.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));

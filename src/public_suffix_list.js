@@ -1,4 +1,21 @@
-export const publicSuffixSet = new Set([
+// Thanks, Copilot
+export function commonSuffix(domain1, domain2) {
+    const parts1 = domain1.split('.').reverse();
+    const parts2 = domain2.split('.').reverse();
+    const length = Math.min(parts1.length, parts2.length);
+    let suffix = [];
+    for (let i = 0; i < length; i++) {
+        if (parts1[i] === parts2[i]) {
+            suffix.push(parts1[i]);
+        } else {
+            break;
+        }
+    }
+    let common = suffix.reverse().join('.');
+    if (publicSuffixSet.has(common)) return "";
+    return common;
+}
+const publicSuffixSet = new Set([
     "ac", "com.ac", "edu.ac", "gov.ac", "net.ac", "mil.ac", "org.ac", "ad", "nom.ad", "ae", "co.ae",
     "net.ae", "org.ae", "sch.ae", "ac.ae", "gov.ae", "mil.ae", "aero", "airline.aero", "airport.aero",
     "accident-investigation.aero", "accident-prevention.aero", "aerobatic.aero", "aeroclub.aero",

@@ -206,10 +206,10 @@ async function testPhishing() {
     // Does warning appear?
     let test = $phishing.style.display === "block";
     if (test) {
-        console.log("Passed: Phishing warning is showing.");
+        console.log("Passed: Phishing warning is showing");
         passed++;
     } else {
-        console.warn("Failed: Phishing warning not showing.");
+        console.warn("Failed: Phishing warning not showing");
         failed++;
     }
     // There's a test on the web page for clicking the cancelwarning button that

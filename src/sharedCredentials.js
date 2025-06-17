@@ -1,10 +1,11 @@
+import { commonSuffix } from "./public_suffix_list.js"; 
 // from https://github.com/apple/password-manager-resources/blob/main/quirks/shared-credentials.json
 export function isSharedCredentials(domain1, domain2) {
     if (!domain1 || !domain2) return false;    
     return sharedCredentials.some(entry => 
         entry.shared && 
-        entry.shared.some(sharedDomain => domain1.endsWith(sharedDomain)) && 
-        entry.shared.some(sharedDomain => domain2.endsWith(sharedDomain))
+        entry.shared.some(sharedDomain => commonSuffix(domain1, sharedDomain)) && 
+        entry.shared.some(sharedDomain => commonSuffix(domain2, sharedDomain))
     );
 }
 function getSharedCredentials(domain, obsoleted, from, to, fromDomainsAreObsoleted) {
@@ -79,7 +80,18 @@ function getSharedCredentialsForDomainAndObsoletedAndFromAndToAndFromDomainsAreO
 // shared is an array of domains whose credentials are all shared. This array cannot be empty.
 // When contributing or amending a set of websites sharing a credential backend, you should state why you believe the relevant domains do or do not share a credential backend, with evidence to support your claim. This may involve WHOIS information or content served from the domains themselves.
 let sharedCredentials = [
-    {
+ {
+        "shared": [
+            "disney.com",
+            "disneyplus.com",
+            "disneystore.com",
+            "espn.com",
+            "go.com",
+            "hulu.com",
+            "shopdisney.com"
+        ]
+    },
+   {
         "shared": [
             "3docean.net",
             "audiojungle.net",
@@ -274,17 +286,6 @@ let sharedCredentials = [
             "discover.com"
         ],
         "fromDomainsAreObsoleted": true
-    },
-    {
-        "shared": [
-            "disney.com",
-            "disneyplus.com",
-            "disneystore.com",
-            "espn.com",
-            "go.com",
-            "hulu.com",
-            "shopdisney.com"
-        ]
     },
     {
         "shared": [
