@@ -280,8 +280,8 @@ async function setup() {
                 let domainname = getdomainname(sender.origin || sender.url);
                 if (testMode) domainname = "alantheguru.alanhkarp.com";
                 bg.settings = bgsettings(domainname);
+                await persistMetadata(sendResponse);
                 sendResponse(bg.settings.username);
-                await Promise.resolve(); // To match the awaits in the other branches
             } else if (request.cmd === "reset") {
                 // Used for testing, can't be in test.js becuase it needs to set local variables 
                 defaultSettings = clone(baseDefaultSettings);
@@ -340,10 +340,20 @@ async function getMetadata(request, _sender, sendResponse) {
     if (sitename) {
         bg.settings = database.sites[sitename];
     } else {
-        bg.settings = clone(defaultSettings);
-        bg.superpw = superpw;
-        if (logging) console.log("bg getMetadata", isSuperPw(superpw))
+        // See if this domainname shares credentials with another domain
+        let shared = Object.keys(database.domains).find(d => {
+            return isSharedCredentials(d, request.domainname);
+        });
+        if (shared) {
+            let sharedSitename = database.domains[shared];
+            bg.settings = database.sites[sharedSitename];
+            database.domains[request.domainname] = sharedSitename;
+        } else {
+            bg.settings = clone(defaultSettings);
+            if (logging) console.log("bg getMetadata", isSuperPw(superpw))
+        }
     }
+    bg.superpw = superpw;
     // Domain name comes from popup, which is trusted not to spoof it
     bg.settings.domainname = request.domainname; // Keep for compatibility with V3.0.12
     bg.domainname = request.domainname;
@@ -698,9 +708,20 @@ function bgsettings(domainname) {
         if (!bg.settings.username) bg.settings.username = "";
         if (!bg.settings.sitename) bg.settings.sitename = "";
     } else {
-        if (!bg.settings) bg.settings = clone(defaultSettings);
-        bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
-        bg.domainname = domainname;
+       // See if this domainname shares credentials with another domain
+        let shared = Object.keys(database.domains).find(d => {
+            return isSharedCredentials(d, domainname);
+        });
+        if (shared) {
+            let sharedSitename = database.domains[shared];
+            bg.settings = database.sites[sharedSitename];
+            database.domains[domainname] = sharedSitename;
+        } else {
+            bg.settings = clone(defaultSettings);
+         if (!bg.settings) bg.settings = clone(defaultSettings);
+            bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
+            bg.domainname = domainname;
+        }
     }
     return bg.settings;
 }
