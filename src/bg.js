@@ -361,8 +361,8 @@ async function getMetadata(request, _sender, sendResponse) {
     if (logging) console.log("bg got active tab", activetab);
     // Don't lose database across async call
     let db = database;
-    // Restores data stored the last time this page was loaded
     if (logging) console.log("bg got active tab", activetab);
+    // Restores data stored the last time this page was loaded
     let s = await chrome.storage.session.get(["savedData"]); // Returns {} if nothing is saved
     let savedData = s.savedData || {};
     if (logging) console.log("bg got saved data", s);
@@ -373,7 +373,8 @@ async function getMetadata(request, _sender, sendResponse) {
     domainname = getdomainname(activetab.url);
     if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
     if (logging) console.log("bg sending metadata", isSuperPw(bg.superpw), bg.settings, db);
-    sendResponse({"test" : testMode, "superpw": superpw || "", "pwcount": pwcount, "bg": bg, "database": db});
+    let syncing = rootFolder.syncing;
+    sendResponse({"test" : testMode, "superpw": superpw || "", "pwcount": pwcount, "bg": bg, "database": db, "syncing": syncing});
 }
 // sender argument for debugging
 async function onContentPageload(request, sender, sendResponse) {
@@ -382,8 +383,8 @@ async function onContentPageload(request, sender, sendResponse) {
     pwcount = request.count;
     // Save data that service worker needs after it restarts
     let savedData = {};
-        let s = await chrome.storage.session.get(["savedData"]);
-        if (Object.keys(s).length > 0) savedData = s.savedData;
+    let s = await chrome.storage.session.get(["savedData"]);
+    if (Object.keys(s).length > 0) savedData = s.savedData;
     if (pwcount) savedData[activetab.url] = pwcount || 0;
     if (logging) console.log("bg saving data", savedData[activetab.url]);
     if (pwcount) await chrome.storage.session.set({"savedData": savedData}); 
@@ -663,8 +664,21 @@ export async function getRootFolder(sendResponse) { // Exported for testing
             if (candidates[i].parentId === bkmksId &&
                 candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
         }
+        // A browser update adds a syncing property to bookmark folders.  Until then 
+        // folder.syncing is undefined.  In that case, all bookmark folders start to sync 
+        // when you turn on sync in the browser.  After the browser update, bookmarks
+        // created when sync was off won't sync and will have syncing = false; those created 
+        // when sync was on will sync and have syncing = true.  You can tell the browser to 
+        // start/stop syncing a specific folder.  If folders[] has only one entry, return it. 
+        // If it has multiple folders, and exactly one of them is syncing, return that one. 
+        // Otherwise, return "multiple" to indicate that the user must choose one.
         if (folders.length > 1) {
-            if (logging) console.log("bg found multiple", sitedataBookmark, "folders", folders);
+            if (typeof folders[0].syncing !== "undefined") {
+                const syncingFolders = folders.filter(f => f.syncing);
+                if (syncingFolders.length === 1) {
+                    return syncingFolders;
+                }
+            }
             if (sendResponse) sendResponse("multiple");
         } else if (folders.length === 0) {
             if (logging) console.log("bg found no", sitedataBookmark, "folders");
