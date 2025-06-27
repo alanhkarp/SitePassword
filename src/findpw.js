@@ -163,7 +163,7 @@ async function startup() {
                     if (cpi.pwfields[0] && cpi.pwfields[0].value) {
                         if (cpi.pwfields.length === 1 && cpi.pwfields[0].value !== sitepw) cpi.pwfields[0].value = "";
                         setPlaceholder(userid);
-                        sendResponse("update");
+                        sendResponse("updated");
                     }
                     break;
                 case "count":
@@ -219,7 +219,7 @@ async function handleMutations(mutations) {
             let myMutations = mutationObserver.takeRecords();
             if (logging) console.log("findpw handleMutations my mutations", myMutations);
         }
-    }, 10); // A delay of 0 didn't work, so 10 ms might not be long enough.
+    }, 50); // A delay of 10 didn't work, so 50 ms might not be long enough.
 }
 function fillfield(field, text) {
     // Don't change unless there is a different value to avoid mutationObserver cycling
