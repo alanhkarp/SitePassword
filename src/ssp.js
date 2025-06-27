@@ -256,7 +256,7 @@ export async function getsettings() {
             alertString += "You can see what's in each of them by mousing over the entry by opening the Bookmarks Manager,";
             alertString += "clicking on the SitePasswordData folder, and mousing over the CommonSettings entry.";
         } else {
-            alertString += "An easier way to see what's in the other duplicate bookmarks is to dbl-click on them.  "
+            alertString += "An easy way to see what's in the other duplicate bookmarks is to dbl-click on them.  "
             alertString += "They will open sitepassword.info with the settings for that bookmark.";
         }
         return;
@@ -266,6 +266,7 @@ export async function getsettings() {
         alertString += "You can look at which bookmarks are in the folders to decide which one you want to keep.";
         return;
     }
+    if (alertString) alert(alertString);
     bg = response.bg;
     database = response.database;
     hidesitepw();
@@ -1398,7 +1399,7 @@ async function changePlaceholder() {
 // A nice usability feature is to focus on the first field the user should fill in.
 // Unfortunately, that lets the user fill in the form without the mouse ever entering 
 // the popup.  Since I can't detect when the popup closes, those changes are lost. 
-// By not focusing on the first field, I force the user to click on the popup.
+// I avoid ths problem by only calling this function when the mouse enters the popup.
 function defaultfocus() {
     if (!$username.value) $username.focus();
     if (!$sitename.value) $sitename.focus();
