@@ -336,6 +336,11 @@ $mainpanel.onmouseenter = function (e) {
 }
 $mainpanel.onmouseleave = async function (event) {
     if (logging) console.log("popup mainpanel mouseleave", event);
+    // Force a blur event on the currently focused element.  There is an inherent race condition
+    // between the mouseleave event and the blur event in that the blur processing might not
+    // complete before the popup closes.  This is not a problem in practice because of the delay 
+    // in closing the popup.
+    $mainpanel.focus();
     let element = event ? (event.pageX ? document.elementFromPoint(event.pageX || 0, event.pageY || 0) : null) : null;
     // In caes the user tries to type when the mouse is outside the popup
     if (!element) {
@@ -570,7 +575,7 @@ $accountnicknamesavebutton.onclick = function (e) {
     if (!$accountnicknameinput.value) return;
     $sitename.value = $accountnicknameinput.value;
     sameacct = true;
-    $sitename.onblur(); // So it runs in the same turn
+    $sitename.onblur(e); // So it runs in the same turn
     msgoff("account");
     autoclose = true;
 }
@@ -580,7 +585,7 @@ $accountnicknamecancelbutton.onclick = function (e) {
 }
 $accountnicknamenewbutton.onclick = function (e) {
     $sitename.value = $accountnicknameinput.value;
-    $sitename.onblur(); // So it runs in the same turn
+    $sitename.onblur(e); // So it runs in the same turn
     msgoff("account");
     autoclose = true;
     sameacct = false;
