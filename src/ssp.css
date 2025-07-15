@@ -138,6 +138,15 @@ li {
 #instructionpaneltext {
   padding-left: 3ex;
 }
+#defaultsettings {
+  opacity: 1;
+  transition: opacity 1s;
+  pointer-events: auto;
+}
+#defaultsettings.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
 .settings {
   flex: 0 0 auto;
   font-weight: normal;

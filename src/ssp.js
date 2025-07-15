@@ -65,6 +65,7 @@ import { commonSuffix } from "./public_suffix_list.js";
     const $providesitepwlabel = get("providesitepwlabel");
     const $clearsuperpw = get("clearsuperpw");
     const $hidesitepw = get("hidesitepw");
+    const $defaultsettings = get("defaultsettings");
     const $pwlength = get("pwlength");
     const $startwithletter = get("startwithletter");
     const $allowlowercheckbox = get("allowlowercheckbox");
@@ -817,6 +818,7 @@ $settingssave.onclick = hidesettings;
 $providesitepw.onclick = async function (e) {
     if (!($sitename.value && $username.value)) return;
     if ($providesitepw.checked) {
+        $defaultsettings.classList.add("fade-out");
         $sitepw.readOnly = false;
         $sitepw.value = "";
         $sitepw.focus();
@@ -828,6 +830,7 @@ $providesitepw.onclick = async function (e) {
         $sitepw.placeholder = "Enter your site password";
         await Promise.resolve(); // To match the await of the other branch
     } else {
+        $defaultsettings.classList.remove("fade-out");
         $sitepw.readOnly = true;
         $sitepw.style.backgroundColor = "rgb(136, 204, 255, 20%)";
         $sitepwmenushow.classList.add("menu-icon-blue");
@@ -835,8 +838,6 @@ $providesitepw.onclick = async function (e) {
         $sitepwmenucopy.classList.add("menu-icon-blue");
         $sitepwmenuhelp.classList.add("menu-icon-blue");
         $sitepw.placeholder = "Your site password";
-        bg.settings.pwlength = database.common.defaultSettings.pwlength;
-        $pwlength.value = bg.settings.pwlength;
     }
     await handleblur(e, "providesitepw");
     if (resolvers.providesitepwResolver) resolvers.providesitepwResolver("providesitepwPromise");
@@ -1406,11 +1407,13 @@ async function changePlaceholder() {
 // the popup.  Since I can't detect when the popup closes, those changes are lost. 
 // I avoid ths problem by only calling this function when the mouse enters the popup.
 function defaultfocus() {
+    if ($providesitepw.checked) sitepw.focus();
     if (!$username.value) $username.focus();
     if (!$sitename.value) $sitename.focus();
     if (!$superpw.value) $superpw.focus();
 }
 async function ask2generate() {
+    if (bg.settings.providesitepw && bg.settings.pwlength === 0) return "";
     if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
         msgon("nopw");
         computed = "";
@@ -1445,6 +1448,11 @@ async function fill() {
     }
     $superpw.value = bg.superpw || "";
     $providesitepw.checked = bg.settings.providesitepw;
+    if ($providesitepw.checked) {
+        $defaultsettings.classList.add("fade-out");
+    } else {
+        $defaultsettings.classList.remove("fade-out");
+    }
     if (logging) console.log("popup fill with", bg.domainname, isSuperPw(bg.superpw), bg.settings.sitename, bg.settings.username);
     if ($superpw.value && $sitename.value && $username.value) {
         $providesitepw.disabled = false;
@@ -1457,7 +1465,6 @@ async function fill() {
         $sitepw.readOnly = false;
         $sitepw.placeholder = "Enter your account password";
         $sitepw.style.backgroundColor = "white";
-        $superpw.focus();
     } else {
         $sitepw.readOnly = true;
         $sitepw.placeholder = "Your account password";
@@ -1472,15 +1479,16 @@ async function fill() {
     $allowuppercheckbox.checked = bg.settings.allowupper;
     $allownumbercheckbox.checked = bg.settings.allownumber;
     $allowspecialcheckbox.checked = bg.settings.allowspecial;
-    $minnumber.value = bg.settings.minnumber;
     $minlower.value = bg.settings.minlower;
     $minupper.value = bg.settings.minupper;
+    $minnumber.value = bg.settings.minnumber;
     $minspecial.value = bg.settings.minspecial;
     $specials.value = bg.settings.specials;
     restrictStartsWithLetter();
     await ask2generate();
 }
 function restrictStartsWithLetter() {
+    if ($providesitepw.checked) return;
     if (!($allowlowercheckbox.checked || $allowuppercheckbox.checked)) {
         $startwithletter.disabled = true;
     } else {
