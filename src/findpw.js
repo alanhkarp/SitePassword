@@ -219,7 +219,7 @@ async function handleMutations(mutations) {
             let myMutations = mutationObserver.takeRecords();
             if (logging) console.log("findpw handleMutations my mutations", myMutations);
         }
-    }, 100); // A delay of 50 didn't work, so 100 ms might not be long enough.
+    }, 200); // A delay of 100 didn't work, so 200 ms might not be long enough.
 }
 function fillfield(field, text) {
     // Don't change unless there is a different value to avoid mutationObserver cycling
