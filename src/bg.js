@@ -11,16 +11,10 @@ const logging = false;
 const testLogging = false;
 const errorLogging = false;
 
-const commonSettingsTitle = "CommonSettings";
 // State I want to keep around
-let sitedataBookmark = "SitePasswordData";
-if (testMode) {
-    sitedataBookmark = "SitePasswordDataTest";
-} else if (debugMode) {
-    sitedataBookmark = "SitePasswordDataDebug";
-} else if (demoMode) {
-    sitedataBookmark = "SitePasswordDataDemo";
-}
+const commonSettingsTitle = "CommonSettings";
+const sitedataBookmark = "SitePasswordData" + (debugMode ? "Debug" : "") + (testMode ? "Test" : "") + (demoMode ? "Demo" : "");
+console.log("bg sitedataBookmark", sitedataBookmark);
 let superpw = "";
 let activetab;
 let domainname = "";
