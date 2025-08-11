@@ -365,6 +365,7 @@ async function pwfieldOnclick(event) {
             response = await retrySendMessage({ "cmd": "getPassword" });
         } catch (error) {
             console.error(document.URL, Date.now() - start, "findpw pwfieldOnclick error", error);
+            alert("Error getting password: " + error.message);
             return;
         }
         sitepw = response;
@@ -394,10 +395,12 @@ async function countpwid() {
         visible = !isHidden(inputs[i]);
         // I'm only interested in visible text and email fields, 
         // and splitting the condition makes it easier to debug
-        if (visible && (inputs[i].type === "text" || inputs[i].type === "email")) {
+        if (visible && (inputs[i].type.toLowerCase() === "text" || inputs[i].type.toLowerCase() === "email")) {
             maybeUsernameFields.push(inputs[i]);
         }
         if (visible && inputs[i].type && (inputs[i].type.toLowerCase() === "password")) {
+            // At least one bank disables the password field until I focus on the userid field
+            inputs[i].disabled = false; // Enable the password field
             if (logging) console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
             let pattern = inputs[i].getAttribute("pattern"); // Pattern [0-9]* is a PIN or SSN
             if (pattern !== "[0-9]*") {
@@ -432,6 +435,9 @@ async function countpwid() {
     // field actually finds a password field with a visible password and replaces
     // the password with the userid.
     if (c > maxidfields) maxidfields = c;
+    // The following test means I won't find a userid field if there is more than one 
+    // text field preceding the password field.  This choice avoids confusion when there 
+    // the page has multiple text fields, but only one password field.
     if (maxidfields == 1) {
         for (let i = found - 1; i >= 0; i--) {
             // Skip over invisible input fields above the password field
