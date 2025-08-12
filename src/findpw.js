@@ -399,8 +399,9 @@ async function countpwid() {
             maybeUsernameFields.push(inputs[i]);
         }
         if (visible && inputs[i].type && (inputs[i].type.toLowerCase() === "password")) {
-            // At least one bank disables the password field until I focus on the userid field
-            inputs[i].disabled = false; // Enable the password field
+            // At least one bank disables the password field until I focus on the userid field.
+            // Note that the field can be readOnly, and clicking will fill it in.
+            inputs[i].disabled = false;
             if (logging) console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
             let pattern = inputs[i].getAttribute("pattern"); // Pattern [0-9]* is a PIN or SSN
             if (pattern !== "[0-9]*") {
