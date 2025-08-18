@@ -16,6 +16,7 @@ let cleared = false; // Has password been cleared from the clipboars
 let cpi = { count: 0, pwfields: [], idfield: null };
 let readyForClick = false;
 let mutationObserver;
+let maybeUsernameFields = [];
 let oldpwfield = null;
 let savedPlaceholder = "";
 let lasttry = setTimeout(() => { // I want to be able to cancel without it firing
@@ -388,7 +389,7 @@ async function countpwid() {
     let pwfields = [];
     let found = -1;
     let c = 0;
-    let maybeUsernameFields = [];
+    maybeUsernameFields = [];
     let inputs = document.getElementsByTagName("input");
     if (cpi.pwfields.length === 0 && inputs.length === 0) inputs = searchShadowRoots(document.body);
     for (let i = 0; i < inputs.length; i++) {
@@ -525,7 +526,10 @@ function isHidden(field) {
     // doesn't work for shadow DOM elements.
     let pointerEvents = window.getComputedStyle(field).pointerEvents;
     if (isInShadowRoot(field) && pointerEvents !== "none") return false;
-    if (topElement && topElement !== field && !field.contains(topElement) && !topElement.contains(field)) {
+    // I want to treat an element as visible even if its label is on top of it
+    if (topElement && topElement.getAttribute("for") !== field.id && topElement !== field && 
+        !field.contains(topElement) && !topElement.contains(field)) 
+    {
         return true;
     }
 
