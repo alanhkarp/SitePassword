@@ -455,9 +455,9 @@ async function countpwid() {
             }
         }
     }
-    // Allow dbl click to fill in the username if there are no password fields,
+    // Allow dbl click to fill in the username if 
     // the text field is empty, and there is no dblclick handler.
-    if (c === 0 && maybeUsernameFields.length > 0) {
+    if (maybeUsernameFields.length > 0) {
         let mutations = mutationObserver?.takeRecords();
         for (let i = 0; i < maybeUsernameFields.length; i++) {
             if (!maybeUsernameFields[i].value && !maybeUsernameFields[i].ondblclick) {
