@@ -455,26 +455,36 @@ async function countpwid() {
             }
         }
     }
-    // Allow dbl click to fill in the username if there is exactly one text field,
-    // no password fields, the text field is empty, and there is no ondblclick handler.
-    if (c === 0 && maybeUsernameFields.length === 1 && !maybeUsernameFields[0].value && !maybeUsernameFields[0].ondblclick) {
-        maybeUsernameFields[0].ondblclick = async function () {
-            if (extensionRemoved()) return; // Don't do anything if the extension has been removed
-           let response;
-            try {
-                if (logging) console.log(document.URL, Date.now() - start, "findpw getUsername", maybeUsernameFields[0]);
-                response = await retrySendMessage({ "cmd": "getUsername" });
-            } catch (error) {
-                console.error(document.URL, Date.now() - start, "findpw getUsername error", error);
-                return;
+    // Allow dbl click to fill in the username if there are no password fields,
+    // the text field is empty, and there is no dblclick handler.
+    if (c === 0 && maybeUsernameFields.length > 0) {
+        let mutations = mutationObserver?.takeRecords();
+        for (let i = 0; i < maybeUsernameFields.length; i++) {
+            if (!maybeUsernameFields[i].value && !maybeUsernameFields[i].ondblclick) {
+                let myMutations = mutationObserver?.takeRecords();
+                if (!maybeUsernameFields[i].placeholder) maybeUsernameFields[i].placeholder = insertUsername;
+                if (!maybeUsernameFields[i].title) maybeUsernameFields[i].title = insertUsername;
+                maybeUsernameFields[i].ondblclick = async function () {
+                    if (extensionRemoved()) return; // Don't do anything if the extension has been removed
+                    let response;
+                    try {
+                        if (logging) console.log(document.URL, Date.now() - start, "findpw getUsername", maybeUsernameFields[i]);
+                        response = await retrySendMessage({ "cmd": "getUsername" });
+                    } catch (error) {
+                        console.error(document.URL, Date.now() - start, "findpw getUsername error", error);
+                        return;
+                    }
+                    if (!response) return; // No response means something went wrong
+                    let mutations = mutationObserver.takeRecords();
+                    fillfield(this, response);
+                    let myMutations = mutationObserver.takeRecords();
+                    if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, response, myMutations);
+                    await handleMutations(mutations);    
+                }
+                if (mutationObserver) await handleMutations(myMutations);
             }
-            if (!response) return; // No response means something went wrong
-            let mutations = mutationObserver.takeRecords();
-            fillfield(this, response);
-            let myMutations = mutationObserver.takeRecords();
-            if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, response, myMutations);
-            await handleMutations(mutations);    
-        }    
+        }
+        if (mutations) handleMutations(mutations);
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, useridfield);
     return { pwfields: pwfields, idfield: useridfield };
