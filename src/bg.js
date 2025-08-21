@@ -14,7 +14,7 @@ const errorLogging = false;
 // State I want to keep around
 const commonSettingsTitle = "CommonSettings";
 const sitedataBookmark = "SitePasswordData" + (debugMode ? "Debug" : "") + (testMode ? "Test" : "") + (demoMode ? "Demo" : "");
-console.log("bg sitedataBookmark", sitedataBookmark);
+if (logging) console.log("bg sitedataBookmark", sitedataBookmark);
 let superpw = "";
 let activetab;
 let domainname = "";

@@ -462,7 +462,6 @@ async function countpwid() {
         for (let i = 0; i < maybeUsernameFields.length; i++) {
             if (!maybeUsernameFields[i].value && !maybeUsernameFields[i].ondblclick) {
                 let myMutations = mutationObserver?.takeRecords();
-                if (!maybeUsernameFields[i].placeholder) maybeUsernameFields[i].placeholder = insertUsername;
                 if (!maybeUsernameFields[i].title) maybeUsernameFields[i].title = insertUsername;
                 maybeUsernameFields[i].ondblclick = async function () {
                     if (extensionRemoved()) return; // Don't do anything if the extension has been removed

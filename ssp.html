@@ -585,12 +585,7 @@ to change all occurrences if ![](images...) to <img> tags.
                 <span id="sharedref" name="sectionref"><a href="#shared-machines">Shared Machines</a></span>. 
               </p>
               <p>
-                Some sites make you fill in your user name manually before they show you the password field.
-                In those cases, SitePassword can usually fill in the field if you dbl-click on it.  If that 
-                doesn't work, you can copy your user name to the clipboard or type it in manually.
-              </p>
-              <p>
-                SitePassword will attempt to fill in the userid field of a login form. If you
+                SitePassword will attempt to fill in the user name field of a login form. If you
                 don't see it, one of a few things happened.
               </p>
               <ol>
@@ -600,15 +595,20 @@ to change all occurrences if ![](images...) to <img> tags.
                   <li>This is a different domain name for logging into the same account.</li>
                   <li>You are at a fake site that is trying to steal your password.</li>
                 </ul>
-                <li>SitePassword incorrectly guessed the location of the userid field.</li>
-                <li>SitePassword couldn't find the userid field.</li>
+                <li>SitePassword incorrectly guessed the location of the user name field.</li>
+                <li>SitePassword couldn't find the user name field.</li>
+                <li>There is more than one non-password input field on the page.</li>
               </ol>
               <p>
-                In the last two cases,
-                you'll have to fill in your userid manually, which you can do by typing it in or copying 
-                it to the clipboard using the 
+                In the last three cases, your can double click where you want your user name to go. 
+                If that doesn't work, you'll have to fill in your user name manually, which you can do by 
+                typing it in or copying it to the clipboard using the 
                 <img src="images/clipboard.png" alt="copy" style="width: 16px; height: 16px; vertical-align: middle;"/>
-                icon in the userid field.
+                icon in the user name field.
+              </p>
+              <p>
+                Some sites make you fill in your user name manually before they show you the password field.
+                In those cases, SitePassword can usually fill in the field if you dbl-click on it.  
               </p>
             </div>
           </section>
@@ -1555,7 +1555,7 @@ to change all occurrences if ![](images...) to <img> tags.
           </div>
           <div id="usernamemenu" class="nodisplay menu inner-icon-2">
             <div id="usernamemenuforget" display="block"
-              title="Click to enable forgetting all domain names associated with this userid.">
+              title="Click to enable forgetting all domain names associated with this user name.">
               <img src="images/forget.png" class="icon menu-icon">
             </div>
             <div id="usernamemenucopy" display="block" title="Copy your user name to the clipboard.">
