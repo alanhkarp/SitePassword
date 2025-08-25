@@ -6,7 +6,7 @@ let clickSitePassword = "Click SitePassword";
 let clickSitePasswordTitle = "Click on the SitePassword icon"
 let clickHere = "Click here for password";
 let pasteHere = "Dbl-click or paste your password";
-let insertUsername = "Dbl-click for user name";
+let insertUsername = "Dbl-click if your username goes here";
 let sitepw = "";
 let username = "";
 let maxidfields = 0;
@@ -461,11 +461,12 @@ async function countpwid() {
     if (username && maybeUsernameFields.length > 0) {
         let mutations = mutationObserver?.takeRecords();
         for (let i = 0; i < maybeUsernameFields.length; i++) {
-            if (!maybeUsernameFields[i].value && !maybeUsernameFields[i].ondblclick) {
+            let element = maybeUsernameFields[i];
+            if (!element.value && !element.ondblclick) {
                 let myMutations = mutationObserver?.takeRecords();
-                if (!maybeUsernameFields[i].title) maybeUsernameFields[i].title = insertUsername;
-                if (!maybeUsernameFields[i].placeholder) maybeUsernameFields[i].placeholder = insertUsername;
-                maybeUsernameFields[i].ondblclick = async function () {
+                if (!element.title) element.title = insertUsername;
+                if (!element.placeholder && !hasLabel(element)) element.placeholder = insertUsername;
+                element.ondblclick = async function () {
                     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
                     let mutations = mutationObserver.takeRecords();
                     fillfield(this, username);
@@ -584,6 +585,21 @@ async function retrySendMessage(message, retries = 5, delay = 100) {
             }
         }
     }
+}
+/**
+ * Returns true if the element has an associated label or is wrapped in a label.
+ * @param {HTMLElement} element
+ * @returns {boolean}
+ */
+function hasLabel(element) {
+    if (!element) return false;
+    // Check if wrapped in a <label>
+    if (element.closest('label')) return true;
+    if (!element.id) return false;
+    // Check for label[for] matching id
+    const labels = Array.from(document.querySelectorAll('label[for]'));
+    // According to HTML spec, label[for] only associates with an element's id.
+    return !!document.querySelector(`label[for="${element.id}"]`);
 }
 // A content script keeps running even after it's replaced with exectuteScript.
 // This function cleans up all the event listeners, timers, and the mutation observer.
