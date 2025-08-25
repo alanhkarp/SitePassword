@@ -8,7 +8,7 @@ let clickHere = "Click here for password";
 let pasteHere = "Dbl-click or paste your password";
 let insertUsername = "Dbl-click for user name";
 let sitepw = "";
-let userid = "";
+let username = "";
 let maxidfields = 0;
 let keyPressed = false;
 let dupNotified = false;
@@ -45,7 +45,8 @@ function startupOnce() {
 document.addEventListener("DOMContentLoaded", startupOnce); // In case DOM is not ready
 startupOnce();                                              // In case DOM is ready
 // Some other pages don't find the password fields until all downloads have completed.
-window.onload = function () {
+window.onload = async function () {
+    username = await getUsername();
     if (cpi.pwfields.length === 0) startup(); // In case DOM is already ready
 }
 window.onerror = function (message, source, lineno, colno, error) {
@@ -148,22 +149,22 @@ async function startup() {
             switch (request.cmd) {
                 case "fillfields":
                     if (logging) console.log(document.URL, Date.now() - start, "findpw fillfields", cpi, request);
-                    userid = request.u;
-                    fillfield(cpi.idfield, userid);
+                    username = request.u;
+                    fillfield(cpi.idfield, username);
                     fillfield(cpi.pwfields[0], request.p);
-                    setPlaceholder(userid);
+                    setPlaceholder(username);
                     sendResponse("fillfields");
                     break;
                 case "update":
                     // If the user changes a setting in the popup, the password
                     // on the page may not be what the user thinks it is.  However,
                     // I can't just fill the form if the password field is empty.
-                    userid = request.u;
-                    fillfield(cpi.idfield, userid);
+                    username = request.u;
+                    fillfield(cpi.idfield, username);
                     sitepw = request.p;
                     if (cpi.pwfields[0] && cpi.pwfields[0].value) {
                         if (cpi.pwfields.length === 1 && cpi.pwfields[0].value !== sitepw) cpi.pwfields[0].value = "";
-                        setPlaceholder(userid);
+                        setPlaceholder(username);
                         sendResponse("updated");
                     }
                     break;
@@ -300,11 +301,11 @@ async function sendpageinfoRest(cpi, clicked, onload) {
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
     readyForClick = response.readyForClick;
-    userid = response.u;
+    username = response.u;
     let mutations = mutationObserver.takeRecords();
-    fillfield(cpi.idfield, userid);
-    setPlaceholder(userid, response.p);
-    if (userid) fillfield(cpi.pwfields[0], "");
+    fillfield(cpi.idfield, username);
+    setPlaceholder(username, response.p);
+    if (username) fillfield(cpi.pwfields[0], "");
     let myMutations = mutationObserver.takeRecords();
     if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
     await handleMutations(mutations);
@@ -316,15 +317,15 @@ async function sendpageinfoRest(cpi, clicked, onload) {
 // has a placeholder, I won't overwrite them except for Click SitePassword. 
 // I'll communicate with the user by replacing the any tooltips provided by 
 // the site.
-async function setPlaceholder(userid) {
-    if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", userid, readyForClick, cpi.pwfields);
-    if (userid) clearLabel(cpi.idfield);
+async function setPlaceholder(username) {
+    if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", username, readyForClick, cpi.pwfields);
+    if (username) clearLabel(cpi.idfield);
     // See if any password fields have a placholder
     let hasPlaceholder = cpi.pwfields.some((field) => field.placeholder !== "" && 
                                                       field.placeholder !== clickSitePassword &&
                                                       field.placeholder !== clickHere &&
                                                       field.placeholder !== pasteHere);
-    if (cpi.pwfields[0] && readyForClick && userid) {
+    if (cpi.pwfields[0] && readyForClick && username) {
         let placeholder = (cpi.pwfields.length === 1) ? clickHere : pasteHere;
         if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", placeholder);
         if (cpi.pwfields[0].placeholder ===  clickSitePassword) {
@@ -384,7 +385,7 @@ async function pwfieldOnclick(event) {
 }
 async function countpwid() {
     if (extensionRemoved()) return {pwfields: [], idfield: null}; // Don't do anything if the extension has been removed
-    let useridfield = null;
+    let usernamefield = null;
     let visible = true;
     let pwfields = [];
     let found = -1;
@@ -400,7 +401,7 @@ async function countpwid() {
             maybeUsernameFields.push(inputs[i]);
         }
         if (visible && inputs[i].type && (inputs[i].type.toLowerCase() === "password")) {
-            // At least one bank disables the password field until I focus on the userid field.
+            // At least one bank disables the password field until I focus on the username field.
             // Note that the field can be readOnly, and clicking will fill it in.
             inputs[i].disabled = false;
             if (logging) console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
@@ -433,11 +434,11 @@ async function countpwid() {
         }
     }
     // Some sites let you see your passwords, which changes the input type from
-    // password to text.  The result is that the heuristic for finding a userid
+    // password to text.  The result is that the heuristic for finding a username
     // field actually finds a password field with a visible password and replaces
-    // the password with the userid.
+    // the password with the username.
     if (c > maxidfields) maxidfields = c;
-    // The following test means I won't find a userid field if there is more than one 
+    // The following test means I won't find a username field if there is more than one 
     // text field preceding the password field.  This choice avoids confusion when there 
     // the page has multiple text fields, but only one password field.
     if (maxidfields == 1) {
@@ -450,43 +451,35 @@ async function countpwid() {
                         keyPressed = true;
                     }
                 }
-                useridfield = inputs[i];
+                usernamefield = inputs[i];
                 break;
             }
         }
     }
-    // Allow dbl click to fill in the username if 
+    // Allow dbl click to fill in the username if there is a username,
     // the text field is empty, and there is no dblclick handler.
-    if (maybeUsernameFields.length > 0) {
+    if (username && maybeUsernameFields.length > 0) {
         let mutations = mutationObserver?.takeRecords();
         for (let i = 0; i < maybeUsernameFields.length; i++) {
             if (!maybeUsernameFields[i].value && !maybeUsernameFields[i].ondblclick) {
                 let myMutations = mutationObserver?.takeRecords();
                 if (!maybeUsernameFields[i].title) maybeUsernameFields[i].title = insertUsername;
+                if (!maybeUsernameFields[i].placeholder) maybeUsernameFields[i].placeholder = insertUsername;
                 maybeUsernameFields[i].ondblclick = async function () {
                     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
-                    let response;
-                    try {
-                        if (logging) console.log(document.URL, Date.now() - start, "findpw getUsername", maybeUsernameFields[i]);
-                        response = await retrySendMessage({ "cmd": "getUsername" });
-                    } catch (error) {
-                        console.error(document.URL, Date.now() - start, "findpw getUsername error", error);
-                        return;
-                    }
-                    if (!response) return; // No response means something went wrong
                     let mutations = mutationObserver.takeRecords();
-                    fillfield(this, response);
+                    fillfield(this, username);
                     let myMutations = mutationObserver.takeRecords();
-                    if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, response, myMutations);
-                    await handleMutations(mutations);    
+                    if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, username, myMutations);
+                    await handleMutations(mutations);
                 }
                 if (mutationObserver) await handleMutations(myMutations);
             }
         }
         if (mutations) handleMutations(mutations);
     }
-    if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, useridfield);
-    return { pwfields: pwfields, idfield: useridfield };
+    if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, usernamefield);
+    return { pwfields: pwfields, idfield: usernamefield };
 }
 function clearLabel(field) {
     if (!field || !hideLabels) return;
@@ -551,6 +544,17 @@ function overlaps(field, label) {
     if (floc.top >= lloc.bottom) return false;
     if (floc.left >= lloc.right) return false;
     return true;
+}
+async function getUsername() {
+    try {
+        if (logging) console.log(document.URL, Date.now() - start, "findpw getUsername", maybeUsernameFields[i]);
+        username = await retrySendMessage({ "cmd": "getUsername" });
+        console.log(document.URL, Date.now() - start, "findpw getUsername", username);
+    } catch (error) {
+        console.error(document.URL, Date.now() - start, "findpw getUsername error", error);
+        return "";
+    }
+    return username || "";
 }
 function isInShadowRoot(element) {
     return element && element.getRootNode() instanceof ShadowRoot;
