@@ -9,8 +9,6 @@ let pasteHere = "Dbl-click or paste your password";
 let insertUsername = "Dbl-click if your username goes here";
 let sitepw = "";
 let username = "";
-let maxidfields = 0;
-let keyPressed = false;
 let dupNotified = false;
 let cleared = false; // Has password been cleared from the clipboars
 let cpi = { count: 0, pwfields: [], idfield: null };
@@ -200,7 +198,9 @@ async function startup() {
 async function handleMutations(mutations) {
     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
     if (!mutationObserver) return; // No need to handle mutations if the observer has been removed
-    if (document.hidden && document.hasFocus() || !mutations[0]) return;
+    if ((document.hidden && document.hasFocus()) || !mutations[0]) return;
+    // Return if any mutation's target is the same element as cpi.idfield
+    if (mutations.some(m => m.target === cpi.idfield)) return;
     clearTimeout(lasttry);
     // Find password field if added late
     if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
@@ -224,6 +224,10 @@ async function handleMutations(mutations) {
     }, 200); // A delay of 100 didn't work, so 200 ms might not be long enough.
 }
 function fillfield(field, text) {
+    if (!field) return;
+    // Don't change idfield if there's is something already there
+    // because it's likely something the user entered.
+    if (field === cpi.idfield && field.value) return;
     // Don't change unless there is a different value to avoid mutationObserver cycling
     if (field && text && text !== field.value) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
@@ -302,11 +306,11 @@ async function sendpageinfoRest(cpi, clicked, onload) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
     readyForClick = response.readyForClick;
     username = response.u;
-    let mutations = mutationObserver.takeRecords();
+    let mutations = mutationObserver?.takeRecords() || [];
     fillfield(cpi.idfield, username);
     setPlaceholder(username, response.p);
     if (username) fillfield(cpi.pwfields[0], "");
-    let myMutations = mutationObserver.takeRecords();
+    let myMutations = mutationObserver?.takeRecords() || [];
     if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
     await handleMutations(mutations);
 }
@@ -422,11 +426,6 @@ async function countpwid() {
                     c++;
                     if (c === 1) {
                         found = i;
-                        inputs[i].onkeydown = function (event) {
-                            if (event.key) {
-                                keyPressed = true;
-                            }
-                        }
                     }
                     inputs[i].onclick = pwfieldOnclick;
                 }
@@ -437,20 +436,14 @@ async function countpwid() {
     // password to text.  The result is that the heuristic for finding a username
     // field actually finds a password field with a visible password and replaces
     // the password with the username.
-    if (c > maxidfields) maxidfields = c;
     // The following test means I won't find a username field if there is more than one 
     // text field preceding the password field.  This choice avoids confusion when there 
     // the page has multiple text fields, but only one password field.
-    if (maxidfields == 1) {
+    if (maybeUsernameFields.length > 0 && found > 0 && c === 1) {
         for (let i = found - 1; i >= 0; i--) {
             // Skip over invisible input fields above the password field
             visible = !isHidden(inputs[i]);
             if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
-                inputs[i].onkeydown = function (event) {
-                    if (event.key) {
-                        keyPressed = true;
-                    }
-                }
                 usernamefield = inputs[i];
                 break;
             }
@@ -477,7 +470,7 @@ async function countpwid() {
                 if (mutationObserver) await handleMutations(myMutations);
             }
         }
-        if (mutations) handleMutations(mutations);
+        if (mutations) await handleMutations(mutations);
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, usernamefield);
     return { pwfields: pwfields, idfield: usernamefield };
@@ -550,7 +543,7 @@ async function getUsername() {
     try {
         if (logging) console.log(document.URL, Date.now() - start, "findpw getUsername", maybeUsernameFields[i]);
         username = await retrySendMessage({ "cmd": "getUsername" });
-        console.log(document.URL, Date.now() - start, "findpw getUsername", username);
+        if (logging) console.log(document.URL, Date.now() - start, "findpw getUsername", username);
     } catch (error) {
         console.error(document.URL, Date.now() - start, "findpw getUsername error", error);
         return "";
