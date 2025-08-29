@@ -494,10 +494,19 @@ function clearLabel(field) {
 function isHidden(field) {
     if (!field) return true;
 
+    // Return false if this element or any ancestor has opacity less than 1
+    let el = field;
+    while (el) {
+        const style = window.getComputedStyle(el);
+        if (Number(style.opacity) < 1) {
+            return true;
+        }
+        el = el.parentElement;
+    }
     const style = window.getComputedStyle(field);
 
     // Check if the element is hidden via CSS properties
-    if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+    if (style.display === 'none' || style.visibility === 'hidden') {
         return true;
     }
 
