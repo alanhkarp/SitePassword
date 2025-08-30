@@ -552,6 +552,7 @@ function isHidden(field) {
 
     return false;
 }
+// Thank you, perpexity.ai
 function isObscuredByPopoverOrDialog(targetId = 'password') {
     const el = document.getElementById(targetId);
     if (!el || !(el instanceof Element)) return false;
