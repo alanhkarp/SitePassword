@@ -9,8 +9,9 @@ let pasteHere = "Dbl-click or paste your password";
 let insertUsername = "Dbl-click if your username goes here";
 let sitepw = "";
 let username = "";
+let usernameEdited = false;
 let dupNotified = false;
-let cleared = false; // Has password been cleared from the clipboars
+let cleared = false; // Has password been cleared from the clipboard
 let cpi = { count: 0, pwfields: [], idfield: null };
 let readyForClick = false;
 let mutationObserver;
@@ -224,15 +225,15 @@ async function handleMutations(mutations) {
     }, 200); // A delay of 100 didn't work, so 200 ms might not be long enough.
 }
 function fillfield(field, text) {
-    if (!field) return;
-    // Don't change idfield if there's is something already there
-    // because it's likely something the user entered.
-    if (field === cpi.idfield && field.value) return;
+    if (!field || (field === cpi.idfield && usernameEdited)) return;
     // Don't change unless there is a different value to avoid mutationObserver cycling
     if (field && text && text !== field.value) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
         field.value = text.trim();
         fixfield(field, text.trim());
+        if (field === cpi.idfield) {
+            usernameEdited = false;
+        }
     }
 }
 // Some pages don't know the field has been updated
@@ -471,6 +472,14 @@ async function countpwid() {
             }
         }
         if (mutations) await handleMutations(mutations);
+    }
+    if (usernamefield) {
+        usernamefield.onkeyup = function () {
+            usernameEdited = true;
+        };
+        usernamefield.ondblclick = function () {
+            usernameEdited = false;
+        };
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, usernamefield);
     return { pwfields: pwfields, idfield: usernamefield };
