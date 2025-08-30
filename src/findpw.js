@@ -536,8 +536,7 @@ function isHidden(field) {
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     const topElement = document.elementFromPoint(centerX, centerY);
-    // Checking if the element is covered by another element
-    // doesn't work for shadow DOM elements.
+    // Doesn't work for shadow DOM elements.
     let pointerEvents = window.getComputedStyle(field).pointerEvents;
     if (isInShadowRoot(field) && pointerEvents !== "none") return false;
     // I want to treat an element as visible even if its label is on top of it
@@ -546,8 +545,54 @@ function isHidden(field) {
     {
         return true;
     }
+    // Check if the element overlaps a popover or dialog
+    if (isObscuredByPopoverOrDialog(field.id)) {
+        return true;
+    }
 
     return false;
+}
+function isObscuredByPopoverOrDialog(targetId = 'password') {
+    const el = document.getElementById(targetId);
+    if (!el || !(el instanceof Element)) return false;
+
+    const elRect = el.getBoundingClientRect();
+    if (elRect.width === 0 || elRect.height === 0) return false; // not visible at all
+
+    // Check open popovers (Popover API)
+    const popovers = document.querySelectorAll('[popover]:popover-open');
+    // Check open modal dialogs
+    const dialogs = Array.from(document.querySelectorAll('dialog[open]'))
+        .filter(d => typeof d.showModal === "function" && d.open);
+
+    // Combine popovers and dialogs into a single list
+    const overlays = [...popovers, ...dialogs];
+
+    for (const overlay of overlays) {
+        // Only count overlays that are rendered (not display:none, etc)
+        const style = window.getComputedStyle(overlay);
+        if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') continue;
+
+        const overlayRect = overlay.getBoundingClientRect();
+
+        // If overlay fully covers or even partially covers the password element
+        const isCovered = !(
+            elRect.right < overlayRect.left ||
+            elRect.left > overlayRect.right ||
+            elRect.bottom < overlayRect.top ||
+            elRect.top > overlayRect.bottom
+        );
+
+        if (isCovered) return true;
+    }
+    return false;
+}
+
+// Usage:
+if (isObscuredByPopoverOrDialog('password')) {
+    console.log('The password field is obscured by a popover or modal dialog.');
+} else {
+    console.log('The password field is NOT obscured by a popover or modal dialog.');
 }
 function overlaps(field, label) {
     // Only worry about labels above or to the left of the field
