@@ -10,6 +10,7 @@ let insertUsername = "Dbl-click if your username goes here";
 let sitepw = "";
 let username = "";
 let usernameEdited = false;
+let usernameEntered = false;
 let dupNotified = false;
 let cleared = false; // Has password been cleared from the clipboard
 let cpi = { count: 0, pwfields: [], idfield: null };
@@ -225,7 +226,7 @@ async function handleMutations(mutations) {
     }, 200); // A delay of 100 didn't work, so 200 ms might not be long enough.
 }
 function fillfield(field, text) {
-    if (!field || (field === cpi.idfield && usernameEdited)) return;
+    if (!field || (field === cpi.idfield && (usernameEdited || usernameEntered))) return;
     // Don't change unless there is a different value to avoid mutationObserver cycling
     if (field && text && text !== field.value) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
@@ -464,6 +465,7 @@ async function countpwid() {
                     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
                     let mutations = mutationObserver.takeRecords();
                     fillfield(this, username);
+                    usernameEntered = true;
                     let myMutations = mutationObserver.takeRecords();
                     if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, username, myMutations);
                     await handleMutations(mutations);
