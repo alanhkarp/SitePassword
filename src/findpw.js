@@ -325,7 +325,7 @@ async function sendpageinfoRest(cpi, clicked, onload) {
 // the site.
 async function setPlaceholder(username) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", username, readyForClick, cpi.pwfields);
-    if (username) clearLabel(cpi.idfield);
+    if (username && !hasLabel(cpi.idfield)) clearLabel(cpi.idfield);
     // See if any password fields have a placholder
     let hasPlaceholder = cpi.pwfields.some((field) => field.placeholder !== "" && 
                                                       field.placeholder !== clickSitePassword &&
@@ -438,14 +438,11 @@ async function countpwid() {
     // password to text.  The result is that the heuristic for finding a username
     // field actually finds a password field with a visible password and replaces
     // the password with the username.
-    // The following test means I won't find a username field if there is more than one 
-    // text field preceding the password field.  This choice avoids confusion when there 
-    // the page has multiple text fields, but only one password field.
     if (maybeUsernameFields.length > 0 && found > 0 && c === 1) {
         for (let i = found - 1; i >= 0; i--) {
             // Skip over invisible input fields above the password field
             visible = !isHidden(inputs[i]);
-            if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
+            if (visible && isUsernameField(inputs[i])) {
                 usernamefield = inputs[i];
                 break;
             }
@@ -461,6 +458,8 @@ async function countpwid() {
                 let myMutations = mutationObserver?.takeRecords();
                 if (!element.title) element.title = insertUsername;
                 if (!element.placeholder && !hasLabel(element)) element.placeholder = insertUsername;
+                // I don't want to put a placeholder if there's a label
+                if (!hasLabel(element)) element.placeholder = insertUsername;
                 element.ondblclick = async function () {
                     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
                     let mutations = mutationObserver.takeRecords();
@@ -590,13 +589,6 @@ function isObscuredByPopoverOrDialog(targetId = 'password') {
     }
     return false;
 }
-
-// Usage:
-if (isObscuredByPopoverOrDialog('password')) {
-    console.log('The password field is obscured by a popover or modal dialog.');
-} else {
-    console.log('The password field is NOT obscured by a popover or modal dialog.');
-}
 function overlaps(field, label) {
     // Only worry about labels above or to the left of the field
     let floc = field.getBoundingClientRect();
@@ -605,9 +597,42 @@ function overlaps(field, label) {
     if (floc.left >= lloc.right) return false;
     return true;
 }
+
+/**
+ * Returns true if the input element is likely a username field.
+ * @param {HTMLInputElement} element
+ * @returns {boolean}
+ */
+function isUsernameField(element) {
+    if (!element || element.tagName !== "INPUT") return false;
+    const type = element.type?.toLowerCase();
+    if (type !== "text" && type !== "email") return false;
+    // If there's only one text/email field, it's more likely to be a username field
+    if (maybeUsernameFields.length === 1) return true;
+    // Heuristics: id/name/placeholder contains "user", "login", "email", etc.
+    const attrs = [
+        element.id || "",
+        element.name || "",
+        element.placeholder || "",
+        element.getAttribute("aria-label") || "",
+        element.getAttribute("autocomplete") || ""
+    ].map(s => s.toLowerCase());
+
+    const usernameKeywords = [
+        "user", "login", "email", "username", "userid", "account"
+    ];
+
+    // Check autocomplete attribute
+    if (attrs[4] === "username" || attrs[4] === "email") return true;
+
+    // Check for keywords in other attributes
+    return usernameKeywords.some(keyword =>
+        attrs.some(attr => attr.includes(keyword))
+    );
+}
 async function getUsername() {
     try {
-        if (logging) console.log(document.URL, Date.now() - start, "findpw getUsername", maybeUsernameFields[i]);
+        if (logging) console.log(document.URL, Date.now() - start, "findpw getUsername", maybeUsernameFields);
         username = await retrySendMessage({ "cmd": "getUsername" });
         if (logging) console.log(document.URL, Date.now() - start, "findpw getUsername", username);
     } catch (error) {
