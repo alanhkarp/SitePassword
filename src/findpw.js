@@ -438,7 +438,7 @@ async function countpwid() {
     // password to text.  The result is that the heuristic for finding a username
     // field actually finds a password field with a visible password and replaces
     // the password with the username.
-    if (maybeUsernameFields.length > 0 && found > 0 && c === 1) {
+    if (maybeUsernameFields.length > 0 && found > 0) {
         for (let i = found - 1; i >= 0; i--) {
             // Skip over invisible input fields above the password field
             visible = !isHidden(inputs[i]);
