@@ -784,7 +784,11 @@ function parseURL(url) {
     try {
         settings = JSON.parse(decodeURIComponent(str));
     } catch (e) {
-        settings = JSON.parse(str.replace(/%22/g, '"').replace(/%20/g, " "));
+        try {
+            settings = JSON.parse(str.replace(/%22/g, '"').replace(/%20/g, " "));
+        } catch (e) {
+            return clone(defaultSettings);
+        }
     }
     if (settings.specials) { // For regular legacy bookmarks
         settings.specials = array2string(settings.specials); // To handle legacy bookmarks
