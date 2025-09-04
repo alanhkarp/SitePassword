@@ -18,7 +18,6 @@ let readyForClick = false;
 let mutationObserver;
 let maybeUsernameFields = [];
 let oldpwfield = null;
-let savedPlaceholder = "";
 let lasttry = setTimeout(() => { // I want to be able to cancel without it firing
     if (logging) console.log("findpw initialize last try timer")
 }, 1000000);
@@ -152,7 +151,7 @@ async function startup() {
                     username = request.u;
                     fillfield(cpi.idfield, username);
                     fillfield(cpi.pwfields[0], request.p);
-                    setPlaceholder(username);
+                    setpwPlaceholder(username);
                     sendResponse("fillfields");
                     break;
                 case "update":
@@ -164,7 +163,7 @@ async function startup() {
                     sitepw = request.p;
                     if (cpi.pwfields[0] && cpi.pwfields[0].value) {
                         if (cpi.pwfields.length === 1 && cpi.pwfields[0].value !== sitepw) cpi.pwfields[0].value = "";
-                        setPlaceholder(username);
+                        setpwPlaceholder(username);
                         sendResponse("updated");
                     }
                     break;
@@ -180,7 +179,7 @@ async function startup() {
                     for (let i = 0; i < cpi.pwfields.length || 0; i++) {
                         cpi.pwfields[i].value = "";
                     }
-                    setPlaceholder("");
+                    setpwPlaceholder("");
                     sendResponse("clear");
                     break;
                 default:
@@ -308,9 +307,10 @@ async function sendpageinfoRest(cpi, clicked, onload) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
     readyForClick = response.readyForClick;
     username = response.u;
+    sitepw = response.p;
     let mutations = mutationObserver?.takeRecords() || [];
     fillfield(cpi.idfield, username);
-    setPlaceholder(username, response.p);
+    setpwPlaceholder(username);
     if (username) fillfield(cpi.pwfields[0], "");
     let myMutations = mutationObserver?.takeRecords() || [];
     if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
@@ -323,46 +323,26 @@ async function sendpageinfoRest(cpi, clicked, onload) {
 // has a placeholder, I won't overwrite them except for Click SitePassword. 
 // I'll communicate with the user by replacing the any tooltips provided by 
 // the site.
-async function setPlaceholder(username) {
+async function setpwPlaceholder(username) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", username, readyForClick, cpi.pwfields);
-    if (username && !hasLabel(cpi.idfield)) clearLabel(cpi.idfield);
-    // See if any password fields have a placholder
-    let hasPlaceholder = cpi.pwfields.some((field) => field.placeholder !== "" && 
-                                                      field.placeholder !== clickSitePassword &&
-                                                      field.placeholder !== clickHere &&
-                                                      field.placeholder !== pasteHere);
-    if (cpi.pwfields[0] && readyForClick && username) {
-        let placeholder = (cpi.pwfields.length === 1) ? clickHere : pasteHere;
-        if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", placeholder);
-        if (cpi.pwfields[0].placeholder ===  clickSitePassword) {
-            cpi.pwfields[0].placeholder = savedPlaceholder || placeholder;
+    if (!cpi || !cpi.pwfields || cpi.pwfields.length === 0) return;
+    let placeholder = (cpi.pwfields.length === 1) ? clickHere : pasteHere;
+    if (!readyForClick || !username) placeholder = clickSitePassword;
+    if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", placeholder);
+    for (let i = 0; i < cpi.pwfields.length; i++) {
+        if (!elementHasPlaceholder(cpi.pwfields[i])) {
+            cpi.pwfields[i].placeholder = placeholder;
+            cpi.pwfields[i].ariaPlaceholder = placeholder;
         }
-        for (let i = 0; i < cpi.pwfields.length; i++) {
-            if (cpi.pwfields.length > 1 ) {
-                cpi.pwfields[i].onclick = null;
-                if (!cpi.pwfields[i].ondblclick) cpi.pwfields[i].ondblclick = pwfieldOnclick;
-            }
-            if (!hasPlaceholder || cpi.pwfields.length === 1) {
-                cpi.pwfields[i].placeholder = placeholder;
-                cpi.pwfields[i].ariaPlaceholder = placeholder;
-            }
-            cpi.pwfields[i].title = placeholder;
-            clearLabel(cpi.pwfields[i]);
-        }
-    } else if (cpi.pwfields.length > 0) {
-        if (elementHasPlaceholder(cpi.pwfields[0])) savedPlaceholder = cpi.pwfields[0].placeholder || "";
-        if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", clickSitePassword);
-        cpi.pwfields[0].placeholder = clickSitePassword;
-        cpi.pwfields[0].ariaPlaceholder = clickSitePassword;
-        if (!elementHasPlaceholder(cpi.pwfields[0])) cpi.pwfields[0].title = clickSitePasswordTitle;
-        clearLabel(cpi.pwfields[0]);
+        cpi.pwfields[i].title = placeholder;
+        clearLabel(cpi.pwfields[i]);
     }
-    function elementHasPlaceholder(element) {
-        return element && element.placeholder && 
-             !(element.placeholder === clickHere || 
-               element.placeholder === pasteHere ||
-               element.placeholder === clickSitePassword);
-    }
+}
+function elementHasPlaceholder(element) {
+    return element && element.placeholder && 
+            !(element.placeholder === clickHere || 
+            element.placeholder === pasteHere ||
+            element.placeholder === clickSitePassword);
 }
 async function pwfieldOnclick(event) {
     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
@@ -456,10 +436,9 @@ async function countpwid() {
             let element = maybeUsernameFields[i];
             if (!element.value && !element.ondblclick) {
                 let myMutations = mutationObserver?.takeRecords();
-                if (!element.title) element.title = insertUsername;
-                if (!element.placeholder && !hasLabel(element)) element.placeholder = insertUsername;
-                // I don't want to put a placeholder if there's a label
-                if (!hasLabel(element)) element.placeholder = insertUsername;
+                if (!element.value) element.title = insertUsername;
+                // I don't want to put a placeholder if there's a label or a placeholder
+                if (!hasLabel(element) && !element.placeholder) element.placeholder = insertUsername;
                 element.ondblclick = async function () {
                     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
                     let mutations = mutationObserver.takeRecords();
@@ -500,7 +479,7 @@ function clearLabel(field) {
         }
     }
 }
-// Thanks, Copilot
+// Thanks, Copilot plus some help from me
 function isHidden(field) {
     if (!field) return true;
 
@@ -529,6 +508,26 @@ function isHidden(field) {
         return true;
     }
 
+    // Check size
+    if (rect.width <= 2 || rect.height <= 2) {
+        return true;
+    }
+
+    // Check color against background
+    const bgColor = window.getComputedStyle(field).backgroundColor;
+    const fieldColor = window.getComputedStyle(field).color;
+    const borderColor = window.getComputedStyle(field).borderColor;
+    if (bgColor && (isColorSimilar(bgColor, fieldColor) || isColorSimilar(bgColor, borderColor))) {
+        return true;
+    }
+}
+
+    // Check transform
+    const transform = window.getComputedStyle(field).transform;
+    if (transform && transform !== 'none') {
+        return true;
+    }
+
     // Check if the element is hidden by its parent
     if (field.offsetParent === null && style.position !== 'fixed') {
         return true;
@@ -552,6 +551,35 @@ function isHidden(field) {
     }
 
     return false;
+}
+// Thank you, Copilot
+function isColorSimilar(color1, color2) {
+    // Simple color similarity check (you can improve this)
+    // Parse rgb(a) or hex colors to compare similarity
+    function parseColor(color) {
+        if (!color) return [0, 0, 0];
+        if (color.startsWith("#")) {
+            // hex format
+            let hex = color.replace("#", "");
+            if (hex.length === 3) hex = hex.split("").map(x => x + x).join("");
+            let num = parseInt(hex, 16);
+            return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+        }
+        // rgb or rgba format
+        let match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (match) return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
+        return [0, 0, 0];
+    }
+    const c1 = parseColor(color1);
+    const c2 = parseColor(color2);
+    // Euclidean distance between colors
+    const dist = Math.sqrt(
+        Math.pow(c1[0] - c2[0], 2) +
+        Math.pow(c1[1] - c2[1], 2) +
+        Math.pow(c1[2] - c2[2], 2)
+    );
+    // Consider colors similar if distance is less than 40 (tweak as needed)
+    return dist < 40;
 }
 // Thank you, perpexity.ai
 function isObscuredByPopoverOrDialog(targetId = 'password') {
