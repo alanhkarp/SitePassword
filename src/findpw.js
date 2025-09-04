@@ -375,8 +375,7 @@ async function countpwid() {
     let usernamefield = null;
     let visible = true;
     let pwfields = [];
-    let found = -1;
-    let c = 0;
+    let pwcount = 0;
     maybeUsernameFields = [];
     let inputs = document.getElementsByTagName("input");
     if (cpi.pwfields.length === 0 && inputs.length === 0) inputs = searchShadowRoots(document.body);
@@ -384,7 +383,7 @@ async function countpwid() {
         visible = !isHidden(inputs[i]);
         // I'm only interested in visible text and email fields, 
         // and splitting the condition makes it easier to debug
-        if (visible && (inputs[i].type.toLowerCase() === "text" || inputs[i].type.toLowerCase() === "email")) {
+        if (visible && isUsernameField(inputs[i])) {
             maybeUsernameFields.push(inputs[i]);
         }
         if (visible && inputs[i].type && (inputs[i].type.toLowerCase() === "password")) {
@@ -406,29 +405,14 @@ async function countpwid() {
                     inputs[i].title += "reload the page, and enter your password manually."
                 } else {
                     pwfields.push(inputs[i]);
-                    c++;
-                    if (c === 1) {
-                        found = i;
-                    }
+                    pwcount++;
                     inputs[i].onclick = pwfieldOnclick;
                 }
             }
         }
     }
-    // Some sites let you see your passwords, which changes the input type from
-    // password to text.  The result is that the heuristic for finding a username
-    // field actually finds a password field with a visible password and replaces
-    // the password with the username.
-    if (maybeUsernameFields.length > 0 && found > 0) {
-        for (let i = found - 1; i >= 0; i--) {
-            // Skip over invisible input fields above the password field
-            visible = !isHidden(inputs[i]);
-            if (visible && isUsernameField(inputs[i])) {
-                usernamefield = inputs[i];
-                break;
-            }
-        }
-    }
+    // If there is only 1 text input before the password field, it's likely to be a username field.
+    usernamefield = maybeUsernameFields[maybeUsernameFields.length - 1] || null;
     // Allow dbl click to fill in the username if there is a username,
     // the text field is empty, and there is no dblclick handler.
     if (username && maybeUsernameFields.length > 0) {
@@ -462,7 +446,7 @@ async function countpwid() {
             usernameEdited = false;
         };
     }
-    if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", c, pwfields, usernamefield);
+    if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", pwcount, pwfields, usernamefield);
     return { pwfields: pwfields, idfield: usernamefield };
 }
 function clearLabel(field) {
@@ -638,8 +622,6 @@ function isUsernameField(element) {
     if (!element || element.tagName !== "INPUT") return false;
     const type = element.type?.toLowerCase();
     if (type !== "text" && type !== "email") return false;
-    // If there's only one text/email field, it's more likely to be a username field
-    if (maybeUsernameFields.length === 1) return true;
     // Heuristics: id/name/placeholder contains "user", "login", "email", etc.
     const attrs = [
         element.id || "",
