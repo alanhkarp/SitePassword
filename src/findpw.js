@@ -518,9 +518,11 @@ function isHidden(field) {
     const fieldColor = window.getComputedStyle(field).color;
     const borderColor = window.getComputedStyle(field).borderColor;
     if (bgColor && (isColorSimilar(bgColor, fieldColor) || isColorSimilar(bgColor, borderColor))) {
-        return true;
+        // The colors may match, but the label/placeholder will still be visible
+        if (!hasLabel(field) && !field.placeholder) {
+            return true;
+        }
     }
-}
 
     // Check transform
     const transform = window.getComputedStyle(field).transform;
