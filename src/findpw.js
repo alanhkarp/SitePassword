@@ -468,17 +468,7 @@ function clearLabel(field) {
 function isHidden(field) {
     if (!field) return true;
 
-    // Return false if this element or any ancestor has opacity less than 1
-    let el = field;
-    while (el) {
-        const style = window.getComputedStyle(el);
-        if (Number(style.opacity) < 1) {
-            return true;
-        }
-        el = el.parentElement;
-    }
     const style = window.getComputedStyle(field);
-
     // Check if the element is hidden via CSS properties
     if (style.display === 'none' || style.visibility === 'hidden') {
         return true;
@@ -502,7 +492,7 @@ function isHidden(field) {
     const bgColor = window.getComputedStyle(field).backgroundColor;
     const fieldColor = window.getComputedStyle(field).color;
     const borderColor = window.getComputedStyle(field).borderColor;
-    if (bgColor && (isColorSimilar(bgColor, fieldColor) || isColorSimilar(bgColor, borderColor))) {
+    if (bgColor && (isColorSimilar(bgColor, fieldColor) && isColorSimilar(bgColor, borderColor))) {
         // The colors may match, but the label/placeholder will still be visible
         if (!hasLabel(field) && !field.placeholder) {
             return true;
@@ -535,6 +525,16 @@ function isHidden(field) {
     // Check if the element overlaps a popover or dialog
     if (isObscuredByPopoverOrDialog(field.id)) {
         return true;
+    }
+
+    // Return false if this element or any ancestor has opacity less than 1
+    let el = field;
+    while (el) {
+        const style = window.getComputedStyle(el);
+        if (Number(style.opacity) < 1) {
+            return true;
+        }
+        el = el.parentElement;
     }
 
     return false;
