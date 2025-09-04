@@ -371,6 +371,7 @@ async function pwfieldOnclick(event) {
 }
 async function countpwid() {
     if (extensionRemoved()) return {pwfields: [], idfield: null}; // Don't do anything if the extension has been removed
+    username = await getUsername();
     let usernamefield = null;
     let visible = true;
     let pwfields = [];
