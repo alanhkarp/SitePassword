@@ -686,7 +686,7 @@ function isInShadowRoot(element) {
  */
 async function retrySendMessage(message, retries = 5, delay = 100) {
     if (extensionRemoved()) return null; // Don't do anything if the extension has been removed
-    if (document.hidden && !document.hasFocus()) return; // Don't send messages if the page is not visible
+    if (document.hidden || !document.hasFocus()) return; // Don't send messages if the page is not visible
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
             const response = await chrome.runtime.sendMessage(message);
