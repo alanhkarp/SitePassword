@@ -484,7 +484,7 @@ function isHidden(field) {
     }
 
     // Check size
-    if (rect.width <= 2 || rect.height <= 2) {
+    if (rect.width <= 20 || rect.height <= 20) {
         return true;
     }
 
@@ -517,10 +517,10 @@ function isHidden(field) {
         return true;
     }
     // Check if the element is covered by another element
+    // Doesn't work for shadow DOM elements.
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    const topElement = document.elementFromPoint(centerX, centerY);
-    // Doesn't work for shadow DOM elements.
+    const topElement = document.elementFromPoint(centerX, centerY);    
     let pointerEvents = window.getComputedStyle(field).pointerEvents;
     if (isInShadowRoot(field) && pointerEvents !== "none") return false;
     // I want to treat an element as visible even if its label is on top of it
