@@ -505,6 +505,13 @@ function isHidden(field) {
         return true;
     }
 
+    // Check if the element is clipped with clip or clip-path
+    //getBoundingClientRect will still return the position and size of the un-clipped element, not its clipped area! 
+    const clip = style.clip;
+    const clipPath = style.clipPath;
+    if ((clip && clip !== 'auto' && clip !== 'none') || (clipPath && clipPath !== 'none')) {
+        return true;
+    }
     // Check if the element is hidden by its parent
     if (field.offsetParent === null && style.position !== 'fixed') {
         return true;
