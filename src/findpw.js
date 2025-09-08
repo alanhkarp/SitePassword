@@ -385,7 +385,7 @@ async function countpwid() {
         if (visible) {
             // I'm only interested in visible text and email fields, 
             // and splitting the condition makes it easier to debug
-            if ((inputs[i].type !== "text" && inputs[i].type !== "email")) {
+            if ((inputs[i].type === "text" || inputs[i].type === "email")) {
                 maybeUsernameFields.push(inputs[i]);
                 continue;
             } else if (inputs[i].type && (inputs[i].type.toLowerCase() === "password")) {
