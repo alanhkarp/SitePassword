@@ -1,6 +1,6 @@
 // Content script for ssp
 'use strict';
-let debugMode = false;
+let debugMode = true;
 let logging = false;
 let hideLabels = true; // Make it easy to turn off label hiding
 let clickSitePassword = "Click SitePassword";
@@ -226,7 +226,7 @@ async function handleMutations(mutations) {
     }, 200); // A delay of 100 didn't work, so 200 ms might not be long enough.
 }
 function fillfield(field, text) {
-    if (!field || (field === cpi.idfield && (usernameEdited || usernameEntered))) return;
+    if (!cpi.pwfields.includes(field) && maybeUsernameFields.length === 1 && (usernameEdited || usernameEntered)) return;
     // Don't change unless there is a different value to avoid mutationObserver cycling
     if (field && text && text !== field.value) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
@@ -387,7 +387,6 @@ async function countpwid() {
             // and splitting the condition makes it easier to debug
             if ((inputs[i].type === "text" || inputs[i].type === "email")) {
                 maybeUsernameFields.push(inputs[i]);
-                continue;
             } else if (inputs[i].type && (inputs[i].type.toLowerCase() === "password")) {
                 // At least one bank disables the password field until I focus on the username field.
                 // Note that the field can be readOnly, and clicking will fill it in.
@@ -434,6 +433,7 @@ async function countpwid() {
                     let mutations = mutationObserver.takeRecords();
                     fillfield(this, username);
                     usernameEntered = true;
+                    usernameEdited = false;
                     let myMutations = mutationObserver.takeRecords();
                     if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, username, myMutations);
                     await handleMutations(mutations);
@@ -446,9 +446,6 @@ async function countpwid() {
     if (usernamefield) {
         usernamefield.onkeyup = function () {
             usernameEdited = true;
-        };
-        usernamefield.ondblclick = function () {
-            usernameEdited = false;
         };
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", pwcount, pwfields, usernamefield);
