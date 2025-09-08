@@ -4,7 +4,7 @@ import { isSharedCredentials } from "./sharedCredentials.js";
 
 // Only one of these can be true at a time; reload the extension after changing them.
 const testMode  = false; // Set to true to run the tests in test.js.
-const debugMode = false; // Set to true to run SitePassword with the debug bookmarks folder.
+const debugMode = talse; // Set to true to run SitePassword with the debug bookmarks folder.
 const demoMode  = false; // Set to true to run the SitePassword demo with the demo bookmarks folder.
 
 const logging = false;
@@ -82,13 +82,6 @@ let bkmksId;
 // Need to clear cache on install or following an update
 if (logging) console.log("bg running");
 async function updateTab(tab) {
-    // Debugging is hard with automatic update every time the extension changes.
-    // For example, an alert will show up on pages I'm not debugging.
-    // I can still get the changes by reloading the page.
-    if (debugMode) {
-        console.log("bg Don't update content script in debug mode.");
-        return;
-    }
     if (isUrlMatch(tab.url)) {
         if (tab.status === "complete") {
             try {
