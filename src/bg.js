@@ -82,6 +82,13 @@ let bkmksId;
 // Need to clear cache on install or following an update
 if (logging) console.log("bg running");
 async function updateTab(tab) {
+    // Debugging is hard with automatic update every time the extension changes.
+    // For example, an alert will show up on pages I'm not debugging.
+    // I can still get the changes by reloading the page.
+    if (debugMode) {
+        console.log("bg Don't update content script in debug mode.");
+        return;
+    }
     if (isUrlMatch(tab.url)) {
         if (tab.status === "complete") {
             try {
@@ -122,7 +129,7 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
     }
 })
 chrome.runtime.onInstalled.addListener(async function(details) {
-    // Check for consistency of the xMode flags
+    // Check for consistency of the flags
     if (testMode && debugMode || testMode && demoMode || debugMode && demoMode) {
         let developererror = chrome.runtime.getURL("developererror.html");
         chrome.windows.create({
@@ -276,6 +283,7 @@ async function setup() {
                 bg.settings = bgsettings(domainname);
                 await persistMetadata(sendResponse);
                 sendResponse(bg.settings.username);
+                if (logging) console.log("bg username", bg.settings.username);
             } else if (request.cmd === "reset") {
                 // Used for testing, can't be in test.js becuase it needs to set local variables 
                 defaultSettings = clone(baseDefaultSettings);

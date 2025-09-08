@@ -1,5 +1,6 @@
 // Content script for ssp
 'use strict';
+let debugMode = false;
 let logging = false;
 let hideLabels = true; // Make it easy to turn off label hiding
 let clickSitePassword = "Click SitePassword";
@@ -381,44 +382,48 @@ async function countpwid() {
     if (cpi.pwfields.length === 0 && inputs.length === 0) inputs = searchShadowRoots(document.body);
     for (let i = 0; i < inputs.length; i++) {
         visible = !isHidden(inputs[i]);
-        // I'm only interested in visible text and email fields, 
-        // and splitting the condition makes it easier to debug
-        if (visible && isUsernameField(inputs[i])) {
-            maybeUsernameFields.push(inputs[i]);
-        }
-        if (visible && inputs[i].type && (inputs[i].type.toLowerCase() === "password")) {
-            // At least one bank disables the password field until I focus on the username field.
-            // Note that the field can be readOnly, and clicking will fill it in.
-            inputs[i].disabled = false;
-            if (logging) console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
-            let pattern = inputs[i].getAttribute("pattern"); // Pattern [0-9]* is a PIN or SSN
-            if (pattern !== "[0-9]*") {
-                if (self.origin === null || self.origin === "null") {
-                    inputs[i].type = "text";
-                    inputs[i].value = "Untrusted: Input disabled.";
-                    inputs[i].style.opacity = 1;
-                    inputs[i].disabled = true;
-                    //inputs[i].style.display = "none";
-                    inputs[i].title = "Since this login form is probably provided by someone who is trying to steal your password, ";
-                    inputs[i].title += "the password field will not accept input from you.  ";
-                    inputs[i].title += "If you must use this form, turn off SitePassword in the extensions manager, ";
-                    inputs[i].title += "reload the page, and enter your password manually."
-                } else {
-                    pwfields.push(inputs[i]);
-                    pwcount++;
-                    inputs[i].onclick = pwfieldOnclick;
+        if (visible) {
+            // I'm only interested in visible text and email fields, 
+            // and splitting the condition makes it easier to debug
+            if ((inputs[i].type !== "text" && inputs[i].type !== "email")) {
+                maybeUsernameFields.push(inputs[i]);
+                continue;
+            } else if (inputs[i].type && (inputs[i].type.toLowerCase() === "password")) {
+                // At least one bank disables the password field until I focus on the username field.
+                // Note that the field can be readOnly, and clicking will fill it in.
+                inputs[i].disabled = false;
+                if (logging) console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
+                let pattern = inputs[i].getAttribute("pattern"); // Pattern [0-9]* is a PIN or SSN
+                if (pattern !== "[0-9]*") {
+                    if (self.origin === null || self.origin === "null") {
+                        inputs[i].type = "text";
+                        inputs[i].value = "Untrusted: Input disabled.";
+                        inputs[i].style.opacity = 1;
+                        inputs[i].disabled = true;
+                        //inputs[i].style.display = "none";
+                        inputs[i].title = "Since this login form is probably provided by someone who is trying to steal your password, ";
+                        inputs[i].title += "the password field will not accept input from you.  ";
+                        inputs[i].title += "If you must use this form, turn off SitePassword in the extensions manager, ";
+                        inputs[i].title += "reload the page, and enter your password manually."
+                    } else {
+                        pwfields.push(inputs[i]);
+                        pwcount++;
+                        inputs[i].onclick = pwfieldOnclick;
+                    }
                 }
             }
         }
     }
     // If there is only 1 text input before the password field, it's likely to be a username field.
-    usernamefield = maybeUsernameFields[maybeUsernameFields.length - 1] || null;
+    if (maybeUsernameFields.length === 1) usernamefield = maybeUsernameFields[0];
     // Allow dbl click to fill in the username if there is a username,
     // the text field is empty, and there is no dblclick handler.
     if (username && maybeUsernameFields.length > 0) {
         let mutations = mutationObserver?.takeRecords();
         for (let i = 0; i < maybeUsernameFields.length; i++) {
             let element = maybeUsernameFields[i];
+            // By reassigning usernamefield, I ensure it always points to the username field closest to the password field
+            if (isUsernameField(maybeUsernameFields[i])) usernamefield = maybeUsernameFields[i];
             if (!element.value && !element.ondblclick) {
                 let myMutations = mutationObserver?.takeRecords();
                 if (!element.value) element.title = insertUsername;
@@ -675,7 +680,8 @@ function isInShadowRoot(element) {
  */
 async function retrySendMessage(message, retries = 5, delay = 100) {
     if (extensionRemoved()) return null; // Don't do anything if the extension has been removed
-    if (document.hidden || !document.hasFocus()) return; // Don't send messages if the page is not visible
+    // I'll let the page send messages when debugging even though the focus is on the developer tools
+    if (!debugMode && (document.hidden || !document.hasFocus())) return; // Don't send messages if the page is not visible
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
             const response = await chrome.runtime.sendMessage(message);
