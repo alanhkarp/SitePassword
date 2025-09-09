@@ -110,6 +110,8 @@ const debugMode = false; // Keeps the popup from closing when the mouse leaves t
 
 let logging = false;
 if (logging) console.log("Version 3.0");
+
+let messageQueue = Promise.resolve();
 let autoclose = true;
 let exporting = false;
 let sameacct = true;
@@ -1876,7 +1878,11 @@ function closeAllInstructions() {
  * @param {number} delay - The delay between retries in milliseconds.
  * @returns {Promise} - A promise that resolves when the message is successfully sent or rejects after all retries fail.
  */
-async function retrySendMessage(message, retries = 5, delay = 100) {
+function retrySendMessage(message, retries = 5, delay = 100) {
+    messageQueue = messageQueue.then(() => retrySendMessageRest(message, retries, delay));
+    return messageQueue;
+}
+async function retrySendMessageRest(message, retries = 5, delay = 100) {
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
             const response = await chrome.runtime.sendMessage(message);

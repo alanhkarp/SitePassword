@@ -19,6 +19,7 @@ let readyForClick = false;
 let mutationObserver;
 let maybeUsernameFields = [];
 let oldpwfield = null;
+let messageQueue = Promise.resolve();
 let lasttry = setTimeout(() => { // I want to be able to cancel without it firing
     if (logging) console.log("findpw initialize last try timer")
 }, 1000000);
@@ -372,7 +373,6 @@ async function pwfieldOnclick(event) {
 }
 async function countpwid() {
     if (extensionRemoved()) return {pwfields: [], idfield: null}; // Don't do anything if the extension has been removed
-    username = await getUsername();
     let usernamefield = null;
     let visible = true;
     let pwfields = [];
@@ -675,13 +675,20 @@ function isInShadowRoot(element) {
  * @param {number} delay - The delay between retries in milliseconds.
  * @returns {Promise} - A promise that resolves when the message is successfully sent or rejects after all retries fail.
  */
-async function retrySendMessage(message, retries = 5, delay = 100) {
+function retrySendMessage(message, retries = 5, delay = 100) {
+    messageQueue = messageQueue.then(() => retrySendMessageRest(message, retries, delay));
+    return messageQueue;
+}
+async function retrySendMessageRest(message, retries, delay) {
     if (extensionRemoved()) return null; // Don't do anything if the extension has been removed
     // I'll let the page send messages when debugging even though the focus is on the developer tools
     if (document.hidden || !document.hasFocus()) return; // Don't send messages if the page is not visible
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
+            if (logging) console.log("findpw retrySendMessage", message);
             const response = await chrome.runtime.sendMessage(message);
+            if (response.error) throw new Error(response.error);
+            if (logging) console.log("findpw retrySendMessage response", response);
             return response; // Message sent successfully
         } catch (error) {
             console.log(`Attempt ${attempt} failed:`, message, error);

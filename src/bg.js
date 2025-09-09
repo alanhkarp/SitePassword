@@ -4,7 +4,7 @@ import { isSharedCredentials } from "./sharedCredentials.js";
 
 // Only one of these can be true at a time; reload the extension after changing them.
 const testMode  = false; // Set to true to run the tests in test.js.
-const debugMode = talse; // Set to true to run SitePassword with the debug bookmarks folder.
+const debugMode = false; // Set to true to run SitePassword with the debug bookmarks folder.
 const demoMode  = false; // Set to true to run the SitePassword demo with the demo bookmarks folder.
 
 const logging = false;
@@ -15,6 +15,8 @@ const errorLogging = false;
 const commonSettingsTitle = "CommonSettings";
 const sitedataBookmark = "SitePasswordData" + (debugMode ? "Debug" : "") + (testMode ? "Test" : "") + (demoMode ? "Demo" : "");
 if (logging) console.log("bg sitedataBookmark", sitedataBookmark);
+// Global variables (I should be able to get rid of some of these)
+let messageQueue = Promise.resolve(); // To avoid reentrancy
 let superpw = "";
 let activetab;
 let domainname = "";
@@ -221,115 +223,117 @@ async function setup() {
     // Add message listener
     if (logging) console.log("bg adding listener");
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-        if (logging || testLogging) console.log("bg got message request, sender", request, sender);
-        // Start with a new database in case something changed while the service worker stayed open
-        database = clone(databaseDefault);
-        bg = clone(bgDefault);
-        bg.superpw = superpw;
-        if (logging) console.log("bg got message", isSuperPw(superpw), request);
-        retrieveMetadata(sendResponse, request, sender, async () => {
-            if (logging) console.log("bg listener back from retrieveMetadata", database);
-            if (logging) console.log("bg got ssp", isSuperPw(superpw));
-            if (request.cmd === "getMetadata") {
-                await getMetadata(request, sender, sendResponse);
-            } else if (request.cmd === "resetIcon") {
-                await chrome.storage.local.set({"onClipboard": false});
-                await chrome.action.setTitle({title: "Site Password"});
-                await chrome.action.setIcon({"path": "../images/icon128.png"});
-                sendResponse("icon reset");        
-            } else if (request.cmd === "siteData") {
-                if (logging) console.log("bg got site data", request);
-                bg = request.bg;
-                database.common.clearsuperpw = request.clearsuperpw;
-                database.common.hidesitepw = request.hidesitepw;
-                database.common.safeSuffixes = request.safeSuffixes || {};
-                if (!request.sameacct && bg.settings.sitename) {
-                    database.domains[normalize(bg.domainname)] = normalize(bg.settings.sitename);
-                    database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
-                }
-                superpw = bg.superpw || "";
-                if (logging) console.log("bg process siteData request", isSuperPw(superpw))
-                await persistMetadata(sendResponse);
-                sendResponse("persisted");
-            } else if (request.cmd === "getPassword") { 
-                let domainname = getdomainname(sender.origin || sender.url);
-                bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
-                bg.domainname = domainname;
-                if (testMode) domainname = request.domainname;
-                bg.settings = bgsettings(domainname);
-                let p = await generatePassword(bg);
-                p = stringXorArray(p, bg.settings.xor);
-                if (database.common.clearsuperpw) {
-                    if (logging) console.log("bg clear superpw")
-                    superpw = "";
-                    bg.superpw = "";
+        messageQueue = messageQueue.then(async () => {
+            console.log("bg got message request, sender", request, sender);
+            // Start with a new database in case something changed while the service worker stayed open
+            database = clone(databaseDefault);
+            bg = clone(bgDefault);
+            bg.superpw = superpw;
+            if (logging) console.log("bg got message", isSuperPw(superpw), request);
+            await retrieveMetadata(sendResponse, request, sender, async () => {
+                if (logging) console.log("bg listener back from retrieveMetadata", database);
+                if (logging) console.log("bg got ssp", isSuperPw(superpw));
+                if (request.cmd === "getMetadata") {
+                    await getMetadata(request, sender, sendResponse);
+                } else if (request.cmd === "resetIcon") {
+                    await chrome.storage.local.set({"onClipboard": false});
+                    await chrome.action.setTitle({title: "Site Password"});
+                    await chrome.action.setIcon({"path": "../images/icon128.png"});
+                    respondToMessage("icon reset", sender, sendResponse);
+                } else if (request.cmd === "siteData") {
+                    if (logging) console.log("bg got site data", request);
+                    bg = request.bg;
+                    database.common.clearsuperpw = request.clearsuperpw;
+                    database.common.hidesitepw = request.hidesitepw;
+                    database.common.safeSuffixes = request.safeSuffixes || {};
+                    if (!request.sameacct && bg.settings.sitename) {
+                        database.domains[normalize(bg.domainname)] = normalize(bg.settings.sitename);
+                        database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
+                    }
+                    superpw = bg.superpw || "";
+                    if (logging) console.log("bg process siteData request", isSuperPw(superpw))
                     await persistMetadata(sendResponse);
+                    respondToMessage("persisted", sender, sendResponse);
+                } else if (request.cmd === "getPassword") {
+                    let domainname = getdomainname(sender.origin || sender.url);
+                    bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
+                    bg.domainname = domainname;
+                    if (testMode) domainname = request.domainname;
+                    bg.settings = bgsettings(domainname);
+                    let p = await generatePassword(bg);
+                    p = stringXorArray(p, bg.settings.xor);
+                    if (database.common.clearsuperpw) {
+                        if (logging) console.log("bg clear superpw")
+                        superpw = "";
+                        bg.superpw = "";
+                        await persistMetadata(sendResponse);
+                    } else {
+                        await Promise.resolve(); // To match the await in the other branch
+                    }
+                    if (logging) console.log("bg calculated sitepw", isSuperPw(bg.superpw), bg.settings, database, p, isSuperPw(superpw));
+                    respondToMessage(p, sender, sendResponse);
+                    await Promise.resolve(); // To match the awaits in the other branches
+                } else if (request.cmd == "getUsername") {
+                    let domainname = getdomainname(sender.origin || sender.url);
+                    if (testMode) domainname = "alantheguru.alanhkarp.com";
+                    bg.settings = bgsettings(domainname);
+                    await persistMetadata(sendResponse);
+                    respondToMessage(bg.settings.username, sender, sendResponse);
+                    if (logging) console.log("bg username", bg.settings.username);
+                } else if (request.cmd === "reset") {
+                    // Used for testing, can't be in test.js becuase it needs to set local variables 
+                    defaultSettings = clone(baseDefaultSettings);
+                    database = clone(databaseDefault);
+                    database.common = clone(commonBaseDefault);
+                    if (testLogging) console.log("bg removing bookmarks folder for testing", defaultSettings.pwlength);
+                    rootFolder = await getRootFolder(sendResponse);
+                    await chrome.bookmarks.removeTree(rootFolder[0].id);
+                    createBookmarksFolder = true;
+                    if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0].title, defaultSettings.pwlength);
+                    respondToMessage("reset", sender, sendResponse);
+                } else if (request.cmd === "newDefaults") {
+                    if (logging) console.log("bg got new default settings", request.newDefaults);
+                    database.common.defaultSettings = request.newDefaults;
+                    await persistMetadata(sendResponse);
+                    respondToMessage("persisted", sender, sendResponse);
+                } else if (request.cmd === "forget") {
+                    if (logging) console.log("bg forget", request.cmd);
+                    rootFolder = await getRootFolder(sendResponse);
+                    if (logging) console.log("bg forget rootFolder", rootFolder, request.toforget);
+                    await forget(request.toforget, rootFolder[0], sender, sendResponse);
+                    if (logging) console.log("bg forget done");
+                    respondToMessage("forgot", sender, sendResponse);
+                } else if (request.clicked) {
+                    domainname = getdomainname(sender.origin || sender.url);
+                    bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
+                    bg.domainname = domainname;
+                    if (logging) console.log("bg clicked: sending response", isSuperPw(bg.superpw), bg.settings);
+                    if (database.common.clearsuperpw) {
+                        superpw = "";
+                        if (logging) console.log("bg clear superpw", isSuperPw(superpw));
+                    }
+                    respondToMessage(bg, sender, sendResponse);
+                    await Promise.resolve(); // To match the awaits in the other branches
+                } else if (request.onload) {
+                    await onContentPageload(request, sender, sendResponse);
+                    bg.superpw = superpw;
+                    if (logging) console.log("bg onload", isSuperPw(superpw), bg.settings);
+                    await persistMetadata(sendResponse);
+                    respondToMessage("persisted", sender, sendResponse);
                 } else {
-                    await Promise.resolve(); // To match the await in the other branch
+                    if (logging) console.log("bg got unknown request", request);
+                    respondToMessage("unknown request", sender, sendResponse);
+                    await Promise.resolve(); // To match the awaits in the other branches
                 }
-                if (logging) console.log("bg calculated sitepw", isSuperPw(bg.superpw), bg.settings, database, p, isSuperPw(superpw));
-                sendResponse(p);
-                await Promise.resolve(); // To match the awaits in the other branches
-            } else if (request.cmd == "getUsername") {
-                let domainname = getdomainname(sender.origin || sender.url);
-                if (testMode) domainname = "alantheguru.alanhkarp.com";
-                bg.settings = bgsettings(domainname);
-                await persistMetadata(sendResponse);
-                sendResponse(bg.settings.username);
-                if (logging) console.log("bg username", bg.settings.username);
-            } else if (request.cmd === "reset") {
-                // Used for testing, can't be in test.js becuase it needs to set local variables 
-                defaultSettings = clone(baseDefaultSettings);
-                database = clone(databaseDefault);
-                database.common = clone(commonBaseDefault);
-                if (testLogging) console.log("bg removing bookmarks folder for testing", defaultSettings.pwlength);
-                rootFolder = await getRootFolder(sendResponse);
-                await chrome.bookmarks.removeTree(rootFolder[0].id);
-                createBookmarksFolder = true;
-                if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0].title, defaultSettings.pwlength);
-                sendResponse("reset");
-            } else if (request.cmd === "newDefaults") {
-                if (logging) console.log("bg got new default settings", request.newDefaults);
-                database.common.defaultSettings = request.newDefaults;
-                await persistMetadata(sendResponse);
-                sendResponse("persisted");
-            } else if (request.cmd === "forget") {
-                if (logging) console.log("bg forget", request.cmd);
-                rootFolder = await getRootFolder(sendResponse);
-                if (logging) console.log("bg forget rootFolder", rootFolder, request.toforget);
-                await forget(request.toforget, rootFolder[0], sender, sendResponse);
-                if (logging) console.log("bg forget done");
-                sendResponse("forgot");
-            } else if (request.clicked) {
-                domainname = getdomainname(sender.origin || sender.url);
-                bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
-                bg.domainname = domainname;
-                if (logging) console.log("bg clicked: sending response", isSuperPw(bg.superpw), bg.settings);
-                if (database.common.clearsuperpw) {
-                    superpw = "";
-                    if (logging) console.log("bg clear superpw", isSuperPw(superpw));
-                }
-                sendResponse(bg);
-                await Promise.resolve(); // To match the awaits in the other branches
-            } else if (request.onload) {
-                await onContentPageload(request, sender, sendResponse);
-                bg.superpw = superpw;
-                if (logging) console.log("bg onload", isSuperPw(superpw), bg.settings);
-                await persistMetadata(sendResponse);
-                sendResponse("persisted");
-            } else {
-                if (logging) console.log("bg got unknown request", request);
-                sendResponse("unknown request");
-                await Promise.resolve(); // To match the awaits in the other branches
-            }
-            if (logging) console.log("bg addListener returning", isSuperPw(superpw));
+                if (logging) console.log("bg addListener returning", isSuperPw(superpw));
+            });
         });
         return true;
-    });
+   });
 }
 setup();
 // sender argument for debugging
-async function getMetadata(request, _sender, sendResponse) {
+async function getMetadata(request, sender, sendResponse) {
     if (logging) console.log("bg getMetadata", isSuperPw(bg.superpw), bg.settings, request);
     let sitename = database.domains[request.domainname];
     if (sitename) {
@@ -369,7 +373,7 @@ async function getMetadata(request, _sender, sendResponse) {
     if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
     if (logging) console.log("bg sending metadata", isSuperPw(bg.superpw), bg.settings, db);
     let syncing = rootFolder.syncing;
-    sendResponse({"test" : testMode, "superpw": superpw || "", "pwcount": pwcount, "bg": bg, "database": db, "syncing": syncing});
+    respondToMessage({"test" : testMode, "superpw": superpw || "", "pwcount": pwcount, "bg": bg, "database": db, "syncing": syncing}, sender, sendResponse);
 }
 // sender argument for debugging
 async function onContentPageload(request, sender, sendResponse) {
@@ -411,11 +415,11 @@ async function onContentPageload(request, sender, sendResponse) {
         readyForClick = true;
     }
     if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "readyForClick": readyForClick });
-    sendResponse({ "cmd": "fillfields", 
+    respondToMessage({ "cmd": "fillfields", 
         "u": bg.settings.username || "", 
         "p": "", 
         "readyForClick": readyForClick
-    });
+    }, sender, sendResponse);
 }
 async function persistMetadata(sendResponse) {
     if (logging) console.log("bg persistMetadata", isSuperPw(bg.superpw), bg.settings, database);
@@ -577,8 +581,9 @@ async function retrieveMetadata(sendResponse, request, sender, callback) {
         createBookmarksFolder = true;
     }
 }
+
 // sender argument for debugging
-async function parseBkmk(rootFolderId, callback, _sender, sendResponse) {
+async function parseBkmk(rootFolderId, callback, sender, sendResponse) {
     if (logging) console.log("bg parsing bookmark");
     let children = [];
     try {
@@ -610,7 +615,7 @@ async function parseBkmk(rootFolderId, callback, _sender, sendResponse) {
                     console.error("Error removing duplicate bookmark:", error);
                 }
             } else {
-                sendResponse({"duplicate": children[i].title});
+                respondToMessage({"duplicate": children[i].title}, sender, sendResponse);
             }
         } else {
             seenTitles[title] = parseURL(children[i].url);
@@ -674,7 +679,7 @@ export async function getRootFolder(sendResponse) { // Exported for testing
                     return syncingFolders;
                 }
             }
-            if (sendResponse) sendResponse("multiple");
+            if (sendResponse) respondToMessage("multiple", sender, sendResponse);
         } else if (folders.length === 0) {
             if (logging) console.log("bg found no", sitedataBookmark, "folders");
         }
@@ -734,7 +739,7 @@ function bgsettings(domainname) {
     }
     return bg.settings;
 }
-async function forget(toforget, rootFolder, _sender, sendResponse) {
+async function forget(toforget, rootFolder, sender, sendResponse) {
     if (logging) console.log("bg forget", toforget);
     for (const item of toforget)  {
         if (logging) console.log("bg forget item", item);
@@ -763,7 +768,7 @@ async function forget(toforget, rootFolder, _sender, sendResponse) {
         }
         if (logging) console.log("bg forget done", item);
     }
-    sendResponse("forgot");
+    respondToMessage("forgot", sender, sendResponse);
 }
 function stringifySettings(settings) {
     let s = JSON.stringify(settings);
@@ -819,6 +824,11 @@ function identicalObjects(a, b) {
 }
 function hasSuffix(domainname, suffix) {
     return domainname.endsWith(suffix);
+}
+// To make it easy to check responses
+function respondToMessage(response, sender, sendResponse) {
+    if (logging) console.log("bg respondToMessage", response, sender.url);
+    sendResponse(response);
 }
 // Legacy bookmarks did not do URI encoding correctly.  This function
 // checks for the presence of a curly brace to determine if the bookmark
