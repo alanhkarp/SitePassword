@@ -491,18 +491,25 @@ function isHidden(field) {
     }
 
     // Check color against background
-    const bgColor = window.getComputedStyle(field).backgroundColor;
-    const fieldColor = window.getComputedStyle(field).color;
-    const borderColor = window.getComputedStyle(field).borderColor;
-    if (bgColor && (isColorSimilar(bgColor, fieldColor) && isColorSimilar(bgColor, borderColor))) {
-        // The colors may match, but the label/placeholder will still be visible
-        if (!hasLabel(field) && !field.placeholder) {
+    const bgColor = style.backgroundColor.trim();
+    const fieldColor = style.color.trim();
+    if (fieldColor === "transparent" || isColorSimilar(bgColor, fieldColor)) {
+        // If field has a border, assume it's a different color
+        let hasBorder = false;
+        for (let i = 0; i < style.length; i++) {
+            const prop = style[i];
+            if (prop.includes('border')) {
+                hasBorder = true;
+            }
+        }
+        // The colors may match, but the label/placeholder will still be visible, assume
+        if (!hasBorder && !hasLabel(field) && !field.placeholder) {
             return true;
         }
     }
 
     // Check transform
-    const transform = window.getComputedStyle(field).transform;
+    const transform = style.transform;
     if (transform && transform !== 'none') {
         return true;
     }
@@ -523,7 +530,7 @@ function isHidden(field) {
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     const topElement = document.elementFromPoint(centerX, centerY);    
-    let pointerEvents = window.getComputedStyle(field).pointerEvents;
+    let pointerEvents = style.pointerEvents;
     if (isInShadowRoot(field) && pointerEvents !== "none") return false;
     // I want to treat an element as visible even if its label is on top of it
     if (topElement && topElement.getAttribute("for") !== field.id && topElement !== field && 
