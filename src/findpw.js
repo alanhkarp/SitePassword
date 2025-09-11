@@ -241,7 +241,7 @@ window.addEventListener('scroll', function() {
 });
 
 function fillfield(field, text) {
-    if (!cpi.pwfields.includes(field) && maybeUsernameFields.length === 1 && (usernameEdited || usernameEntered)) return;
+    if (!cpi.pwfields.includes(field) && (usernameEdited || usernameEntered)) return;
     // Don't change unless there is a different value to avoid mutationObserver cycling
     if (field && text && text !== field.value) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
