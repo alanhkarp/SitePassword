@@ -226,6 +226,20 @@ async function handleMutations(mutations) {
         }
     }, 200); // A delay of 100 didn't work, so 200 ms might not be long enough.
 }
+// A password field can be hidden when the page loads, and then made visible when
+// the user scrolls the page.  The following listener checks when scrolling stops.
+// Thanks, Copilot with some changes by me.
+let scrollTimeout;
+window.addEventListener('scroll', function() {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(async function() {
+        // Scrolling has stopped
+        cpi = await countpwid();
+        setpwPlaceholder(username);
+        sendpageinfo(cpi, false, false);
+    }, 50); // 50ms after last scroll event
+});
+
 function fillfield(field, text) {
     if (!cpi.pwfields.includes(field) && maybeUsernameFields.length === 1 && (usernameEdited || usernameEntered)) return;
     // Don't change unless there is a different value to avoid mutationObserver cycling
@@ -261,7 +275,8 @@ function makeEvent(field, type) {
 async function sendpageinfo(cpi, clicked, onload) {
     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
     // Only send page info if this tab has focus
-    if (!document.hidden && document.hasFocus()) {
+    let debugging = false; // So I can bypass the test when the focus in on the developer tools
+    if (debugging || (!document.hidden && document.hasFocus())) {
         await sendpageinfoRest(cpi, clicked, onload);
     } else {
         const visHandler = document.addEventListener("visibilitychange", async () => {
@@ -326,11 +341,11 @@ async function sendpageinfoRest(cpi, clicked, onload) {
 // I'll communicate with the user by replacing the any tooltips provided by 
 // the site.
 async function setpwPlaceholder(username) {
-    if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", username, readyForClick, cpi.pwfields);
+    if (logging) console.log(document.URL, Date.now() - start, "findpw setpwPlaceholder", username, readyForClick, cpi.pwfields);
     if (!cpi || !cpi.pwfields || cpi.pwfields.length === 0) return;
     let placeholder = (cpi.pwfields.length === 1) ? clickHere : pasteHere;
     if (!readyForClick || !username) placeholder = clickSitePassword;
-    if (logging) console.log(document.URL, Date.now() - start, "findpw setPlaceholder", placeholder);
+    if (logging) console.log(document.URL, Date.now() - start, "findpw setpwPlaceholder", placeholder);
     for (let i = 0; i < cpi.pwfields.length; i++) {
         if (!elementHasPlaceholder(cpi.pwfields[i])) {
             cpi.pwfields[i].placeholder = placeholder;
@@ -341,8 +356,8 @@ async function setpwPlaceholder(username) {
     }
 }
 function elementHasPlaceholder(element) {
-    return element && element.placeholder && 
-            !(element.placeholder === clickHere || 
+    return element && isFloatingLabel(element) && element.placeholder &&
+            !(element.placeholder === clickHere ||
             element.placeholder === pasteHere ||
             element.placeholder === clickSitePassword);
 }
@@ -467,8 +482,13 @@ function clearLabel(field) {
     }
 }
 // Thanks, Copilot plus some help from me
+// There are 2 reasons to hide the element
+//     Because the page owner wants it hidden
+//     For clickjacking
 function isHidden(field) {
     if (!field) return true;
+    // ------------------------------------------------
+    // These tests look for when the owner wants it hidden
 
     const style = window.getComputedStyle(field);
     // Check if the element is hidden via CSS properties
@@ -484,6 +504,36 @@ function isHidden(field) {
     if (rect.top >= viewportHeight || rect.bottom <= 0 || rect.left >= viewportWidth || rect.right <= 0) {
         return true;
     }
+
+    // Element is hidden if it or any ancestor has opacity less than 1
+    let el = field;
+    while (el) {
+        const style = window.getComputedStyle(el);
+        if (Number(style.opacity) < 1) {
+            return true;
+        }
+        el = el.parentElement;
+    }
+
+    // Check if the element is hidden by its parent
+    if (field.offsetParent === null && style.position !== 'fixed') {
+        return true;
+    }
+    // Check if the element is covered by another element
+    // Doesn't work for shadow DOM elements.
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const topElement = document.elementFromPoint(centerX, centerY);    
+    if (isInShadowRoot(field) && style.pointerEvents !== "none") return false;
+    // I want to treat an element as visible even if its label is on top of it
+    if (topElement && topElement.getAttribute("for") !== field.id && topElement !== field && 
+        !field.contains(topElement) && !topElement.contains(field)) 
+    {
+        return true;
+    }
+
+    // ------------------------------------------------
+    // The following tests provide partial protection against clickjacking
 
     // Check size
     if (rect.width <= 20 || rect.height <= 20) {
@@ -521,36 +571,9 @@ function isHidden(field) {
     if ((clip && clip !== 'auto' && clip !== 'none') || (clipPath && clipPath !== 'none')) {
         return true;
     }
-    // Check if the element is hidden by its parent
-    if (field.offsetParent === null && style.position !== 'fixed') {
-        return true;
-    }
-    // Check if the element is covered by another element
-    // Doesn't work for shadow DOM elements.
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const topElement = document.elementFromPoint(centerX, centerY);    
-    let pointerEvents = style.pointerEvents;
-    if (isInShadowRoot(field) && pointerEvents !== "none") return false;
-    // I want to treat an element as visible even if its label is on top of it
-    if (topElement && topElement.getAttribute("for") !== field.id && topElement !== field && 
-        !field.contains(topElement) && !topElement.contains(field)) 
-    {
-        return true;
-    }
     // Check if the element overlaps a popover or dialog
     if (isObscuredByPopoverOrDialog(field.id)) {
         return true;
-    }
-
-    // Return false if this element or any ancestor has opacity less than 1
-    let el = field;
-    while (el) {
-        const style = window.getComputedStyle(el);
-        if (Number(style.opacity) < 1) {
-            return true;
-        }
-        el = el.parentElement;
     }
 
     return false;
@@ -628,7 +651,34 @@ function overlaps(field, label) {
     if (floc.left >= lloc.right) return false;
     return true;
 }
+// Thanks, perplexity.ai
+function isFloatingLabel(input) {
+    // Get label related to input
+    const label = input.labels && input.labels[0];
+    if (!label) return false;
 
+    // Get position before focus
+    const beforeRect = label.getBoundingClientRect();
+
+    // Simulate focus or value change
+    input.value = input.value;
+    // Optionally, try input.focus();
+
+    // Allow for potential CSS transition
+    return new Promise(resolve => {
+        setTimeout(() => {
+            const afterRect = label.getBoundingClientRect();
+            // If label moved or changed size, likely a floating label
+            const moved = (
+                beforeRect.top !== afterRect.top ||
+                beforeRect.left !== afterRect.left ||
+                beforeRect.width !== afterRect.width ||
+                beforeRect.height !== afterRect.height
+            );
+            resolve(moved);
+        }, 150); // adjust for transition duration if needed
+    });
+}
 /**
  * Returns true if the input element is likely a username field.
  * @param {HTMLInputElement} element
