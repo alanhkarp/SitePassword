@@ -47,8 +47,9 @@ document.addEventListener("DOMContentLoaded", startupOnce); // In case DOM is no
 startupOnce();                                              // In case DOM is ready
 // Some other pages don't find the password fields until all downloads have completed.
 window.onload = async function () {
+    if (logging)console.log(document.URL, Date.now() - start, "findpw onload");
     username = await getUsername();
-    if (cpi.pwfields.length === 0) startup(); // In case DOM is already ready
+    startupOnce();
 }
 window.onerror = function (message, source, lineno, colno, error) {
     console.log(document.URL, Date.now() - start, "findpw error", message, source, lineno, colno, error);
@@ -347,7 +348,7 @@ async function setpwPlaceholder(username) {
     if (!readyForClick || !username) placeholder = clickSitePassword;
     if (logging) console.log(document.URL, Date.now() - start, "findpw setpwPlaceholder", placeholder);
     for (let i = 0; i < cpi.pwfields.length; i++) {
-        if (!elementHasPlaceholder(cpi.pwfields[i])) {
+        if (!await elementHasPlaceholder(cpi.pwfields[i])) {
             cpi.pwfields[i].placeholder = placeholder;
             cpi.pwfields[i].ariaPlaceholder = placeholder;
         }
@@ -355,8 +356,9 @@ async function setpwPlaceholder(username) {
         clearLabel(cpi.pwfields[i]);
     }
 }
-function elementHasPlaceholder(element) {
-    return element && isFloatingLabel(element) && element.placeholder &&
+async function elementHasPlaceholder(element) {
+    // I do want to replace the placeholder even if it's not one of mine
+    return element && await isFloatingLabel(element) && 
             !(element.placeholder === clickHere ||
             element.placeholder === pasteHere ||
             element.placeholder === clickSitePassword);
@@ -422,6 +424,7 @@ async function countpwid() {
                     } else {
                         pwfields.push(inputs[i]);
                         pwcount++;
+                        if (logging) console.log(document.URL, Date.now() - start, "findpw adding click handler to pwfield");
                         inputs[i].onclick = pwfieldOnclick;
                     }
                 }
@@ -443,6 +446,7 @@ async function countpwid() {
                 if (!element.value) element.title = insertUsername;
                 // I don't want to put a placeholder if there's a label or a placeholder
                 if (!hasLabel(element) && !element.placeholder) element.placeholder = insertUsername;
+                if (logging) console.log(document.URL, Date.now() - start, "findpw adding dblclick to username field", element);
                 element.ondblclick = async function () {
                     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
                     let mutations = mutationObserver.takeRecords();
