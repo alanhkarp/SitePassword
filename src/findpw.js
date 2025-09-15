@@ -120,19 +120,6 @@ async function startup() {
     // There is no reason to declare new mutation observers and listeners on every call.
     if (!mutationObserver) {
         cpi = await countpwid();
-        // Firefox doesn't preserve sessionStorage across restarts of
-        // the service worker.  Sending periodic messages keeps it
-        // alive, but there's no point to keep sending if there's an error.
-        // let keepAlive = setInterval(() => {
-        //     chrome.runtime.sendMessage({"cmd": "keepAlive"}, (alive) => {
-        //         if (chrome.runtime.lastError) {
-        //             console.log("findpw keepAlive error", error);
-        //             clearInterval(keepAlive);
-        //         } else {
-        //             if (!alive.keepAlive) clearInterval(keepAlive);
-        //         }
-        //     });
-        // }, 10_000);
         // Some pages change CSS to make the password field visible after clicking the Sign In button
         document.body.onclick = function () {
             if (logging) console.log("findpw click on body");
@@ -144,54 +131,54 @@ async function startup() {
         mutationObserver = new MutationObserver(handleMutations);
         mutationObserver.observe(document.body, observerOptions);
         chrome.runtime?.onMessage.addListener(async function (request, _sender, sendResponse) {
-            if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
-            readyForClick = request.readyForClick;
-            let mutations = mutationObserver.takeRecords();
-            cpi = await countpwid();
-            switch (request.cmd) {
-                case "fillfields":
-                    if (logging) console.log(document.URL, Date.now() - start, "findpw fillfields", cpi, request);
-                    username = request.u;
-                    fillfield(cpi.idfield, username);
-                    fillfield(cpi.pwfields[0], request.p);
-                    setpwPlaceholder(username);
-                    sendResponse("fillfields");
-                    break;
-                case "update":
-                    // If the user changes a setting in the popup, the password
-                    // on the page may not be what the user thinks it is.  However,
-                    // I can't just fill the form if the password field is empty.
-                    username = request.u;
-                    fillfield(cpi.idfield, username);
-                    sitepw = request.p;
-                    if (cpi.pwfields[0] && cpi.pwfields[0].value) {
-                        if (cpi.pwfields.length === 1 && cpi.pwfields[0].value !== sitepw) cpi.pwfields[0].value = "";
+            messageQueue = messageQueue.then( async () => {
+                let myMutations = mutationObserver ? mutationObserver.takeRecords() : [];
+                if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
+                readyForClick = request.readyForClick;
+                cpi = await countpwid();
+                switch (request.cmd) {
+                    case "fillfields":
+                        if (logging) console.log(document.URL, Date.now() - start, "findpw fillfields", cpi, request);
+                        username = request.u;
+                        fillfield(cpi.idfield, username);
+                        fillfield(cpi.pwfields[0], request.p);
                         setpwPlaceholder(username);
-                        sendResponse("updated");
-                    }
-                    break;
-                case "count":
-                    let pwdomain = document.location.hostname;
-                    let pwcount = cpi.pwfields.length || 0;
-                    let uid = cpi.idfield ? cpi.idfield.value : "";
-                    if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", pwcount, pwdomain);
-                    sendResponse({ "pwcount": pwcount, "id": uid, "pwdomain": pwdomain });
-                    break;
-                case "clear":
-                    if (cpi.idfield) cpi.idfield.value = "";
-                    for (let i = 0; i < cpi.pwfields.length || 0; i++) {
-                        cpi.pwfields[i].value = "";
-                    }
-                    setpwPlaceholder("");
-                    sendResponse("clear");
-                    break;
-                default:
-                    if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
-                    sendResponse("default");
-            }
-            let myMutations = mutationObserver.takeRecords();
-            if (logging) console.log("findpw listener fillfields my mutations", myMutations);
-            handleMutations(mutations);
+                        sendResponse("fillfields");
+                        break;
+                    case "update":
+                        // If the user changes a setting in the popup, the password
+                        // on the page may not be what the user thinks it is.  However,
+                        // I can't just fill the form if the password field is empty.
+                        username = request.u;
+                        fillfield(cpi.idfield, username);
+                        sitepw = request.p;
+                        if (cpi.pwfields[0] && cpi.pwfields[0].value) {
+                            if (cpi.pwfields.length === 1 && cpi.pwfields[0].value !== sitepw) cpi.pwfields[0].value = "";
+                            setpwPlaceholder(username);
+                            sendResponse("updated");
+                        }
+                        break;
+                    case "count":
+                        let pwdomain = document.location.hostname;
+                        let pwcount = cpi.pwfields.length || 0;
+                        let uid = cpi.idfield ? cpi.idfield.value : "";
+                        if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", pwcount, pwdomain);
+                        sendResponse({ "pwcount": pwcount, "id": uid, "pwdomain": pwdomain });
+                        break;
+                    case "clear":
+                        if (cpi.idfield) cpi.idfield.value = "";
+                        for (let i = 0; i < cpi.pwfields.length || 0; i++) {
+                            cpi.pwfields[i].value = "";
+                        }
+                        setpwPlaceholder("");
+                        sendResponse("clear");
+                        break;
+                    default:
+                        if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
+                        sendResponse("default");
+                }
+                handleMutations(myMutations);
+            });
         });
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
@@ -242,13 +229,15 @@ window.addEventListener('scroll', function() {
 });
 
 function fillfield(field, text) {
-    if (!cpi.pwfields.includes(field) && (usernameEdited || usernameEntered)) return;
+    // Don't fill in the username field if the user has already edited it or entered a username
+    if (maybeUsernameFields.includes(field) && usernameEdited) return;
     // Don't change unless there is a different value to avoid mutationObserver cycling
     if (field && text && text !== field.value) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
         field.value = text.trim();
         fixfield(field, text.trim());
-        if (field === cpi.idfield) {
+        if (maybeUsernameFields.includes(field)) {
+            usernameEntered = true; // I may not need this variable anymore.  It was checked in the first if
             usernameEdited = false;
         }
     }
@@ -276,8 +265,7 @@ function makeEvent(field, type) {
 async function sendpageinfo(cpi, clicked, onload) {
     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
     // Only send page info if this tab has focus
-    let debugging = false; // So I can bypass the test when the focus in on the developer tools
-    if (debugging || (!document.hidden && document.hasFocus())) {
+    if (!document.hidden && document.hasFocus()) {
         await sendpageinfoRest(cpi, clicked, onload);
     } else {
         const visHandler = document.addEventListener("visibilitychange", async () => {
@@ -291,7 +279,6 @@ async function sendpageinfo(cpi, clicked, onload) {
 // Needed to avoid recursion in visibility change test
 async function sendpageinfoRest(cpi, clicked, onload) {
     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
-    if (document.hidden && document.hasFocus()) return; // Don't do anything if the page is not visible
     // No need to send page info if no password fields found.  The user will have to open
     // the popup, which will supply the needed data
     if (cpi.pwfields.length === 0) return;
@@ -366,7 +353,7 @@ async function elementHasPlaceholder(element) {
 async function pwfieldOnclick(event) {
     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
-    if (!(this.placeholder === clickSitePassword)) {
+    if (this.placeholder !== clickSitePassword) {
         let response;
         try {
             response = await retrySendMessage({ "cmd": "getPassword" });
@@ -451,8 +438,6 @@ async function countpwid() {
                     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
                     let mutations = mutationObserver.takeRecords();
                     fillfield(this, username);
-                    usernameEntered = true;
-                    usernameEdited = false;
                     let myMutations = mutationObserver.takeRecords();
                     if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, username, myMutations);
                     await handleMutations(mutations);
@@ -463,7 +448,7 @@ async function countpwid() {
         if (mutations) await handleMutations(mutations);
     }
     if (usernamefield) {
-        usernamefield.onkeyup = function () {
+        usernamefield.onkeyup = function (e) {
             usernameEdited = true;
         };
     }
@@ -736,14 +721,10 @@ function isInShadowRoot(element) {
  * @param {number} delay - The delay between retries in milliseconds.
  * @returns {Promise} - A promise that resolves when the message is successfully sent or rejects after all retries fail.
  */
-function retrySendMessage(message, retries = 5, delay = 100) {
-    messageQueue = messageQueue.then(() => retrySendMessageRest(message, retries, delay));
-    return messageQueue;
-}
-async function retrySendMessageRest(message, retries, delay) {
+async function retrySendMessage(message, retries = 5, delay = 100) {
     if (extensionRemoved()) return null; // Don't do anything if the extension has been removed
     // I'll let the page send messages when debugging even though the focus is on the developer tools
-    if (document.hidden || !document.hasFocus()) return; // Don't send messages if the page is not visible
+    if (!debugMode && (document.hidden || !document.hasFocus())) return; // Don't send messages if the page is not visible
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
             if (logging) console.log("findpw retrySendMessage", message);
