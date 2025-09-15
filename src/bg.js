@@ -224,7 +224,7 @@ async function setup() {
     if (logging) console.log("bg adding listener");
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         messageQueue = messageQueue.then(async () => {
-            console.log("bg got message request, sender", request, sender);
+            if (logging)console.log("bg got message request, sender", request, sender);
             // Start with a new database in case something changed while the service worker stayed open
             database = clone(databaseDefault);
             bg = clone(bgDefault);

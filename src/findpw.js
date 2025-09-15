@@ -14,7 +14,6 @@ let usernameEdited = false;
 let usernameEntered = false;
 let dupNotified = false;
 let cleared = false; // Has password been cleared from the clipboard
-let cpi = { count: 0, pwfields: [], idfield: null };
 let readyForClick = false;
 let mutationObserver;
 let maybeUsernameFields = [];
@@ -70,7 +69,7 @@ if (!startupInterval) var startupInterval = setInterval(() => {
 // Some sites change the page contents based on the fragment
 window.addEventListener("hashchange", async (_href) => {
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from hash change listener");
-    cpi = await countpwid();
+    let cpi = await countpwid();
     await sendpageinfo(cpi, false, true);
 });
 // A few sites put their password fields in a shadow root to isolate it from the rest of the page.
@@ -119,7 +118,6 @@ async function startup() {
     // The code in this function used to be called once, but now it's called several times.
     // There is no reason to declare new mutation observers and listeners on every call.
     if (!mutationObserver) {
-        cpi = await countpwid();
         // Some pages change CSS to make the password field visible after clicking the Sign In button
         document.body.onclick = function () {
             if (logging) console.log("findpw click on body");
@@ -135,14 +133,14 @@ async function startup() {
                 let myMutations = mutationObserver ? mutationObserver.takeRecords() : [];
                 if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
                 readyForClick = request.readyForClick;
-                cpi = await countpwid();
+                let cpi = await countpwid();
                 switch (request.cmd) {
                     case "fillfields":
                         if (logging) console.log(document.URL, Date.now() - start, "findpw fillfields", cpi, request);
                         username = request.u;
                         fillfield(cpi.idfield, username);
                         fillfield(cpi.pwfields[0], request.p);
-                        setpwPlaceholder(username);
+                        setpwPlaceholder(username, cpi);
                         sendResponse("fillfields");
                         break;
                     case "update":
@@ -154,7 +152,7 @@ async function startup() {
                         sitepw = request.p;
                         if (cpi.pwfields[0] && cpi.pwfields[0].value) {
                             if (cpi.pwfields.length === 1 && cpi.pwfields[0].value !== sitepw) cpi.pwfields[0].value = "";
-                            setpwPlaceholder(username);
+                            setpwPlaceholder(username, cpi);
                             sendResponse("updated");
                         }
                         break;
@@ -170,7 +168,7 @@ async function startup() {
                         for (let i = 0; i < cpi.pwfields.length || 0; i++) {
                             cpi.pwfields[i].value = "";
                         }
-                        setpwPlaceholder("");
+                        setpwPlaceholder("", cpi);
                         sendResponse("clear");
                         break;
                     default:
@@ -182,7 +180,7 @@ async function startup() {
         });
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
-    cpi = await countpwid();
+    let cpi = await countpwid();
     await sendpageinfo(cpi, false, true);
     return true;
 }
@@ -191,6 +189,7 @@ async function handleMutations(mutations) {
     if (!mutationObserver) return; // No need to handle mutations if the observer has been removed
     if ((document.hidden && document.hasFocus()) || !mutations[0]) return;
     // Return if any mutation's target is the same element as cpi.idfield
+    let cpi = countpwid();
     if (mutations.some(m => m.target === cpi.idfield)) return;
     clearTimeout(lasttry);
     // Find password field if added late
@@ -204,7 +203,6 @@ async function handleMutations(mutations) {
     // from the page, not the content script.
     setTimeout(async () => {
         cpi = await countpwid();
-        if (!cpi) return; // Should never happen, but it does
         oldpwfield = cpi.pwfields[0];
         await sendpageinfo(cpi, false, true);
         // The mutation observer can be null if the extension has been removed
@@ -222,8 +220,8 @@ window.addEventListener('scroll', function() {
     clearTimeout(scrollTimeout);
     scrollTimeout = setTimeout(async function() {
         // Scrolling has stopped
-        cpi = await countpwid();
-        setpwPlaceholder(username);
+        let cpi = await countpwid();
+        setpwPlaceholder(username, cpi);
         sendpageinfo(cpi, false, false);
     }, 50); // 50ms after last scroll event
 });
@@ -315,9 +313,8 @@ async function sendpageinfoRest(cpi, clicked, onload) {
     sitepw = response.p;
     let mutations = mutationObserver?.takeRecords() || [];
     fillfield(cpi.idfield, username);
-    setpwPlaceholder(username);
+    setpwPlaceholder(username, cpi);
     if (username) fillfield(cpi.pwfields[0], "");
-    let myMutations = mutationObserver?.takeRecords() || [];
     if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
     await handleMutations(mutations);
 }
@@ -328,7 +325,7 @@ async function sendpageinfoRest(cpi, clicked, onload) {
 // has a placeholder, I won't overwrite them except for Click SitePassword. 
 // I'll communicate with the user by replacing the any tooltips provided by 
 // the site.
-async function setpwPlaceholder(username) {
+async function setpwPlaceholder(username, cpi) {
     if (logging) console.log(document.URL, Date.now() - start, "findpw setpwPlaceholder", username, readyForClick, cpi.pwfields);
     if (!cpi || !cpi.pwfields || cpi.pwfields.length === 0) return;
     let placeholder = (cpi.pwfields.length === 1) ? clickHere : pasteHere;
@@ -383,7 +380,7 @@ async function countpwid() {
     let pwcount = 0;
     maybeUsernameFields = [];
     let inputs = document.getElementsByTagName("input");
-    if (cpi.pwfields.length === 0 && inputs.length === 0) inputs = searchShadowRoots(document.body);
+    if (inputs.length === 0) inputs = searchShadowRoots(document.body);
     for (let i = 0; i < inputs.length; i++) {
         visible = !isHidden(inputs[i]);
         if (visible) {
@@ -772,6 +769,7 @@ function extensionRemoved() {
     if (window.onload) window.onload = null;
     if (window.onhashchange) window.onhashchange = null;
     if (document.readyState !== "loading") document.onload = null;
+    let cpi = countpwid();
     try {
         if (cpi && cpi.idfield) cpi.idfield.onclick = null;
         for (let pwfield of cpi.pwfields) {
