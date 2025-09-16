@@ -18,6 +18,7 @@ let readyForClick = false;
 let mutationObserver;
 let maybeUsernameFields = [];
 let oldpwfield = null;
+let lastcpi = null; // Last countpwid result
 let messageQueue = Promise.resolve();
 let lasttry = setTimeout(() => { // I want to be able to cancel without it firing
     if (logging) console.log("findpw initialize last try timer")
@@ -202,7 +203,7 @@ async function handleMutations(mutations) {
     // the style properties before I do.  As a result, the warning gets reported as coming 
     // from the page, not the content script.
     setTimeout(async () => {
-        cpi = await countpwid();
+        let cpi = await countpwid();
         oldpwfield = cpi.pwfields[0];
         await sendpageinfo(cpi, false, true);
         // The mutation observer can be null if the extension has been removed
@@ -450,6 +451,7 @@ async function countpwid() {
         };
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", pwcount, pwfields, usernamefield);
+    lastcpi = { pwfields: pwfields, idfield: usernamefield };
     return { pwfields: pwfields, idfield: usernamefield };
 }
 function clearLabel(field) {
@@ -769,7 +771,7 @@ function extensionRemoved() {
     if (window.onload) window.onload = null;
     if (window.onhashchange) window.onhashchange = null;
     if (document.readyState !== "loading") document.onload = null;
-    let cpi = countpwid();
+    let cpi = lastcpi || { pwfields: [], idfield: null };
     try {
         if (cpi && cpi.idfield) cpi.idfield.onclick = null;
         for (let pwfield of cpi.pwfields) {
