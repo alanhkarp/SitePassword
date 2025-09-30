@@ -1,12 +1,13 @@
 // Content script for ssp
 'use strict';
-let debugMode = false;
+let debugMode = false; // Let's me send messages when the developer window has the focus
 let logging = false;
 let hideLabels = true; // Make it easy to turn off label hiding
 let clickSitePassword = "Click SitePassword";
 let clickSitePasswordTitle = "Click on the SitePassword icon"
 let clickHere = "Click here for password";
 let pasteHere = "Dbl-click or paste your password";
+let sspPlaceholders = [clickHere, pasteHere, clickSitePassword];
 let insertUsername = "Dbl-click if your username goes here";
 let sitepw = "";
 let username = "";
@@ -17,7 +18,6 @@ let cleared = false; // Has password been cleared from the clipboard
 let readyForClick = false;
 let mutationObserver;
 let maybeUsernameFields = [];
-let oldpwfield = null;
 let lastcpi = null; // Last countpwid result
 let messageQueue = Promise.resolve();
 let lasttry = setTimeout(() => { // I want to be able to cancel without it firing
@@ -67,6 +67,19 @@ if (!startupInterval) var startupInterval = setInterval(() => {
         startup();
     }
 }, 2000);
+// A password field can be hidden when the page loads, and then made visible when
+// the user scrolls the page.  The following listener checks when scrolling stops.
+// Thanks, Copilot with some changes by me.
+let scrollTimeout;
+window.addEventListener('scroll', function() {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(async function() {
+        // Scrolling has stopped
+        let cpi = await countpwid();
+        setpwPlaceholder(username, cpi);
+        sendpageinfo(cpi, false, false);
+    }, 50); // 50ms after last scroll event
+});
 // Some sites change the page contents based on the fragment
 window.addEventListener("hashchange", async (_href) => {
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from hash change listener");
@@ -131,7 +144,6 @@ async function startup() {
         mutationObserver.observe(document.body, observerOptions);
         chrome.runtime?.onMessage.addListener(async function (request, _sender, sendResponse) {
             messageQueue = messageQueue.then( async () => {
-                let myMutations = mutationObserver ? mutationObserver.takeRecords() : [];
                 if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
                 readyForClick = request.readyForClick;
                 let cpi = await countpwid();
@@ -172,11 +184,16 @@ async function startup() {
                         setpwPlaceholder("", cpi);
                         sendResponse("clear");
                         break;
+                    case "activated":
+                        if (logging) console.log(document.URL, Date.now() - start, "findpw got activated message");
+                        sendResponse("activated");
+                        cpi = await countpwid();
+                        await sendpageinfo(cpi, false, true);
+                        break;
                     default:
                         if (logging) console.log(document.URL, Date.now() - start, "findpw unexpected message", request);
                         sendResponse("default");
                 }
-                handleMutations(myMutations);
             });
         });
     }
@@ -185,60 +202,41 @@ async function startup() {
     await sendpageinfo(cpi, false, true);
     return true;
 }
+// I never deal with individual mutations, just the fact that something changed.
+let cpiTimeout = null; // Only call countpwid after things have settled down
 async function handleMutations(mutations) {
     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
-    if (!mutationObserver) return; // No need to handle mutations if the observer has been removed
-    if ((document.hidden && document.hasFocus()) || !mutations[0]) return;
-    // Return if any mutation's target is the same element as cpi.idfield
-    let cpi = countpwid();
-    if (mutations.some(m => m.target === cpi.idfield)) return;
+    if (!mutations || mutations.length === 0) return; // Nothing to do if no mutations
+    if (!debugMode && (document.hidden || !document.hasFocus())) return; // Only deal the active tab unless debugging   
+    if (mutations.every(m => m.target.setbyssp === true)) return; // Don't do anything if all the mutations were caused by me
     clearTimeout(lasttry);
-    // Find password field if added late
-    if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
-    if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from mutation observer");
+    clearTimeout(cpiTimeout); // Only call countpwid() once things have settled down
     // Without this delay, certain warnings from the page get reported as coming from isHidden().
     // (See https://www.fastcompany.com/91277240/how-to-spot-fake-job-postings-and-avoid-scams.)
     // The problem is that element style properities are evaluated lazily, and my code is the 
     // first to do that after the mutation.  The delay gives the page a chance to check 
     // the style properties before I do.  As a result, the warning gets reported as coming 
     // from the page, not the content script.
-    setTimeout(async () => {
+    cpiTimeout = setTimeout(async () => {
+        // Find the userid and password fields in case they were added late
         let cpi = await countpwid();
-        oldpwfield = cpi.pwfields[0];
+        if (logging) console.log(document.URL, Date.now() - start, "findpw DOM changed", cpi, mutations);
         await sendpageinfo(cpi, false, true);
-        // The mutation observer can be null if the extension has been removed
-        if (mutationObserver) {
-            let myMutations = mutationObserver.takeRecords();
-            if (logging) console.log("findpw handleMutations my mutations", myMutations);
-        }
     }, 200); // A delay of 100 didn't work, so 200 ms might not be long enough.
 }
-// A password field can be hidden when the page loads, and then made visible when
-// the user scrolls the page.  The following listener checks when scrolling stops.
-// Thanks, Copilot with some changes by me.
-let scrollTimeout;
-window.addEventListener('scroll', function() {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(async function() {
-        // Scrolling has stopped
-        let cpi = await countpwid();
-        setpwPlaceholder(username, cpi);
-        sendpageinfo(cpi, false, false);
-    }, 50); // 50ms after last scroll event
-});
-
 function fillfield(field, text) {
-    // Don't fill in the username field if the user has already edited it or entered a username
-    if (maybeUsernameFields.includes(field) && usernameEdited) return;
     // Don't change unless there is a different value to avoid mutationObserver cycling
-    if (field && text && text !== field.value) {
-        if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
-        field.value = text.trim();
-        fixfield(field, text.trim());
-        if (maybeUsernameFields.includes(field)) {
-            usernameEntered = true; // I may not need this variable anymore.  It was checked in the first if
-            usernameEdited = false;
-        }
+    if (!field || !text || text.trim() === field.value.trim()) return;
+    // Don't change what the user entered in the username field
+    if (maybeUsernameFields.includes(field) && usernameEdited) return;
+    if (logging) console.log(document.URL, Date.now() - start, "findpw fillfield value text", field.value, text);
+    field.value = text.trim();
+    // Setting a value should not be reported as a mutation, but sometimes it is.
+    field.setbyssp = true; // To avoid recursion in mutation observer
+    fixfield(field, text.trim());
+    if (maybeUsernameFields.includes(field)) {
+        usernameEntered = true;
+        usernameEdited = false;
     }
 }
 // Some pages don't know the field has been updated
@@ -312,12 +310,10 @@ async function sendpageinfoRest(cpi, clicked, onload) {
     readyForClick = response.readyForClick;
     username = response.u;
     sitepw = response.p;
-    let mutations = mutationObserver?.takeRecords() || [];
     fillfield(cpi.idfield, username);
     setpwPlaceholder(username, cpi);
     if (username) fillfield(cpi.pwfields[0], "");
     if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
-    await handleMutations(mutations);
 }
 // Some sites use placeholders and tooltips to tell the user what to do.
 // I don't want to hide that information from the user, so I don't overwrite 
@@ -333,12 +329,16 @@ async function setpwPlaceholder(username, cpi) {
     if (!readyForClick || !username) placeholder = clickSitePassword;
     if (logging) console.log(document.URL, Date.now() - start, "findpw setpwPlaceholder", placeholder);
     for (let i = 0; i < cpi.pwfields.length; i++) {
-        if (!await elementHasPlaceholder(cpi.pwfields[i])) {
-            cpi.pwfields[i].placeholder = placeholder;
-            cpi.pwfields[i].ariaPlaceholder = placeholder;
+        let pwfield = cpi.pwfields[i];
+        pwfield.title = placeholder; // Unconditionally set the title
+        pwfield.setbyssp = true; // To avoid recursion in mutation observer
+        let oneOfMine = sspPlaceholders.includes(placeholder); 
+        if (!oneOfMine && pwfield.setbyssp) continue; // Don't overwrite if I previously set it and the page then changed it.
+        if (!await elementHasPlaceholder(pwfield)) {
+            pwfield.placeholder = placeholder;
+            pwfield.ariaPlaceholder = placeholder;
         }
-        cpi.pwfields[i].title = placeholder;
-        clearLabel(cpi.pwfields[i]);
+        clearLabel(pwfield);
     }
 }
 async function elementHasPlaceholder(element) {
@@ -362,11 +362,8 @@ async function pwfieldOnclick(event) {
         }
         sitepw = response;
         if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
-        let mutations = mutationObserver.takeRecords();
         fillfield(this, response);
-        let myMutations = mutationObserver.takeRecords();
-        if (logging) console.log(document.URL, Date.now() - start, "findpw got password", this, response, myMutations);
-        await handleMutations(mutations);
+        if (logging) console.log(document.URL, Date.now() - start, "findpw got password", this, response);
     } else {
         // Because people don't always pay attention
         if (!this.placeholder || this.placeholder === clickSitePassword) alert(clickSitePassword);
@@ -410,7 +407,7 @@ async function countpwid() {
                         pwfields.push(inputs[i]);
                         pwcount++;
                         if (logging) console.log(document.URL, Date.now() - start, "findpw adding click handler to pwfield");
-                        inputs[i].onclick = pwfieldOnclick;
+                        if (inputs[i].onclick !== pwfieldOnclick) inputs[i].onclick = pwfieldOnclick;
                     }
                 }
             }
@@ -421,29 +418,22 @@ async function countpwid() {
     // Allow dbl click to fill in the username if there is a username,
     // the text field is empty, and there is no dblclick handler.
     if (username && maybeUsernameFields.length > 0) {
-        let mutations = mutationObserver?.takeRecords();
         for (let i = 0; i < maybeUsernameFields.length; i++) {
             let element = maybeUsernameFields[i];
             // By reassigning usernamefield, I ensure it always points to the username field closest to the password field
             if (isUsernameField(maybeUsernameFields[i])) usernamefield = maybeUsernameFields[i];
             if (!element.value && !element.ondblclick) {
-                let myMutations = mutationObserver?.takeRecords();
                 if (!element.value) element.title = insertUsername;
                 // I don't want to put a placeholder if there's a label or a placeholder
                 if (!hasLabel(element) && !element.placeholder) element.placeholder = insertUsername;
                 if (logging) console.log(document.URL, Date.now() - start, "findpw adding dblclick to username field", element);
                 element.ondblclick = async function () {
                     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
-                    let mutations = mutationObserver.takeRecords();
                     fillfield(this, username);
-                    let myMutations = mutationObserver.takeRecords();
                     if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, username, myMutations);
-                    await handleMutations(mutations);
                 }
-                if (mutationObserver) await handleMutations(myMutations);
             }
         }
-        if (mutations) await handleMutations(mutations);
     }
     if (usernamefield) {
         usernamefield.onkeyup = function (e) {

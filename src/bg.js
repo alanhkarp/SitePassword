@@ -118,6 +118,7 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
     try {
         let tab = await chrome.tabs.get(activeInfo.tabId);
         await updateTab(tab);
+        await chrome.tabs.sendMessage(tab.id, {cmd: "activated"});
     } catch (error) {
         if (errorLogging) console.log("Error handling tab activation", error);
         await Promise.resolve();
