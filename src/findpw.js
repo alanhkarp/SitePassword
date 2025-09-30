@@ -334,16 +334,19 @@ async function setpwPlaceholder(username, cpi) {
         pwfield.setbyssp = true; // To avoid recursion in mutation observer
         let oneOfMine = sspPlaceholders.includes(placeholder); 
         if (!oneOfMine && pwfield.setbyssp) continue; // Don't overwrite if I previously set it and the page then changed it.
-        if (!await elementHasPlaceholder(pwfield)) {
+        let hasPlaceholder = elementHasPlaceholder(pwfield);
+        if (!hasPlaceholder) {
             pwfield.placeholder = placeholder;
             pwfield.ariaPlaceholder = placeholder;
         }
         clearLabel(pwfield);
     }
 }
-async function elementHasPlaceholder(element) {
+function elementHasPlaceholder(element) {
     // I do want to replace the placeholder even if it's not one of mine
-    return element && await isFloatingLabel(element) && 
+    // let hasFloating = await isFloatingLabel(element);
+    if (!element.placeholder) return false;
+    return element &&  
             !(element.placeholder === clickHere ||
             element.placeholder === pasteHere ||
             element.placeholder === clickSitePassword);
@@ -629,7 +632,7 @@ function overlaps(field, label) {
     if (floc.left >= lloc.right) return false;
     return true;
 }
-// Thanks, perplexity.ai
+// Thanks, perplexity.ai, but I can't get it to work properly
 function isFloatingLabel(input) {
     // Get label related to input
     const label = input.labels && input.labels[0];
@@ -741,8 +744,6 @@ function hasLabel(element) {
     // Check if wrapped in a <label>
     if (element.closest('label')) return true;
     if (!element.id) return false;
-    // Check for label[for] matching id
-    const labels = Array.from(document.querySelectorAll('label[for]'));
     // According to HTML spec, label[for] only associates with an element's id.
     return !!document.querySelector(`label[for="${element.id}"]`);
 }
