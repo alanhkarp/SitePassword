@@ -292,6 +292,9 @@ async function sendpageinfoRest(cpi, clicked, onload) {
         return;
     }
     if (!response) return; // No response means something went wrong
+    if (response === "unknown request") {
+        alert("The SitePassword extension got an unknown request.");
+    }
     if (response === "multiple") {
         alert("You have more than one entry in your bookmarks with a title SitePasswordData.  Delete or rename the ones you don't want SitePassword to use.  Then reload this page.");
         return;
@@ -331,14 +334,11 @@ async function setpwPlaceholder(username, cpi) {
     for (let i = 0; i < cpi.pwfields.length; i++) {
         let pwfield = cpi.pwfields[i];
         pwfield.title = placeholder; // Unconditionally set the title
-        pwfield.setbyssp = true; // To avoid recursion in mutation observer
         let oneOfMine = sspPlaceholders.includes(placeholder); 
         if (!oneOfMine && pwfield.setbyssp) continue; // Don't overwrite if I previously set it and the page then changed it.
-        let hasPlaceholder = elementHasPlaceholder(pwfield);
-        if (!hasPlaceholder) {
-            pwfield.placeholder = placeholder;
-            pwfield.ariaPlaceholder = placeholder;
-        }
+        pwfield.setbyssp = true; // To avoid recursion in mutation observer
+        pwfield.placeholder = placeholder;
+        pwfield.ariaPlaceholder = placeholder;
         clearLabel(pwfield);
     }
 }
@@ -425,11 +425,14 @@ async function countpwid() {
             let element = maybeUsernameFields[i];
             // By reassigning usernamefield, I ensure it always points to the username field closest to the password field
             if (isUsernameField(maybeUsernameFields[i])) usernamefield = maybeUsernameFields[i];
-            if (!element.value && !element.ondblclick) {
-                if (!element.value) element.title = insertUsername;
-                // I don't want to put a placeholder if there's a label or a placeholder
-                if (!hasLabel(element) && !element.placeholder) element.placeholder = insertUsername;
-                if (logging) console.log(document.URL, Date.now() - start, "findpw adding dblclick to username field", element);
+            let oneOfMine = element.placeholder === insertUsername; 
+            if (!oneOfMine && element.setbyssp) continue; // Don't overwrite if I previously set it and the page then changed it.
+               if (element.title !== insertUsername) {
+                element.title = insertUsername;
+                element.setbyssp = true; // To avoid recursion in mutation observer
+            }
+            if (!element.ondblclick) {
+                 if (logging) console.log(document.URL, Date.now() - start, "findpw adding dblclick to username field", element);
                 element.ondblclick = async function () {
                     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
                     fillfield(this, username);
