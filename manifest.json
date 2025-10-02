@@ -16,6 +16,12 @@
         {
             "matches": ["https://*/*", "http://*/*"],
             "run_at": "document_idle",
+            "exclude_matches": [
+                "https://sitepassword.info/*",
+                "https://mail.google.com/*",
+                "https://maps.google.com/*",
+                "https://calendar.google.com/*"
+            ],
             "js": [
                 "src/findpw.js"
             ],
