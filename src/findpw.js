@@ -60,7 +60,7 @@ window.onerror = function (message, source, lineno, colno, error) {
 let cssnum = document.styleSheets.length;
 // Need var because you can only use let inside a block
 if (!startupInterval) var startupInterval = setInterval(() => {
-    if (!document.hidden && document.hasFocus() && document.styleSheets.length > cssnum) {
+    if (isActiveTab() && document.styleSheets.length > cssnum) {
         cssnum = document.styleSheets.length;
         if (logging) console.log(document.URL, Date.now() - start, "findpw css added", cssnum);
         // alert("findpw document startupInterval");
@@ -76,8 +76,8 @@ window.addEventListener('scroll', function() {
     scrollTimeout = setTimeout(async function() {
         // Scrolling has stopped
         let cpi = await countpwid();
+        await sendpageinfo(cpi, false, false);
         setpwPlaceholder(username, cpi);
-        sendpageinfo(cpi, false, false);
     }, 50); // 50ms after last scroll event
 });
 // Some sites change the page contents based on the fragment
@@ -124,7 +124,7 @@ async function startup() {
     if (!document || !document.body) return; // Don't do anything if the document is not ready
     if (logging) console.log(document.URL, Date.now() - start, "findpw startup");
     if (extensionRemoved()) return true; // Don't do anything if the extension has been removed
-    if (document.hidden && document.hasFocus()) return; // Don't do anything if the page is not visible
+    if (!isActiveTab()) return; // Don't do anything if the page is not visible
     // You wouldn't normally go to sitepassword.info on a machine that has the extension installed.
     // However, someone may have hosted the page at a different URL.  Hence, the test.
     // Don't do anything if this is a SitePasswordWeb page
@@ -207,7 +207,7 @@ let cpiTimeout = null; // Only call countpwid after things have settled down
 async function handleMutations(mutations) {
     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
     if (!mutations || mutations.length === 0) return; // Nothing to do if no mutations
-    if (!debugMode && (document.hidden || !document.hasFocus())) return; // Only deal the active tab unless debugging   
+    if (!isActiveTab()) return; // Only deal the active tab unless debugging
     if (mutations.every(m => m.target.setbyssp === true)) return; // Don't do anything if all the mutations were caused by me
     clearTimeout(lasttry);
     clearTimeout(cpiTimeout); // Only call countpwid() once things have settled down
@@ -262,11 +262,11 @@ function makeEvent(field, type) {
 async function sendpageinfo(cpi, clicked, onload) {
     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
     // Only send page info if this tab has focus
-    if (!document.hidden && document.hasFocus()) {
+    if (isActiveTab()) {
         await sendpageinfoRest(cpi, clicked, onload);
     } else {
         const visHandler = document.addEventListener("visibilitychange", async () => {
-            if (document.hidden && document.hasFocus()) return;
+            if (!isActiveTab()) return;
             document.removeEventListener("visibilitychange", visHandler);
             await sendpageinfoRest(cpi, clicked, onload);
             return;
@@ -335,7 +335,7 @@ async function setpwPlaceholder(username, cpi) {
     for (let i = 0; i < cpi.pwfields.length; i++) {
         let pwfield = cpi.pwfields[i];
         pwfield.title = placeholder; // Unconditionally set the title
-        let oneOfMine = sspPlaceholders.includes(placeholder); 
+        let oneOfMine = sspPlaceholders.includes(placeholder);
         if (!oneOfMine && pwfield.setbyssp) continue; // Don't overwrite if I previously set it and the page then changed it.
         pwfield.setbyssp = true; // To avoid recursion in mutation observer
         pwfield.placeholder = placeholder;
@@ -708,6 +708,9 @@ async function getUsername() {
 function isInShadowRoot(element) {
     return element && element.getRootNode() instanceof ShadowRoot;
 }
+function isActiveTab() {
+    return debugMode || (!document.hidden && document.hasFocus());
+}
 // Sometimes messages fail because the receiving side isn't quite ready.
 // That's most often the service worker as it's starting up.
 /**
@@ -720,7 +723,7 @@ function isInShadowRoot(element) {
 async function retrySendMessage(message, retries = 5, delay = 100) {
     if (extensionRemoved()) return null; // Don't do anything if the extension has been removed
     // I'll let the page send messages when debugging even though the focus is on the developer tools
-    if (!debugMode && (document.hidden || !document.hasFocus())) return; // Don't send messages if the page is not visible
+    if (!isActiveTab()) return; // Don't send messages if the page is not visible
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
             if (logging) console.log("findpw retrySendMessage", message);
