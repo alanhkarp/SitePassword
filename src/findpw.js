@@ -335,9 +335,12 @@ async function setpwPlaceholder(username, cpi) {
     for (let i = 0; i < cpi.pwfields.length; i++) {
         let pwfield = cpi.pwfields[i];
         pwfield.title = placeholder; // Unconditionally set the title
-        let oneOfMine = sspPlaceholders.includes(placeholder);
+        let oneOfMine = sspPlaceholders.includes(pwfield.placeholder);
         if (!oneOfMine && pwfield.setbyssp) continue; // Don't overwrite if I previously set it and the page then changed it.
         pwfield.setbyssp = true; // To avoid recursion in mutation observer
+        // Don't overwrite a placeholder that is not one of mine
+        if (pwfield.placeholder && !oneOfMine) continue;
+        if (pwfield.placeholder === placeholder) continue; // No need to change
         pwfield.placeholder = placeholder;
         pwfield.ariaPlaceholder = placeholder;
         clearLabel(pwfield);
