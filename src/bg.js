@@ -315,7 +315,7 @@ async function setup() {
                     }
                     respondToMessage(bg, sender, sendResponse);
                     await Promise.resolve(); // To match the awaits in the other branches
-                } else if (request.onload) {
+                } else if (request.cmd === "pageInfo") {
                     await onContentPageload(request, sender, sendResponse);
                     bg.superpw = superpw;
                     if (logging) console.log("bg onload", isSuperPw(superpw), bg.settings);

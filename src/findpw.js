@@ -283,6 +283,7 @@ async function sendpageinfoRest(cpi, clicked, onload) {
     let response = {};
     try {
         response = await retrySendMessage({
+            "cmd": "pageInfo",
             "count": cpi.pwfields.length || 0,
             "clicked": clicked,
             "onload": onload
