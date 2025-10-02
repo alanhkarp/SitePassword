@@ -380,20 +380,22 @@ async function pwfieldOnclick(event) {
 async function countpwid() {
     if (extensionRemoved()) return {pwfields: [], idfield: null}; // Don't do anything if the extension has been removed
     let usernamefield = null;
-    let visible = true;
     let pwfields = [];
     let pwcount = 0;
     maybeUsernameFields = [];
     let inputs = document.getElementsByTagName("input");
     if (inputs.length === 0) inputs = searchShadowRoots(document.body);
     for (let i = 0; i < inputs.length; i++) {
-        visible = !isHidden(inputs[i]);
+        // Only care about text, email, and password fields
+        let index = ["text", "email", "password"].indexOf(inputs[i].type?.toLowerCase());
+        if (index === -1) continue;
+        let visible = !isHidden(inputs[i]);
         if (visible) {
             // I'm only interested in visible text and email fields, 
             // and splitting the condition makes it easier to debug
-            if ((inputs[i].type === "text" || inputs[i].type === "email")) {
+            if (index === 0 || index === 1) { // text or email
                 maybeUsernameFields.push(inputs[i]);
-            } else if (inputs[i].type && (inputs[i].type.toLowerCase() === "password")) {
+            } else if (index === 2) { // password
                 // At least one bank disables the password field until I focus on the username field.
                 // Note that the field can be readOnly, and clicking will fill it in.
                 inputs[i].disabled = false;
