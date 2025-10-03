@@ -381,7 +381,6 @@ async function countpwid() {
     if (extensionRemoved()) return {pwfields: [], idfield: null}; // Don't do anything if the extension has been removed
     let usernamefield = null;
     let pwfields = [];
-    let pwcount = 0;
     maybeUsernameFields = [];
     let inputs = document.getElementsByTagName("input");
     if (inputs.length === 0) inputs = searchShadowRoots(document.body);
@@ -414,12 +413,18 @@ async function countpwid() {
                         inputs[i].title += "reload the page, and enter your password manually."
                     } else {
                         pwfields.push(inputs[i]);
-                        pwcount++;
-                        if (logging) console.log(document.URL, Date.now() - start, "findpw adding click handler to pwfield");
-                        if (inputs[i].onclick !== pwfieldOnclick) inputs[i].onclick = pwfieldOnclick;
                     }
                 }
             }
+        }
+    }
+    if (logging) console.log(document.URL, Date.now() - start, "findpw adding click handler to pwfield");
+    if (pwfields.length === 1 && pwfields[0].onclick !== pwfieldOnclick) {
+        pwfields[0].onclick = pwfieldOnclick;
+    } else {
+        for (let i = 0; i < pwfields.length; i++) {
+            if (logging) console.log(document.URL, Date.now() - start, "findpw adding dblclick handler to pwfield");
+            if (pwfields[i].ondblclick !== pwfieldOnclick) pwfields[i].ondblclick = pwfieldOnclick;
         }
     }
     // If there is only 1 text input before the password field, it's likely to be a username field.
@@ -452,7 +457,7 @@ async function countpwid() {
             usernameEdited = true;
         };
     }
-    if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", pwcount, pwfields, usernamefield);
+    if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", pwfields, usernamefield);
     lastcpi = { pwfields: pwfields, idfield: usernamefield };
     return { pwfields: pwfields, idfield: usernamefield };
 }
