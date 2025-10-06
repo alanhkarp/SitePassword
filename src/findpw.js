@@ -393,7 +393,7 @@ async function countpwid() {
             // I'm only interested in visible text and email fields, 
             // and splitting the condition makes it easier to debug
             if (index === 0 || index === 1) { // text or email
-                maybeUsernameFields.push(inputs[i]);
+                if (!inputs[i].toggledbyssp) maybeUsernameFields.push(inputs[i]);
             } else if (index === 2) { // password
                 // At least one bank disables the password field until I focus on the username field.
                 // Note that the field can be readOnly, and clicking will fill it in.
@@ -413,6 +413,7 @@ async function countpwid() {
                         inputs[i].title += "reload the page, and enter your password manually."
                     } else {
                         pwfields.push(inputs[i]);
+                        passwordToggle(inputs[i]);
                     }
                 }
             }
@@ -720,6 +721,22 @@ function isInShadowRoot(element) {
 }
 function isActiveTab() {
     return debugMode || (!document.hidden && document.hasFocus());
+}
+function passwordToggle(field) {
+    if (!field || field.type.toLowerCase() !== "password") return;
+    if (field.onkeydown || field.onkeyup) return; // Don't add multiple listeners
+    field.onkeydown = function (e) {
+        if (e.ctrlKey && e.type === "keydown") {
+            field.type = "text";
+            field.toggledbyssp = true; // Remember that I changed the type
+        }
+    }
+    field.onkeyup = function (e) {
+        if (field.type === "text" && (e.type === "keyup" || !e.ctrlKey)) {
+            field.type = "password";
+            field.toggledbyssp = false; // Forget that I changed the type
+        }
+    }
 }
 // Sometimes messages fail because the receiving side isn't quite ready.
 // That's most often the service worker as it's starting up.
