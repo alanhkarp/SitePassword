@@ -443,9 +443,9 @@ async function countpwid() {
     if (maybeUsernameFields.length > 0 && found > 0 && c === 1) {
         for (let i = found - 1; i >= 0; i--) {
             // Skip over invisible input fields above the password field
-            visible = !isHidden(inputs[i]);
+            let visible = !isHidden(inputs[i]);
             if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
-                usernamefield = inputs[i];
+                if (isUsernameField(inputs[i])) usernamefield = inputs[i];
                 break;
             }
         }
@@ -455,8 +455,6 @@ async function countpwid() {
     if (username && maybeUsernameFields.length > 0) {
         for (let i = 0; i < maybeUsernameFields.length; i++) {
             let element = maybeUsernameFields[i];
-            // By reassigning usernamefield, I ensure it always points to the username field closest to the password field
-            if (isUsernameField(maybeUsernameFields[i])) usernamefield = maybeUsernameFields[i];
             let oneOfMine = element.placeholder === insertUsername; 
             if (!oneOfMine && element.setbyssp) continue; // Don't overwrite if I previously set it and the page then changed it.
                if (element.title !== insertUsername) {
