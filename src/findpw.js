@@ -714,6 +714,8 @@ function isUsernameField(element) {
     const usernameKeywords = [
         "user", "login", "email", "username", "userid", "account"
     ];
+    // If all attributes are empty, then just presume it's a username field
+    if (attrs.every(attr => attr === "")) return true;
 
     // Check autocomplete attribute
     if (attrs[4] === "username" || attrs[4] === "email") return true;
