@@ -381,6 +381,8 @@ async function countpwid() {
     if (extensionRemoved()) return {pwfields: [], idfield: null}; // Don't do anything if the extension has been removed
     let usernamefield = null;
     let pwfields = [];
+    let found = -1;
+    let c = 0;
     maybeUsernameFields = [];
     let inputs = document.getElementsByTagName("input");
     if (inputs.length === 0) inputs = searchShadowRoots(document.body);
@@ -401,6 +403,7 @@ async function countpwid() {
                 if (logging) console.log(document.URL, Date.now() - start, "findpw found password field", i, inputs[i], visible);
                 let pattern = inputs[i].getAttribute("pattern"); // Pattern [0-9]* is a PIN or SSN
                 if (pattern !== "[0-9]*") {
+                    // Protect against an attack based on sandboxing
                     if (self.origin === null || self.origin === "null") {
                         inputs[i].type = "text";
                         inputs[i].value = "Untrusted: Input disabled.";
@@ -414,6 +417,8 @@ async function countpwid() {
                     } else {
                         pwfields.push(inputs[i]);
                         passwordToggle(inputs[i]);
+                        c++;
+                        if (c === 1) found = i;
                     }
                 }
             }
@@ -428,8 +433,23 @@ async function countpwid() {
             if (pwfields[i].ondblclick !== pwfieldOnclick) pwfields[i].ondblclick = pwfieldOnclick;
         }
     }
-    // If there is only 1 text input before the password field, it's likely to be a username field.
-    if (maybeUsernameFields.length === 1) usernamefield = maybeUsernameFields[0];
+    // Some sites let you see your passwords, which changes the input type from
+    // password to text.  The result is that the heuristic for finding a username
+    // field actually finds a password field with a visible password and replaces
+    // the password with the username.
+    // The following test means I won't find a username field if there is more than one 
+    // text field preceding the password field.  This choice avoids confusion when there 
+    // the page has multiple text fields, but only one password field.
+    if (maybeUsernameFields.length > 0 && found > 0 && c === 1) {
+        for (let i = found - 1; i >= 0; i--) {
+            // Skip over invisible input fields above the password field
+            visible = !isHidden(inputs[i]);
+            if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
+                usernamefield = inputs[i];
+                break;
+            }
+        }
+    }
     // Allow dbl click to fill in the username if there is a username,
     // the text field is empty, and there is no dblclick handler.
     if (username && maybeUsernameFields.length > 0) {
