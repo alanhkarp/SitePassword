@@ -781,6 +781,23 @@ function hasLabel(element) {
     // According to HTML spec, label[for] only associates with an element's id.
     return !!document.querySelector(`label[for="${element.id}"]`);
 }
+/**
+ * Reloads all tabs in the current window.
+ */
+
+// Listen for CTRL+Re
+window.addEventListener('keydown', function (e) {
+    if (e.ctrlKey && (e.key === 'r' || e.key === 'R')) {
+        e.preventDefault();
+        reloadAllTabsInCurrentWindow();
+    }
+});
+async function reloadAllTabsInCurrentWindow() {
+    // Content scripts cannot access chrome.tabs or chrome.windows directly.
+    // Send a message to the background script to reload all tabs in the current window.
+    let response = await chrome.runtime.sendMessage({ cmd: "reloadTabs" });
+    if (logging) console.log("findpw reloadTabs response", response);
+}
 // A content script keeps running even after it's replaced with exectuteScript.
 // This function cleans up all the event listeners, timers, and the mutation observer.
 function extensionRemoved() {

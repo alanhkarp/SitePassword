@@ -322,6 +322,27 @@ async function setup() {
                     if (logging) console.log("bg onload", isSuperPw(superpw), bg.settings);
                     await persistMetadata(sendResponse);
                     respondToMessage("persisted", sender, sendResponse);
+                } else if (request.cmd === "reloadTabs") {
+                    // Reload all tabs in the current window
+                    if (demoMode) {
+                        try {
+                        let [currentWindow] = await chrome.windows.getAll({populate: true, windowTypes: ['normal']});
+                        if (currentWindow && currentWindow.tabs) {
+                            chrome.windows.getCurrent({populate: true}, function(window) {
+                                if (!window || !window.tabs) return;
+                                window.tabs.forEach(tab => {
+                                    if (tab.id) chrome.tabs.reload(tab.id);
+                                });
+                            });
+                        }
+                        respondToMessage("tabs reloaded", sender, sendResponse);
+                        } catch (error) {
+                            if (errorLogging) console.log("Error reloading tabs", error);
+                            respondToMessage("error reloading tabs", sender, sendResponse);
+                        }
+                    } else {
+                        respondToMessage("not in demo mode", sender, sendResponse);
+                    }
                 } else {
                     if (logging) console.log("bg got unknown request", request);
                     respondToMessage("unknown request", sender, sendResponse);
