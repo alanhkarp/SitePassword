@@ -387,6 +387,7 @@ async function countpwid() {
     let inputs = document.getElementsByTagName("input");
     if (inputs.length === 0) inputs = searchShadowRoots(document.body);
     for (let i = 0; i < inputs.length; i++) {
+        if (inputs[i].id === "InputIdentityFlowValue") debugger;
         // Only care about text, email, and password fields
         let index = ["text", "email", "password"].indexOf(inputs[i].type?.toLowerCase());
         if (index === -1) continue;
@@ -445,7 +446,7 @@ async function countpwid() {
             // Skip over invisible input fields above the password field
             let visible = !isHidden(inputs[i]);
             if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
-                if (isUsernameField(inputs[i])) usernamefield = inputs[i];
+                if (precedesInDOM(inputs[i], pwfields[0])) usernamefield = inputs[i];
                 break;
             }
         }
@@ -693,37 +694,16 @@ function isFloatingLabel(input) {
         }, 150); // adjust for transition duration if needed
     });
 }
+// The copilot version returned an integer instead of a boolean
 /**
- * Returns true if the input element is likely a username field.
- * @param {HTMLInputElement} element
+ * Returns true if the first element precedes the second element in the DOM tree.
+ * @param {Element} el1
+ * @param {Element} el2
  * @returns {boolean}
  */
-function isUsernameField(element) {
-    if (!element || element.tagName !== "INPUT") return false;
-    const type = element.type?.toLowerCase();
-    if (type !== "text" && type !== "email") return false;
-    // Heuristics: id/name/placeholder contains "user", "login", "email", etc.
-    const attrs = [
-        element.id || "",
-        element.name || "",
-        element.placeholder || "",
-        element.getAttribute("aria-label") || "",
-        element.getAttribute("autocomplete") || ""
-    ].map(s => s.toLowerCase());
-
-    const usernameKeywords = [
-        "user", "login", "email", "username", "userid", "account"
-    ];
-    // If all attributes are empty, then just presume it's a username field
-    if (attrs.every(attr => attr === "")) return true;
-
-    // Check autocomplete attribute
-    if (attrs[4] === "username" || attrs[4] === "email") return true;
-
-    // Check for keywords in other attributes
-    return usernameKeywords.some(keyword =>
-        attrs.some(attr => attr.includes(keyword))
-    );
+function precedesInDOM(el1, el2) {
+    if (!el1 || !el2 || !(el1 instanceof Element) || !(el2 instanceof Element)) return false;
+    return !!(el1.compareDocumentPosition(el2) & Node.DOCUMENT_POSITION_FOLLOWING);
 }
 async function getUsername() {
     try {
