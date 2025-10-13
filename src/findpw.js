@@ -441,7 +441,7 @@ async function countpwid() {
     // The following test means I won't find a username field if there is more than one 
     // text field preceding the password field.  This choice avoids confusion when there 
     // the page has multiple text fields, but only one password field.
-    if (maybeUsernameFields.length > 0 && found > 0 && c === 1) {
+    if (maybeUsernameFields.length > 0 && found > 0 && c > 0) {
         for (let i = found - 1; i >= 0; i--) {
             // Skip over invisible input fields above the password field
             let visible = !isHidden(inputs[i]);
