@@ -243,7 +243,6 @@ function fillfield(field, text) {
 function fixfield(field, text) {
     // Maybe I just need to tell the page that the field changed
     makeEvent(field, "change");
-    makeEvent(field, "onchange");
     makeEvent(field, "input");
     makeEvent(field, "HTMLEvents");
     makeEvent(field, "keydown");
@@ -387,7 +386,6 @@ async function countpwid() {
     let inputs = document.getElementsByTagName("input");
     if (inputs.length === 0) inputs = searchShadowRoots(document.body);
     for (let i = 0; i < inputs.length; i++) {
-        if (inputs[i].id === "InputIdentityFlowValue") debugger;
         // Only care about text, email, and password fields
         let index = ["text", "email", "password"].indexOf(inputs[i].type?.toLowerCase());
         if (index === -1) continue;

@@ -127,7 +127,7 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
 chrome.runtime.onInstalled.addListener(async function(details) {
     // Check for consistency of the flags
     if (testMode && debugMode || testMode && demoMode || debugMode && demoMode) {
-        let developererror = chrome.runtime.getURL("developererror.html");
+        let developererror = chrome.runtime.getURL("./webpages/developererror.html");
         chrome.windows.create({
             url: developererror,
             type:"normal",
@@ -137,7 +137,7 @@ chrome.runtime.onInstalled.addListener(async function(details) {
         return;
     }
     if (testMode) {
-        let developertest = chrome.runtime.getURL("developertest.html");
+        let developertest = chrome.runtime.getURL("./webpages/developertest.html");
         chrome.windows.create({
             url: developertest,
             type:"normal",
@@ -149,7 +149,7 @@ chrome.runtime.onInstalled.addListener(async function(details) {
     await chrome.browsingData.removeCache({});
     if (logging) console.log("bg cleared the browser cache");
     if (details.reason === "install") {
-        let gettingstarted = chrome.runtime.getURL("gettingstarted.html");
+        let gettingstarted = chrome.runtime.getURL("./webpages/gettingstarted.html");
         chrome.windows.create({
             url: gettingstarted,
             type:"normal",
@@ -249,7 +249,7 @@ async function setup() {
                     database.common.hidesitepw = request.hidesitepw;
                     database.common.safeSuffixes = request.safeSuffixes || {};
                     if (!request.sameacct && bg.settings.sitename) {
-                        database.domains[normalize(bg.domainname)] = normalize(bg.settings.sitename);
+                        database.domains[normalize(bg.settings.domainname)] = normalize(bg.settings.sitename);
                         database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
                     }
                     superpw = bg.superpw || "";
@@ -258,8 +258,8 @@ async function setup() {
                     respondToMessage("persisted", sender, sendResponse);
                 } else if (request.cmd === "getPassword") {
                     let domainname = getdomainname(sender.origin || sender.url);
-                    bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
-                    bg.domainname = domainname;
+                    bg.domainname = domainname; // Keep for compatibility with V3.0.12
+                    bg.settings.domainname = domainname;
                     if (testMode) domainname = request.domainname;
                     bg.settings = bgsettings(domainname);
                     let p = await generatePassword(bg);
@@ -307,8 +307,8 @@ async function setup() {
                     respondToMessage("forgot", sender, sendResponse);
                 } else if (request.clicked) {
                     domainname = getdomainname(sender.origin || sender.url);
-                    bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
-                    bg.domainname = domainname;
+                    bg.domainname = domainname; // Keep for compatibility with V3.0.12
+                    bg.settings.domainname = domainname;
                     if (logging) console.log("bg clicked: sending response", isSuperPw(bg.superpw), bg.settings);
                     if (database.common.clearsuperpw) {
                         superpw = "";
@@ -377,8 +377,8 @@ async function getMetadata(request, sender, sendResponse) {
     }
     bg.superpw = superpw;
     // Domain name comes from popup, which is trusted not to spoof it
-    bg.settings.domainname = request.domainname; // Keep for compatibility with V3.0.12
-    bg.domainname = request.domainname;
+    bg.domainname = request.domainname; // Keep for compatibility with V3.0.12
+    bg.settings.domainname = request.domainname;
     activetab = request.activetab;
     if (logging) console.log("bg got active tab", activetab);
     // Don't lose database across async call
@@ -429,10 +429,10 @@ async function onContentPageload(request, sender, sendResponse) {
             bg.settings = clone(defaultSettings);
         }
     }
-    bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
-    bg.settings.pwdomainname = getdomainname(sender.origin || sender.url); // Keep for compatibility with V3.0.12
-    bg.domainname = domainname;
-    bg.pwdomainname = getdomainname(sender.origin || sender.url);
+    bg.domainname = domainname; // Keep for compatibility with V3.0.12
+    bg.pwdomainname = getdomainname(sender.origin || sender.url); // Keep for compatibility with V3.0.12
+    bg.settings.domainname = domainname;
+    bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
     let readyForClick = false;
     if (superpw && bg.settings.sitename && bg.settings.username) {
         readyForClick = true;
@@ -454,12 +454,12 @@ async function persistMetadata(sendResponse) {
     rootFolder = found[0];
     let sitename = normalize(bg.settings.sitename);
     if (sitename) {
-        let oldsitename = db.domains[bg.domainname];
-        if ((!oldsitename) || sitename === oldsitename) {
-            db.domains[bg.domainname] = normalize(bg.settings.sitename);
-            if (!bg.pwdomainname) bg.pwdomainname = bg.domainname;
-            if (bg.pwdomainname !== bg.domainname) {
-                db.domains[bg.pwdomainname] = normalize(bg.settings.sitename);
+        let oldsitename = db.domains[bg.settings.domainname];
+        if (!oldsitename || sitename === oldsitename) {
+            db.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
+            if (!bg.settings.pwdomainname) bg.settings.pwdomainname = bg.settings.domainname;
+            if (bg.settings.pwdomainname !== bg.settings.domainname) {
+                db.domains[bg.settings.pwdomainname] = normalize(bg.settings.sitename);
             }
             db.sites[sitename] = bg.settings;
         } else {
@@ -565,8 +565,8 @@ async function persistMetadata(sendResponse) {
         } else if (createBookmark) {
             createBookmark = false;
             if (bg.settings.sitename && 
-                (domainnames[i] === bg.domainname) ||
-                (domainnames[i] === bg.pwdomainname)) {
+                (domainnames[i] === bg.settings.domainname) ||
+                (domainnames[i] === bg.settings.pwdomainname)) {
                 let title = domainnames[i];
                 if (logging) console.log("bg creating bookmark for", title);
                 try {
@@ -755,9 +755,9 @@ function bgsettings(domainname) {
             database.domains[domainname] = sharedSitename;
         } else {
             bg.settings = clone(defaultSettings);
-         if (!bg.settings) bg.settings = clone(defaultSettings);
-            bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
-            bg.domainname = domainname;
+            if (!bg.settings) bg.settings = clone(defaultSettings);
+            bg.domainname = domainname; // Keep for compatibility with V3.0.12
+            bg.settings.domainname = domainname;
         }
     }
     return bg.settings;
