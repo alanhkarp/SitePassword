@@ -1369,7 +1369,8 @@ async function handleblur(event, element) {
     setMeter("sitepw");
     updateExportButton(); 
     let u = $username.value || "";
-    let readyForClick = !!(pw && $superpw.value && u);
+    let n = $sitename.value || "";
+    let readyForClick = !!(pw && $superpw.value && n && u); // Form is filled in
     if (isUrlMatch(activetab.url)) {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": "", "readyForClick": readyForClick });
@@ -1394,8 +1395,7 @@ async function changePlaceholder() {
     let p = $superpw.value || "";
     let n = $sitename.value || "";
     let u = $username.value || "";
-    let readyForClick = false;
-    if (get("superpw").value && u) readyForClick = true;
+    let readyForClick = !!($superpw.value && u && n); // Form is filled in
     if (isUrlMatch(activetab.url)) {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });

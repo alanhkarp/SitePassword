@@ -407,10 +407,13 @@ async function onContentPageload(request, sender, sendResponse) {
     let savedData = {};
     let s = await chrome.storage.session.get(["savedData"]);
     if (Object.keys(s).length > 0) savedData = s.savedData;
-    if (pwcount) savedData[activetab.url] = pwcount || 0;
     if (logging) console.log("bg saving data", savedData[activetab.url]);
-    if (pwcount) await chrome.storage.session.set({"savedData": savedData}); 
+    if (pwcount) {
+        savedData[activetab.url] = pwcount || 0;
+        await chrome.storage.session.set({"savedData": savedData});
+    }
     let domainname = getdomainname(activetab.url);
+    let pwdomainname = getdomainname(sender.origin || sender.url);
     if (logging) console.log("bg domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
     let sitename = database.domains[domainname];
     if (logging) console.log("bg |sitename|, settings, database", sitename, database.sites[sitename], database);
@@ -430,13 +433,10 @@ async function onContentPageload(request, sender, sendResponse) {
         }
     }
     bg.domainname = domainname; // Keep for compatibility with V3.0.12
-    bg.pwdomainname = getdomainname(sender.origin || sender.url); // Keep for compatibility with V3.0.12
+    bg.pwdomainname = pwdomainname; // Keep for compatibility with V3.0.12
     bg.settings.domainname = domainname;
-    bg.settings.pwdomainname = getdomainname(sender.origin || sender.url);
-    let readyForClick = false;
-    if (superpw && bg.settings.sitename && bg.settings.username) {
-        readyForClick = true;
-    }
+    bg.settings.pwdomainname = pwdomainname;
+    let readyForClick = !!(superpw && bg.settings.sitename && bg.settings.username); // Form filled in
     if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "readyForClick": readyForClick });
     respondToMessage({ "cmd": "fillfields", 
         "u": bg.settings.username || "", 

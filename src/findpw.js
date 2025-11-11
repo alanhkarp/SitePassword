@@ -316,7 +316,6 @@ async function sendpageinfoRest(cpi, clicked, onload) {
     fillfield(cpi.idfield, username);
     setpwPlaceholder(username, cpi);
     if (username) fillfield(cpi.pwfields[0], "");
-    if (logging) console.log("findpw sendpageinfo my mutations", myMutations);
 }
 // Some sites use placeholders and tooltips to tell the user what to do.
 // I don't want to hide that information from the user, so I don't overwrite 
@@ -357,7 +356,7 @@ function elementHasPlaceholder(element) {
 async function pwfieldOnclick(event) {
     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
     if (logging) console.log(document.URL, Date.now() - start, "findpw get sitepass", event);
-    if (this.placeholder !== clickSitePassword) {
+    if (this.title !== clickSitePassword) {
         let response;
         try {
             response = await retrySendMessage({ "cmd": "getPassword" });
@@ -372,7 +371,7 @@ async function pwfieldOnclick(event) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw got password", this, response);
     } else {
         // Because people don't always pay attention
-        if (!this.placeholder || this.placeholder === clickSitePassword) alert(clickSitePassword);
+        if (!this.title || this.title === clickSitePassword) alert(clickSitePassword);
         await Promise.resolve(); // To match the await in the other branch
     }
 }
@@ -465,7 +464,7 @@ async function countpwid() {
                 element.ondblclick = async function () {
                     if (extensionRemoved()) return; // Don't do anything if the extension has been removed
                     fillfield(this, username);
-                    if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, username, myMutations);
+                    if (logging) console.log(document.URL, Date.now() - start, "findpw got username", this, username);
                 }
             }
         }
