@@ -249,7 +249,7 @@ async function setup() {
                     database.common.hidesitepw = request.hidesitepw;
                     database.common.safeSuffixes = request.safeSuffixes || {};
                     if (!request.sameacct && bg.settings.sitename) {
-                        database.domains[normalize(bg.settings.domainname)] = normalize(bg.settings.sitename);
+                        database.domains[normalize(bg.settings.pwdomainname)] = normalize(bg.settings.sitename);
                         database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
                     }
                     superpw = bg.superpw || "";
@@ -402,7 +402,7 @@ async function getMetadata(request, sender, sendResponse) {
 async function onContentPageload(request, sender, sendResponse) {
     if (logging) console.log("bg onContentPageLoad", isSuperPw(bg.superpw), bg.settings, request, sender);
     activetab = sender.tab;
-    pwcount = request.count;
+    pwcount = typeof request.count === "number" ? request.count : parseInt(request.count, 10) || 0;
     // Save data that service worker needs after it restarts
     let savedData = {};
     let s = await chrome.storage.session.get(["savedData"]);
@@ -458,9 +458,6 @@ async function persistMetadata(sendResponse) {
         if (!oldsitename || sitename === oldsitename) {
             db.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
             if (!bg.settings.pwdomainname) bg.settings.pwdomainname = bg.settings.domainname;
-            if (bg.settings.pwdomainname !== bg.settings.domainname) {
-                db.domains[bg.settings.pwdomainname] = normalize(bg.settings.sitename);
-            }
             db.sites[sitename] = bg.settings;
         } else {
             // Find all domains that point to oldsitename and have them point to

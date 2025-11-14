@@ -195,12 +195,12 @@ async function startup() {
                         sendResponse("default");
                 }
             });
+            return true;
         });
     }
     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
     let cpi = await countpwid();
     await sendpageinfo(cpi, false, true);
-    return true;
 }
 // I never deal with individual mutations, just the fact that something changed.
 let cpiTimeout = null; // Only call countpwid after things have settled down

@@ -276,6 +276,7 @@ export async function getsettings() {
     if (!bg.settings.sitename) {
         bg.settings.sitename = "";
     }
+    $domainname.value = bg.settings.pwdomainname || bg.settings.domainname || domainname;
     $superpw.value = response.superpw || "";
     bg.superpw = response.superpw || "";
     await init();
@@ -1371,6 +1372,7 @@ async function handleblur(event, element) {
     let u = $username.value || "";
     let n = $sitename.value || "";
     let readyForClick = !!(pw && $superpw.value && n && u); // Form is filled in
+    readyForClick = readyForClick && bg.settings.pwdomainname === bg.settings.domainname;
     if (isUrlMatch(activetab.url)) {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": "", "readyForClick": readyForClick });
@@ -1396,6 +1398,7 @@ async function changePlaceholder() {
     let n = $sitename.value || "";
     let u = $username.value || "";
     let readyForClick = !!($superpw.value && u && n); // Form is filled in
+    readyForClick = readyForClick && bg.settings.pwdomainname === bg.settings.domainname;
     if (isUrlMatch(activetab.url)) {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
