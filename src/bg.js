@@ -436,7 +436,7 @@ async function onContentPageload(request, sender, sendResponse) {
     bg.pwdomainname = pwdomainname; // Keep for compatibility with V3.0.12
     bg.settings.domainname = domainname;
     bg.settings.pwdomainname = pwdomainname;
-    let readyForClick = !!(superpw && bg.settings.sitename && bg.settings.username); // Form filled in
+    let readyForClick = isReadyForClick();
     if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "readyForClick": readyForClick });
     respondToMessage({ "cmd": "fillfields", 
         "u": bg.settings.username || "", 
@@ -865,6 +865,20 @@ function sspUrl(url) {
         return undefined;
     }
 }
+export async function isReadyForClick() {
+    let u = $username.value || "";
+    let n = $sitename.value || "";
+    let s = await chrome.storage.session.get("savedData"); // Returns {} if nothing is saved
+    if (s.savedData && bg.settings.domainname) {
+        const matchingDomain = Object.keys(s.savedData).find(key => getdomainname(key) === bg.settings.domainname);
+        if (matchingDomain && s.savedData[matchingDomain] > 0 && !bg.settings.pwdomainname) {
+            bg.settings.pwdomainname = bg.settings.domainname;
+        }
+    }
+    let readyForClick = !!($superpw.value && n && u); // Form is filled in
+    if (bg.settings.pwdomainname) readyForClick = readyForClick && bg.settings.pwdomainname === bg.settings.domainname;
+    return readyForClick;
+}   
 function clone(object) {
     return JSON.parse(JSON.stringify(object));
 }

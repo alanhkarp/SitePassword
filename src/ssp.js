@@ -1,5 +1,5 @@
 'use strict';
-import { bgBaseDefault, config, databaseDefault, isUrlMatch, webpage } from "./bg.js";
+import { bgBaseDefault, config, databaseDefault, isUrlMatch, isReadyForClick, webpage } from "./bg.js";
 import { runTests, resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 import { isSharedCredentials } from "./sharedCredentials.js"; 
@@ -281,8 +281,9 @@ export async function getsettings() {
     bg.superpw = response.superpw || "";
     await init();
     let pw = await ask2generate();
+    let n = $sitename.value || "";
     let u = $username.value || "";
-    let readyForClick = !!(pw && $superpw.value && u);
+    let readyForClick = isReadyForClick();
     try {
         if (logging) console.log("popup sending update", activetab.url, u, readyForClick);
         // Get all frames in the active tab
@@ -1371,8 +1372,7 @@ async function handleblur(event, element) {
     updateExportButton(); 
     let u = $username.value || "";
     let n = $sitename.value || "";
-    let readyForClick = !!(pw && $superpw.value && n && u); // Form is filled in
-    readyForClick = readyForClick && bg.settings.pwdomainname === bg.settings.domainname;
+    let readyForClick = isReadyForClick();
     if (isUrlMatch(activetab.url)) {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": "", "readyForClick": readyForClick });
@@ -1397,8 +1397,7 @@ async function changePlaceholder() {
     let p = $superpw.value || "";
     let n = $sitename.value || "";
     let u = $username.value || "";
-    let readyForClick = !!($superpw.value && u && n); // Form is filled in
-    readyForClick = readyForClick && bg.settings.pwdomainname === bg.settings.domainname;
+    let readyForClick = isReadyForClick();
     if (isUrlMatch(activetab.url)) {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
