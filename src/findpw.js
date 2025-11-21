@@ -190,6 +190,8 @@ if (!window.findpwInjected) {
                             break;
                         case "activated":
                             if (logging) console.log(document.URL, Date.now() - start, "findpw got activated message");
+                            // I can't use sendReponse to return a value because the page and all iframes respond to the message.
+                            // The resulting return value is always undefined.
                             sendResponse("activated");
                             cpi = await countpwid();
                             await sendpageinfo(cpi, false, true);
