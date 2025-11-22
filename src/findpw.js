@@ -167,7 +167,7 @@ if (!window.findpwInjected) {
                             username = request.u;
                             fillfield(cpi.idfield, username);
                             sitepw = request.p;
-                            if (cpi.pwfields[0] && cpi.pwfields[0].value) {
+                            if (cpi.pwfields[0]) {
                                 if (cpi.pwfields.length === 1 && cpi.pwfields[0].value !== sitepw) cpi.pwfields[0].value = "";
                                 setpwPlaceholder(username, cpi);
                                 sendResponse("updated");
@@ -374,6 +374,7 @@ if (!window.findpwInjected) {
                 return;
             }
             sitepw = response;
+            if (!sitepw) alert(clickSitePassword)
             if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
             fillfield(this, response);
             if (logging) console.log(document.URL, Date.now() - start, "findpw got password", this, response);

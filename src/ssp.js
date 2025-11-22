@@ -280,12 +280,9 @@ export async function getsettings() {
     $superpw.value = response.superpw || "";
     bg.superpw = response.superpw || "";
     await init();
-    let pw = await ask2generate();
-    let n = $sitename.value || "";
-    let u = $username.value || "";
-    let readyForClick = isReadyForClick();
+    let readyForClick = isReadyForClick($superpw.value, $sitename.value, $username.value);
     try {
-        if (logging) console.log("popup sending update", activetab.url, u, readyForClick);
+        if (logging) console.log("popup sending update", activetab.url, $username.value || "", readyForClick);
         // Get all frames in the active tab
         const frames = await chrome.webNavigation.getAllFrames({ tabId: activetab.id });
         for (const frame of frames) {
@@ -1370,12 +1367,10 @@ async function handleblur(event, element) {
     setMeter("superpw");
     setMeter("sitepw");
     updateExportButton(); 
-    let u = $username.value || "";
-    let n = $sitename.value || "";
-    let readyForClick = isReadyForClick();
+    let readyForClick = isReadyForClick($superpw.value, $sitename.value, $username.value, pw);
     if (isUrlMatch(activetab.url)) {
         try {
-            await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": u, "p": "", "readyForClick": readyForClick });
+            await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": $username.value || "", "p": "", "readyForClick": readyForClick });
         } catch (error) {
             if (logging) console.error("popup handleblur error", error);
         }
@@ -1394,13 +1389,10 @@ async function handleclick(e, which) {
     handleblur(e, element);
 }
 async function changePlaceholder() {
-    let p = $superpw.value || "";
-    let n = $sitename.value || "";
-    let u = $username.value || "";
-    let readyForClick = isReadyForClick();
+    let readyForClick = isReadyForClick($superpw.value, $sitename.value, $username.value);
     if (isUrlMatch(activetab.url)) {
         try {
-            await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": u, "p": "", "readyForClick": readyForClick });
+            await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": $username.value || "", "p": "", "readyForClick": readyForClick });
         } catch (error) {
             if (logging) console.error("popup changePlaceholder error", error);
         }

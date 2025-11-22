@@ -264,6 +264,7 @@ async function setup() {
                     bg.settings = bgsettings(domainname);
                     let p = await generatePassword(bg);
                     p = stringXorArray(p, bg.settings.xor);
+                    if (!isReadyForClick(bg.superpw, bg.settings.sitename, bg.settings.username)) p = "";
                     if (database.common.clearsuperpw) {
                         if (logging) console.log("bg clear superpw")
                         superpw = "";
@@ -305,21 +306,9 @@ async function setup() {
                     await forget(request.toforget, rootFolder[0], sender, sendResponse);
                     if (logging) console.log("bg forget done");
                     respondToMessage("forgot", sender, sendResponse);
-                } else if (request.clicked) {
-                    domainname = getdomainname(sender.origin || sender.url);
-                    bg.domainname = domainname; // Keep for compatibility with V3.0.12
-                    bg.settings.domainname = domainname;
-                    if (logging) console.log("bg clicked: sending response", isSuperPw(bg.superpw), bg.settings);
-                    if (database.common.clearsuperpw) {
-                        superpw = "";
-                        if (logging) console.log("bg clear superpw", isSuperPw(superpw));
-                    }
-                    respondToMessage(bg, sender, sendResponse);
-                    await Promise.resolve(); // To match the awaits in the other branches
                 } else if (request.cmd === "pageInfo") {
                     await onContentPageload(request, sender, sendResponse);
-                    bg.superpw = superpw;
-                    if (logging) console.log("bg onload", isSuperPw(superpw), bg.settings);
+                    if (logging) console.log("bg pageInfo", isSuperPw(superpw), bg.settings);
                     await persistMetadata(sendResponse);
                     respondToMessage("persisted", sender, sendResponse);
                 } else if (request.cmd === "reloadTabs") {
@@ -436,7 +425,7 @@ async function onContentPageload(request, sender, sendResponse) {
     bg.pwdomainname = pwdomainname; // Keep for compatibility with V3.0.12
     bg.settings.domainname = domainname;
     bg.settings.pwdomainname = pwdomainname;
-    let readyForClick = isReadyForClick();
+    let readyForClick = isReadyForClick(bg.superpw, bg.settings.sitename, bg.settings.username);
     if (logging) console.log("bg send response", { cmd: "fillfields", "u": bg.settings.username || "", "readyForClick": readyForClick });
     respondToMessage({ "cmd": "fillfields", 
         "u": bg.settings.username || "", 
@@ -865,18 +854,10 @@ function sspUrl(url) {
         return undefined;
     }
 }
-export async function isReadyForClick() {
-    let u = $username.value || "";
-    let n = $sitename.value || "";
-    let s = await chrome.storage.session.get("savedData"); // Returns {} if nothing is saved
-    if (s.savedData && bg.settings.domainname) {
-        const matchingDomain = Object.keys(s.savedData).find(key => getdomainname(key) === bg.settings.domainname);
-        if (matchingDomain && s.savedData[matchingDomain] > 0 && !bg.settings.pwdomainname) {
-            bg.settings.pwdomainname = bg.settings.domainname;
-        }
-    }
-    let readyForClick = !!($superpw.value && n && u); // Form is filled in
-    if (bg.settings.pwdomainname) readyForClick = readyForClick && bg.settings.pwdomainname === bg.settings.domainname;
+export function isReadyForClick(superpw, sitename, username) {
+    let u = username || "";
+    let n = sitename || "";
+    let readyForClick = !!(superpw && n && u); // Form is filled in
     return readyForClick;
 }   
 function clone(object) {
