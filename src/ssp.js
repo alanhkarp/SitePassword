@@ -1,6 +1,6 @@
 'use strict';
 import { bgBaseDefault, config, databaseDefault, isUrlMatch, isReadyForClick, webpage } from "./bg.js";
-import { runTests, resolvers } from "./test.js";
+import { resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 import { isSharedCredentials } from "./sharedCredentials.js"; 
 import { commonSuffix } from "./public_suffix_list.js"; 
@@ -281,29 +281,17 @@ export async function getsettings() {
     bg.superpw = response.superpw || "";
     await init();
     let readyForClick = isReadyForClick($superpw.value, $sitename.value, $username.value);
-    try {
-        if (logging) console.log("popup sending update", activetab.url, $username.value || "", readyForClick);
-        // Get all frames in the active tab
-        const frames = await chrome.webNavigation.getAllFrames({ tabId: activetab.id });
-        for (const frame of frames) {
-            try {
-                // Do not send a password in this message since it goes to all frames
-                await chrome.tabs.sendMessage(
-                    activetab.id,
-                    { "cmd": "update", "u": u, "p": "", "readyForClick": readyForClick },
-                    { frameId: frame.frameId }
-                );
-            } catch (err) {
-                if (logging) console.warn("popup: could not send message to frame", frame.frameId, err);
-            }
-        }
-    } catch (error) {
-        if (logging) console.error("popup handleblur error", error);
+    if (readyForClick) {
+        let phishingDomain = await getPhishingDomain($sitename.value);
+        if (logging) console.log("popup mainpanel mouseleave", phishingDomain);
+        if (phishingDomain) openPhishingWarning(phishingDomain);
     }
-    if (logging) console.log("popup got metadata", bg, database);
-    if (!testMode && response.test) { // Only run tests once
-        testMode = true;
-        runTests();
+    try {
+        if (logging) console.log("popup sending update", activetab.url, $username.value || "", readyForClick); 
+        // Do not send a password in this message since it goes to all frames
+        await chrome.tabs.sendMessage( activetab.id, { "cmd": "update", "u": u, "p": "", "readyForClick": readyForClick });
+    } catch (err) {
+        if (logging) console.warn("popup: could not send update message to tab", activetab.url, err);
     }
 }
 // This function sends a message to the service worker when the mouse leaves the 

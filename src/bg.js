@@ -855,9 +855,10 @@ function sspUrl(url) {
     }
 }
 export function isReadyForClick(superpw, sitename, username) {
+    let s = superpw || "";
     let u = username || "";
     let n = sitename || "";
-    let readyForClick = !!(superpw && n && u); // Form is filled in
+    let readyForClick = !!(s && n && u); // Form is filled in
     return readyForClick;
 }   
 function clone(object) {

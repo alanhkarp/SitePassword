@@ -7,11 +7,11 @@ if (!window.findpwInjected) {
     let debugMode = false; // Let's me send messages when the developer window has the focus
     let logging = false;
     let hideLabels = true; // Make it easy to turn off label hiding
-    let clickSitePassword = "Click SitePassword";
-    let clickSitePasswordTitle = "Click on the SitePassword icon"
+    let clickSitePassword = "Click the SitePassword icon";
     let clickHere = "Click here for password";
     let pasteHere = "Dbl-click or paste your password";
-    let sspPlaceholders = [clickHere, pasteHere, clickSitePassword];
+    let iframeWarning = "Click the SitePassword icon to continue.";
+    let sspPlaceholders = [clickHere, pasteHere, clickSitePassword, iframeWarning];
     let insertUsername = "Dbl-click if your username goes here";
     let sitepw = "";
     let username = "";
@@ -149,7 +149,7 @@ if (!window.findpwInjected) {
             chrome.runtime?.onMessage.addListener(async function (request, _sender, sendResponse) {
                 messageQueue = messageQueue.then(async () => {
                     if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid from listener");
-                    readyForClick = request.readyForClick;
+                    readyForClick = request.readyForClick || false;
                     let cpi = await countpwid();
                     switch (request.cmd) {
                         case "fillfields":
@@ -170,9 +170,9 @@ if (!window.findpwInjected) {
                             if (cpi.pwfields[0]) {
                                 if (cpi.pwfields.length === 1 && cpi.pwfields[0].value !== sitepw) cpi.pwfields[0].value = "";
                                 setpwPlaceholder(username, cpi);
-                                sendResponse("updated");
                             }
-                            break;
+                            sendResponse("updated");
+                             break;
                         case "count":
                             let pwdomain = document.location.hostname;
                             let pwcount = cpi.pwfields.length || 0;
@@ -374,7 +374,7 @@ if (!window.findpwInjected) {
                 return;
             }
             sitepw = response;
-            if (!sitepw) alert(clickSitePassword)
+            if (!sitepw) alert(iframeWarning)
             if (logging) console.log(document.URL, Date.now() - start, "findpw response", response);
             fillfield(this, response);
             if (logging) console.log(document.URL, Date.now() - start, "findpw got password", this, response);
