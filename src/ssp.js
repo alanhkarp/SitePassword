@@ -106,7 +106,7 @@ import { commonSuffix } from "./public_suffix_list.js";
 // #endregion
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
-const debugMode = false; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
+const debugMode = true; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
 
 let logging = false;
 if (logging) console.log("Version 3.0");
@@ -358,7 +358,7 @@ $mainpanel.onmouseleave = async function (event) {
     // window.onblur fires before I even have a chance to see the window, much less focus it
     if (bg && bg.settings) {
         bg.superpw = $superpw.value || "";
-        bg.settings.domainname = $domainname.value || ""; // Keep for compatibility with V3.0.12
+        bg.domainname = $domainname.value || ""; // Keep for compatibility with V3.0.12
         bg.domainname = $domainname.value || "";
         bg.settings.sitename = $sitename.value || "";
         bg.settings.username = $username.value || "";
@@ -993,7 +993,6 @@ $sameacctbutton.onclick = async function (e) {
     let domainname = $domainname.value;
     let sitename = normalize($sitename.value);
     if (testMode) {
-        bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
         bg.domainname = domainname;
         database.sites[sitename].domainname = domainname;
     }
@@ -1425,7 +1424,6 @@ async function fill() {
         if (!$username.value) $username.value = bg.settings.username;
         if (!$sitename.value) $sitename.value = bg.settings.sitename;
     } else {
-        bg.settings.domainname = normalize($domainname.value); // Keep for compatibility with V3.0.12
         bg.domainname = normalize($domainname.value);
         bg.settings.sitename = normalize($sitename.value);
         bg.settings.username = normalize($username.value);

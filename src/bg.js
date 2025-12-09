@@ -4,7 +4,7 @@ import { isSharedCredentials } from "./sharedCredentials.js";
 
 // Only one of these can be true at a time; reload the extension after changing them.
 const testMode  = false; // Set to true to run the tests in test.js.
-const debugMode = false; // Set to true to run SitePassword with the debug bookmarks folder.
+const debugMode = true; // Set to true to run SitePassword with the debug bookmarks folder.
 const demoMode  = false; // Set to true to run the SitePassword demo with the demo bookmarks folder.
 
 const logging = false;
@@ -249,7 +249,7 @@ async function setup() {
                     database.common.hidesitepw = request.hidesitepw;
                     database.common.safeSuffixes = request.safeSuffixes || {};
                     if (!request.sameacct && bg.settings.sitename) {
-                        database.domains[normalize(bg.settings.pwdomainname)] = normalize(bg.settings.sitename);
+                        database.domains[normalize(bg.pwdomainname)] = normalize(bg.settings.sitename);
                         database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
                     }
                     superpw = bg.superpw || "";
@@ -258,8 +258,7 @@ async function setup() {
                     respondToMessage("persisted", sender, sendResponse);
                 } else if (request.cmd === "getPassword") {
                     let domainname = getdomainname(sender.origin || sender.url);
-                    bg.domainname = domainname; // Keep for compatibility with V3.0.12
-                    bg.settings.domainname = domainname;
+                    bg.domainname = domainname;
                     if (testMode) domainname = request.domainname;
                     bg.settings = bgsettings(domainname);
                     let p = await generatePassword(bg);
@@ -366,8 +365,7 @@ async function getMetadata(request, sender, sendResponse) {
     }
     bg.superpw = superpw;
     // Domain name comes from popup, which is trusted not to spoof it
-    bg.domainname = request.domainname; // Keep for compatibility with V3.0.12
-    bg.settings.domainname = request.domainname;
+    bg.domainname = request.domainname;
     activetab = request.activetab;
     if (logging) console.log("bg got active tab", activetab);
     // Don't lose database across async call
@@ -421,8 +419,8 @@ async function onContentPageload(request, sender, sendResponse) {
             bg.settings = clone(defaultSettings);
         }
     }
-    bg.domainname = domainname; // Keep for compatibility with V3.0.12
-    bg.pwdomainname = pwdomainname; // Keep for compatibility with V3.0.12
+    bg.domainname = domainname;
+    bg.pwdomainname = pwdomainname;
     bg.settings.domainname = domainname;
     bg.settings.pwdomainname = pwdomainname;
     let readyForClick = isReadyForClick(bg.superpw, bg.settings.sitename, bg.settings.username);
@@ -443,10 +441,10 @@ async function persistMetadata(sendResponse) {
     rootFolder = found[0];
     let sitename = normalize(bg.settings.sitename);
     if (sitename) {
-        let oldsitename = db.domains[bg.settings.domainname];
+        let oldsitename = db.domains[bg.domainname];
         if (!oldsitename || sitename === oldsitename) {
-            db.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
-            if (!bg.settings.pwdomainname) bg.settings.pwdomainname = bg.settings.domainname;
+            db.domains[bg.domainname] = normalize(bg.settings.sitename);
+            if (!bg.pwdomainname) bg.pwdomainname = bg.domainname;
             db.sites[sitename] = bg.settings;
         } else {
             // Find all domains that point to oldsitename and have them point to
@@ -551,8 +549,8 @@ async function persistMetadata(sendResponse) {
         } else if (createBookmark) {
             createBookmark = false;
             if (bg.settings.sitename && 
-                (domainnames[i] === bg.settings.domainname) ||
-                (domainnames[i] === bg.settings.pwdomainname)) {
+                (domainnames[i] === bg.domainname) ||
+                (domainnames[i] === bg.pwdomainname)) {
                 let title = domainnames[i];
                 if (logging) console.log("bg creating bookmark for", title);
                 try {
@@ -742,8 +740,7 @@ function bgsettings(domainname) {
         } else {
             bg.settings = clone(defaultSettings);
             if (!bg.settings) bg.settings = clone(defaultSettings);
-            bg.domainname = domainname; // Keep for compatibility with V3.0.12
-            bg.settings.domainname = domainname;
+            bg.domainname = domainname;
         }
     }
     return bg.settings;

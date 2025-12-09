@@ -4,7 +4,7 @@ if (!window.findpwInjected) {
     // If content script is injected more than once, I get syntax errors because
     // of duplicate let declarations.
     'use strict';
-    let debugMode = false; // Let's me send messages when the developer window has the focus
+    let debugMode = true; // Let's me send messages when the developer window has the focus
     let logging = false;
     let hideLabels = true; // Make it easy to turn off label hiding
     let clickSitePassword = "Click the SitePassword icon";
