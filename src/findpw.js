@@ -173,13 +173,6 @@ if (!window.findpwInjected) {
                             }
                             sendResponse("updated");
                              break;
-                        case "count":
-                            let pwdomain = document.location.hostname;
-                            let pwcount = cpi.pwfields.length || 0;
-                            let uid = cpi.idfield ? cpi.idfield.value : "";
-                            if (logging) console.log(document.URL, Date.now() - start, "findpw got count request", pwcount, pwdomain);
-                            sendResponse({ "pwcount": pwcount, "id": uid, "pwdomain": pwdomain });
-                            break;
                         case "clear":
                             if (cpi.idfield) cpi.idfield.value = "";
                             for (let i = 0; i < cpi.pwfields.length || 0; i++) {
