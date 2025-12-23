@@ -549,7 +549,7 @@ if (!window.findpwInjected) {
         // The following tests provide partial protection against clickjacking
 
         // Check size
-        if (rect.width <= 20 || rect.height <= 20) {
+        if (rect.width <= 10 || rect.height <= 10) {
             return true;
         }
 
