@@ -200,6 +200,12 @@ if (!window.findpwInjected) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw calling countpwid and sendpageinfo from onload");
         let cpi = await countpwid();
         await sendpageinfo(cpi, false, true);
+        // Popup windows are sometimes used to protect login forms.  However,
+        // browser-in-the-browser phishing attacks use ppop windows to steal passwords.
+        // SitePassword cannot work in such a window, so I alert the user.
+        if (!!window.opener && window.opener !== null && cpi.pwfields.length > 0) {
+            alert("SitePassword cannot fill in this form.  Copy the URL in the address bar to a new tab, and use SitePassword there."); 
+        }
     }
     // I never deal with individual mutations, just the fact that something changed.
     let cpiTimeout = null; // Only call countpwid after things have settled down
