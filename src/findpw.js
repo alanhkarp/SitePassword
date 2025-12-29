@@ -204,7 +204,8 @@ if (!window.findpwInjected) {
         // browser-in-the-browser phishing attacks use ppop windows to steal passwords.
         // SitePassword cannot work in such a window, so I alert the user.
         if (!!window.opener && window.opener !== null && cpi.pwfields.length > 0) {
-            alert("SitePassword cannot fill in this form.  Copy the URL in the address bar to a new tab, and use SitePassword there."); 
+            document.body.innerHTML = ""; // Hide the login form
+            await retrySendMessage({ "cmd": "popupWarning", "url": document.location.href });
         }
     }
     // I never deal with individual mutations, just the fact that something changed.
