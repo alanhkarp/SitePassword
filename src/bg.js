@@ -237,6 +237,10 @@ async function setup() {
                 if (logging) console.log("bg got ssp", isSuperPw(superpw));
                 if (request.cmd === "getMetadata") {
                     await getMetadata(request, sender, sendResponse);
+                } else if (request.cmd === "popupWarning") {
+                    chrome.tabs.remove(sender.tab.id);
+                    chrome.windows.create({ url: request.url });
+                    respondToMessage("popup warning handled", sender, sendResponse);
                 } else if (request.cmd === "resetIcon") {
                     await chrome.storage.local.set({"onClipboard": false});
                     await chrome.action.setTitle({title: "Site Password"});
