@@ -480,7 +480,9 @@ if (!window.findpwInjected) {
         }
         if (usernamefield) {
             usernamefield.onkeyup = function (e) {
-                usernameEdited = true;
+                // I've gotten here without a keypress and isTrusted = true.  Not sure how.
+                // Fortunately, the key is undefined in that case.
+                if (e.key) usernameEdited = true;
             };
         }
         if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", pwfields, usernamefield);
