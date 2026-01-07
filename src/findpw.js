@@ -528,12 +528,14 @@ if (!window.findpwInjected) {
             return true;
         }
 
-        // Element is hidden if it or any ancestor has opacity less than 1
+        // Element is hidden if it or any ancestor has opacity less than 1 unless it has a visible border.
+        // Some sites set opacity to 0 as a bot defense.  I assume there will
+        // be a visible border so the user can see where to type.
         let el = field;
         while (el) {
             const style = window.getComputedStyle(el);
             if (Number(style.opacity) < 1) {
-                return true;
+                return !hasVisibleBorder(field);
             }
             el = el.parentElement;
         }
@@ -664,6 +666,39 @@ if (!window.findpwInjected) {
             if (isCovered) return true;
         }
         return false;
+    }
+    // Thanks, Perplexity.ai
+    function hasVisibleBorder(el) {
+        const s = window.getComputedStyle(el);
+
+        const widths = [
+            parseFloat(s.borderTopWidth),
+            parseFloat(s.borderRightWidth),
+            parseFloat(s.borderBottomWidth),
+            parseFloat(s.borderLeftWidth),
+        ];
+
+        const styles = [
+            s.borderTopStyle,
+            s.borderRightStyle,
+            s.borderBottomStyle,
+            s.borderLeftStyle,
+        ];
+
+        const colors = [
+            s.borderTopColor,
+            s.borderRightColor,
+            s.borderBottomColor,
+            s.borderLeftColor,
+        ];
+
+        // At least one side has non‑zero width, non‑none/hidden style, and non‑transparent color
+        return widths.some((w, i) =>
+            w > 10 &&
+            styles[i] !== "none" &&
+            styles[i] !== "hidden" &&
+            colors[i] !== "transparent"
+        );
     }
     function overlaps(field, label) {
         // Only worry about labels above or to the left of the field
