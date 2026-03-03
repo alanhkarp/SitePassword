@@ -332,7 +332,7 @@ $mainpanel.onmouseleave = async function (event) {
     // in closing the popup.
     $mainpanel.focus();
     let element = event ? (event.pageX ? document.elementFromPoint(event.pageX || 0, event.pageY || 0) : null) : null;
-    // In caes the user tries to type when the mouse is outside the popup
+    // In case the user tries to type when the mouse is outside the popup
     if (!element) {
         $superpw.disabled = true;
         $sitename.disabled = true;
@@ -1016,10 +1016,7 @@ $nicknamebutton.onclick = function (e) {
     $superpw.disabled = false;
     $sitename.disabled = false;
     $username.disabled = false;
-    $sitename.focus();
     clearDatalist("sitenames");
-    msgoff("phishing");
-    autoclose = false;
     sameacct = false;
 }
 // Phishing methods when there is a safe suffix
@@ -1207,7 +1204,7 @@ function openPhishingWarning(d) {
         msgon("phishing");
     }
     $superpw.disabled = true;
-    $sitename.disabled = true;
+    // $sitename.disabled = true; // So you don't have to click the nickname button to change the sitename
     $username.disabled = true;
     $sitepw.value = "";
     hidesettings();
@@ -1391,10 +1388,10 @@ async function changePlaceholder() {
 // the popup.  Since I can't detect when the popup closes, those changes are lost. 
 // I avoid ths problem by only calling this function when the mouse enters the popup.
 function defaultfocus() {
-    if ($providesitepw.checked) sitepw.focus();
-    if (!$username.value) $username.focus();
-    if (!$sitename.value) $sitename.focus();
-    if (!$superpw.value) $superpw.focus();
+    if ($providesitepw.checked) $sitepw.focus();
+    if (!$username.value && !$username.disabled) $username.focus();
+    if (!$sitename.value && !$sitename.disabled) $sitename.focus();
+    if (!$superpw.value && !$superpw.disabled) $superpw.focus();
 }
 async function ask2generate() {
     if (bg.settings.providesitepw && bg.settings.pwlength === 0) return "";
