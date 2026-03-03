@@ -652,22 +652,61 @@ if (!window.findpwInjected) {
             // Only count overlays that are rendered (not display:none, etc)
             const style = window.getComputedStyle(overlay);
             if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') continue;
+            // Calculate effective zIndex
+            const overlayZIndex = getEffectiveZIndex(overlay);
+            const elZIndex = getEffectiveZIndex(el);
+
+            if (overlayZIndex < elZIndex) {
+                // Skip overlays that are behind the password element
+                continue;
+            } else if (overlayZIndex === elZIndex) {
+                // If zIndex is the same, check document order
+                if (!isOverlayOnTop(el, overlay)) {
+                    continue; // Overlay is behind the element
+                }
+            }
 
             const overlayRect = overlay.getBoundingClientRect();
 
-            // If overlay fully covers or even partially covers the password element
-            const isCovered = !(
-                elRect.right < overlayRect.left ||
-                elRect.left > overlayRect.right ||
-                elRect.bottom < overlayRect.top ||
-                elRect.top > overlayRect.bottom
-            );
+            // If overlay fully covers or covers enough of the element, consider it obscured
+            // Calculate the intersection area
+            const xOverlap = Math.max(0, Math.min(elRect.right, overlayRect.right) - Math.max(elRect.left, overlayRect.left));
+            const yOverlap = Math.max(0, Math.min(elRect.bottom, overlayRect.bottom) - Math.max(elRect.top, overlayRect.top));
+            const overlapArea = xOverlap * yOverlap;
 
-            if (isCovered) return true;
+            // Calculate the area of the password element
+            const elArea = elRect.width * elRect.height;
+
+            // Require at least 20% overlap to consider the element obscured (adjust as needed)
+            const overlapThreshold = 0.2; // 20%
+            if (overlapArea / elArea > overlapThreshold) {
+                return true;
+            }
+            return false;
         }
-        return false;
     }
-    // Thanks, Perplexity.ai
+    // Helper function to check document order
+    function isOverlayOnTop(el, overlay) {
+        const allElements = Array.from(document.body.getElementsByTagName('*'));
+        const elIndex = allElements.indexOf(el);
+        const overlayIndex = allElements.indexOf(overlay);
+
+        // Overlay is on top if it appears later in the DOM
+        return overlayIndex > elIndex;
+    }    
+    // Helper function to calculate effective zIndex
+    function getEffectiveZIndex(element) {
+        let currentElement = element;
+        while (currentElement) {
+            const style = window.getComputedStyle(currentElement);
+            const zIndex = style.zIndex;
+            if (zIndex !== '' && zIndex !== 'auto') {
+                return parseInt(zIndex, 10);
+            }
+            currentElement = currentElement.parentElement; // Traverse up the DOM
+        }
+        return 0; // Default zIndex if none is set
+    }    // Thanks, Perplexity.ai
     function hasVisibleBorder(el) {
         const s = window.getComputedStyle(el);
 
