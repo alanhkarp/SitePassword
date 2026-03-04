@@ -98,18 +98,27 @@ if (!window.findpwInjected) {
         if (extensionRemoved()) return []; // Don't do anything if the extension has been removed
         if (!element) return [];
         if (logging) console.log("findpw searchShadowRoots", document.location.origin, element);
-        // This code results in an security policy error on some pages that doesn't hit
-        // the catch block because it's not a JavaScript error.
+
         try {
-            let shadows = Array.from(element.querySelectorAll('*')).reduce((acc, el) => {
-                if (el.shadowRoot) acc.push(el.shadowRoot);
-                return acc;
-            }, []);
-            let childResults = shadows.map(child => searchShadowRoots(child));
-            let result = Array.from(element.querySelectorAll("input"));
-            return result.concat(childResults).flat();
+            // Collect all shadow roots and input elements in one pass
+            const inputs = [];
+            const stack = [element];
+
+            while (stack.length > 0) {
+                const current = stack.pop();
+
+                // Add input elements directly
+                inputs.push(...current.querySelectorAll("input"));
+
+                // Add shadow roots to the stack for further traversal
+                current.querySelectorAll("*").forEach(el => {
+                    if (el.shadowRoot) stack.push(el.shadowRoot);
+                });
+            }
+
+            return inputs;
         } catch (error) {
-            console.log("Error searching shadow roots:", error);
+            console.error("Error searching shadow roots:", error);
             return [];
         }
     }
@@ -247,16 +256,12 @@ if (!window.findpwInjected) {
     }
     // Some pages don't know the field has been updated
     function fixfield(field, text) {
-        // Maybe I just need to tell the page that the field changed
-        makeEvent(field, "change");
-        makeEvent(field, "input");
-        makeEvent(field, "HTMLEvents");
-        makeEvent(field, "keydown");
-        makeEvent(field, "keypress");
-        makeEvent(field, "keyup");
-        makeEvent(field, "cut");
-        makeEvent(field, "paste");
-        // Is there a better test for telling if the page knows the value has been set?
+        // Define the events that were originally included
+        const events = ["change", "input", "HTMLEvents", "keydown", "keypress", "keyup", "cut", "paste"];
+
+        // Dispatch each event
+        events.forEach(type => makeEvent(field, type));
+
         if (logging) console.log(document.URL, Date.now() - start, "findpw focus test", field.value, text);
     }
     // Sometimes the page doesn't know that the value is set until an event is triggered
