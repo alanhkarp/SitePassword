@@ -661,7 +661,7 @@ if (!window.findpwInjected) {
                 continue;
             } else if (overlayZIndex === elZIndex) {
                 // If zIndex is the same, check document order
-                if (!isOverlayOnTop(el, overlay)) {
+                if (!precedesInDOM(el, overlay)) {
                     continue; // Overlay is behind the element
                 }
             }
@@ -685,15 +685,6 @@ if (!window.findpwInjected) {
             return false;
         }
     }
-    // Helper function to check document order
-    function isOverlayOnTop(el, overlay) {
-        const allElements = Array.from(document.body.getElementsByTagName('*'));
-        const elIndex = allElements.indexOf(el);
-        const overlayIndex = allElements.indexOf(overlay);
-
-        // Overlay is on top if it appears later in the DOM
-        return overlayIndex > elIndex;
-    }    
     // Helper function to calculate effective zIndex
     function getEffectiveZIndex(element) {
         let currentElement = element;
