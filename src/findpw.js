@@ -396,7 +396,7 @@ if (!window.findpwInjected) {
         let found = -1;
         let c = 0;
         maybeUsernameFields = [];
-        let inputs = document.getElementsByTagName("input");
+        let inputs = getVisuallyOrderedInputs();
         if (inputs.length === 0) inputs = searchShadowRoots(document.body);
         for (let i = 0; i < inputs.length; i++) {
             // Only care about text, email, and password fields
@@ -493,6 +493,27 @@ if (!window.findpwInjected) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", pwfields, usernamefield);
         lastcpi = { pwfields: pwfields, idfield: usernamefield };
         return { pwfields: pwfields, idfield: usernamefield };
+    }
+    // On some sites the DOM order is not the same as the visual order, which can cause problems for my heuristics.  
+    // The following function returns the input fields in visual order.  Thanks, Copilot.
+    function getVisuallyOrderedInputs() {
+        let inputs = Array.from(document.getElementsByTagName("input"));
+        if (inputs.length === 0) inputs = searchShadowRoots(document.body);
+        // Filter only visible inputs
+        inputs = inputs.filter(input => !isHidden(input));
+
+        // Sort inputs by their visual position (top, then left for tie-breaking)
+        inputs.sort((a, b) => {
+            const rectA = a.getBoundingClientRect();
+            const rectB = b.getBoundingClientRect();
+
+            if (rectA.top !== rectB.top) {
+                return rectA.top - rectB.top; // Sort by vertical position
+            }
+            return rectA.left - rectB.left; // Tie-break by horizontal position
+        });
+
+        return inputs;
     }
     function clearLabel(field) {
         if (!field || !hideLabels) return;
