@@ -397,7 +397,6 @@ if (!window.findpwInjected) {
         let c = 0;
         maybeUsernameFields = [];
         let inputs = getVisuallyOrderedInputs();
-        if (inputs.length === 0) inputs = searchShadowRoots(document.body);
         for (let i = 0; i < inputs.length; i++) {
             // Only care about text, email, and password fields
             let index = ["text", "email", "password"].indexOf(inputs[i].type?.toLowerCase());
@@ -457,7 +456,7 @@ if (!window.findpwInjected) {
                 // Skip over invisible input fields above the password field
                 let visible = !isHidden(inputs[i]);
                 if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
-                    if (precedesInDOM(inputs[i], pwfields[0])) usernamefield = inputs[i];
+                    usernamefield = inputs[i];
                     break;
                 }
             }
@@ -791,17 +790,6 @@ if (!window.findpwInjected) {
                 resolve(moved);
             }, 150); // adjust for transition duration if needed
         });
-    }
-    // The copilot version returned an integer instead of a boolean
-    /**
-     * Returns true if the first element precedes the second element in the DOM tree.
-     * @param {Element} el1
-     * @param {Element} el2
-     * @returns {boolean}
-     */
-    function precedesInDOM(el1, el2) {
-        if (!el1 || !el2 || !(el1 instanceof Element) || !(el2 instanceof Element)) return false;
-        return !!(el1.compareDocumentPosition(el2) & Node.DOCUMENT_POSITION_FOLLOWING);
     }
     async function getUsername() {
         try {
