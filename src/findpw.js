@@ -42,13 +42,13 @@ if (!window.findpwInjected) {
     function startupOnce() {
         document.removeEventListener("DOMContentLoaded", startupOnce);
         if (started) return;
-        if (document.readyState === "interactive" || document.readyState === "complete") {
+        if (document.readyState === "complete") {
             started = true;
             startup();
         }
     }
     document.addEventListener("DOMContentLoaded", startupOnce); // In case DOM is not ready
-    startupOnce();                                              // In case DOM is ready
+    if (document.readyState === "complete") startupOnce();                                              // In case DOM is ready
     // Some other pages don't find the password fields until all downloads have completed.
     window.onload = async function () {
         if (logging) console.log(document.URL, Date.now() - start, "findpw onload");
@@ -489,7 +489,8 @@ if (!window.findpwInjected) {
                 if (e.key) usernameEdited = true;
             };
         }
-        if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", pwfields, usernamefield);
+        console.log(document.URL, Date.now() - start, "findpw: countpwid", pwfields, usernamefield);
+        if (usernamefield.type === "email") debugger;
         lastcpi = { pwfields: pwfields, idfield: usernamefield };
         return { pwfields: pwfields, idfield: usernamefield };
     }
