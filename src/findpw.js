@@ -490,7 +490,6 @@ if (!window.findpwInjected) {
             };
         }
         console.log(document.URL, Date.now() - start, "findpw: countpwid", pwfields, usernamefield);
-        if (usernamefield.type === "email") debugger;
         lastcpi = { pwfields: pwfields, idfield: usernamefield };
         return { pwfields: pwfields, idfield: usernamefield };
     }
