@@ -489,7 +489,7 @@ if (!window.findpwInjected) {
                 if (e.key) usernameEdited = true;
             };
         }
-        console.log(document.URL, Date.now() - start, "findpw: countpwid", pwfields, usernamefield);
+        if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", pwfields, usernamefield);
         lastcpi = { pwfields: pwfields, idfield: usernamefield };
         return { pwfields: pwfields, idfield: usernamefield };
     }
