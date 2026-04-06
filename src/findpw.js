@@ -497,9 +497,9 @@ if (!window.findpwInjected) {
     // The following function returns the input fields in visual order.  Thanks, Copilot.
     function getVisuallyOrderedInputs() {
         let inputs = Array.from(document.getElementsByTagName("input"));
-        if (inputs.length === 0) inputs = searchShadowRoots(document.body);
         // Filter only visible inputs
         inputs = inputs.filter(input => !isHidden(input));
+        if (inputs.length === 0) inputs = searchShadowRoots(document.body);
 
         // Sort inputs by their visual position (top, then left for tie-breaking)
         inputs.sort((a, b) => {
@@ -684,13 +684,7 @@ if (!window.findpwInjected) {
             if (overlayZIndex < elZIndex) {
                 // Skip overlays that are behind the password element
                 continue;
-            } else if (overlayZIndex === elZIndex) {
-                // If zIndex is the same, check document order
-                if (!precedesInDOM(el, overlay)) {
-                    continue; // Overlay is behind the element
-                }
             }
-
             const overlayRect = overlay.getBoundingClientRect();
 
             // If overlay fully covers or covers enough of the element, consider it obscured
