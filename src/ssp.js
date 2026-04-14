@@ -1348,7 +1348,10 @@ async function handleblur(event, element) {
         $providesitepw.disabled = true;
     }
     bg.settings.characters = characters(bg.settings, database);
+    let sitepw = $sitepw.value || "";
     let pw = await ask2generate()
+    if ($providesitepw.checked) $sitepw.value = sitepw; // So it doesn't change while the user is typing
+    bg.settings.xor = xorStrings(sitepw, pw);  
     setMeter("superpw");
     setMeter("sitepw");
     updateExportButton(); 
