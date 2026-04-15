@@ -213,32 +213,6 @@ async function init() {
     $main.style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
     updateExportButton();
 }
-function setupdatalist(element, list) {
-    let datalist = get(element.id + "s");
-    const newDatalist = datalist.cloneNode(false);
-    list.forEach((data) => {
-        let option = document.createElement("option");
-        option.value = data;
-        newDatalist.appendChild(option);
-    });
-    datalist.replaceChildren(...newDatalist.children);
-    if (datalist.children.length > 0) {
-        $main.classList.remove("datalist-closed");
-        $main.classList.add("datalist-open");
-    } else {
-        $main.classList.remove("datalist-open");
-        $main.classList.add("datalist-closed");
-    }
-}
-function clearDatalist(listid) {
-    let datalist = get(listid);
-    if (datalist.hasChildNodes) {
-        const newDatalist = datalist.cloneNode(false);
-        datalist.replaceWith(newDatalist);
-    }
-    $main.classList.remove("datalist-open");
-    $main.classList.add("datalist-closed");
-}
 export async function getsettings() {
     if (logging) console.log("popup getsettings", domainname);
     let response;
@@ -1210,6 +1184,32 @@ function openPhishingWarning(d) {
     $sitepw.value = "";
     hidesettings();
     return true;
+}
+function setupdatalist(element, list) {
+    let datalist = get(element.id + "s");
+    const newDatalist = datalist.cloneNode(false);
+    list.forEach((data) => {
+        let option = document.createElement("option");
+        option.value = data;
+        newDatalist.appendChild(option);
+    });
+    datalist.replaceChildren(...newDatalist.children);
+    if (datalist.children.length > 0) {
+        $main.classList.remove("datalist-closed");
+        $main.classList.add("datalist-open");
+    } else {
+        $main.classList.remove("datalist-open");
+        $main.classList.add("datalist-closed");
+    }
+}
+function clearDatalist(listid) {
+    let datalist = get(listid);
+    if (datalist.hasChildNodes) {
+        const newDatalist = datalist.cloneNode(false);
+        datalist.replaceWith(newDatalist);
+    }
+    $main.classList.remove("datalist-open");
+    $main.classList.add("datalist-closed");
 }
 function sortList(list) {
     return list.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
