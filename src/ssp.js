@@ -4,6 +4,13 @@ import { resolvers } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 import { isSharedCredentials } from "./sharedCredentials.js"; 
 import { commonSuffix } from "./public_suffix_list.js"; 
+// testMode must start as false.  Its value will come in a message from bg.js.
+let testMode = false;
+const debugMode = true; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
+
+let logging = false;
+if (logging) console.log("Version 3.4");
+
 // #region
     const $root = get("root");
     const $mainpanel = get("mainpanel");
@@ -104,12 +111,6 @@ import { commonSuffix } from "./public_suffix_list.js";
     const $suffixacceptbutton = get("suffixacceptbutton");
     const $suffixcancelbutton = get("suffixcancelbutton");
 // #endregion
-// testMode must start as false.  Its value will come in a message from bg.js.
-let testMode = false;
-const debugMode = false; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
-
-let logging = false;
-if (logging) console.log("Version 3.0");
 
 let messageQueue = Promise.resolve();
 let autoclose = true;
