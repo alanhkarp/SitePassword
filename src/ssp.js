@@ -1,6 +1,6 @@
 'use strict';
 import { bgBaseDefault, config, databaseDefault, isUrlMatch, isReadyForClick, webpage } from "./bg.js";
-import { resolvers } from "./test.js";
+import { resolvers, runTests } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 import { isSharedCredentials } from "./sharedCredentials.js"; 
 import { commonSuffix } from "./public_suffix_list.js"; 
@@ -105,8 +105,8 @@ import { commonSuffix } from "./public_suffix_list.js";
     const $suffixcancelbutton = get("suffixcancelbutton");
 // #endregion
 // testMode must start as false.  Its value will come in a message from bg.js.
-let testMode = false;
-const debugMode = false; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
+let testMode = true;
+const debugMode = true; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
 
 let logging = false;
 if (logging) console.log("Version 3.0");
@@ -247,13 +247,14 @@ export async function getsettings() {
             "domainname": domainname,
             "activetab": activetab
         });
-        response.duplicate; // Force an error if response is null
+        if (!response) throw new Error("No response received");
     } catch (error) {
         console.error("Error getting metadata:", error);
     }
     if (logging) console.log("popup getsettings response", response);
     let alertString = "";
     if (response.duplicate) {
+        if (testMode) alert("Duplicate bookmarks with title '" + response.duplicate + "'.  Please delete one and try again.");
         alertString += "You have duplicate bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.\n\n";
         if (response.duplicate === "CommonSettings") {
             alertString += "You can see what's in each of them by mousing over the entry by opening the Bookmarks Manager,";
@@ -265,6 +266,7 @@ export async function getsettings() {
         return;
     }
     if (response.multiple) {
+        if (testMode) alert("You have multiple bookmark folders with the title '" + response.multiple + "'.  Please delete one and try again.");
         alertString += "You have multiple bookmark folders with the title '" + response.multiple + "'.  Please delete one and try again.\n\n";
         alertString += "You can look at which bookmarks are in the folders to decide which one you want to keep.";
         return;
@@ -285,6 +287,11 @@ export async function getsettings() {
         let phishingDomain = await getPhishingDomain($sitename.value);
         if (logging) console.log("popup mainpanel mouseleave", phishingDomain);
         if (phishingDomain) openPhishingWarning(phishingDomain);
+    }
+    if (logging) console.log("popup got metadata", bg, database);
+    if (!testMode && response.test) { // Only run tests once
+        testMode = true;
+        runTests();
     }
     try {
         if (logging) console.log("popup sending update", activetab.url, $username.value || "", readyForClick); 

@@ -3,7 +3,7 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 import { isSharedCredentials } from "./sharedCredentials.js";
 
 // Only one of these can be true at a time; reload the extension after changing them.
-const testMode  = false; // Set to true to run the tests in test.js.
+const testMode  = true; // Set to true to run the tests in test.js.
 const debugMode = false; // Set to true to run SitePassword with the debug bookmarks folder.
 const demoMode  = false; // Set to true to run the SitePassword demo with the demo bookmarks folder.
 
@@ -193,6 +193,7 @@ async function setup() {
     let nodes;
     try {
         nodes = await chrome.bookmarks.getTree();
+        if (testMode) deleteTestBookmarkFolders(nodes);
     } catch (error) {
         if (errorLogging) console.log("Error getting bookmarks tree", error);
         nodes = [];
@@ -874,6 +875,38 @@ function getdomainname(url) {
 function getprotocol(url) {
     return url.split(":")[0];
 }
+// Remove test bookmark folders
+async function deleteTestBookmarkFolders(nodes) {
+    if (!testMode || !nodes) return;
+    let folderName = sitedataBookmark;
+    try {
+        // Recursively search for folders with the specified name
+        function findFolders(nodes, folders = []) {
+            for (const node of nodes) {
+                if (node.title === folderName && node.children) {
+                    folders.push(node.id); // Collect folder IDs
+                }
+                if (node.children) {
+                    findFolders(node.children, folders);
+                }
+            }
+            return folders;
+        }
+
+        const foldersToDelete = findFolders(nodes);
+
+        // Delete each folder
+        for (const folderId of foldersToDelete) {
+            await chrome.bookmarks.removeTree(folderId);
+            console.log(`Deleted folder with ID: ${folderId}`);
+        }
+
+        console.log(`Deleted ${foldersToDelete.length} folders named "${folderName}".`);
+    } catch (error) {
+        console.error("Error deleting bookmark folders:", error);
+    }
+}
+
 /* 
 This code is a major modification of the code released with the
 following licence.  Neither Hewlett-Packard Company nor Hewlett-Packard

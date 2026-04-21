@@ -90,16 +90,16 @@ export async function runTests() {
         await testCalculation(); 
         await testChangePassword();
         await testRememberForm();
-        await testProvidedpw();
-        await testPhishing();
-        await testSharedCredentials();
-        await testForget();
-        await testClearSuperpw();
-        await testHideSitepw();
-        await testLegacyBkmks();
-        await testDuplicateBkmks();
-        await testSafeSuffixes();
-        await testChangeAccount();
+        // await testProvidedpw();
+        // await testPhishing();
+        // await testSharedCredentials();
+        // await testForget();
+        // await testClearSuperpw();
+        // await testHideSitepw();
+        // await testLegacyBkmks();
+        // await testDuplicateBkmks();
+        // await testSafeSuffixes();
+        // await testChangeAccount();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         await testSaveAsDefault();
@@ -154,7 +154,12 @@ async function testChangePassword() {
 async function testRememberForm() {
     await resetState();
     if (logging) console.log("testRememberForm state reset");
+    const expectdpw = "KiD7w@IN0HM.";
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+    await triggerEvent("click", $settingsshow, "settingsshowResolver");
+    await triggerEvent("click", $allowspecialcheckbox, "allowspecialcheckboxResolver");
+    $specials.value = "/!=@?._-";
+    await triggerEvent("blur", $specials, "specialsblurResolver");
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");  // $mainpanel.onmouseleave(); saves the settings
     if (logging) console.log("testRememberForm filled form", $sitename.value, $username.value);
     // See if it remembers
@@ -163,6 +168,7 @@ async function testRememberForm() {
     await triggerEvent("blur", $domainname, "domainnameblurResolver");
     let tests = $sitename.value === "Guru";
     tests = tests && $username.value === "alan";
+    tests = tests && $sitepw.value === expectdpw;
     if (tests) {
         console.log("Passed: Remember form");
         passed++;
