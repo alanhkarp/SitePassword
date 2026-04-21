@@ -104,12 +104,7 @@ import { commonSuffix } from "./public_suffix_list.js";
     const $suffixacceptbutton = get("suffixacceptbutton");
     const $suffixcancelbutton = get("suffixcancelbutton");
 // #endregion
-// testMode must start as false.  Its value will come in a message from bg.js.
-let testMode = true;
-const debugMode = true; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
-
-let logging = false;
-if (logging) console.log("Version 3.0");
+if (logging) console.log("Version 3.4");
 
 let messageQueue = Promise.resolve();
 let autoclose = true;
