@@ -42,13 +42,13 @@ if (!window.findpwInjected) {
     function startupOnce() {
         document.removeEventListener("DOMContentLoaded", startupOnce);
         if (started) return;
-        if (document.readyState === "interactive" || document.readyState === "complete") {
+        if (document.readyState === "complete") {
             started = true;
             startup();
         }
     }
     document.addEventListener("DOMContentLoaded", startupOnce); // In case DOM is not ready
-    startupOnce();                                              // In case DOM is ready
+    if (document.readyState === "complete") startupOnce();                                              // In case DOM is ready
     // Some other pages don't find the password fields until all downloads have completed.
     window.onload = async function () {
         if (logging) console.log(document.URL, Date.now() - start, "findpw onload");
@@ -396,8 +396,7 @@ if (!window.findpwInjected) {
         let found = -1;
         let c = 0;
         maybeUsernameFields = [];
-        let inputs = document.getElementsByTagName("input");
-        if (inputs.length === 0) inputs = searchShadowRoots(document.body);
+        let inputs = getVisuallyOrderedInputs();
         for (let i = 0; i < inputs.length; i++) {
             // Only care about text, email, and password fields
             let index = ["text", "email", "password"].indexOf(inputs[i].type?.toLowerCase());
@@ -457,7 +456,7 @@ if (!window.findpwInjected) {
                 // Skip over invisible input fields above the password field
                 let visible = !isHidden(inputs[i]);
                 if (visible && (inputs[i].type == "text" || inputs[i].type == "email")) {
-                    if (precedesInDOM(inputs[i], pwfields[0])) usernamefield = inputs[i];
+                    usernamefield = inputs[i];
                     break;
                 }
             }
@@ -493,6 +492,27 @@ if (!window.findpwInjected) {
         if (logging) console.log(document.URL, Date.now() - start, "findpw: countpwid", pwfields, usernamefield);
         lastcpi = { pwfields: pwfields, idfield: usernamefield };
         return { pwfields: pwfields, idfield: usernamefield };
+    }
+    // On some sites the DOM order is not the same as the visual order, which can cause problems for my heuristics.  
+    // The following function returns the input fields in visual order.  Thanks, Copilot.
+    function getVisuallyOrderedInputs() {
+        let inputs = Array.from(document.getElementsByTagName("input"));
+        // Filter only visible inputs
+        inputs = inputs.filter(input => !isHidden(input));
+        if (inputs.length === 0) inputs = searchShadowRoots(document.body);
+
+        // Sort inputs by their visual position (top, then left for tie-breaking)
+        inputs.sort((a, b) => {
+            const rectA = a.getBoundingClientRect();
+            const rectB = b.getBoundingClientRect();
+
+            if (rectA.top !== rectB.top) {
+                return rectA.top - rectB.top; // Sort by vertical position
+            }
+            return rectA.left - rectB.left; // Tie-break by horizontal position
+        });
+
+        return inputs;
     }
     function clearLabel(field) {
         if (!field || !hideLabels) return;
@@ -664,13 +684,7 @@ if (!window.findpwInjected) {
             if (overlayZIndex < elZIndex) {
                 // Skip overlays that are behind the password element
                 continue;
-            } else if (overlayZIndex === elZIndex) {
-                // If zIndex is the same, check document order
-                if (!precedesInDOM(el, overlay)) {
-                    continue; // Overlay is behind the element
-                }
             }
-
             const overlayRect = overlay.getBoundingClientRect();
 
             // If overlay fully covers or covers enough of the element, consider it obscured
@@ -770,17 +784,6 @@ if (!window.findpwInjected) {
                 resolve(moved);
             }, 150); // adjust for transition duration if needed
         });
-    }
-    // The copilot version returned an integer instead of a boolean
-    /**
-     * Returns true if the first element precedes the second element in the DOM tree.
-     * @param {Element} el1
-     * @param {Element} el2
-     * @returns {boolean}
-     */
-    function precedesInDOM(el1, el2) {
-        if (!el1 || !el2 || !(el1 instanceof Element) || !(el2 instanceof Element)) return false;
-        return !!(el1.compareDocumentPosition(el2) & Node.DOCUMENT_POSITION_FOLLOWING);
     }
     async function getUsername() {
         try {

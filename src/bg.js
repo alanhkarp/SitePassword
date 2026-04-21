@@ -5,7 +5,7 @@ import { isSharedCredentials } from "./sharedCredentials.js";
 // Only one of these can be true at a time; reload the extension after changing them.
 const testMode  = true; // Set to true to run the tests in test.js.
 const debugMode = false; // Set to true to run SitePassword with the debug bookmarks folder.
-const demoMode  = false; // Set to true to run the SitePassword demo with the demo bookmarks folder.
+const demoMode  = true; // Set to true to run the SitePassword demo with the demo bookmarks folder.
 
 const logging = false;
 const testLogging = false;
@@ -22,7 +22,9 @@ let activetab;
 let domainname = "";
 let pwcount = 0;
 let protocol; // VSCode says this is unused, but it is in function retrieved() below.
-let rootFolder = {id: -1};
+let rootFolderDefaultId = -1;
+let rootFolderDefault = {id: rootFolderDefaultId};
+let rootFolder = rootFolderDefault;
 let createBookmarksFolder = true;
 let createBookmark = true;
 export const webpage = "https://sitepassword.info";
@@ -295,9 +297,11 @@ async function setup() {
                     database.common = clone(commonBaseDefault);
                     if (testLogging) console.log("bg removing bookmarks folder for testing", defaultSettings.pwlength);
                     rootFolder = await getRootFolder(sendResponse);
-                    await chrome.bookmarks.removeTree(rootFolder[0].id);
-                    createBookmarksFolder = true;
-                    if (testLogging) console.log("bg removed bookmarks folder", rootFolder[0].title, defaultSettings.pwlength);
+                    if (rootFolder.id !== rootFolderDefaultId) {
+                        await chrome.bookmarks.removeTree(rootFolder.id);
+                        createBookmarksFolder = true;
+                        if (testLogging) console.log("bg removed bookmarks folder", rootFolder.title, defaultSettings.pwlength);
+                    }
                     respondToMessage("reset", sender, sendResponse);
                 } else if (request.cmd === "newDefaults") {
                     if (logging) console.log("bg got new default settings", request.newDefaults);
@@ -307,8 +311,10 @@ async function setup() {
                 } else if (request.cmd === "forget") {
                     if (logging) console.log("bg forget", request.cmd);
                     rootFolder = await getRootFolder(sendResponse);
-                    if (logging) console.log("bg forget rootFolder", rootFolder, request.toforget);
-                    await forget(request.toforget, rootFolder[0], sender, sendResponse);
+                    if (rootFolder.id !== rootFolderDefaultId) {
+                        if (logging) console.log("bg forget rootFolder", rootFolder, request.toforget);
+                        await forget(request.toforget, rootFolder, sender, sendResponse);
+                    }
                     if (logging) console.log("bg forget done");
                     respondToMessage("forgot", sender, sendResponse);
                 } else if (request.cmd === "pageInfo") {
@@ -443,9 +449,8 @@ async function persistMetadata(sendResponse) {
     superpw = bg.superpw;
     await chrome.storage.session.set({"superpw": superpw});
     let db = clone(database);
-    let found = await getRootFolder(sendResponse);
-    if (found.length > 1) return;
-    rootFolder = found[0];
+    let rootFolder = await getRootFolder(sendResponse);
+    if (rootFolder.id === rootFolderDefaultId) return;
     let sitename = normalize(bg.settings.sitename);
     if (sitename) {
         let oldsitename = db.domains[bg.settings.domainname];
@@ -574,11 +579,11 @@ async function persistMetadata(sendResponse) {
 // sender argument for debugging
 async function retrieveMetadata(sendResponse, request, sender, callback) {
     if (logging) console.log("bg find SSP bookmark folder", request);
-    let folders = await getRootFolder(sendResponse);
-    if (folders.length === 1) {
-        if (logging) console.log("bg found bookmarks folder: ", folders[0]);
-        await parseBkmk(folders[0].id, callback, sender, sendResponse);
-    } else if (folders.length === 0 && createBookmarksFolder) {
+    let rootFolder = await getRootFolder(sendResponse);
+    if (rootFolder.id !== rootFolderDefaultId) {
+        if (logging) console.log("bg found bookmarks folder: ", rootFolder);
+        await parseBkmk(rootFolder.id, callback, sender, sendResponse);
+    } else if (rootFolder.id === rootFolderDefaultId && createBookmarksFolder) {
         // findpw.js sends the SiteData message twice, once for document.onload
         // and once for window.onload.  The latter can arrive while the bookmark
         // folder is being created, resulting in two of them.  My solution is to
@@ -587,8 +592,8 @@ async function retrieveMetadata(sendResponse, request, sender, callback) {
         if (logging || testLogging) console.log("bg creating SSP bookmark folder");
         if (logging) console.log("bg creating bookmarks folder");
         try {
-            let bkmk = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
-            await parseBkmk(bkmk.id, callback, sender, sendResponse);
+            rootFolder = await chrome.bookmarks.create({ "parentId": bkmksId, "title": sitedataBookmark });
+            await parseBkmk(rootFolder.id, callback, sender, sendResponse);
         } catch (error) {
             console.error("Error creating bookmarks folder:", error);
         }
@@ -690,18 +695,21 @@ export async function getRootFolder(sendResponse) { // Exported for testing
             if (typeof folders[0].syncing !== "undefined") {
                 const syncingFolders = folders.filter(f => f.syncing);
                 if (syncingFolders.length === 1) {
-                    return syncingFolders;
+                    return syncingFolders[0];
+                } else {
+                    return rootFolderDefault
                 }
             }
             if (sendResponse) respondToMessage("multiple", sender, sendResponse);
         } else if (folders.length === 0) {
-            if (logging) console.log("bg found no", sitedataBookmark, "folders");
+            console.error("bg found no", sitedataBookmark, "folders");
+            return rootFolderDefault
         }
         if (logging) console.log("bg getRootFolder returning", folders);
-        return folders;
+        return folders[0];
     } catch (error) {
         console.error("Error searching bookmarks:", error);
-        return [];
+        return rootFolderDefault;
     }
 }
 async function retrieved(callback) {

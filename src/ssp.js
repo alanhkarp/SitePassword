@@ -4,6 +4,13 @@ import { resolvers, runTests } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 import { isSharedCredentials } from "./sharedCredentials.js"; 
 import { commonSuffix } from "./public_suffix_list.js"; 
+// testMode must start as false.  Its value will come in a message from bg.js.
+let testMode = false;
+const debugMode = true; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
+
+let logging = false;
+if (logging) console.log("Version 3.4");
+
 // #region
     const $root = get("root");
     const $mainpanel = get("mainpanel");
@@ -104,7 +111,6 @@ import { commonSuffix } from "./public_suffix_list.js";
     const $suffixacceptbutton = get("suffixacceptbutton");
     const $suffixcancelbutton = get("suffixcancelbutton");
 // #endregion
-if (logging) console.log("Version 3.4");
 
 let messageQueue = Promise.resolve();
 let autoclose = true;
@@ -206,32 +212,6 @@ async function init() {
     }
     $main.style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
     updateExportButton();
-}
-function setupdatalist(element, list) {
-    let datalist = get(element.id + "s");
-    const newDatalist = datalist.cloneNode(false);
-    list.forEach((data) => {
-        let option = document.createElement("option");
-        option.value = data;
-        newDatalist.appendChild(option);
-    });
-    datalist.replaceChildren(...newDatalist.children);
-    if (datalist.children.length > 0) {
-        $main.classList.remove("datalist-closed");
-        $main.classList.add("datalist-open");
-    } else {
-        $main.classList.remove("datalist-open");
-        $main.classList.add("datalist-closed");
-    }
-}
-function clearDatalist(listid) {
-    let datalist = get(listid);
-    if (datalist.hasChildNodes) {
-        const newDatalist = datalist.cloneNode(false);
-        datalist.replaceWith(newDatalist);
-    }
-    $main.classList.remove("datalist-open");
-    $main.classList.add("datalist-closed");
 }
 export async function getsettings() {
     if (logging) console.log("popup getsettings", domainname);
@@ -1212,6 +1192,32 @@ function openPhishingWarning(d) {
     hidesettings();
     return true;
 }
+function setupdatalist(element, list) {
+    let datalist = get(element.id + "s");
+    const newDatalist = datalist.cloneNode(false);
+    list.forEach((data) => {
+        let option = document.createElement("option");
+        option.value = data;
+        newDatalist.appendChild(option);
+    });
+    datalist.replaceChildren(...newDatalist.children);
+    if (datalist.children.length > 0) {
+        $main.classList.remove("datalist-closed");
+        $main.classList.add("datalist-open");
+    } else {
+        $main.classList.remove("datalist-open");
+        $main.classList.add("datalist-closed");
+    }
+}
+function clearDatalist(listid) {
+    let datalist = get(listid);
+    if (datalist.hasChildNodes) {
+        const newDatalist = datalist.cloneNode(false);
+        datalist.replaceWith(newDatalist);
+    }
+    $main.classList.remove("datalist-open");
+    $main.classList.add("datalist-closed");
+}
 function sortList(list) {
     return list.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 }
@@ -1350,7 +1356,10 @@ async function handleblur(event, element) {
         $providesitepw.disabled = true;
     }
     bg.settings.characters = characters(bg.settings, database);
+    let sitepw = $sitepw.value || "";
     let pw = await ask2generate()
+    if ($providesitepw.checked) $sitepw.value = sitepw; // So it doesn't change while the user is typing
+    bg.settings.xor = xorStrings(sitepw, pw);  
     setMeter("superpw");
     setMeter("sitepw");
     updateExportButton(); 
