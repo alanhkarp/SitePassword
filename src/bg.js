@@ -5,7 +5,7 @@ import { isSharedCredentials } from "./sharedCredentials.js";
 // Only one of these can be true at a time; reload the extension after changing them.
 const testMode  = true; // Set to true to run the tests in test.js.
 const debugMode = false; // Set to true to run SitePassword with the debug bookmarks folder.
-const demoMode  = true; // Set to true to run the SitePassword demo with the demo bookmarks folder.
+const demoMode  = false; // Set to true to run the SitePassword demo with the demo bookmarks folder.
 
 const logging = false;
 const testLogging = false;
@@ -678,11 +678,7 @@ export async function getRootFolder(sendResponse) { // Exported for testing
     try {
         let candidates = await chrome.bookmarks.search({ "title": sitedataBookmark });
         if (logging) console.log("bg search candidates", candidates);
-        let folders = [];
-        for (let i = 0; i < candidates.length; i++) {
-            if (candidates[i].parentId === bkmksId &&
-                candidates[i].title === sitedataBookmark) folders.push(candidates[i]);
-        }
+        let folders = candidates.filter(c => c.parentId === bkmksId && c.title === sitedataBookmark);
         // A browser update adds a syncing property to bookmark folders.  Until then 
         // folder.syncing is undefined.  In that case, all bookmark folders start to sync 
         // when you turn on sync in the browser.  After the browser update, bookmarks
