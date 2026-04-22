@@ -6,7 +6,7 @@ import { isSharedCredentials } from "./sharedCredentials.js";
 import { commonSuffix } from "./public_suffix_list.js"; 
 // testMode must start as false.  Its value will come in a message from bg.js.
 let testMode = false;
-const debugMode = true; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
+const debugMode = false; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
 
 let logging = false;
 if (logging) console.log("Version 3.4");
@@ -995,11 +995,14 @@ $sameacctbutton.onclick = async function (e) {
     if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
 }
 $nicknamebutton.onclick = function (e) {
+    msgoff("phishing");
     $superpw.disabled = false;
     $sitename.disabled = false;
     $username.disabled = false;
     clearDatalist("sitenames");
     sameacct = false;
+    $sitename.focus();
+    autoclose = false;
 }
 // Phishing methods when there is a safe suffix
 $suffixcancelbutton.onclick = function (e) {

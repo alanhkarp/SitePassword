@@ -90,16 +90,16 @@ export async function runTests() {
         await testCalculation(); 
         await testChangePassword();
         await testRememberForm();
-        // await testProvidedpw();
-        // await testPhishing();
-        // await testSharedCredentials();
-        // await testForget();
-        // await testClearSuperpw();
-        // await testHideSitepw();
-        // await testLegacyBkmks();
-        // await testDuplicateBkmks();
-        // await testSafeSuffixes();
-        // await testChangeAccount();
+        await testProvidedpw();
+        await testPhishing();
+        await testSharedCredentials();
+        await testForget();
+        await testClearSuperpw();
+        await testHideSitepw();
+        await testLegacyBkmks();
+        await testDuplicateBkmks();
+        await testSafeSuffixes();
+        await testChangeAccount();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         await testSaveAsDefault();
@@ -389,10 +389,10 @@ async function testDuplicateBkmks() {
     // Create a duplicate bookmark
     let rootFolder = await getRootFolder();
     if (loggingDuplicateBkmks) console.log("testDuplicateBkmks creating identical duplicate bookmarks");
-    await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
-    await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
+    await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
+    await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
-    let children = await chrome.bookmarks.getChildren(rootFolder[0].id);
+    let children = await chrome.bookmarks.getChildren(rootFolder.id);
     // See if only one of the duplicats remains
     let test = children.length === 2; // because of the common settings bookmark
     if (test) {
@@ -405,9 +405,9 @@ async function testDuplicateBkmks() {
     // Create a duplicate bookmark with different settings
     let newUrl = url.replace("fred", "barney");
     if (loggingDuplicateBkmks) console.log("testDuplicateBkmks creating different duplicate bookmark");
-    await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": newUrl });
+    await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": newUrl });
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
-    children = await chrome.bookmarks.getChildren(rootFolder[0].id);
+    children = await chrome.bookmarks.getChildren(rootFolder.id);
     test = children.length === 3; // because of the common settings bookmark
     if (test) {
         console.log("Passed: Different duplicate bookmark handled");
@@ -424,9 +424,9 @@ async function testDuplicateBkmks() {
     if (loggingDuplicateBkmks) console.log("testDuplicateBkmks creating identical duplicate common settings bookmark");
     url = "ssp://%7B%22clearsuperpw%22%3Afalse%2C%22hidesitepw%22%3Afalse%2C%22safeSuffixes%22%3A%7B%7D%2C%22defaultSettings%22%3A%7B%22sitename%22%3A%22%22%2C%22username%22%3A%22%22%2C%22providesitepw%22%3Afalse%2C%22xor%22%3A%5B0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%5D%2C%22pwlength%22%3A12%2C%22domainname%22%3A%22%22%2C%22pwdomainname%22%3A%22%22%2C%22startwithletter%22%3Atrue%2C%22allowlower%22%3Atrue%2C%22allowupper%22%3Atrue%2C%22allownumber%22%3Atrue%2C%22allowspecial%22%3Afalse%2C%22minlower%22%3A1%2C%22minupper%22%3A1%2C%22minnumber%22%3A1%2C%22minspecial%22%3A1%2C%22specials%22%3A%22%24%2F!%3D%40%3F._-%22%7D%7D";
     title = "CommonSettings";
-    await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
+    await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
-    children = await chrome.bookmarks.getChildren(rootFolder[0].id);
+    children = await chrome.bookmarks.getChildren(rootFolder.id);
     test = children.length === 1; 
     if (test) {
         console.log("Passed: Identical duplicate common settings bookmark handled");
@@ -437,9 +437,9 @@ async function testDuplicateBkmks() {
     }
     newUrl = url.replace("12", "15");
     if (loggingDuplicateBkmks) console.log("testDuplicateBkmks creating different duplicate common settings bookmark");
-    await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": newUrl });
+    await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": newUrl });
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
-    children = await chrome.bookmarks.getChildren(rootFolder[0].id);
+    children = await chrome.bookmarks.getChildren(rootFolder.id);
     test = children.length === 2;
     if (test) {
         console.log("Passed: Different duplicate common settings bookmark handled");
@@ -494,9 +494,9 @@ async function testLegacyBkmks() {
     let title = "legacy.bkmk.com";
     let url = "https://sitepassword.info/?bkmk=ssp://{%22sitename%22:%22usps%22,%22username%22:%22fred%22,%22providesitepw%22:false,%22xor%22:[0,0,0,0,0,0,0,0,0,0,0,0],%22pwlength%22:12,%22domainname%22:%22reg.usps.com%22,%22pwdomainname%22:%22reg.usps.com%22,%22startwithletter%22:true,%22allowlower%22:true,%22allowupper%22:true,%22allownumber%22:true,%22allowspecial%22:false,%22minlower%22:1,%22minupper%22:1,%22minnumber%22:1,%22minspecial%22:1,%22specials%22:%22$/!=@?._-%22,%22characters%22:%220123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz%22}";
     let rootFolder = await getRootFolder();
-    await chrome.bookmarks.create({ "parentId": rootFolder[0].id, "title": title, "url": url });
+    await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
-    let children = await chrome.bookmarks.getChildren(rootFolder[0].id);
+    let children = await chrome.bookmarks.getChildren(rootFolder.id);
     let test = children[0].url.indexOf("{") === -1;
     if (test) {
         console.log("Passed: Legacy bookmark updated");
@@ -572,13 +572,13 @@ async function testChangeAccount() {
     let test = $account.style.display === "block";
     let elements = document.getElementsByName("hassuffix");
     for (let element of elements) {
-        test = test && element.style.display !== "block";
+        test = test && !element.classList.contains("nodisplay");
     }
     if (test) {
-        console.log("Passed: Change account open");
+        console.log("Passed: Change account popup open");
         passed++;
     } else {
-        console.warn("Failed: Change account not open");
+        console.warn("Failed: Change account popup not open");
         failed++;
     }
     restoreForTesting();
@@ -626,7 +626,7 @@ async function testChangeAccount() {
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
     await triggerEvent("blur", $domainname, "domainnameblurResolver");
-    test = test && normalize($sitename.value) === normalize("newGuru");
+    test = test && normalize($sitename.value) === normalize("Guru");
     await fillForm("qwerty", "allantheguru.alanhkarp.com", "", "");
     await triggerEvent("blur", $domainname, "domainnameblurResolver");
     test = test && normalize($sitename.value) === normalize("guru");
@@ -720,16 +720,12 @@ async function fillForm(superpw, domainname, sitename, username) {
         await triggerEvent("keyup", $superpw, "superpwkeyupResolver");
         if (loggingFill) console.log("fillForm superpw");
     }
-    if (sitename) {
-        $sitename.value = sitename;
-        await triggerEvent("keyup", $sitename, "sitenamekeyupResolver");
-        if (loggingFill) console.log("fillForm sitename");
-    }
-    if (username) {
-        $username.value = username;
-        await triggerEvent("keyup", $username, "usernamekeyupResolver");
-        if (loggingFill) console.log("fillForm username");
-    }
+    $sitename.value = sitename;
+    await triggerEvent("keyup", $sitename, "sitenamekeyupResolver");
+    if (loggingFill) console.log("fillForm sitename");
+    $username.value = username;
+    await triggerEvent("keyup", $username, "usernamekeyupResolver");
+    if (loggingFill) console.log("fillForm username");
     if (loggingFill) console.log("fillForm", $domainname.value, $superpw.value, $sitename.value, $username.value);
 }
 async function forgetDomainname() {
