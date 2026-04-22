@@ -199,12 +199,39 @@ async function testProvidedpw() {
     if (loggingProvide) console.log("testProvidedpw domainname blur", $sitepw.value, $providesitepw.checked);
     let test = $sitepw.value === expectedpw
     if (test) {
-        console.log("Passed: Provide pw");
+        console.log("Passed: Remembers provided pw");
         passed++;
     } else {
-        console.warn("Failed: Provide pw", expectedpw, "|" + $sitepw.value + "|");
+        console.warn("Failed: Remembers provided pw", expectedpw, "|" + $sitepw.value + "|");
         failed++;
     }
+    // See if I can change the sitename without it forgetting the provided password
+    await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
+    await triggerEvent("blur", $domainname, "domainnameblurResolver");
+    $sitename.value = "Guru2";
+    await triggerEvent("keyup", $sitename, "sitenamekeyupResolver");
+    test = $sitepw.value === expectedpw && $sitename.value === "Guru2";
+    if (test) {
+        console.log("Passed: Change sitename with provided pw");
+        passed++;
+    } else {
+        console.warn("Failed: Change sitename with provided pw", expectedpw, "|" + $sitepw.value + "|", "Guru2", "|" + $sitename.value + "|");
+        failed++;
+    }
+    // See if I can change the username without it forgetting the provided password
+    await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
+    await triggerEvent("blur", $domainname, "domainnameblurResolver");
+    $username.value = "alan2";
+    await triggerEvent("keyup", $username, "usernamekeyupResolver");
+    test = $sitepw.value === expectedpw && $username.value === "alan2";
+    if (test) {
+        console.log("Passed: Change username with provided pw");
+        passed++;
+    } else {
+        console.warn("Failed: Change username with provided pw", expectedpw, "|" + $sitepw.value + "|", "alan2", "|" + $username.value + "|");
+        failed++;
+    }
+    // See if I can change the super password without it forgetting the provided password
 }
 // Test phishing
 async function testPhishing() {

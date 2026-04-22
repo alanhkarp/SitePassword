@@ -3,7 +3,7 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 import { isSharedCredentials } from "./sharedCredentials.js";
 
 // Only one of these can be true at a time; reload the extension after changing them.
-const testMode  = false; // Set to true to run the tests in test.js.
+const testMode  = true; // Set to true to run the tests in test.js.
 const debugMode = false; // Set to true to run SitePassword with the debug bookmarks folder.
 const demoMode  = false; // Set to true to run the SitePassword demo with the demo bookmarks folder.
 
