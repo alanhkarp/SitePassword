@@ -824,7 +824,7 @@ $hidesitepw.onclick = function () {
 }
 $pwlength.onmouseout = async function (e) {
     await handleblur(e, "pwlength");
-    if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurPromise("pwlengthblurPromise");
+    if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurResolver("pwlengthblurPromise");
 }
 $pwlength.onblur = async function (e) {
     await handleblur(e, "pwlength");
@@ -850,7 +850,7 @@ $allownumbercheckbox.onclick = function (e) {
 }
 $allowspecialcheckbox.onclick = async function (e) {
     await handleclick(e, "special");
-    if (resolvers.allowspecialclickResolver) resolvers.allowspecialclickResolver("allowspecialclickPromise");
+    if (resolvers.allowspecialcheckboxResolver) resolvers.allowspecialcheckboxResolver("allowspecialcheckboxPromise");
 }
 $minlower.onmouseout = function (e) {
     handleblur(e, "minlower");

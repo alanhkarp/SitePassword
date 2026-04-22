@@ -698,7 +698,7 @@ export async function getRootFolder(sendResponse) { // Exported for testing
             }
             if (sendResponse) respondToMessage("multiple", sender, sendResponse);
         } else if (folders.length === 0) {
-            console.error("bg found no", sitedataBookmark, "folders");
+            if (logging) console.log("bg found no", sitedataBookmark, "folders");
             return rootFolderDefault
         }
         if (logging) console.log("bg getRootFolder returning", folders);
