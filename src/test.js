@@ -181,6 +181,7 @@ async function testProvidedpw() {
     loggingProvide = false;
     const expectedpw = "MyStrongPassword";
     await resetState();
+    // Set up for tests
     if (loggingProvide) console.log("testProvidedpw state reset");
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
     get("settings").style.display = "block";
@@ -205,7 +206,7 @@ async function testProvidedpw() {
         console.warn("Failed: Remembers provided pw", expectedpw, "|" + $sitepw.value + "|");
         failed++;
     }
-    // See if I can change the sitename without it forgetting the provided password
+    // // See if I can change the sitename without it forgetting the provided password
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
     await triggerEvent("blur", $domainname, "domainnameblurResolver");
     $sitename.value = "Guru2";
@@ -218,7 +219,7 @@ async function testProvidedpw() {
         console.warn("Failed: Change sitename with provided pw", expectedpw, "|" + $sitepw.value + "|", "Guru2", "|" + $sitename.value + "|");
         failed++;
     }
-    // See if I can change the username without it forgetting the provided password
+    // // See if I can change the username without it forgetting the provided password
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
     await triggerEvent("blur", $domainname, "domainnameblurResolver");
     $username.value = "alan2";
@@ -229,6 +230,20 @@ async function testProvidedpw() {
         passed++;
     } else {
         console.warn("Failed: Change username with provided pw", expectedpw, "|" + $sitepw.value + "|", "alan2", "|" + $username.value + "|");
+        failed++;
+    }
+    // See what happens if I mouse out of the popup without blurring the domain name field.
+    await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
+    await triggerEvent("blur", $domainname, "domainnameblurResolver");
+    $sitename.value = "Guru2";
+    await triggerEvent("keyup", $sitename, "sitenamekeyupResolver");
+    await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+    test = $sitepw.value === expectedpw;
+    if (test) {
+        console.log("Passed: Mouseleave with provided pw");
+        passed++;
+    } else {
+        console.warn("Failed: Mouseleave with provided pw", expectedpw, "|" + $sitepw.value + "|");
         failed++;
     }
     // See if I can change the super password without it forgetting the provided password
