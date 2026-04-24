@@ -62,7 +62,7 @@ if (logging) console.log("Version 3.4");
     const $sitepwmenuhelp = get("sitepwmenuhelp");
     const $sitepwhelptextclose = get("sitepwhelptextclose");
     const $sitepwhelptextmore = get("sitepwhelptextmore");
-    const $settings = get("settings");
+    const $settingsmenu = get("settingsmenu");
     const $settingsshow = get("settingsshow");
     const $logo = get("logo");
     const $logopw = get("logopw");
@@ -432,9 +432,23 @@ $superpw.onkeyup = async function (e) {
 }
 $superpw.onblur = async function (e) {
     if (logging) console.log("popup superpw onmouseout");
+    // See if this is a different super password
+    let oldSuperPwHash = database.common.superpwHash || "";
+    let oldbg = clone(bg);
+    bg.settings.sitename = "";
+    bg.settings.username = "";
+    let superpwHash = await generatePassword(bg);
+    bg = oldbg;
+    if (oldSuperPwHash) {
+        if (superpwHash !== oldSuperPwHash) {
+            // Handle the case where the super password has changed
+            msgon("superpwchange");
+        }
+    }
+    database.common.superpwHash = superpwHash;
     await handleblur(e, "superpw");
     await changePlaceholder();
-    if (resolvers.superpwblurResolve) resolvers.superpwblurResolver("superpwblurPromise");
+    if (resolvers.superpwblurResolver) resolvers.superpwblurResolver("superpwblurPromise");
 }
 $superpwmenu.onmouseleave = function (e) {
     menuOff("superpw", e);
@@ -1493,10 +1507,10 @@ function restrictStartsWithLetter() {
 async function showsettings() {
     $settingsshow.style.display = "none";
     $settingssave.style.display = "inline";
-    $settings.style.display = "block";
+    $settingsmenu.style.display = "block";
     helpAllOff();
     hideInstructions();
-    let height = $settings.getBoundingClientRect().height;
+    let height = $settingsmenu.getBoundingClientRect().height;
     $main.style.height = height + "px";
     $superpw.value = bg.superpw || "";
     await fill();
@@ -1506,7 +1520,7 @@ async function showsettings() {
 function hidesettings() {
     $settingsshow.style.display = "inline";
     $settingssave.style.display = "none";
-    $settings.style.display = "none";
+    $settingsmenu.style.display = "none";
     let height = mainHeight();
     $main.style.height = height + "px";
 }
@@ -1769,6 +1783,7 @@ function isSupportedProtocol(v) {
 let warnings = [
     { name: "forget", ison: false, transient: false },
     { name: "phishing", ison: false, transient: false },
+    { name: "superpwchange", ison: false, transient: false },
     { name: "suffix", ison: false, transient: false },
     { name: "account", ison: false, transient: false },
     { name: "nopw", ison: false, transient: false },

@@ -53,7 +53,7 @@ const $phishing = get("phishing");
 const $providesitepw = get("providesitepw");
 const $pwlength = get("pwlength");
 const $sameacctbutton = get("sameacctbutton");
-const $settings = get("settings");
+const $settingsmenu = get("settingsmenu");
 const $settingsshow = get("settingsshow");
 const $sitename = get("sitename");
 const $sitename3bluedots = get("sitename3bluedots");
@@ -72,6 +72,7 @@ const $username = get("username");
 const $username3bluedots = get("username3bluedots");
 const $usernamemenuforget = get("usernamemenuforget");
 const $forget = get("forget");
+const $superpwchange = get("superpwchange");
 // #endregion
 
 let passed = 0;
@@ -100,6 +101,7 @@ export async function runTests() {
         await testDuplicateBkmks();
         await testSafeSuffixes();
         await testChangeAccount();
+        await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         await testSaveAsDefault();
@@ -184,7 +186,7 @@ async function testProvidedpw() {
     // Set up for tests
     if (loggingProvide) console.log("testProvidedpw state reset");
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
-    get("settings").style.display = "block";
+    await triggerEvent("click", $settingsshow, "settingsshowResolver");
     if (loggingProvide) console.log("testProvidedpw providepw before", $providesitepw.disabled, $providesitepw.checked);
     await triggerEvent("click", $providesitepw, "providesitepwResolver");
     if (loggingProvide) console.log("testProvidedpw clicked", $providesitepw.disabled, $providesitepw.checked);
@@ -679,7 +681,41 @@ async function testChangeAccount() {
         console.warn("Failed: Change account new");
         failed++;
     }
-} 
+}
+// Test changing super password.  Make sure it doesn't change provided passwords.
+async function testChangeSuperpw() {
+    await resetState();
+    // Test showing the warning
+    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+    await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+    $superpw.value = "asdfgh";
+    await triggerEvent("keyup", $superpw, "superpwkeyupResolver");
+    await triggerEvent("blur", $superpw, "superpwblurResolver");
+    restoreForTesting();
+    $superpw.value = "qwerty";
+    await triggerEvent("keyup", $superpw, "superpwkeyupResolver");
+    await triggerEvent("blur", $superpw, "superpwblurResolver");
+    let test = $superpwchange.style.display === "block";
+    if (test) {
+        console.log("Passed: Show change super password warning");
+        passed++;
+    } else {
+        console.warn("Failed: Show change super password warning", "asdfgh", "|" + $superpw.value + "|");
+        failed++;
+    }
+    restoreForTesting();
+    // Test no warning
+    await triggerEvent("keyup", $superpw, "superpwkeyupResolver");
+    await triggerEvent("blur", $superpw, "superpwblurResolver");
+    test = $superpwchange.style.display === "none";
+    if (test) {
+        console.log("Passed: No change super password warning");
+        passed++;
+    } else {
+        console.warn("Failed: No change super password warning", "qwerty", "|" + $superpw.value + "|");
+        failed++;
+    }
+}
 // Test save as default
 async function testSaveAsDefault() {
     if (loggingDefault) console.log("testSaveAsDefault");
@@ -750,7 +786,7 @@ function clearForm() {
     $minnumber.value = baseDefaultSettings.minnumber;
     $minspecial.value = baseDefaultSettings.minspecial;
     $specials.value = baseDefaultSettings.specials;
-    $settings.style.display = "none";
+    $settingsmenu.style.display = "none";
     if (loggingClear) console.log("clearForm done", $pwlength.value);
 }
 async function fillForm(superpw, domainname, sitename, username) {

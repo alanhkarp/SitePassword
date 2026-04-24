@@ -200,6 +200,31 @@ to change all occurrences if ![](images...) to <img> tags.
             </div>
           </span>
         </div>
+        <div id="superpwchange" class="warning nodisplay" style="width: 18em"
+          title="Different super password.">
+          <span id="superpwchangetext">
+            <img src="images/warning.png" class="icon warning-icon">
+            <span class="warningtext">Different Super Password</span>
+            <p>
+              You entered a different super password than the one you used before.
+              Changing your super password will change the computed passwords for all of your accounts.
+            </p>
+            <div>
+              <button id="superpwchangecancelbutton" type="button" class="buttonsafe" 
+                title="Cancel changing your super password.">
+                <span class="btn-text" style="color: white">Keep my old super password</span>
+              </button>
+              <br /><br />
+              <button id="superpwchangekeepbutton" type="button" class="buttondangerous"
+                title="Click to keep the new super password.">
+                <span class="btn-text" style="color: white">Keep the new super password</span>
+              </button>
+              <p>
+                You can change back to your previous super password to get your old computed passwords.
+              </p>
+            </div>
+          </span>
+        </div>
         <div id="nopw" class="warning nodisplay" style="width: 18em"
           title="You may need to enable some characters, increase the pasword length, or reduce the number of special characters you're asking for.">
           <span id="nopwtext">
@@ -1328,7 +1353,7 @@ to change all occurrences if ![](images...) to <img> tags.
           </section>
       </div>
       </div>
-      <div id="settings" class="sticky side-panel" style="display: none; width: 25em">
+      <div id="settingsmenu" class="sticky side-panel" style="display: none; width: 25em">
         <h1 style="text-align: left;">Additional Settings</h1>
         <div class="setting-row" id="providesitepwdiv"
           title="You must fill in the SitePassword form before you can provide your own account password.">
