@@ -211,17 +211,27 @@ to change all occurrences if ![](images...) to <img> tags.
             </p>
             <div>
               <button id="superpwchangecancelbutton" type="button" class="buttonsafe" 
-                title="Cancel changing your super password.">
+                title="Don't change all my passwords">
                 <span class="btn-text" style="color: white">Keep my old super password</span>
               </button>
               <br /><br />
               <button id="superpwchangekeepbutton" type="button" class="buttondangerous"
                 title="Click to keep the new super password.">
-                <span class="btn-text" style="color: white">Keep the new super password</span>
+                <span class="btn-text" style="color: white">Change all my passwords</span>
               </button>
-              <p>
-                You can change back to your previous super password to get your old computed passwords.
-              </p>
+              <div id="oldsuperpw" class="nodisplay">
+                <p>
+                  Enter your old super password if you want to keep the passwords you provided.
+                </p>
+                <input id="oldsuperpwinput" type="password" style="width: 95%; position: relative; left: 10px"
+                  placeholder="Enter your old super password." 
+                  title="Enter your old super password.">
+                <br /><br />
+              </div>
+              <button id="keepprovidedpws" type="button" class="buttonwarning nodisplay" 
+                title="Click to keep the passwords you provided for the sites you provided them for.">
+                <span class="btn-text" style="color: black">Change my computed passwords but keep the ones I provided</span>
+              </button>
             </div>
           </span>
         </div>

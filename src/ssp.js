@@ -101,6 +101,8 @@ if (logging) console.log("Version 3.4");
     const $main = get("main");
     const $bottom = get("bottom");
     const $top = get("top");
+    const $oldsuperpw = get("oldsuperpw");
+    const $oldsuperpwinput = get("oldsuperpwinput");
     const $warnings = get("warnings");
     const $phishingtext0 = get("phishingtext0");
     const $phishingtext1 = get("phishingtext1");
@@ -134,6 +136,8 @@ export function restoreForTesting() {
     exporting = false;
     warningMsg = false;
     warnings.forEach(msg => msg.ison = false);
+    $oldsuperpw.classList.add("nodisplay");
+    $oldsuperpwinput.value = "";
 }
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
@@ -433,16 +437,19 @@ $superpw.onkeyup = async function (e) {
 $superpw.onblur = async function (e) {
     if (logging) console.log("popup superpw onmouseout");
     // See if this is a different super password
-    let oldSuperPwHash = database.common.superpwHash || "";
+    if (!database.common.providepwSites) database.common.providepwSites = {};
+    if (bg.settings.providesitepw) database.common.providepwSites[normalize(bg.settings.sitename)] = true;
     let oldbg = clone(bg);
     bg.settings.sitename = "";
     bg.settings.username = "";
     let superpwHash = await generatePassword(bg);
     bg = oldbg;
-    if (oldSuperPwHash) {
-        if (superpwHash !== oldSuperPwHash) {
-            // Handle the case where the super password has changed
-            msgon("superpwchange");
+    let oldSuperPwHash = database.common.superpwHash || "";
+    if (oldSuperPwHash && superpwHash !== oldSuperPwHash) {
+        // Handle the case where the super password has changed
+        msgon("superpwchange");
+        if (database.common.providepwSites[normalize(bg.settings.sitename)]) {
+            $oldsuperpw.classList.remove("nodisplay");
         }
     }
     database.common.superpwHash = superpwHash;
@@ -1065,6 +1072,12 @@ $forgetcancelbutton.onclick = function () {
         $toforgetlist.removeChild($toforgetlist.firstChild);
     }
     msgoff("forget");
+}
+// Change super password buttons
+$oldsuperpwinput.onkeyup = function (e) {
+    let oldSuperpwHash = database.common.superpwHash || "";
+    if (oldSuperpwHash && isSuperPw(oldSuperpwInput.value, oldSuperpwHash)) {
+    }
 }
 // Handle external links in the instructions and help
 document.addEventListener('DOMContentLoaded', function () {

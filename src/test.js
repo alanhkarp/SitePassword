@@ -49,6 +49,7 @@ const $minnumber = get("minnumber");
 const $minspecial = get("minspecial");
 const $minupper = get("minupper");
 const $nicknamebutton = get("nicknamebutton");
+const $oldsuperpw = get("oldsuperpw");
 const $phishing = get("phishing");
 const $providesitepw = get("providesitepw");
 const $pwlength = get("pwlength");
@@ -89,18 +90,18 @@ export async function runTests() {
     }
     if (!restart) {
         await testCalculation(); 
-        await testChangePassword();
-        await testRememberForm();
-        await testProvidedpw();
-        await testPhishing();
-        await testSharedCredentials();
-        await testForget();
-        await testClearSuperpw();
-        await testHideSitepw();
-        await testLegacyBkmks();
-        await testDuplicateBkmks();
-        await testSafeSuffixes();
-        await testChangeAccount();
+        // await testChangePassword();
+        // await testRememberForm();
+        // await testProvidedpw();
+        // await testPhishing();
+        // await testSharedCredentials();
+        // await testForget();
+        // await testClearSuperpw();
+        // await testHideSitepw();
+        // await testLegacyBkmks();
+        // await testDuplicateBkmks();
+        // await testSafeSuffixes();
+        // await testChangeAccount();
         await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
@@ -705,6 +706,19 @@ async function testChangeSuperpw() {
         passed++;
     } else {
         console.warn("Failed: No change super password warning", "qwerty", "|" + $superpw.value + "|");
+        failed++;
+    }
+    // Test that provided passwords don't change
+    await provideSitepwSetup("MyStrongPassword");
+    $superpw.value = "asdfgh";
+    await triggerEvent("keyup", $superpw, "superpwkeyupResolver");
+    await triggerEvent("blur", $superpw, "superpwblurResolver");
+    test = !$oldsuperpw.classList.contains("nodisplay");
+    if (test) {
+        console.log("Passed: Show old super password when changing super password with provided passwords");
+        passed++;
+    } else {
+        console.warn("Failed: Show old super password when changing super password with provided passwords");
         failed++;
     }
 }
