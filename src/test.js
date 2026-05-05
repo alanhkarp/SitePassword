@@ -185,14 +185,7 @@ async function testProvidedpw() {
     await resetState();
     // Set up for tests
     if (loggingProvide) console.log("testProvidedpw state reset");
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
-    await triggerEvent("click", $settingsshow, "settingsshowResolver");
-    if (loggingProvide) console.log("testProvidedpw providepw before", $providesitepw.disabled, $providesitepw.checked);
-    await triggerEvent("click", $providesitepw, "providesitepwResolver");
-    if (loggingProvide) console.log("testProvidedpw clicked", $providesitepw.disabled, $providesitepw.checked);
-    $sitepw.value = expectedpw;
-    await triggerEvent("blur", $sitepw, "sitepwblurResolver");
-    await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+    await provideSitepwSetup(expectedpw);
     if (loggingProvide) console.log("testProvidedpw saved", $sitepw.value);
     // See if it remembers
     clearForm();
@@ -248,7 +241,6 @@ async function testProvidedpw() {
         console.warn("Failed: Mouseleave with provided pw", expectedpw, "|" + $sitepw.value + "|");
         failed++;
     }
-    // See if I can change the super password without it forgetting the provided password
 }
 // Test phishing
 async function testPhishing() {
@@ -842,6 +834,17 @@ async function phishingSetup() {
     await fillForm("qwerty", "allantheguru.alanhkarp.com", "guru", "");
     if (loggingPhishing) console.log("phishingSetup sitename blur", $sitename.value, $username.value);
     await triggerEvent("blur", $sitename, "sitenameblurResolver");    
+}
+async function provideSitepwSetup(expectedpw) {
+    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+    await triggerEvent("click", $settingsshow, "settingsshowResolver");
+    if (loggingProvide) console.log("testProvidedpw providepw before", $providesitepw.disabled, $providesitepw.checked);
+    await triggerEvent("click", $providesitepw, "providesitepwResolver");
+    if (loggingProvide) console.log("testProvidedpw clicked", $providesitepw.disabled, $providesitepw.checked);
+    $sitepw.value = expectedpw;
+    await triggerEvent("blur", $sitepw, "sitepwblurResolver");
+    await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+    if (loggingProvide) console.log("testProvidedpw saved", $sitepw.value);
 }
 async function triggerEvent(event, element, resolverName) {
     let promise = wrapHandler(resolverName);
