@@ -103,6 +103,9 @@ if (logging) console.log("Version 3.4");
     const $top = get("top");
     const $oldsuperpw = get("oldsuperpw");
     const $oldsuperpwinput = get("oldsuperpwinput");
+    const $superpwchange = get("superpwchange");
+    const $superpwchangecancelbutton = get("superpwchangecancelbutton");
+    const $superpwchangekeepbutton = get("superpwchangekeepbutton");
     const $warnings = get("warnings");
     const $phishingtext0 = get("phishingtext0");
     const $phishingtext1 = get("phishingtext1");
@@ -1073,11 +1076,12 @@ $forgetcancelbutton.onclick = function () {
     }
     msgoff("forget");
 }
-// Change super password buttons
-$oldsuperpwinput.onkeyup = function (e) {
-    let oldSuperpwHash = database.common.superpwHash || "";
-    if (oldSuperpwHash && isSuperPw(oldSuperpwInput.value, oldSuperpwHash)) {
-    }
+// Keep old super password
+$superpwchangecancelbutton.onclick = function (e) {
+    $superpwchange.style.display = "none";
+    $superpw.value = "";
+    $superpw.focus();
+    if (resolvers.superpwchangecancelbuttonResolver) resolvers.superpwchangecancelbuttonResolver("superpwchangecancelbuttonPromise");
 }
 // Handle external links in the instructions and help
 document.addEventListener('DOMContentLoaded', function () {

@@ -68,12 +68,14 @@ const $startwithletter = get("startwithletter");
 const $suffix = get("suffix");
 const $suffixacceptbutton = get("suffixacceptbutton");
 const $suffixcancelbutton = get("suffixcancelbutton");
+const $superpwchange = get("superpwchange");
+const $superpwchangecancelbutton = get("superpwchangecancelbutton");
+const $superpwchangekeepbutton = get("superpwchangekeepbutton");
 const $superpw = get("superpw");
 const $username = get("username");
 const $username3bluedots = get("username3bluedots");
 const $usernamemenuforget = get("usernamemenuforget");
 const $forget = get("forget");
-const $superpwchange = get("superpwchange");
 // #endregion
 
 let passed = 0;
@@ -689,23 +691,28 @@ async function testChangeSuperpw() {
     await triggerEvent("keyup", $superpw, "superpwkeyupResolver");
     await triggerEvent("blur", $superpw, "superpwblurResolver");
     let test = $superpwchange.style.display === "block";
+    test = test && $oldsuperpw.classList.contains("nodisplay");
     if (test) {
-        console.log("Passed: Show change super password warning");
+        console.log("Passed: Show different super password warning");
         passed++;
     } else {
-        console.warn("Failed: Show change super password warning", "asdfgh", "|" + $superpw.value + "|");
+        console.warn("Failed: Show different super password warning", "asdfgh", "|" + $superpw.value + "|");
         failed++;
     }
     restoreForTesting();
     // Test no warning
+    clearForm();
+    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+    await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+    $superpw.value = "qwerty";
     await triggerEvent("keyup", $superpw, "superpwkeyupResolver");
     await triggerEvent("blur", $superpw, "superpwblurResolver");
     test = $superpwchange.style.display === "none";
     if (test) {
-        console.log("Passed: No change super password warning");
+        console.log("Passed: No different super password warning");
         passed++;
     } else {
-        console.warn("Failed: No change super password warning", "qwerty", "|" + $superpw.value + "|");
+        console.warn("Failed: No different super password warning", "qwerty", "|" + $superpw.value + "|");
         failed++;
     }
     // Test that provided passwords don't change
@@ -719,6 +726,20 @@ async function testChangeSuperpw() {
         passed++;
     } else {
         console.warn("Failed: Show old super password when changing super password with provided passwords");
+        failed++;
+    }
+    // Test cancelling superpw change
+    restoreForTesting();
+    $superpw.value = "qwerty";
+    await triggerEvent("keyup", $superpw, "superpwkeyupResolver");
+    await triggerEvent("blur", $superpw, "superpwblurResolver");
+    await triggerEvent("click", $superpwchangecancelbutton, "superpwchangecancelbuttonResolver");
+    test = $superpwchange.style.display === "none" && $superpw.value === "";
+    if (test) {
+        console.log("Passed: Cancel change super password");
+        passed++;
+    } else {
+        console.warn("Failed: Cancel change super password", "qwerty", "|" + $superpw.value + "|");
         failed++;
     }
 }
