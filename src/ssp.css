@@ -292,6 +292,11 @@ button:enabled:active {
   background-color: rgb(246, 206, 87, 80%);
   color: black;
 }
+.buttonwarning:disabled {
+  background-color: rgb(246, 206, 87, 50%);
+  color: black;
+  opacity: 1 !important;
+}
 .buttondangerous:enabled {
   background-color: rgb(213, 28, 36);
   margin: auto;

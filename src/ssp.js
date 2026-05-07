@@ -139,7 +139,6 @@ export function restoreForTesting() {
     exporting = false;
     warningMsg = false;
     warnings.forEach(msg => msg.ison = false);
-    $oldsuperpw.classList.add("nodisplay");
     $oldsuperpwinput.value = "";
 }
 // I need all the metadata stored in database for both the phishing check
@@ -156,6 +155,7 @@ window.onload = async function () {
     try {
         let tabs = await chrome.tabs.query({ active: true, currentWindow: true });
         activetab = tabs[0];
+        if (testMode) activetab = { url: "https://alantheguru.alanhkarp.com", id: 123 };
     } catch (error) {
         console.error("Error querying active tab window onload:", error);
         return;
@@ -204,6 +204,7 @@ window.onload = async function () {
     instructionSetup();
     sectionrefSetup();
     await getsettings();
+    if (resolvers.loadResolver) resolvers.loadResolver("loadPromise");
 }
 async function init() {
     $superpw.value = bg.superpw || "";
@@ -264,6 +265,8 @@ export async function getsettings() {
     $superpw.value = response.superpw || "";
     bg.superpw = response.superpw || "";
     await init();
+    let computed = await ask2generate(bg);
+    $sitepw.value = stringXorArray(computed, bg.settings.xor);
     let readyForClick = isReadyForClick($superpw.value, $sitename.value, $username.value);
     if (readyForClick) {
         let phishingDomain = await getPhishingDomain($sitename.value);
@@ -859,6 +862,7 @@ $pwlength.onkeyup = async function(e) {
 }; 
 $startwithletter.onclick = function (e) {
     handleblur(e, "startwithletter");
+    if (resolvers.startwithletterResolver) resolvers.startwithletterResolver("startwithletterPromise");
 }
 $allowlowercheckbox.onclick = function (e) {
     restrictStartsWithLetter();
@@ -1082,6 +1086,11 @@ $superpwchangecancelbutton.onclick = function (e) {
     $superpw.value = "";
     $superpw.focus();
     if (resolvers.superpwchangecancelbuttonResolver) resolvers.superpwchangecancelbuttonResolver("superpwchangecancelbuttonPromise");
+}
+// Keep new super password
+$superpwchangekeepbutton.onclick = function (e) {
+    $superpwchange.style.display = "none";
+    if (resolvers.superpwchangekeepbuttonResolver) resolvers.superpwchangekeepbuttonResolver("superpwchangekeepbuttonPromise");
 }
 // Handle external links in the instructions and help
 document.addEventListener('DOMContentLoaded', function () {
@@ -1407,6 +1416,7 @@ async function handleblur(event, element) {
     }
     if (logging) console.log(Date.now(), "popup handleblur timeout");
     await changePlaceholder();
+    if (resolvers[element + "blurResolver"]) resolvers[element + "blurResolver"](element + "blurPromise");
 }
 async function handleclick(e, which) {
     let element = "allow" + which;
@@ -1417,6 +1427,7 @@ async function handleclick(e, which) {
         $startwithletter.checked = false;
     }
     handleblur(e, element);
+    if (resolvers[element + "clickResolver"]) resolvers[element + "clickResolver"](element + "clickPromise");
 }
 async function changePlaceholder() {
     let readyForClick = isReadyForClick($superpw.value, $sitename.value, $username.value);
@@ -1540,6 +1551,7 @@ function hidesettings() {
     $settingsmenu.style.display = "none";
     let height = mainHeight();
     $main.style.height = height + "px";
+    if (resolvers.settingssaveResolver) resolvers.settingssaveResolver("settingssavePromise");
 }
 function pwoptions(options) {
     for (let x in options) {

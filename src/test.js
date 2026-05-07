@@ -56,6 +56,7 @@ const $pwlength = get("pwlength");
 const $sameacctbutton = get("sameacctbutton");
 const $settingsmenu = get("settingsmenu");
 const $settingsshow = get("settingsshow");
+const $settingssave = get("settingssave");
 const $sitename = get("sitename");
 const $sitename3bluedots = get("sitename3bluedots");
 const $sitepw = get("sitepw");
@@ -90,21 +91,22 @@ export async function runTests() {
     } else {
         alert("Starting tests. Set testMode in bg.js to false to stop tests.");
     }
-    if (!restart) {
+    if (!restart) { 
         await testCalculation(); 
-        // await testChangePassword();
-        // await testRememberForm();
-        // await testProvidedpw();
-        // await testPhishing();
-        // await testSharedCredentials();
-        // await testForget();
-        // await testClearSuperpw();
-        // await testHideSitepw();
-        // await testLegacyBkmks();
-        // await testDuplicateBkmks();
-        // await testSafeSuffixes();
-        // await testChangeAccount();
-        await testChangeSuperpw();
+        await testRememberSuperpw();
+        await testChangePassword();
+        await testRememberForm();
+        await testProvidedpw();
+        await testPhishing();
+        await testSharedCredentials();
+        await testForget();
+        await testClearSuperpw();
+        await testHideSitepw();
+        await testLegacyBkmks();
+        await testDuplicateBkmks();
+        await testSafeSuffixes();
+        await testChangeAccount();
+        // await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         await testSaveAsDefault();
@@ -130,6 +132,29 @@ async function testCalculation() {
     } else {
         let inputs = {"expectedpw": expectedpw, "actual": actual, "superpw": $superpw.value, "sitename": $sitename.value, "username": $username.value};
         console.warn("Failed: Calculation", inputs);
+        failed++;
+    }
+}
+// Test remembering super password
+async function testRememberSuperpw() {
+    let loggingRememberSuperpw = false;
+    await resetState();
+    let expected = "qwerty";
+    if (loggingRememberSuperpw) console.log("testRememberSuperpw state reset");
+    await fillForm(expected, "alantheguru.alanhkarp.com", "Guru", "alan");
+    await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");  // $mainpanel.onmouseleave(); saves the settings
+    if (loggingRememberSuperpw) console.log("testRememberSuperpw filled form", $sitename.value, $username.value, $superpw.value);
+    // See if it remembers
+    restoreForTesting();
+    clearForm();
+    await triggerEvent("load", window, "loadResolver"); // Because the super password is loaded on onload
+    if (loggingRememberSuperpw) console.log("testRememberSuperpw filled form", $superpw.value);
+    let test = $superpw.value === expected;
+    if (test) {
+        console.log("Passed: Remember super password");
+        passed++;
+    } else {
+        console.warn("Failed: Remember super password", "Guru", "alan", expected, $sitename.value, $username.value, $superpw.value);
         failed++;
     }
 }
@@ -159,19 +184,29 @@ async function testChangePassword() {
 async function testRememberForm() {
     await resetState();
     if (logging) console.log("testRememberForm state reset");
-    const expectdpw = "KiD7w@IN0HM.";
+    const expectdpw = "6IeKoxO88u4h4!qp";
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
     await triggerEvent("click", $settingsshow, "settingsshowResolver");
+    $pwlength.value = 16;
+    await triggerEvent("blur", $pwlength, "pwlengthblurResolver");
+    await triggerEvent("click", $startwithletter, "startwithletterResolver");
+    $minlower.value = 2;
+    await triggerEvent("blur", $minlower, "minlowerblurResolver");
+    $minupper.value = 2;
+    await triggerEvent("blur", $minupper, "minupperblurResolver");
+    $minnumber.value = 2;
+    await triggerEvent("blur", $minnumber, "minnumberblurResolver");
     await triggerEvent("click", $allowspecialcheckbox, "allowspecialcheckboxResolver");
     $specials.value = "/!=@?._-";
     await triggerEvent("blur", $specials, "specialsblurResolver");
+    await triggerEvent("click", $settingssave, "settingssaveResolver");
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");  // $mainpanel.onmouseleave(); saves the settings
     if (logging) console.log("testRememberForm filled form", $sitename.value, $username.value);
     // See if it remembers
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
     if (logging) console.log("testRememberForm filled form", $sitename.value, $username.value);
-    await triggerEvent("blur", $domainname, "domainnameblurResolver");
-    let tests = $sitename.value === "Guru";
+    await triggerEvent("load", window, "loadResolver"); // Because the settings are loaded on onload
+    let tests = $superpw.value === "qwerty";
+    tests = tests && $sitename.value === "Guru";
     tests = tests && $username.value === "alan";
     tests = tests && $sitepw.value === expectdpw;
     if (tests) {
@@ -192,9 +227,7 @@ async function testProvidedpw() {
     if (loggingProvide) console.log("testProvidedpw saved", $sitepw.value);
     // See if it remembers
     clearForm();
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-    document.activeElement.blur(); // So sitepw field is not the active element
-    await triggerEvent("blur", $domainname, "domainnameblurResolver");
+   await triggerEvent("load", window, "loadResolver");
     if (loggingProvide) console.log("testProvidedpw domainname blur", $sitepw.value, $providesitepw.checked);
     let test = $sitepw.value === expectedpw
     if (test) {
@@ -677,7 +710,7 @@ async function testChangeAccount() {
         failed++;
     }
 }
-// Test changing super password.  Make sure it doesn't change provided passwords.
+// Test changing super password.
 async function testChangeSuperpw() {
     await resetState();
     // Test showing the warning
@@ -740,6 +773,36 @@ async function testChangeSuperpw() {
         passed++;
     } else {
         console.warn("Failed: Cancel change super password", "qwerty", "|" + $superpw.value + "|");
+        failed++;
+    }
+    // Test accept new super password with no provided passwords
+    restoreForTesting();
+    $superpw.value = "asdfgh";
+    await triggerEvent("keyup", $superpw, "superpwkeyupResolver");
+    await triggerEvent("blur", $superpw, "superpwblurResolver");
+    await triggerEvent("click", $superpwchangekeepbutton, "superpwchangekeepbuttonResolver");
+    test = $superpwchange.style.display === "none" && $superpw.value === "asdfgh";
+    test = test && $superpw.value === "asdfgh";
+    if (test) {
+        console.log("Passed: Accept change super password with no provided passwords");
+        passed++;
+    } else {
+        console.warn("Failed: Accept change super password with no provided passwords", "asdfgh", "|" + $superpw.value + "|");
+        failed++;
+    }
+    // See if it remembers the new super password
+    restoreForTesting();
+    clearForm();
+    $domainname.value = "alantheguru.alanhkarp.com";
+    await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
+    // await fillForm("asdfgh", "alantheguru.alanhkarp.com", "", "");
+    await triggerEvent("blur", $domainname, "domainnameblurResolver");
+    test = $superpw.value === "asdfgh";
+    if (test) {
+        console.log("Passed: Remembered new super password");
+        passed++;
+    } else {
+        console.warn("Failed: Did not remember new super password");
         failed++;
     }
 }
