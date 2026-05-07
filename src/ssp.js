@@ -752,6 +752,8 @@ $sitepwmenuaccount.onclick = function (e) {
     $accountnicknameinput.value = $sitename.value;
 }
 $sitepwmenucopy.onclick = async function(e) {
+    if (!$sitepw.value) return;
+    if ($clearsuperpw.checked) $superpw.value = "";
     let sitepw = $sitepw.value;
     if (!sitepw) return;
     navigator.clipboard.writeText(sitepw).then(async () => {
