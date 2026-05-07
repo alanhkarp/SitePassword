@@ -944,7 +944,9 @@ async function provideSitepwSetup(expectedpw) {
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");
     if (loggingProvide) console.log("testProvidedpw saved", $sitepw.value);
 }
-async function triggerEvent(event, element, resolverName) {
+async function triggerEvent(event, element) {
+    let elementId = element.id ? element.id : "";
+    let resolverName = elementId + event + "Resolver";
     let promise = wrapHandler(resolverName);
     if (event === "click") element.checked = !element.checked;
     if (loggingTrigger) console.log("triggerEvent", element.id, event, resolverName, promise);

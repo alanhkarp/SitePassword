@@ -204,7 +204,7 @@ window.onload = async function () {
     instructionSetup();
     sectionrefSetup();
     await getsettings();
-    if (resolvers.loadResolver) resolvers.loadResolver("loadPromise");
+    if (resolvers.loadResolver) resolvers.loadResolver();
 }
 async function init() {
     $superpw.value = bg.superpw || "";
@@ -343,7 +343,7 @@ $mainpanel.onmouseleave = async function (event) {
     // Don't persist if: phishing sites, exporting, the mouse is in the panel, or if event triggered by closing a help or instruction panel
     if (phishingDomain || exporting || element) {
         if (logging) console.log("popup phishing mouseleave resolve mouseleaveResolver", phishingDomain, resolvers);
-        if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
+        if (resolvers.mainpanelmouseleaveResolver) resolvers.mainpanelmouseleaveResolver();
         return;
     }
     if (logging) console.log("popup mainpanel mouseleave update bg", document.activeElement.id, bg);
@@ -372,13 +372,13 @@ $mainpanel.onmouseleave = async function (event) {
                 "bg": bg,
             });
             if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
-            if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
+            if (resolvers.mainpanelmouseleaveResolver) resolvers.mainpanelmouseleaveResolver();
         } catch (error) {
             console.error("Error sending siteData message:", error);
         }
     } else {
         if (logging) console.log("popup no bg.settings mouseleave resolve", resolvers);
-        if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
+        if (resolvers.mainpanelmouseleaveResolver) resolvers.mainpanelmouseleaveResolver();
     }
 }
 $title.onclick = function () {
@@ -392,7 +392,7 @@ $domainname.onblur = async function (e) {
     if (testMode) domainname = $domainname.value;
     await getsettings(domainname);
     await fill();
-    if (resolvers.domainnameblurResolver) resolvers.domainnameblurResolver("domainnameblurPromise");
+    if (resolvers.domainnameblurResolver) resolvers.domainnameblurResolver();
 }
 $domainnamemenu.onmouseleave = function (e) {
     menuOff("domainname", e);
@@ -418,6 +418,7 @@ $domainnamemenuforget.onclick = function (e) {
     msgon("forget");
     let toforget = normalize($domainname.value);
     addForgetItem(toforget);
+    if (resolvers.domainnameforgetclickResolver) resolvers.domainnameforgetclickResolver();
 }
 $domainnamemenuhelp.onclick = function (e) {
     helpItemOn("domainname");
@@ -438,7 +439,7 @@ $superpw.onkeyup = async function (e) {
     setMeter("superpw");
     setMeter("sitepw");
     await handlekeyup(e, "superpw");
-    if (resolvers.superpwkeyupResolver) resolvers.superpwkeyupResolver("superpwkeyupPromise");
+    if (resolvers.superpwkeyupResolver) resolvers.superpwkeyupResolver();
 }
 $superpw.onblur = async function (e) {
     if (logging) console.log("popup superpw onmouseout");
@@ -461,7 +462,6 @@ $superpw.onblur = async function (e) {
     database.common.superpwHash = superpwHash;
     await handleblur(e, "superpw");
     await changePlaceholder();
-    if (resolvers.superpwblurResolver) resolvers.superpwblurResolver("superpwblurPromise");
 }
 $superpwmenu.onmouseleave = function (e) {
     menuOff("superpw", e);
@@ -502,7 +502,7 @@ $superpwhelptextclose.onclick = function (e) {
     helpAllOff();
 }
 $superpwhelptextmore.onclick = function (e) {
-    helpAllOff;
+    helpAllOff();
     sectionClick("superpw");
 }
 // Site Name
@@ -521,7 +521,7 @@ $sitename.onkeyup = async function (e) {
     await handlekeyup(e, "sitename");
     clearDatalist("sitenames");
     $sitename.onfocus(); // So it runs in the same turn
-    if (resolvers.sitenamekeyupResolver) resolvers.sitenamekeyupResolver("sitenamekeyupPromise");
+    if (resolvers.sitenamekeyupResolver) resolvers.sitenamekeyupResolver();
 }
 $sitename.onblur = async function (e) {
     let sitename = $sitename.value;
@@ -541,7 +541,7 @@ $sitename.onblur = async function (e) {
         }
     }
     clearDatalist("sitenames");
-    if (resolvers.sitenameblurResolver) resolvers.sitenameblurResolver("sitenameblurPromise");
+    if (resolvers.sitenameblurResolver) resolvers.sitenameblurResolver();
 }
 $sitename3bluedots.onmouseover = function (e) {
     if ($sitename.value) {
@@ -628,7 +628,7 @@ $username.onkeyup = async function (e) {
     await handlekeyup(e, "username");
     clearDatalist("usernames");
     $username.onfocus();
-    if (resolvers.usernamekeyupResolver) resolvers.usernamekeyupResolver("usernamekeyupPromise");
+    if (resolvers.usernamekeyupResolver) resolvers.usernamekeyupResolver();
 }
 $username.onblur = async function (e) {
     handleblur(e, "username");
@@ -700,7 +700,7 @@ $sitepw.onblur = async function (e) {
     let computed = await ask2generate(bg)
     bg.settings.xor = xorStrings(provided, computed);
     if (logging) console.log("popup sitepw onblur", bg.settings.pwlength);
-    if (resolvers.sitepwblurResolver) resolvers.sitepwblurResolver("sitepwblurPromise"); 
+    if (resolvers.sitepwblurResolver) resolvers.sitepwblurResolver();
 }
 $sitepw.onkeyup = function (e) {
     $sitepw.onblur(e);
@@ -838,83 +838,98 @@ $providesitepw.onclick = async function (e) {
         $sitepw.placeholder = "Your site password";
     }
     await handleblur(e, "providesitepw");
-    if (resolvers.providesitepwResolver) resolvers.providesitepwResolver("providesitepwPromise");
+    if (resolvers.providesitepwclickResolver) resolvers.providesitepwclickResolver();
 }
 $clearsuperpw.onclick = function () {
     database.clearsuperpw = $clearsuperpw.checked;
-    if (resolvers.clearsuperpwResolver) resolvers.clearsuperpwResolver("clearsuperpwPromise");
+    if (resolvers.clearsuperpwclickResolver) resolvers.clearsuperpwclickResolver();
 }
 $hidesitepw.onclick = function () {
     database.hidesitepw = $hidesitepw.checked;
     hidesitepw();
-    if (resolvers.hidesitepwResolver) resolvers.hidesitepwResolver("hidesitepwPromise");
+    if (resolvers.hidesitepwclickResolver) resolvers.hidesitepwclickResolver();
 }
 $pwlength.onmouseout = async function (e) {
     await handleblur(e, "pwlength");
-    if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurResolver("pwlengthblurPromise");
+    if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurResolver();
 }
 $pwlength.onblur = async function (e) {
     await handleblur(e, "pwlength");
-    if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurResolver("pwlengthblurPromise");
+    if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurResolver();
 }
 $pwlength.onkeyup = async function(e) { 
     handlekeyupnopw(e, "pwlength");
 }; 
 $startwithletter.onclick = function (e) {
     handleblur(e, "startwithletter");
-    if (resolvers.startwithletterResolver) resolvers.startwithletterResolver("startwithletterPromise");
+    if (resolvers.startwithletterclickResolver) resolvers.startwithletterclickResolver();
 }
 $allowlowercheckbox.onclick = function (e) {
     restrictStartsWithLetter();
     $minlower.disabled = false;
     handleclick(e, "lower");
+    if (resolvers.allowlowercheckboxclickResolver) resolvers.allowlowercheckboxclickResolver();
 }
 $allowuppercheckbox.onclick = function (e) {
     restrictStartsWithLetter();
     handleclick(e, "upper");
+    if (resolvers.allowuppercheckboxclickResolver) resolvers.allowuppercheckboxclickResolver();
 }
 $allownumbercheckbox.onclick = function (e) {
     handleclick(e, "number");
+    if (resolvers.allownumbercheckboxclickResolver) resolvers.allownumbercheckboxclickResolver();
 }
 $allowspecialcheckbox.onclick = async function (e) {
     await handleclick(e, "special");
-    if (resolvers.allowspecialcheckboxResolver) resolvers.allowspecialcheckboxResolver("allowspecialcheckboxPromise");
+    if (resolvers.allowspecialcheckboxclickResolver) resolvers.allowspecialcheckboxclickResolver();
 }
 $minlower.onmouseout = function (e) {
     handleblur(e, "minlower");
+    if (resolvers.minlowerblurResolver) resolvers.minlowerblurResolver();
 }
 $minlower.onblur = function (e) {
     handleblur(e, "minlower");
+    if (resolvers.minlowerblurResolver) resolvers.minlowerblurResolver();
 }
 $minlower.onkeyup = async function(e) { 
     handlekeyupnopw(e, "minlower");
+    if (resolvers.minlowerblurResolver) resolvers.minlowerblurResolver();
 }
 $minupper.onmouseout = function (e) {
     handleblur(e, "minupper");
+    if (resolvers.minupperblurResolver) resolvers.minupperblurResolver();
 }
 $minupper.onblur = function (e) {
     handleblur(e, "minupper");
+    if (resolvers.minupperblurResolver) resolvers.minupperblurResolver();
 }
 $minupper.onkeyup = async function(e) { 
     handlekeyupnopw(e, "minupper");
-}; 
+    if (resolvers.minupperblurResolver) resolvers.minupperblurResolver();
+};
 $minnumber.onmouseout = function (e) {
     handleblur(e, "minnumber");
+    if (resolvers.minnumberblurResolver) resolvers.minnumberblurResolver();
 }
 $minnumber.onblur = function (e) {
     handleblur(e, "minnumber");
+    if (resolvers.minnumberblurResolver) resolvers.minnumberblurResolver();
 }
 $minnumber.onkeyup = async function(e) { 
     handlekeyupnopw(e, "minnumber");
+    if (resolvers.minnumberblurResolver) resolvers.minnumberblurResolver();
 } 
 $minspecial.onmouseout = function (e) {
     handleblur(e, "minspecial");
+    if (resolvers.minspecialblurResolver) resolvers.minspecialblurResolver();
 }
 $minspecial.onblur = function (e) {
     handleblur(e, "minspecial");
+    if (resolvers.minspecialblurResolver) resolvers.minspecialblurResolver();
 }
 $minspecial.onkeyup = async function(e) { 
     handlekeyupnopw(e, "minspecial");
+    if (resolvers.minspecialblurResolver) resolvers.minspecialblurResolver();
 }
 // In an older version I needed to limit the number of 
 // specials because generate() computed a number between 
@@ -936,13 +951,15 @@ $specials.onblur = async function(e) {
     }
     bg.settings.specials = $specials.value;
     await handlekeyup(e, "specials");
-    if (resolvers.specialsblurResolver) resolvers.specialsblurResolver("specialsblurPromise");
+    if (resolvers.specialsblurResolver) resolvers.specialsblurResolver();
 }
 $specials.onmouseleave = async function(e) {
     await $specials.onblur(e); // So it runs in the same turn
+    if (resolvers.specialsblurResolver) resolvers.specialsblurResolver();
 }
 $specials.onkeyup = async function(e) { 
     handlekeyupnopw(e, "specials");
+    if (resolvers.specialsblurResolver) resolvers.specialsblurResolver();
 } 
 $makedefaultbutton.onclick = async function () {
     let newDefaults = {
@@ -971,7 +988,7 @@ $makedefaultbutton.onclick = async function () {
         console.error("Error sending newDefaults message:", error);
     }
     if (logging) console.log("popup newDefaults sent", newDefaults);
-    if (resolvers.makedefaultResolver) resolvers.makedefaultResolver("makedefaultbuttonPromise");
+    if (resolvers.makedefaultResolver) resolvers.makedefaultResolver();
 }
 $sitedatagetbutton.onclick = sitedataHTML;
 $exportbutton.onclick = exportPasswords;
@@ -993,7 +1010,7 @@ $cancelwarning.onclick = async function (e) {
     $username.value = "";
     sameacct = false;
     chrome.tabs.update(activetab.id, {url: "chrome://newtab"});
-    if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver("cancelwarningPromise");
+    if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver();
 }
 $sameacctbutton.onclick = async function (e) {
     $superpw.disabled = false;
@@ -1020,7 +1037,7 @@ $sameacctbutton.onclick = async function (e) {
     await ask2generate();
     autoclose = false;
     sameacct = true;
-    if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
+    if (resolvers.sameacctbuttonclickResolver) resolvers.sameacctbuttonclickResolver();
 }
 $nicknamebutton.onclick = function (e) {
     msgoff("phishing");
@@ -1044,7 +1061,7 @@ $suffixcancelbutton.onclick = function (e) {
 $suffixacceptbutton.onclick = async function (e) {
     msgoff("suffix");
     await $sameacctbutton.onclick(e); // So it runs in the same turn
-    if (resolvers.suffixacceptbuttonResolver) resolvers.suffixacceptbuttonResolver("suffixacceptbuttonPromise");
+    if (resolvers.suffixacceptbuttonclickResolver) resolvers.suffixacceptbuttonclickResolver();
 }
 // Forget buttons
 $forgetbutton.onclick = async function (e) {
@@ -1066,11 +1083,12 @@ $forgetbutton.onclick = async function (e) {
     try {
         let response = await retrySendMessage({"cmd": "forget", "toforget": list});
         if (logging) console.log("popup forget response", response);
-        if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
+        if (resolvers.forgetclickResolver) resolvers.forgetclickResolver();
         $forgetcancelbutton.onclick(); // So it runs in the same turn
     } catch (error) {
         console.error("Error sending forget message:", error);
     }
+    if (resolvers.forgetbuttonclickResolver) resolvers.forgetbuttonclickResolver();
 }
 $forgetcancelbutton.onclick = function () {
     // Can't just set list to [] because I need to remove the 
@@ -1085,12 +1103,12 @@ $superpwchangecancelbutton.onclick = function (e) {
     $superpwchange.style.display = "none";
     $superpw.value = "";
     $superpw.focus();
-    if (resolvers.superpwchangecancelbuttonResolver) resolvers.superpwchangecancelbuttonResolver("superpwchangecancelbuttonPromise");
+    if (resolvers.superpwchangecancelbuttonResolver) resolvers.superpwchangecancelbuttonResolver();
 }
 // Keep new super password
 $superpwchangekeepbutton.onclick = function (e) {
     $superpwchange.style.display = "none";
-    if (resolvers.superpwchangekeepbuttonResolver) resolvers.superpwchangekeepbuttonResolver("superpwchangekeepbuttonPromise");
+    if (resolvers.superpwchangekeepbuttonResolver) resolvers.superpwchangekeepbuttonResolver();
 }
 // Handle external links in the instructions and help
 document.addEventListener('DOMContentLoaded', function () {
@@ -1416,8 +1434,7 @@ async function handleblur(event, element) {
     }
     if (logging) console.log(Date.now(), "popup handleblur timeout");
     await changePlaceholder();
-    if (resolvers[element + "blurResolver"]) resolvers[element + "blurResolver"](element + "blurPromise");
-}
+ }
 async function handleclick(e, which) {
     let element = "allow" + which;
     bg.settings[element] = get(element + "checkbox").checked;
@@ -1427,7 +1444,6 @@ async function handleclick(e, which) {
         $startwithletter.checked = false;
     }
     handleblur(e, element);
-    if (resolvers[element + "clickResolver"]) resolvers[element + "clickResolver"](element + "clickPromise");
 }
 async function changePlaceholder() {
     let readyForClick = isReadyForClick($superpw.value, $sitename.value, $username.value);
@@ -1543,7 +1559,7 @@ async function showsettings() {
     $superpw.value = bg.superpw || "";
     await fill();
     pwoptions(["lower", "upper", "number", "special"]);
-    if (resolvers.settingsshowResolver) resolvers.settingsshowResolver("settingsshowPromise");
+    if (resolvers.settingsshowclickResolver) resolvers.settingsshowclickResolver();
 }
 function hidesettings() {
     $settingsshow.style.display = "inline";
@@ -1551,7 +1567,7 @@ function hidesettings() {
     $settingsmenu.style.display = "none";
     let height = mainHeight();
     $main.style.height = height + "px";
-    if (resolvers.settingssaveResolver) resolvers.settingssaveResolver("settingssavePromise");
+    if (resolvers.settingssaveclickResolver) resolvers.settingssaveclickResolver();
 }
 function pwoptions(options) {
     for (let x in options) {
