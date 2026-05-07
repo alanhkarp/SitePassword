@@ -96,7 +96,6 @@ export async function runTests() {
         await testRememberSuperpw();
         await testChangePassword();
         await testRememberForm();
-        // await testHideSitepw();
         await testProvidedpw();
         await testPhishing();
         await testSharedCredentials();
@@ -140,9 +139,9 @@ async function testCalculation() {
 async function testRememberSuperpw() {
     let loggingRememberSuperpw = false;
     await resetState();
-    let expected = "qwerty";
     if (loggingRememberSuperpw) console.log("testRememberSuperpw state reset");
-    await fillForm(expected, "alantheguru.alanhkarp.com", "Guru", "alan");
+    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+    let expected = $superpw.value;
     await triggerEvent("mouseleave", $mainpanel, "mouseleaveResolver");  // $mainpanel.onmouseleave(); saves the settings
     if (loggingRememberSuperpw) console.log("testRememberSuperpw filled form", $sitename.value, $username.value, $superpw.value);
     // See if it remembers
