@@ -618,7 +618,7 @@ $username.onkeyup = async function (e) {
     if (resolvers.usernamekeyupResolver) resolvers.usernamekeyupResolver("usernamekeyupPromise");
 }
 $username.onblur = async function (e) {
-    handleblur(e, "username");
+    await handleblur(e, "username");
     clearDatalist("usernames");
     await changePlaceholder();
 }
@@ -845,62 +845,62 @@ $pwlength.onblur = async function (e) {
     if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurResolver("pwlengthblurPromise");
 }
 $pwlength.onkeyup = async function(e) { 
-    handlekeyupnopw(e, "pwlength");
+    await handlekeyupnopw(e, "pwlength");
 }; 
-$startwithletter.onclick = function (e) {
-    handleblur(e, "startwithletter");
+$startwithletter.onclick = async function (e) {
+    await handleblur(e, "startwithletter");
 }
-$allowlowercheckbox.onclick = function (e) {
+ $allowlowercheckbox.onclick = async function (e) {
     restrictStartsWithLetter();
     $minlower.disabled = false;
-    handleclick(e, "lower");
+    await handleclick(e, "lower");
 }
-$allowuppercheckbox.onclick = function (e) {
+ $allowuppercheckbox.onclick = async function (e) {
     restrictStartsWithLetter();
-    handleclick(e, "upper");
+    await handleclick(e, "upper");
 }
-$allownumbercheckbox.onclick = function (e) {
-    handleclick(e, "number");
+ $allownumbercheckbox.onclick = async function (e) {
+    await handleclick(e, "number");
 }
 $allowspecialcheckbox.onclick = async function (e) {
     await handleclick(e, "special");
     if (resolvers.allowspecialcheckboxResolver) resolvers.allowspecialcheckboxResolver("allowspecialcheckboxPromise");
 }
-$minlower.onmouseout = function (e) {
-    handleblur(e, "minlower");
+ $minlower.onmouseout = async function (e) {
+    await handleblur(e, "minlower");
 }
-$minlower.onblur = function (e) {
-    handleblur(e, "minlower");
+ $minlower.onblur = async function (e) {
+    await handleblur(e, "minlower");
 }
-$minlower.onkeyup = async function(e) { 
-    handlekeyupnopw(e, "minlower");
+ $minlower.onkeyup = async function(e) { 
+    await handlekeyupnopw(e, "minlower");
 }
-$minupper.onmouseout = function (e) {
-    handleblur(e, "minupper");
+ $minupper.onmouseout = async function (e) {
+    await handleblur(e, "minupper");
 }
-$minupper.onblur = function (e) {
-    handleblur(e, "minupper");
+ $minupper.onblur = async function (e) {
+    await handleblur(e, "minupper");
 }
-$minupper.onkeyup = async function(e) { 
-    handlekeyupnopw(e, "minupper");
+ $minupper.onkeyup = async function(e) { 
+    await handlekeyupnopw(e, "minupper");
 }; 
-$minnumber.onmouseout = function (e) {
-    handleblur(e, "minnumber");
+ $minnumber.onmouseout = async function (e) {
+    await handleblur(e, "minnumber");
 }
-$minnumber.onblur = function (e) {
-    handleblur(e, "minnumber");
+ $minnumber.onblur = async function (e) {
+    await handleblur(e, "minnumber");
 }
-$minnumber.onkeyup = async function(e) { 
-    handlekeyupnopw(e, "minnumber");
+ $minnumber.onkeyup = async function(e) { 
+    await handlekeyupnopw(e, "minnumber");
 } 
-$minspecial.onmouseout = function (e) {
-    handleblur(e, "minspecial");
+ $minspecial.onmouseout = async function (e) {
+    await handleblur(e, "minspecial");
 }
-$minspecial.onblur = function (e) {
-    handleblur(e, "minspecial");
+ $minspecial.onblur = async function (e) {
+    await handleblur(e, "minspecial");
 }
-$minspecial.onkeyup = async function(e) { 
-    handlekeyupnopw(e, "minspecial");
+ $minspecial.onkeyup = async function(e) { 
+    await handlekeyupnopw(e, "minspecial");
 }
 // In an older version I needed to limit the number of 
 // specials because generate() computed a number between 
@@ -928,7 +928,7 @@ $specials.onmouseleave = async function(e) {
     await $specials.onblur(e); // So it runs in the same turn
 }
 $specials.onkeyup = async function(e) { 
-    handlekeyupnopw(e, "specials");
+    await handlekeyupnopw(e, "specials");
 } 
 $makedefaultbutton.onclick = async function () {
     let newDefaults = {
@@ -1399,7 +1399,7 @@ async function handleclick(e, which) {
         bg.settings.startwithletter = false;
         $startwithletter.checked = false;
     }
-    handleblur(e, element);
+    await handleblur(e, element);
 }
 async function changePlaceholder() {
     let readyForClick = isReadyForClick($superpw.value, $sitename.value, $username.value);
@@ -1596,7 +1596,7 @@ async function exportPasswords() {
         link.click();    
         document.body.removeChild(link);
         exporting = false;
-        $sitepw.value = await ask2generate(); // To get the right password to show up
+        $sitepw.value =await ask2generate(); // To get the right password to show up
     } catch (e) {
         alert("Export error: Close SitePassword and try again.");
         console.log("popup exportPasswords error", e);
