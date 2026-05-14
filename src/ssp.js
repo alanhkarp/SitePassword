@@ -332,8 +332,8 @@ $mainpanel.onmouseleave = async function (event) {
     if (logging) console.log("popup onmouseleave", phishingDomain, exporting, element);
     // Don't persist if: phishing sites, exporting, the mouse is in the panel, or if event triggered by closing a help or instruction panel
     if (phishingDomain || exporting || element) {
-        if (logging) console.log("popup phishing mouseleave resolve mouseleaveResolver", phishingDomain, resolvers);
-        if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
+        if (logging) console.log("popup phishing mouseleave resolve  mainpanelmouseleaveResolver", phishingDomain, resolvers);
+        if (resolvers. mainpanelmouseleaveResolver) resolvers. mainpanelmouseleaveResolver(" mainpanelmouseleavePromise");
         return;
     }
     if (logging) console.log("popup mainpanel mouseleave update bg", document.activeElement.id, bg);
@@ -361,14 +361,14 @@ $mainpanel.onmouseleave = async function (event) {
                 "sameacct": sameacct,
                 "bg": bg,
             });
-            if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
-            if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
+            if (logging) console.log("popup siteData resolve  mainpanelmouseleaveResolver", response, resolvers);
+            if (resolvers. mainpanelmouseleaveResolver) resolvers. mainpanelmouseleaveResolver(" mainpanelmouseleavePromise");
         } catch (error) {
             console.error("Error sending siteData message:", error);
         }
     } else {
         if (logging) console.log("popup no bg.settings mouseleave resolve", resolvers);
-        if (resolvers.mouseleaveResolver) resolvers.mouseleaveResolver("mouseleavePromise");
+        if (resolvers. mainpanelmouseleaveResolver) resolvers.mouseleaveResolver(" mainpanelmouseleavePromise");
     }
 }
 $title.onclick = function () {
@@ -825,20 +825,20 @@ $providesitepw.onclick = async function (e) {
         $sitepw.placeholder = "Your site password";
     }
     await handleblur(e, "providesitepw");
-    if (resolvers.providesitepwResolver) resolvers.providesitepwResolver("providesitepwPromise");
+    if (resolvers.providesitepwblurResolver) resolvers.providesitepwblurResolver("providesitepwblurPromise");
 }
 $clearsuperpw.onclick = function () {
     database.clearsuperpw = $clearsuperpw.checked;
-    if (resolvers.clearsuperpwResolver) resolvers.clearsuperpwResolver("clearsuperpwPromise");
+    if (resolvers.clearsuperpwclickResolver) resolvers.clearsuperpwclickResolver("clearsuperpwclickPromise");
 }
 $hidesitepw.onclick = function () {
     database.hidesitepw = $hidesitepw.checked;
     hidesitepw();
-    if (resolvers.hidesitepwResolver) resolvers.hidesitepwResolver("hidesitepwPromise");
+    if (resolvers.hidesitepwclickResolver) resolvers.hidesitepwclickResolver("hidesitepwclickPromise");
 }
 $pwlength.onmouseout = async function (e) {
     await handleblur(e, "pwlength");
-    if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurResolver("pwlengthblurPromise");
+    if (resolvers.pwlengthmouseoutResolver) resolvers.pwlengthmouseoutResolver("pwlengthmouseoutPromise");
 }
 $pwlength.onblur = async function (e) {
     await handleblur(e, "pwlength");
@@ -864,7 +864,7 @@ $startwithletter.onclick = async function (e) {
 }
 $allowspecialcheckbox.onclick = async function (e) {
     await handleclick(e, "special");
-    if (resolvers.allowspecialcheckboxResolver) resolvers.allowspecialcheckboxResolver("allowspecialcheckboxPromise");
+    if (resolvers.allowspecialcheckboxclickResolver) resolvers.allowspecialcheckboxclickResolver("allowspecialcheckboxclickPromise");
 }
  $minlower.onmouseout = async function (e) {
     await handleblur(e, "minlower");
@@ -957,7 +957,7 @@ $makedefaultbutton.onclick = async function () {
         console.error("Error sending newDefaults message:", error);
     }
     if (logging) console.log("popup newDefaults sent", newDefaults);
-    if (resolvers.makedefaultResolver) resolvers.makedefaultResolver("makedefaultbuttonPromise");
+    if (resolvers.makedefaultbuttonclickResolver) resolvers.makedefaultbuttonclickResolver("makedefaultbuttonclickPromise");
 }
 $sitedatagetbutton.onclick = sitedataHTML;
 $exportbutton.onclick = exportPasswords;
@@ -979,7 +979,7 @@ $cancelwarning.onclick = async function (e) {
     $username.value = "";
     sameacct = false;
     chrome.tabs.update(activetab.id, {url: "chrome://newtab"});
-    if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver("cancelwarningPromise");
+    if (resolvers.cancelwarningclickResolver) resolvers.cancelwarningclickResolver("cancelwarningPromise");
 }
 $sameacctbutton.onclick = async function (e) {
     $superpw.disabled = false;
@@ -1006,7 +1006,7 @@ $sameacctbutton.onclick = async function (e) {
     $sitepw.value = await ask2generate();
     autoclose = false;
     sameacct = true;
-    if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
+    if (resolvers.sameacctbuttonclickResolver) resolvers.sameacctbuttonclickResolver("sameacctbuttonPromise");
 }
 $nicknamebutton.onclick = function (e) {
     msgoff("phishing");
@@ -1030,7 +1030,7 @@ $suffixcancelbutton.onclick = function (e) {
 $suffixacceptbutton.onclick = async function (e) {
     msgoff("suffix");
     await $sameacctbutton.onclick(e); // So it runs in the same turn
-    if (resolvers.suffixacceptbuttonResolver) resolvers.suffixacceptbuttonResolver("suffixacceptbuttonPromise");
+    if (resolvers.suffixacceptbuttonclickResolver) resolvers.suffixacceptbuttonclickResolver("suffixacceptbuttonPromise");
 }
 // Forget buttons
 $forgetbutton.onclick = async function (e) {
@@ -1052,7 +1052,7 @@ $forgetbutton.onclick = async function (e) {
     try {
         let response = await retrySendMessage({"cmd": "forget", "toforget": list});
         if (logging) console.log("popup forget response", response);
-        if (resolvers.forgetclickResolver) resolvers.forgetclickResolver("forgetClickPromise");
+        if (resolvers.forgetbuttonclickResolver) resolvers.forgetbuttonclickResolver("forgetbuttonPromise");
         $forgetcancelbutton.onclick(); // So it runs in the same turn
     } catch (error) {
         console.error("Error sending forget message:", error);
@@ -1515,7 +1515,7 @@ async function showsettings() {
     $superpw.value = bg.superpw || "";
     await fill();
     pwoptions(["lower", "upper", "number", "special"]);
-    if (resolvers.settingsshowResolver) resolvers.settingsshowResolver("settingsshowPromise");
+    if (resolvers.settingsshowclickResolver) resolvers.settingsshowclickResolver("settingsshowPromise");
 }
 function hidesettings() {
     $settingsshow.style.display = "inline";

@@ -843,7 +843,9 @@ async function phishingSetup() {
     if (loggingPhishing) console.log("phishingSetup sitename blur", $sitename.value, $username.value);
     await triggerEvent("blur", $sitename, "sitenameblurResolver");    
 }
-async function triggerEvent(event, element, resolverName) {
+async function triggerEvent(event, element) {
+    let elementId = element.id;
+    let resolverName = elementId + event + "Resolver";
     let promise = wrapHandler(resolverName);
     if (event === "click") element.checked = !element.checked;
     if (loggingTrigger) console.log("triggerEvent", element.id, event, resolverName, promise);
