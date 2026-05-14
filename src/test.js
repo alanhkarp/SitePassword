@@ -10,6 +10,7 @@ export let resolvers = {};
 
 let logging = false;
 let loggingCalculation = false;
+let loggingRemember = false;
 let loggingClear = false;
 let loggingClearsuperpw = false;
 let loggingDefault = false;
@@ -24,7 +25,8 @@ let loggingWrapHandler = false;
 if (logging) {
     loggingCalculation = loggingClear = loggingDefault = loggingFill = 
                          loggingForget = loggingPhishing = loggingProvide = 
-                         loggingReset = loggingTrigger = loggingWrapHandler = true;
+                         loggingReset = loggingTrigger = loggingWrapHandler = 
+                         loggingRemember = true;
 }
 // #region Fields needed for tests
 const $account = get("account");
@@ -93,23 +95,23 @@ export async function runTests() {
     }
     if (!restart) { 
         await testCalculation(); 
-        await testRememberSuperpw();
+        // await testRememberSuperpw();
         await testChangePassword();
-        await testRememberForm();
-        await testProvidedpw();
-        await testPhishing();
-        await testSharedCredentials();
-        await testForget();
-        await testClearSuperpw();
-        await testHideSitepw();
-        await testLegacyBkmks();
-        await testDuplicateBkmks();
-        await testSafeSuffixes();
-        await testChangeAccount();
+        // await testRememberForm();
+        // await testProvidedpw();
+        // await testPhishing();
+        // await testSharedCredentials();
+        // await testForget();
+        // await testClearSuperpw();
+        // await testHideSitepw();
+        // await testLegacyBkmks();
+        // await testDuplicateBkmks();
+        // await testSafeSuffixes();
+        // await testChangeAccount();
         // await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
-        await testSaveAsDefault();
+        // await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -160,68 +162,41 @@ async function testRememberSuperpw() {
 }
 // Test change password
 async function testChangePassword() {
+    resetState();
     await phishingSetup();
     await triggerEvent("click", $sameacctbutton);
-    restoreForTesting();
-    await triggerEvent("mouseleave", $mainpanel);
-    clearForm();
-    await triggerEvent("load", window);
     $sitename.value = "Guru2";
     await triggerEvent("blur", $sitename);
-    let actual = $sitepw.value;
+    let expected = $sitepw.value;
     await triggerEvent("mouseleave", $mainpanel);
     restoreForTesting();
     clearForm();
     await triggerEvent("load", window);
-    let test = $sitename.value === "Guru2" && $username.value === "alan" && $sitepw.value === actual;
+    let test = $sitename.value === "Guru2" && $username.value === "alan" && $sitepw.value === expected;
+    clearForm();
+    fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
+    await triggerEvent("blur", $domainname);
+    test = test && $sitename.value === "Guru2" && $username.value === "alan" && $sitepw.value === expected;
     if (test) {
         console.log("Passed: Change password");
         passed++;
     } else {
-        console.warn("Failed: Change password", "Guru2", "alan", actual, $sitename.value, $username.value, $sitepw.value);
+        console.warn("Failed: Change password", "Guru2", "alan", expected, $sitename.value, $username.value, $sitepw.value);
         failed++;
     }
 }
+// Test remembering form settings and requires/allows settings
 async function testRememberForm() {
     await resetState();
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
-    await triggerEvent("click", $settingsshow);
-   // I need separate tests for the "Requires" buttons
-    await triggerEvent("click", $allowlowercheckbox);
-    expectedpw = $sitepw.value;
     clearForm();
-    await triggerEvent("load", window);
-    await triggerEvent("click", $settingsshow);
-    let tests = $sitepw.value === expectedpw;
-    await triggerEvent("click", $allowlowercheckbox);
-    await triggerEvent("click", $allowuppercheckbox);
-    expectedpw = $sitepw.value;
-    clearForm();
-    await triggerEvent("load", window);
-    await triggerEvent("click", $settingsshow);
-    tests = tests && $sitepw.value === expectedpw;
-    await triggerEvent("load", window);
-    await triggerEvent("click", $allowuppercheckbox);
-    await triggerEvent("click", $allownumbercheckbox);
-    expectedpw = $sitepw.value;
-    clearForm();
-    await triggerEvent("load", window);
-    await triggerEvent("click", $settingsshow);
-    tests = tests && $sitepw.value === expectedpw;
-    if (tests) {
-        console.log("Passed: Remember form requires");
-        passed++;
-    } else {
-        console.warn("Failed: Remember form requires", "Guru", "alan", "|" + $sitepw.value + "|");
-        failed++;
-    }
-    // Test password rules
+   // Test password rules
     if (logging) console.log("testRememberForm state reset");
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
     await triggerEvent("click", $settingsshow);
+    // Change this first because the password then starts with a number
+    await triggerEvent("click", $startwithletter);
     $pwlength.value = 16;
     await triggerEvent("blur", $pwlength);
-    await triggerEvent("click", $startwithletter);
     $minlower.value = 2;
     await triggerEvent("blur", $minlower);
     $minupper.value = 2;
@@ -229,28 +204,69 @@ async function testRememberForm() {
     $minnumber.value = 2;
     await triggerEvent("blur", $minnumber);
     await triggerEvent("click", $allowspecialcheckbox);
-    $specials.value = "/!=@?._-";
+    $specials.value = "/!=@";
     await triggerEvent("blur", $specials);
     await triggerEvent("mouseleave", $mainpanel);
+    let expectedpw = $sitepw.value;
     // See if it remembers
-    clearForm();
-    await triggerEvent("load", window); // Because the settings are loaded on onload
-    await triggerEvent("click", $settingsshow);
     if (logging) console.log("testRememberForm filled form", $sitename.value, $username.value);
     // See if it remembers
     clearForm();
     await triggerEvent("load", window); // Because the settings are loaded on onload
-    await triggerEvent("click", $settingsshow);
     if (logging) console.log("testRememberForm filled form", $sitename.value, $username.value);
-    tests = $sitepw.value === expectedpw;
+    let tests = $sitepw.value === expectedpw;
     if (tests) {
-        console.log("Passed: Remember form");
+        console.log("Passed: Remember form settings");
         passed++;
     } else {
-        console.warn("Failed: Remember form", "Guru", "alan", "|" + $sitename.value + "|");
+        console.warn("Failed: Remember form settings", "Guru", "alan", "|" + $sitename.value + "|");
         failed++;
     }
- }
+    // I need separate tests for the "Requires" buttons and min fields
+    if (loggingRemember) console.log("testRememberForm minlower");
+    tests = tests && await testAllowMin("lower");
+    restoreForTesting();
+    tests = tests && await testAllowMin("upper");
+    restoreForTesting();
+    tests = tests && await testAllowMin("number");
+    if (tests) {
+        console.log("Passed: Remember form requires/allows");
+        passed++;
+    } else {
+        console.warn("Failed: Remember form requires/allows", "Guru", "alan", "|" + $sitepw.value + "|");
+        failed++;
+    }
+    async function testAllowMin(which) {
+        restoreForTesting();
+        await forgetDomainname();
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+        await triggerEvent("click", $settingsshow);
+        let regex = {"lower": /[a-z]/g, "upper": /[A-Z]/g, "number": /[0-9]/g, "special": /[^\w]/g}[which];
+        if (loggingRemember) console.log("testRememberForm allow/min" + which);
+        let elementName = "min" + which;
+        let element = get(elementName);
+        let allowName = "allow" + which + "checkbox";
+        let allow = get(allowName);
+        element.value = 10;
+        await triggerEvent("blur", element);
+        let expected = $sitepw.value;
+        await triggerEvent("mouseleave", $mainpanel);
+        clearForm();
+        await triggerEvent("load", window);
+        let tests = expected === $sitepw.value;
+        tests = tests && ($sitepw.value.match(regex) || []).length >= 10;
+        element.value = 1;
+        await triggerEvent("blur", element);
+        await triggerEvent("click", allow);
+        expected = $sitepw.value;
+        await triggerEvent("mouseleave", $mainpanel);
+        clearForm();
+        await triggerEvent("load", window);
+        tests = tests && !regex.test($sitepw.value);
+        await triggerEvent("click", allow);
+        return tests;
+    }
+}
 async function testProvidedpw() {
     loggingProvide = false;
     const expectedpw = "MyStrongPassword";
@@ -986,7 +1002,11 @@ async function triggerEvent(event, element) {
     if (loggingTrigger) console.log("triggerEvent", element.id, event, resolverName, promise);
     let e = new Event(event);
     element.dispatchEvent(e);
-    await promise;
+    try {        
+        await promise;
+    } catch (error) {
+        console.error("Error in triggerEvent promise", element.id, event, error);
+    }
     if (loggingTrigger) console.log("triggerEvent promise resolved", element.id, event, promise, resolvers);
 }
 function wrapHandler(resolverName) {

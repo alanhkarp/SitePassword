@@ -1,5 +1,5 @@
 'use strict';
-import { bgBaseDefault, config, databaseDefault, isUrlMatch, isReadyForClick, webpage } from "./bg.js";
+import { bgBaseDefault, config, databaseDefault, isUrlMatch, isReadyForClick, webpage, baseDefaultSettings } from "./bg.js";
 import { resolvers, runTests } from "./test.js";
 import { characters, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 import { isSharedCredentials } from "./sharedCredentials.js"; 
@@ -356,7 +356,7 @@ $mainpanel.onmouseleave = async function (event) {
         bg.settings.username = $username.value || "";
         if (bg.settings.sitename) {
             database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
-            database.domains[bg.domainname] = bg.settings.sitename;
+            database.domains[normalize(bg.domainname)] = normalize(bg.settings.sitename);
         }
         let sitename = $sitename.value;
         changePlaceholder();
@@ -446,12 +446,12 @@ $superpw.onblur = async function (e) {
     // See if this is a different super password
     if (!database.common.providepwSites) database.common.providepwSites = {};
     if (bg.settings.providesitepw) database.common.providepwSites[normalize(bg.settings.sitename)] = true;
-    let oldbg = clone(bg);
-    bg.settings.sitename = "";
-    bg.settings.username = "";
-    let superpwHash = await generatePassword(bg);
-    bg = oldbg;
-    let oldSuperPwHash = database.common.superpwHash || "";
+    let testbg = clone(bg);
+    testbg.settings.sitename = "";
+    testbg.settings.username = "";
+    let superpwHash = await generatePassword(testbg);
+    database.common.oldHash = {"superpwHash": superpwHash, "settings": testbg.settings};
+    let oldSuperPwHash = database.common.oldHash ? database.common.oldHash.superpwHash : databaseDefault.common.oldHash.superpwHash;
     if (oldSuperPwHash && superpwHash !== oldSuperPwHash) {
         // Handle the case where the super password has changed
         msgon("superpwchange");
@@ -459,9 +459,9 @@ $superpw.onblur = async function (e) {
             $oldsuperpw.classList.remove("nodisplay");
         }
     }
-    database.common.superpwHash = superpwHash;
     await handleblur(e, "superpw");
     await changePlaceholder();
+    if (resolvers.superpwblurResolver) resolvers.superpwblurResolver();
 }
 $superpwmenu.onmouseleave = function (e) {
     menuOff("superpw", e);
@@ -631,7 +631,7 @@ $username.onkeyup = async function (e) {
     if (resolvers.usernamekeyupResolver) resolvers.usernamekeyupResolver();
 }
 $username.onblur = async function (e) {
-    handleblur(e, "username");
+    await handleblur(e, "username");
     clearDatalist("usernames");
     await changePlaceholder();
 }
@@ -662,7 +662,7 @@ $usernamemenuforget.onclick = function (e) {
     msgon("forget");
     let toforget = normalize($username.value);
     for (let domain in database.domains) {
-        let sitename = normalize(database.domains[domain]);
+        let sitename = database.domains[domain];
         if (normalize(database.sites[sitename].username) === toforget) {
             addForgetItem(domain);
         }
@@ -860,77 +860,81 @@ $pwlength.onblur = async function (e) {
     if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurResolver();
 }
 $pwlength.onkeyup = async function(e) { 
-    handlekeyupnopw(e, "pwlength");
+    await handlekeyupnopw(e, "pwlength");
 }; 
-$startwithletter.onclick = function (e) {
-    handleblur(e, "startwithletter");
+$startwithletter.onclick = async function (e) {
+    await handleblur(e, "startwithletter");
     if (resolvers.startwithletterclickResolver) resolvers.startwithletterclickResolver();
 }
-$allowlowercheckbox.onclick = function (e) {
+$allowlowercheckbox.onclick = async function (e) {
     restrictStartsWithLetter();
+    bg.settings.allowlower = $allowlowercheckbox.checked;
     $minlower.disabled = false;
-    handleclick(e, "lower");
+    await handleclick(e, "lower");
     if (resolvers.allowlowercheckboxclickResolver) resolvers.allowlowercheckboxclickResolver();
 }
-$allowuppercheckbox.onclick = function (e) {
+$allowuppercheckbox.onclick = async function (e) {
     restrictStartsWithLetter();
-    handleclick(e, "upper");
+    await handleclick(e, "upper");
+    bg.settings.allowupper = $allowuppercheckbox.checked;
     if (resolvers.allowuppercheckboxclickResolver) resolvers.allowuppercheckboxclickResolver();
 }
-$allownumbercheckbox.onclick = function (e) {
-    handleclick(e, "number");
+$allownumbercheckbox.onclick = async function (e) {
+    await handleclick(e, "number");
+    bg.settings.allownumber = $allownumbercheckbox.checked;
     if (resolvers.allownumbercheckboxclickResolver) resolvers.allownumbercheckboxclickResolver();
 }
 $allowspecialcheckbox.onclick = async function (e) {
     await handleclick(e, "special");
+    bg.settings.allowspecial = $allowspecialcheckbox.checked;
     if (resolvers.allowspecialcheckboxclickResolver) resolvers.allowspecialcheckboxclickResolver();
 }
-$minlower.onmouseout = function (e) {
-    handleblur(e, "minlower");
+$minlower.onmouseout = async function (e) {
+    await handleblur(e, "minlower");
     if (resolvers.minlowerblurResolver) resolvers.minlowerblurResolver();
 }
-$minlower.onblur = function (e) {
-    handleblur(e, "minlower");
+$minlower.onblur = async function (e) {
+    await handleblur(e, "minlower");
     if (resolvers.minlowerblurResolver) resolvers.minlowerblurResolver();
 }
 $minlower.onkeyup = async function(e) { 
-    handlekeyupnopw(e, "minlower");
+    await handlekeyupnopw(e, "minlower");
     if (resolvers.minlowerblurResolver) resolvers.minlowerblurResolver();
 }
-$minupper.onmouseout = function (e) {
-    handleblur(e, "minupper");
+$minupper.onmouseout = async function (e) {
+    await handleblur(e, "minupper");
     if (resolvers.minupperblurResolver) resolvers.minupperblurResolver();
 }
-$minupper.onblur = function (e) {
-    handleblur(e, "minupper");
+$minupper.onblur = async function (e) {
+    await handleblur(e, "minupper");
     if (resolvers.minupperblurResolver) resolvers.minupperblurResolver();
 }
 $minupper.onkeyup = async function(e) { 
-    handlekeyupnopw(e, "minupper");
+    await handlekeyupnopw(e, "minupper");
     if (resolvers.minupperblurResolver) resolvers.minupperblurResolver();
 };
-$minnumber.onmouseout = function (e) {
-    handleblur(e, "minnumber");
+$minnumber.onmouseout = async function (e) {
+    await handleblur(e, "minnumber");
     if (resolvers.minnumberblurResolver) resolvers.minnumberblurResolver();
 }
-$minnumber.onblur = function (e) {
-    handleblur(e, "minnumber");
+$minnumber.onblur = async function (e) {
+    await handleblur(e, "minnumber");
     if (resolvers.minnumberblurResolver) resolvers.minnumberblurResolver();
 }
 $minnumber.onkeyup = async function(e) { 
-    handlekeyupnopw(e, "minnumber");
+    await handlekeyupnopw(e, "minnumber");
     if (resolvers.minnumberblurResolver) resolvers.minnumberblurResolver();
 } 
-$minspecial.onmouseout = function (e) {
-    handleblur(e, "minspecial");
+$minspecial.onmouseout = async function (e) {
+    await handleblur(e, "minspecial");
     if (resolvers.minspecialblurResolver) resolvers.minspecialblurResolver();
 }
-$minspecial.onblur = function (e) {
-    handleblur(e, "minspecial");
+$minspecial.onblur = async function (e) {
+    await handleblur(e, "minspecial");
     if (resolvers.minspecialblurResolver) resolvers.minspecialblurResolver();
 }
-$minspecial.onkeyup = async function(e) { 
-    handlekeyupnopw(e, "minspecial");
+ $minspecial.onkeyup = async function(e) { 
+    await handlekeyupnopw(e, "minspecial");
     if (resolvers.minspecialblurResolver) resolvers.minspecialblurResolver();
 }
 // In an older version I needed to limit the number of 
@@ -960,7 +964,7 @@ $specials.onmouseleave = async function(e) {
     if (resolvers.specialsblurResolver) resolvers.specialsblurResolver();
 }
 $specials.onkeyup = async function(e) { 
-    handlekeyupnopw(e, "specials");
+    await handlekeyupnopw(e, "specials");
     if (resolvers.specialsblurResolver) resolvers.specialsblurResolver();
 } 
 $makedefaultbutton.onclick = async function () {
@@ -1034,7 +1038,7 @@ $sameacctbutton.onclick = async function (e) {
     bg.settings = clone(database.sites[sitename]);
     bg.settings.sitename = $sitename.value;
     if (testMode) bg.domainname = $domainname.value;
-    database.domains[$domainname.value] = bg.settings.sitename;
+    database.domains[$domainname.value] = normalize(bg.settings.sitename);
     $username.value = bg.settings.username;
     await ask2generate();
     autoclose = false;
@@ -1073,7 +1077,7 @@ $forgetbutton.onclick = async function (e) {
     for (let child of children) {
         list.push(child.innerText);
     }
-    delete database.domains[get("domainname").value];
+    delete database.domains[normalize($domainname.value)];
     delete database.sites[normalize($sitename.value)];
     $sitename.value = "";
     $username.value = "";
@@ -1220,12 +1224,12 @@ async function getPhishingDomain(sitename) {
     let domainname = $domainname.value;
     if (!domainname) return ""; // No domain name to check
     // Can't be phishing if the domain name is in the database with this sitename,
-    if (!sitenamenorm || normalize(database.domains[domainname]) === sitenamenorm) return "";
+    if (!sitenamenorm || database.domains[domainname] === sitenamenorm) return "";
     let settings = database.sites[sitenamenorm];
     if (!settings) return ""; // No settings for this sitename
     // Return a list of all domain names in domains that have sitenamenorm as a value
     let matches = Object.keys(database.domains).filter((d) => 
-        normalize(database.domains[d]) === sitenamenorm && d !== domainname);
+        database.domains[d] === sitenamenorm && d !== domainname);
     let phishing = matches.length > 0 ? matches.reduce((a, b) => a[0].length <= b[0].length ? a : b, matches[0]) : "";
     return phishing;
 }
@@ -1410,6 +1414,8 @@ async function handleblur(event, element) {
         bg.settings.startwithletter = $startwithletter.checked;
     } else if (element === "providesitepw") {
         bg.settings.providesitepw = $providesitepw.checked;
+    } else if (element.startsWith("min") || element === "pwlength") {
+        bg.settings[element] = Number(get(element).value);
     } else {
         bg.settings[element] = get(element).value;
     }
@@ -1420,8 +1426,11 @@ async function handleblur(event, element) {
     }
     bg.settings.characters = characters(bg.settings, database);
     let sitepw = $sitepw.value || "";
-    let pw = await ask2generate()
-    if ($providesitepw.checked) $sitepw.value = sitepw; // So it doesn't change while the user is typing
+    let pw = await ask2generate();
+    if (!$providesitepw.checked) { // So it doesn't change while the user is typing
+        sitepw = pw;
+        $sitepw.value = sitepw;
+    }
     bg.settings.xor = xorStrings(sitepw, pw);  
     setMeter("superpw");
     setMeter("sitepw");
@@ -1445,7 +1454,7 @@ async function handleclick(e, which) {
         bg.settings.startwithletter = false;
         $startwithletter.checked = false;
     }
-    handleblur(e, element);
+    await handleblur(e, element);
 }
 async function changePlaceholder() {
     let readyForClick = isReadyForClick($superpw.value, $sitename.value, $username.value);
@@ -1618,6 +1627,7 @@ async function exportPasswords() {
         for (let domainname of sorted) {
             let sitename = database.domains[domainname];
             let settings = database.sites[sitename];
+            sitename = settings.sitename; // So it gets the right capitalization
             let username = settings.username;
             bg.settings = settings;
             $domainname.value = domainname;
@@ -1788,7 +1798,7 @@ function sitedataHTMLDoc(doc, sorted) {
     }
     function addRow(tr, domainname) {
         let sitename = database.domains[domainname];
-        let s = database.sites[normalize(sitename)];
+        let s = database.sites[sitename];
         s.domainname = domainname; // So it matches the domain name in the bookmark you clicked
         let bkmk = JSON.stringify(s);
         let td = addElement(tr, "td");

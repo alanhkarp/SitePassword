@@ -64,16 +64,25 @@ export const bgBaseDefault = {"superpw": "", "pwcount": 0, "settings": baseDefau
 Object.freeze(bgBaseDefault); // so the values can't be changed
 Object.freeze(bgBaseDefault.settings.xor); // so the array values can't be changed
 
-let commonBaseDefault = {"clearsuperpw": false, "hidesitepw": false, "safeSuffixes": {}, "defaultSettings": baseDefaultSettings};
+let commonBaseDefault = {
+    "clearsuperpw": false, 
+    "hidesitepw": false, 
+    "defaultSettings": baseDefaultSettings,
+    "oldHash": {"superpwHash": "", "settings": baseDefaultSettings}, // For detecting super password changes
+    "safeSuffixes": {}, 
+};
 Object.freeze(commonBaseDefault); // so the values can't be changed
 Object.freeze(commonBaseDefault.defaultSettings); // so the values can't be changed
 Object.freeze(commonBaseDefault.defaultSettings.xor); // so the array values can't be changed
+Object.freeze(commonBaseDefault.oldHash); // so the values can't be changed
+Object.freeze(commonBaseDefault.safeSuffixes); // so the values can't be changed
 
 export let databaseDefault = { "common": clone(commonBaseDefault), "domains": {}, "sites": {} };
 Object.freeze(databaseDefault); // so the values can't be changed
 Object.freeze(databaseDefault.common); // so the values can't be changed
 Object.freeze(databaseDefault.common.defaultSettings); // so the values can't be changed
 Object.freeze(databaseDefault.common.defaultSettings.xor); // so the array values can't be changed
+Object.freeze(databaseDefault.common.oldHash); // so the values can't be changed    
 Object.freeze(databaseDefault.common.safeSuffixes); // so the values can't be changed
 Object.freeze(databaseDefault.domains); // so the values can't be changed
 Object.freeze(databaseDefault.sites); // so the values can't be changed
@@ -358,7 +367,7 @@ setup();
 // sender argument for debugging
 async function getMetadata(request, sender, sendResponse) {
     if (logging) console.log("bg getMetadata", isSuperPw(bg.superpw), bg.settings, request);
-    let sitename = database.domains[request.domainname];
+    let sitename = database.domains[normalize(request.domainname)];
     if (sitename) {
         bg.settings = database.sites[sitename];
     } else {
@@ -369,7 +378,7 @@ async function getMetadata(request, sender, sendResponse) {
         if (shared) {
             let sharedSitename = database.domains[shared];
             bg.settings = database.sites[sharedSitename];
-            database.domains[request.domainname] = sharedSitename;
+            database.domains[normalize(request.domainname)] = sharedSitename;
         } else {
             bg.settings = clone(defaultSettings);
             if (logging) console.log("bg getMetadata", isSuperPw(superpw))
@@ -415,7 +424,7 @@ async function onContentPageload(request, sender, sendResponse) {
     let domainname = getdomainname(activetab.url);
     let pwdomainname = getdomainname(sender.origin || sender.url);
     if (logging) console.log("bg domainname, superpw, database, bg", domainname, isSuperPw(superpw), database, bg);
-    let sitename = database.domains[domainname];
+    let sitename = database.domains[normalize(domainname)];
     if (logging) console.log("bg |sitename|, settings, database", sitename, database.sites[sitename], database);
     if (sitename) {
         bg.settings = database.sites[sitename];
@@ -427,7 +436,7 @@ async function onContentPageload(request, sender, sendResponse) {
         if (sharedDomainname) {
             let sharedSitename = database.domains[sharedDomainname];
             bg.settings = database.sites[sharedSitename];
-            database.domains[domainname] = sharedSitename;
+            database.domains[normalize(domainname)] = sharedSitename;
         } else {
             bg.settings = clone(defaultSettings);
         }
@@ -453,9 +462,9 @@ async function persistMetadata(sendResponse) {
     if (rootFolder.id === rootFolderDefaultId) return;
     let sitename = normalize(bg.settings.sitename);
     if (sitename) {
-        let oldsitename = db.domains[bg.settings.domainname];
+        let oldsitename = db.domains[normalize(bg.settings.domainname)];
         if (!oldsitename || sitename === oldsitename) {
-            db.domains[bg.settings.domainname] = normalize(bg.settings.sitename);
+            db.domains[normalize(bg.settings.domainname)] = normalize(bg.settings.sitename);
             if (!bg.settings.pwdomainname) bg.settings.pwdomainname = bg.settings.domainname;
             db.sites[sitename] = bg.settings;
         } else {
@@ -720,7 +729,7 @@ async function retrieved(callback) {
     } else {
         await Promise.resolve(); // To match the await in the other branch
     }
-    let sitename = database.domains[domainname];
+    let sitename = database.domains[normalize(domainname)];
     let settings;
     if (sitename) {
         settings = database.sites[sitename];
@@ -735,6 +744,7 @@ async function retrieved(callback) {
     await callback();
 }
 function bgsettings(domainname) {
+    domainname = normalize(domainname);
     if (database.domains[domainname]) {
         bg.settings = database.sites[database.domains[domainname]];
         if (!bg.settings.username) bg.settings.username = "";

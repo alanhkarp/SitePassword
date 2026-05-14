@@ -130,25 +130,29 @@ async function candidatePassword(args) {
     let passphrase = new TextEncoder().encode(payload);
     // Use Password Based Key Derivation Function because repeated iterations
     // don't weaken the result as much as repeated SHA-256 hashing.
-    return crypto.subtle.importKey("raw", passphrase, { name: "PBKDF2" }, false, ["deriveBits"])
-    .then(async (passphraseImported) => {
+    if (logging) console.log("crypto.subtle.importKey");
+    try {
+        let passphraseImported = await crypto.subtle.importKey("raw", passphrase, { name: "PBKDF2" }, false, ["deriveBits"]);
         let start = Date.now();
-        return crypto.subtle.deriveBits(
-            {
-                name: "PBKDF2",
-                hash: 'SHA-256',
-                salt: new TextEncoder().encode(salt),
-                iterations: iters
-            },
-            passphraseImported,
-            keysize 
-        )  
-        .then((bits) => {
+        if (logging) console.log("crypto.subtle.deriveBits", passphraseImported, salt, iters, keysize);
+        try {
+            let bits = await crypto.subtle.deriveBits(
+                {
+                    name: "PBKDF2",
+                    hash: 'SHA-256',
+                    salt: new TextEncoder().encode(salt),
+                    iterations: iters
+                },
+                passphraseImported,
+                keysize 
+            );
+            if (logging) console.log("crypto.subtle.deriveBits done");
             const cset = characters(settings);
             if (logging && Date.now() - start > 2) console.log("deriveBits did", iters, "iterations in", Date.now() - start, "ms");
             let bytes = new Uint8Array(bits);
             // Convert the Uint32Array to a string using a custom algorithm               
             let pw = uint2chars(bytes.slice(0, 2*settings.pwlength), cset);
+            if (logging) console.log("candidatePassword returning", pw);
             return pw;
             function uint2chars(array) {
                 let chars = "";
@@ -158,9 +162,15 @@ async function candidatePassword(args) {
                     chars += cset[index % cset.length];
                 }
                 return chars;
-            }            
-        }); 
-    });
+            }
+        } catch (err) {
+            console.error("Error in deriveBits:", err);
+            return "";
+        }
+    } catch (err) {
+        console.error("Error in candidatePassword:", err);
+        return "";
+    }
 }
 function verifyPassword(pw, settings) {
     let report = zxcvbn(pw);
