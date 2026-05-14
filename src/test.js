@@ -21,10 +21,12 @@ let loggingProvide = false;
 let loggingReset = false;
 let loggingTrigger = false;
 let loggingWrapHandler = false;
+let loggingRememberForm = false;
 if (logging) {
     loggingCalculation = loggingClear = loggingDefault = loggingFill = 
                          loggingForget = loggingPhishing = loggingProvide = 
-                         loggingReset = loggingTrigger = loggingWrapHandler = true;
+                         loggingReset = loggingTrigger = loggingWrapHandler = 
+                         loggingRememberForm = true;
 }
 // #region Fields needed for tests
 const $account = get("account");
@@ -136,7 +138,7 @@ async function testChangePassword() {
     await triggerEvent("click", $sameacctbutton);
     restoreForTesting();
     await triggerEvent("mouseleave", $mainpanel);
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
     $sitename.value = "Guru2";
     await triggerEvent("blur", $sitename);
     let actual = $sitepw.value;
@@ -144,18 +146,18 @@ async function testChangePassword() {
     restoreForTesting();
     await fillForm("qwerty", "allantheguru.alanhkarp.com", "", "");
     await triggerEvent("blur", $domainname);
-    let test = $sitename.value === "Guru2" && $username.value === "alan" && $sitepw.value === actual;
+    let test = $sitename.value === "Guru2" && $username.value === "Alan" && $sitepw.value === actual;
     if (test) {
         console.log("Passed: Change password");
         passed++;
     } else {
-        console.warn("Failed: Change password", "Guru2", "alan", actual, $sitename.value, $username.value, $sitepw.value);
+        console.warn("Failed: Change password", "Guru2", "Alan", actual, $sitename.value, $username.value, $sitepw.value);
         failed++;
     }
 }
 async function testRememberForm() {
     await resetState();
-    if (logging) console.log("testRememberForm state reset");
+    if (loggingRememberForm) console.log("testRememberForm state reset");
     const expectdpw = "KiD7w@IN0HM.";
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
     await triggerEvent("click", $settingsshow);
@@ -163,10 +165,10 @@ async function testRememberForm() {
     $specials.value = "/!=@?._-";
     await triggerEvent("blur", $specials);
     await triggerEvent("mouseleave", $mainpanel);  // $mainpanel.onmouseleave(); saves the settings
-    if (logging) console.log("testRememberForm filled form", $sitename.value, $username.value);
+    if (loggingRememberForm) console.log("testRememberForm filled form", $sitename.value, $username.value);
     // See if it remembers
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-    if (logging) console.log("testRememberForm filled form", $sitename.value, $username.value);
+    if (loggingRememberForm) console.log("testRememberForm filled form", $sitename.value, $username.value);
     await triggerEvent("blur", $domainname);
     let tests = $sitename.value === "Guru";
     tests = tests && $username.value === "alan";
