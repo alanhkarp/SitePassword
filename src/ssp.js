@@ -424,7 +424,7 @@ $superpw.onkeyup = async function (e) {
     // Start the reminder clock ticking
     await chrome.storage.local.set({"reminder": Date.now()});
     bg.superpw = $superpw.value || "";
-    await ask2generate()
+    $sitepw.value = await ask2generate();
     setMeter("superpw");
     setMeter("sitepw");
     await handlekeyup(e, "superpw");
@@ -524,7 +524,7 @@ $sitename.onblur = async function (e) {
             bg.settings = clone(database.sites[normalize(sitename)] || bg.settings || bgDefault.settings);
             $sitename.value = bg.settings.sitename || sitename;
             $username.value = bg.settings.username || $username.value;
-            await ask2generate();
+            $sitepw.value = await ask2generate();
         }
     }
     clearDatalist("sitenames");
@@ -1003,7 +1003,7 @@ $sameacctbutton.onclick = async function (e) {
     if (testMode) bg.domainname = $domainname.value;
     database.domains[$domainname.value] = bg.settings.sitename;
     $username.value = bg.settings.username;
-    await ask2generate();
+    $sitepw.value = await ask2generate();
     autoclose = false;
     sameacct = true;
     if (resolvers.sameacctbuttonResolver) resolvers.sameacctbuttonResolver("sameacctbuttonPromise");
@@ -1494,7 +1494,7 @@ async function fill() {
     $minspecial.value = bg.settings.minspecial;
     $specials.value = bg.settings.specials;
     restrictStartsWithLetter();
-    await ask2generate();
+    $sitepw.value = await ask2generate();
 }
 function restrictStartsWithLetter() {
     if ($providesitepw.checked) return;
@@ -1596,7 +1596,7 @@ async function exportPasswords() {
         link.click();    
         document.body.removeChild(link);
         exporting = false;
-        await ask2generate(); // To get the right password to show up
+        $sitepw.value = await ask2generate(); // To get the right password to show up
     } catch (e) {
         alert("Export error: Close SitePassword and try again.");
         console.log("popup exportPasswords error", e);
