@@ -333,7 +333,7 @@ $mainpanel.onmouseleave = async function (event) {
     // Don't persist if: phishing sites, exporting, the mouse is in the panel, or if event triggered by closing a help or instruction panel
     if (phishingDomain || exporting || element) {
         if (logging) console.log("popup phishing mouseleave resolve  mainpanelmouseleaveResolver", phishingDomain, resolvers);
-        if (resolvers. mainpanelmouseleaveResolver) resolvers. mainpanelmouseleaveResolver(" mainpanelmouseleavePromise");
+        if (resolvers.mainpanelmouseleaveResolver) resolvers. mainpanelmouseleaveResolver(" mainpanelmouseleavePromise");
         return;
     }
     if (logging) console.log("popup mainpanel mouseleave update bg", document.activeElement.id, bg);
@@ -362,13 +362,13 @@ $mainpanel.onmouseleave = async function (event) {
                 "bg": bg,
             });
             if (logging) console.log("popup siteData resolve  mainpanelmouseleaveResolver", response, resolvers);
-            if (resolvers. mainpanelmouseleaveResolver) resolvers. mainpanelmouseleaveResolver(" mainpanelmouseleavePromise");
+            if (resolvers.mainpanelmouseleaveResolver) resolvers.mainpanelmouseleaveResolver(" mainpanelmouseleavePromise");
         } catch (error) {
             console.error("Error sending siteData message:", error);
         }
     } else {
         if (logging) console.log("popup no bg.settings mouseleave resolve", resolvers);
-        if (resolvers. mainpanelmouseleaveResolver) resolvers.mouseleaveResolver(" mainpanelmouseleavePromise");
+        if (resolvers.mainpanelmouseleaveResolver) resolvers.mainpanelmouseleaveResolver(" mainpanelmouseleavePromise");
     }
 }
 $title.onclick = function () {
