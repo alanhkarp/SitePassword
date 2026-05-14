@@ -1043,6 +1043,7 @@ $sameacctbutton.onclick = async function (e) {
     $sitepw.value = await ask2generate();
     autoclose = false;
     sameacct = true;
+    $mainpanel.onmouseleave(); // So it runs in the same turn and after the state changes
     if (resolvers.sameacctbuttonclickResolver) resolvers.sameacctbuttonclickResolver();
 }
 $nicknamebutton.onclick = function (e) {

@@ -162,28 +162,34 @@ async function testRememberSuperpw() {
 }
 // Test change password
 async function testChangePassword() {
-    resetState();
-    await phishingSetup();
-    await triggerEvent("click", $sameacctbutton);
-    $sitename.value = "Guru2";
-    await triggerEvent("blur", $sitename);
-    let expected = $sitepw.value;
-    await triggerEvent("mouseleave", $mainpanel);
-    restoreForTesting();
-    clearForm();
-    await triggerEvent("load", window);
-    let test = $sitename.value === "Guru2" && $username.value === "alan" && $sitepw.value === expected;
-    clearForm();
-    fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    test = test && $sitename.value === "Guru2" && $username.value === "alan" && $sitepw.value === expected;
+    let test = await testChangePasswordInner(true);
+    test = test && await testChangePasswordInner(false);
     if (test) {
         console.log("Passed: Change password");
         passed++;
     } else {
-        console.warn("Failed: Change password", "Guru2", "alan", expected, $sitename.value, $username.value, $sitepw.value);
+        console.warn("Failed: Change password", "Guru2", "Alan", expected, $sitename.value, $username.value, $sitepw.value);
         failed++;
     }
+    async function testChangePasswordInner(afterMouseleave) {
+        await resetState();
+        await phishingSetup();
+        await triggerEvent("click", $sameacctbutton);
+        if (afterMouseleave) {
+            restoreForTesting();
+            await triggerEvent("mouseleave", $mainpanel);
+        }
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
+        $sitename.value = "Guru2";
+        await triggerEvent("blur", $sitename);
+        let expected = $sitepw.value;
+        await triggerEvent("mouseleave", $mainpanel);
+        restoreForTesting();
+        await fillForm("qwerty", "allantheguru.alanhkarp.com", "", "");
+        await triggerEvent("blur", $domainname);
+        let test = $sitename.value === "Guru2" && $username.value === "Alan" && $sitepw.value === expected;
+        return test;
+}
 }
 // Test remembering form settings and requires/allows settings
 async function testRememberForm() {
