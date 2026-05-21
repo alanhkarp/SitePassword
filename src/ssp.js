@@ -208,8 +208,6 @@ window.onload = async function () {
 }
 async function init() {
     $superpw.value = bg.superpw || "";
-    $sitename.value = bg.settings.sitename || "";
-    $username.value = bg.settings.username || "";
     await fill();
     let protocol = activetab.url.split(":")[0];
     if (logging) console.log("popup testing for http", protocol);
@@ -265,8 +263,6 @@ export async function getsettings() {
     $superpw.value = response.superpw || "";
     bg.superpw = response.superpw || "";
     await init();
-    let computed = await ask2generate(bg);
-    $sitepw.value = stringXorArray(computed, bg.settings.xor);
     let readyForClick = isReadyForClick($superpw.value, $sitename.value, $username.value);
     if (readyForClick) {
         let phishingDomain = await getPhishingDomain($sitename.value);
@@ -281,7 +277,7 @@ export async function getsettings() {
     try {
         if (logging) console.log("popup sending update", activetab.url, $username.value || "", readyForClick); 
         // Do not send a password in this message since it goes to all frames
-        await chrome.tabs.sendMessage( activetab.id, { "cmd": "update", "u": u, "p": "", "readyForClick": readyForClick });
+        await chrome.tabs.sendMessage( activetab.id, { "cmd": "update", "u": $username.value || "", "p": "", "readyForClick": readyForClick });
     } catch (err) {
         if (logging) console.warn("popup: could not send update message to tab", activetab.url, err);
     }
@@ -386,12 +382,11 @@ $title.onclick = function () {
 }
 // Domain Name
 // There are no actions the user can take on the domain name field,
-// but I need this handler for testing.
+// but I need this handler for testing since window.onopen sets 
+// the domainname field to a value I might not want for testing.
 $domainname.onblur = async function (e) {
-    $sitename.value = "";
     if (testMode) domainname = $domainname.value;
     await getsettings(domainname);
-    await fill();
     if (resolvers.domainnameblurResolver) resolvers.domainnameblurResolver();
 }
 $domainnamemenu.onmouseleave = function (e) {
@@ -570,11 +565,11 @@ $accountnicknameinput.onkeyup = function (e) {
         $accountnicknamesavebutton.disabled = true;
     }
 }
-$accountnicknamesavebutton.onclick = function (e) {
+$accountnicknamesavebutton.onclick = async function (e) {
     if (!$accountnicknameinput.value) return;
     $sitename.value = $accountnicknameinput.value;
     sameacct = true;
-    $sitename.onblur(e); // So it runs in the same turn
+    await $sitename.onblur(e); // So it runs in the same turn
     msgoff("account");
     autoclose = true;
 }
@@ -582,9 +577,9 @@ $accountnicknamecancelbutton.onclick = function (e) {
     msgoff("account");
     autoclose = false;
 }
-$accountnicknamenewbutton.onclick = function (e) {
+ $accountnicknamenewbutton.onclick = async function (e) {
     $sitename.value = $accountnicknameinput.value;
-    $sitename.onblur(e); // So it runs in the same turn
+    await $sitename.onblur(e); // So it runs in the same turn
     msgoff("account");
     autoclose = true;
     sameacct = false;
@@ -1015,7 +1010,7 @@ $cancelwarning.onclick = async function (e) {
     $sitename.value = "";
     $username.value = "";
     sameacct = false;
-    chrome.tabs.update(activetab.id, {url: "chrome://newtab"});
+    await chrome.tabs.update(activetab.id, {url: "chrome://newtab"});
     if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver();
 }
 $sameacctbutton.onclick = async function (e) {
@@ -1039,6 +1034,7 @@ $sameacctbutton.onclick = async function (e) {
     bg.settings.sitename = $sitename.value;
     if (testMode) bg.domainname = $domainname.value;
     database.domains[$domainname.value] = normalize(bg.settings.sitename);
+    $sitename.value = bg.settings.sitename;
     $username.value = bg.settings.username;
     $sitepw.value = await ask2generate();
     autoclose = false;
@@ -1437,7 +1433,7 @@ async function handleblur(event, element) {
     setMeter("sitepw");
     updateExportButton(); 
     let readyForClick = isReadyForClick($superpw.value, $sitename.value, $username.value, pw);
-    if (isUrlMatch(activetab.url)) {
+    if (await isUrlMatch(activetab.url)) {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "update", "u": $username.value || "", "p": "", "readyForClick": readyForClick });
         } catch (error) {
@@ -1459,7 +1455,7 @@ async function handleclick(e, which) {
 }
 async function changePlaceholder() {
     let readyForClick = isReadyForClick($superpw.value, $sitename.value, $username.value);
-    if (isUrlMatch(activetab.url)) {
+    if (await isUrlMatch(activetab.url)) {
         try {
             await chrome.tabs.sendMessage(activetab.id, { "cmd": "fillfields", "u": $username.value || "", "p": "", "readyForClick": readyForClick });
         } catch (error) {
@@ -1502,14 +1498,14 @@ async function ask2generate() {
     }
 }
 async function fill() {
-    if (bg.settings[domainname]) {
+    if (bg.settings.domainname) {
         if (!$username.value) $username.value = bg.settings.username;
         if (!$sitename.value) $sitename.value = bg.settings.sitename;
     } else {
         bg.settings.domainname = normalize($domainname.value); // Keep for compatibility with V3.0.12
         bg.domainname = normalize($domainname.value);
-        bg.settings.sitename = normalize($sitename.value);
-        bg.settings.username = normalize($username.value);
+        bg.settings.sitename = $sitename.value;
+        bg.settings.username = $username.value;
     }
     $superpw.value = bg.superpw || "";
     $providesitepw.checked = bg.settings.providesitepw;
@@ -1550,7 +1546,9 @@ async function fill() {
     $minspecial.value = bg.settings.minspecial;
     $specials.value = bg.settings.specials;
     restrictStartsWithLetter();
-    $sitepw.value = await ask2generate();
+    let computed = await ask2generate(bg);
+    $sitepw.value = stringXorArray(computed, bg.settings.xor);
+    setMeter("sitepw");
 }
 function restrictStartsWithLetter() {
     if ($providesitepw.checked) return;

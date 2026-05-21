@@ -95,7 +95,7 @@ let bkmksId;
 // Need to clear cache on install or following an update
 if (logging) console.log("bg running");
 async function updateTab(tab) {
-    if (isUrlMatch(tab.url)) {
+    if (await isUrlMatch(tab.url)) {
         if (tab.status === "complete") {
             try {
                 // The following needs scripting permission in the manifest and
@@ -264,7 +264,7 @@ async function setup() {
                     database.common.clearsuperpw = request.clearsuperpw;
                     database.common.hidesitepw = request.hidesitepw;
                     database.common.safeSuffixes = request.safeSuffixes || {};
-                    if (!request.sameacct && bg.settings.sitename) {
+                    if (bg.settings.sitename) {
                         database.domains[normalize(bg.settings.pwdomainname)] = normalize(bg.settings.sitename);
                         database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);
                     }
@@ -781,7 +781,7 @@ async function forget(toforget, rootFolder, sender, sendResponse) {
                     if (logging) console.log("bg removing bookmark for", child.title);
                     try {
                         await chrome.bookmarks.remove(child.id);
-                        if (isUrlMatch(activetab.url)) {
+                        if (await isUrlMatch(activetab.url)) {
                             if (logging) console.log("bg send clear message");
                             await chrome.tabs.sendMessage(activetab.id, { "cmd": "clear" });
                         }
@@ -806,8 +806,8 @@ function stringifySettings(settings) {
         console.log("bad URI", settings);
     }
 }
-export function isUrlMatch(url) {
-    const manifest = chrome.runtime.getManifest();
+export async function isUrlMatch(url) {
+    const manifest = await chrome.runtime.getManifest();
     const urlPatterns = manifest.content_scripts[0].matches;
     return urlPatterns.some((pattern) => new RegExp(pattern).test(url));
 }
