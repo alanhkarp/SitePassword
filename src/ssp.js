@@ -850,18 +850,22 @@ $pwlength.onkeyup = async function(e) {
 }; 
 $startwithletter.onclick = async function (e) {
     await handleblur(e, "startwithletter");
+    if (resolvers.startwithletterclickResolver) resolvers.startwithletterclickResolver("startwithletterclickPromise");
 }
  $allowlowercheckbox.onclick = async function (e) {
     restrictStartsWithLetter();
     $minlower.disabled = false;
     await handleclick(e, "lower");
+    if (resolvers.allowlowercheckboxclickResolver) resolvers.allowlowercheckboxclickResolver("allowlowercheckboxclickPromise");
 }
  $allowuppercheckbox.onclick = async function (e) {
     restrictStartsWithLetter();
     await handleclick(e, "upper");
+    if (resolvers.allowuppercheckboxclickResolver) resolvers.allowuppercheckboxclickResolver("allowuppercheckboxclickPromise");
 }
  $allownumbercheckbox.onclick = async function (e) {
     await handleclick(e, "number");
+    if (resolvers.allownumbercheckboxclickResolver) resolvers.allownumbercheckboxclickResolver("allownumbercheckboxclickPromise");
 }
 $allowspecialcheckbox.onclick = async function (e) {
     await handleclick(e, "special");
@@ -869,39 +873,51 @@ $allowspecialcheckbox.onclick = async function (e) {
 }
  $minlower.onmouseout = async function (e) {
     await handleblur(e, "minlower");
+    if (resolvers.minlowermouseoutResolver) resolvers.minlowermouseoutResolver("minlowermouseoutPromise");
 }
  $minlower.onblur = async function (e) {
     await handleblur(e, "minlower");
+    if (resolvers.minlowerblurResolver) resolvers.minlowerblurResolver("minlowerblurPromise");
 }
  $minlower.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "minlower");
+    if (resolvers.minlowerkeyupResolver) resolvers.minlowerkeyupResolver("minlowerkeyupPromise");
 }
  $minupper.onmouseout = async function (e) {
     await handleblur(e, "minupper");
+    if (resolvers.minuppermouseoutResolver) resolvers.minuppermouseoutResolver("minuppermouseoutPromise");
 }
- $minupper.onblur = async function (e) {
+$minupper.onblur = async function (e) {
     await handleblur(e, "minupper");
+    if (resolvers.minupperblurResolver) resolvers.minupperblurResolver("minupperblurPromise");
 }
  $minupper.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "minupper");
-}; 
+    if (resolvers.minupperkeyupResolver) resolvers.minupperkeyupResolver("minupperkeyupPromise");
+};
  $minnumber.onmouseout = async function (e) {
     await handleblur(e, "minnumber");
+    if (resolvers.minnumbermouseoutResolver) resolvers.minnumbermouseoutResolver("minnumbermouseoutPromise");
 }
  $minnumber.onblur = async function (e) {
     await handleblur(e, "minnumber");
+    if (resolvers.minnumberblurResolver) resolvers.minnumberblurResolver("minnumberblurPromise");
 }
  $minnumber.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "minnumber");
+    if (resolvers.minnumberkeyupResolver) resolvers.minnumberkeyupResolver("minnumberkeyupPromise");
 } 
  $minspecial.onmouseout = async function (e) {
     await handleblur(e, "minspecial");
+    if (resolvers.minspecialmouseoutResolver) resolvers.minspecialmouseoutResolver("minspecialmouseoutPromise");
 }
  $minspecial.onblur = async function (e) {
     await handleblur(e, "minspecial");
+    if (resolvers.minspecialblurResolver) resolvers.minspecialblurResolver("minspecialblurPromise");
 }
  $minspecial.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "minspecial");
+    if (resolvers.minspecialkeyupResolver) resolvers.minspecialkeyupResolver("minspecialkeyupPromise");
 }
 // In an older version I needed to limit the number of 
 // specials because generate() computed a number between 
@@ -1449,7 +1465,7 @@ async function ask2generate() {
     }
 }
 async function fill() {
-    if (bg.settings[domainname]) {
+    if (bg.settings.domainname) {
         if (!$username.value) $username.value = bg.settings.username;
         if (!$sitename.value) $sitename.value = bg.settings.sitename;
     } else {

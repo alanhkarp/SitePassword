@@ -156,29 +156,75 @@ async function testChangePassword() {
     }
 }
 async function testRememberForm() {
-    await resetState();
     if (loggingRememberForm) console.log("testRememberForm state reset");
-    const expectdpw = "KiD7w@IN0HM.";
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
-    await triggerEvent("click", $settingsshow);
-    await triggerEvent("click", $allowspecialcheckbox);
-    $specials.value = "/!=@?._-";
-    await triggerEvent("blur", $specials);
-    await triggerEvent("mouseleave", $mainpanel);  // $mainpanel.onmouseleave(); saves the settings
-    if (loggingRememberForm) console.log("testRememberForm filled form", $sitename.value, $username.value);
-    // See if it remembers
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-    if (loggingRememberForm) console.log("testRememberForm filled form", $sitename.value, $username.value);
-    await triggerEvent("blur", $domainname);
-    let tests = $sitename.value === "Guru";
-    tests = tests && $username.value === "alan";
-    tests = tests && $sitepw.value === expectdpw;
+    let setupFn = async () => {
+        await triggerEvent("click", $startwithletter);
+    };
+    let tests = await testFormElement(setupFn, "start with letter, password correct");
+    tests = tests && /^\d/.test($sitepw.value);
     if (tests) {
-        console.log("Passed: Remember form");
+        console.log("Passed: Remember form password starts with letter");
         passed++;
     } else {
-        console.warn("Failed: Remember form", "Guru", "alan", "|" + $sitename.value + "|");
+        console.warn("Failed: Remember form password starts with letter", $sitepw.value);
         failed++;
+    }
+    setupFn = async () => {
+        await triggerEvent("click", $allowspecialcheckbox);
+        $specials.value = "/!=@?._-";
+        await triggerEvent("blur", $specials); // For debugging
+    };
+    tests = tests && await testFormElement(setupFn, "allow special characters");
+    setupFn = async () => {
+        $pwlength.value = 16;
+        await triggerEvent("blur", $pwlength);
+    };
+    tests = tests && await testFormElement(setupFn, "password length");
+    tests = tests && await testAllows("lower");
+    tests = tests && await testAllows("upper");
+    tests = tests && await testAllows("number");
+    async function testAllows(which) {
+        let regex = {"lower": /[a-z]/g, "upper": /[A-Z]/g, "number": /[0-9]/g, "special": /[^\w]/g}[which];         
+        let element = "allow" + which + "checkbox";
+        let setupFn = async () => {
+            await triggerEvent("click", get(element));
+        };
+        let tests = await testFormElement(setupFn, "allow " + which);
+        tests = tests && !regex.test($sitepw.value);
+        if (tests) {
+            console.log("Passed: Remember form: allow " + which);
+            passed++;
+        } else {
+            console.warn("Failed: Remember form: allow " + which, $sitepw.value);
+            failed++;
+        }
+        return tests;
+    }
+    async function testFormElement(setupFn, description) {
+        await resetState();
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+        await triggerEvent("click", $settingsshow);
+        await setupFn();
+        let expectdpw = $sitepw.value;
+        await triggerEvent("mouseleave", $mainpanel);  // $mainpanel.onmouseleave(); saves the settings
+        if (loggingRememberForm) console.log("testRememberForm filled form", $sitename.value, $username.value);
+        // See if it remembers
+        clearForm();
+        await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
+        if (loggingRememberForm) console.log("testRememberForm filled form", $sitename.value, $username.value);
+        await triggerEvent("blur", $domainname);
+        await triggerEvent("click", $settingsshow); // For debugging
+        let tests = $sitename.value === "Guru";
+        tests = tests && $username.value === "alan";
+        tests = tests && $sitepw.value === expectdpw;
+        if (tests) {
+            console.log("Passed: Remember form:", description);
+            passed++;
+        } else {
+            console.warn("Failed: Remember form:", description, "expected pw", expectdpw, "got", $sitepw.value);
+            failed++;
+        }
+        return tests;
     }
 }
 async function testProvidedpw() {
