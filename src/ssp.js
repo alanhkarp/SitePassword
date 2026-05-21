@@ -505,7 +505,7 @@ $sitename.onfocus = function (e) {
     let set = new Set();
     let value = normalize($sitename.value);
     Object.keys(database.sites).forEach((sitename) => {
-        let site = database.sites[normalize(sitename)].sitename;
+        let site = database.sites[sitename].sitename;
         if (!value || normalize(site).startsWith(value)) set.add(site);
     })
     let list = sortList([... set]);
@@ -590,7 +590,8 @@ $sitenamemenuforget.onclick = function (e) {
     msgon("forget");
     let toforget = normalize($sitename.value);
     for (let domain in database.domains) {
-        if (normalize(database.domains[domain]) === toforget) {
+        let domainnameNorm = normalize(domain);
+        if (database.domains[domainnameNorm] === toforget) {
             addForgetItem(domain);
         }
     }
@@ -989,7 +990,7 @@ $makedefaultbutton.onclick = async function () {
         console.error("Error sending newDefaults message:", error);
     }
     if (logging) console.log("popup newDefaults sent", newDefaults);
-    if (resolvers.makedefaultResolver) resolvers.makedefaultResolver();
+    if (resolvers.makedefaultbuttonclickResolver) resolvers.makedefaultbuttonclickResolver("makedefaultbuttonclickPromise");
 }
 $sitedatagetbutton.onclick = sitedataHTML;
 $exportbutton.onclick = exportPasswords;
@@ -1010,8 +1011,8 @@ $cancelwarning.onclick = async function (e) {
     $sitename.value = "";
     $username.value = "";
     sameacct = false;
-    await chrome.tabs.update(activetab.id, {url: "chrome://newtab"});
-    if (resolvers.cancelwarningResolver) resolvers.cancelwarningResolver();
+    chrome.tabs.update(activetab.id, {url: "chrome://newtab"});
+    if (resolvers.cancelwarningclickResolver) resolvers.cancelwarningclickResolver("cancelwarningPromise");
 }
 $sameacctbutton.onclick = async function (e) {
     $superpw.disabled = false;
@@ -1019,18 +1020,18 @@ $sameacctbutton.onclick = async function (e) {
     $sitename.disabled = false;
     msgoff("phishing");
     let domainname = $domainname.value;
-    let sitename = normalize($sitename.value);
+    let sitenameNorm = normalize($sitename.value);
     if (testMode) {
         bg.settings.domainname = domainname; // Keep for compatibility with V3.0.12
         bg.domainname = domainname;
-        database.sites[sitename].domainname = domainname;
+        database.sites[sitenameNorm].domainname = domainname;
     }
     let d = await getPhishingDomain(bg.settings.sitename);
     let suffix = commonSuffix(d, domainname);
     if (suffix && !database.common.safeSuffixes[suffix]) {
-            database.common.safeSuffixes[suffix] = sitename;
+            database.common.safeSuffixes[suffix] = sitenameNorm;
     }
-    bg.settings = clone(database.sites[sitename]);
+    bg.settings = clone(database.sites[sitenameNorm]);
     bg.settings.sitename = $sitename.value;
     if (testMode) bg.domainname = $domainname.value;
     database.domains[$domainname.value] = normalize(bg.settings.sitename);
@@ -1218,15 +1219,17 @@ function hideInstructions() {
 // End of generic code for menus: other utility functions
 async function getPhishingDomain(sitename) {
     let sitenamenorm = normalize(sitename);
-    let domainname = $domainname.value;
-    if (!domainname) return ""; // No domain name to check
+    let domainnameNorm = normalize($domainname.value);
+    if (!domainnameNorm) return ""; // No domain name to check
     // Can't be phishing if the domain name is in the database with this sitename,
-    if (!sitenamenorm || database.domains[domainname] === sitenamenorm) return "";
+    if (!sitenamenorm || database.domains[domainnameNorm] === sitenamenorm) return "";
     let settings = database.sites[sitenamenorm];
     if (!settings) return ""; // No settings for this sitename
     // Return a list of all domain names in domains that have sitenamenorm as a value
-    let matches = Object.keys(database.domains).filter((d) => 
-        database.domains[d] === sitenamenorm && d !== domainname);
+    let matches = Object.keys(database.domains).filter((d) => {
+        let dnorm = normalize(d);
+        return database.domains[d] === sitenamenorm && dnorm !== domainnameNorm;
+    });
     let phishing = matches.length > 0 ? matches.reduce((a, b) => a[0].length <= b[0].length ? a : b, matches[0]) : "";
     return phishing;
 }
@@ -1624,14 +1627,14 @@ async function exportPasswords() {
         let oldsettings = clone(bg.settings);
         let data = "Domain Name, Site Name, User Name, Site Password\n";
         for (let domainname of sorted) {
-            let sitename = database.domains[domainname];
+            let sitename = normalize(database.domains[domainname]);
             let settings = database.sites[sitename];
             sitename = settings.sitename; // So it gets the right capitalization
             let username = settings.username;
             bg.settings = settings;
             $domainname.value = domainname;
-            $sitename.value = sitename;
-            $username.value = username;
+            $sitename.value = settings.sitename;
+            $username.value = settings.username;
             try {
                 let sitepw = await ask2generate();
                 data += '"' + domainname + '"' + "," + '"' + sitename + '"' + "," + '"' + username + '"' + "," + '"' + sitepw + '"' + "\n";
@@ -1652,7 +1655,7 @@ async function exportPasswords() {
         link.click();    
         document.body.removeChild(link);
         exporting = false;
-        $sitepw.value = await ask2generate(); // To get the right password to show up
+        $sitepw.value =await ask2generate(); // To get the right password to show up
     } catch (e) {
         alert("Export error: Close SitePassword and try again.");
         console.log("popup exportPasswords error", e);
