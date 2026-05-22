@@ -288,9 +288,9 @@ export async function getsettings() {
 // is a race between message delivery and the next user click.  Fortunately, messages
 // are delivered in just a couple of ms, so there's no problem.  Just be aware that
 // this race is the source of any problems related to loss of the message sent here.
-$root.onmouseleave = function (event) {
+$root.onmouseleave = function (e) {
     // If I close the window immediately, then messages in flight get lost
-    if (autoclose && !exporting && !document.elementFromPoint(event.pageX, event.pageY)) {
+    if (autoclose && !exporting && !document.elementFromPoint(e.pageX, e.pageY)) {
         if (!debugMode) $root.style.opacity = 0.1;
         mainPanelTimer = setTimeout(() => {
             if (!debugMode) window.close();
@@ -312,14 +312,14 @@ $mainpanel.onmouseenter = function (e) {
     $sitename.tabIndex = 0;
     $username.tabIndex = 0;
 }
-$mainpanel.onmouseleave = async function (event) {
-    if (logging) console.log("popup mainpanel mouseleave", event);
+$mainpanel.onmouseleave = async function (e) {
+    if (logging) console.log("popup mainpanel mouseleave", e);
     // Force a blur event on the currently focused element.  There is an inherent race condition
     // between the mouseleave event and the blur event in that the blur processing might not
     // complete before the popup closes.  This is not a problem in practice because of the delay 
     // in closing the popup.
     $mainpanel.focus();
-    let element = event ? (event.pageX ? document.elementFromPoint(event.pageX || 0, event.pageY || 0) : null) : null;
+    let element = e ? (e.pageX ? document.elementFromPoint(e.pageX || 0, e.pageY || 0) : null) : null;
     // In case the user tries to type when the mouse is outside the popup
     if (!element) {
         $superpw.disabled = true;
@@ -338,8 +338,8 @@ $mainpanel.onmouseleave = async function (event) {
     if (logging) console.log("popup onmouseleave", phishingDomain, exporting, element);
     // Don't persist if: phishing sites, exporting, the mouse is in the panel, or if event triggered by closing a help or instruction panel
     if (phishingDomain || exporting || element) {
-        if (logging) console.log("popup phishing mouseleave resolve mouseleaveResolver", phishingDomain, resolvers);
-        if (resolvers.mainpanelmouseleaveResolver) resolvers.mainpanelmouseleaveResolver();
+        if (logging) console.log("popup phishing mouseleave resolve  mainpanelmouseleaveResolver", phishingDomain, resolvers);
+        if (e?.resolver) e.resolver();
         return;
     }
     if (logging) console.log("popup mainpanel mouseleave update bg", document.activeElement.id, bg);
@@ -367,14 +367,14 @@ $mainpanel.onmouseleave = async function (event) {
                 "sameacct": sameacct,
                 "bg": bg,
             });
-            if (logging) console.log("popup siteData resolve mouseleaveResolver", response, resolvers);
-            if (resolvers.mainpanelmouseleaveResolver) resolvers.mainpanelmouseleaveResolver();
+            if (logging) console.log("popup siteData resolve  mainpanelmouseleaveResolver", response, resolvers);
+            if (e?.resolver) e.resolver();
         } catch (error) {
             console.error("Error sending siteData message:", error);
         }
     } else {
         if (logging) console.log("popup no bg.settings mouseleave resolve", resolvers);
-        if (resolvers.mainpanelmouseleaveResolver) resolvers.mainpanelmouseleaveResolver();
+        if (e?.resolver) e.resolver();
     }
 }
 $title.onclick = function () {
@@ -387,7 +387,8 @@ $title.onclick = function () {
 $domainname.onblur = async function (e) {
     if (testMode) domainname = $domainname.value;
     await getsettings(domainname);
-    if (resolvers.domainnameblurResolver) resolvers.domainnameblurResolver();
+    await fill();
+    if (e?.resolver) e.resolver();
 }
 $domainnamemenu.onmouseleave = function (e) {
     menuOff("domainname", e);
@@ -434,7 +435,7 @@ $superpw.onkeyup = async function (e) {
     setMeter("superpw");
     setMeter("sitepw");
     await handlekeyup(e, "superpw");
-    if (resolvers.superpwkeyupResolver) resolvers.superpwkeyupResolver();
+    if (e?.resolver) e.resolver();
 }
 $superpw.onblur = async function (e) {
     if (logging) console.log("popup superpw onmouseout");
@@ -456,7 +457,7 @@ $superpw.onblur = async function (e) {
     }
     await handleblur(e, "superpw");
     await changePlaceholder();
-    if (resolvers.superpwblurResolver) resolvers.superpwblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $superpwmenu.onmouseleave = function (e) {
     menuOff("superpw", e);
@@ -516,7 +517,7 @@ $sitename.onkeyup = async function (e) {
     await handlekeyup(e, "sitename");
     clearDatalist("sitenames");
     $sitename.onfocus(); // So it runs in the same turn
-    if (resolvers.sitenamekeyupResolver) resolvers.sitenamekeyupResolver();
+    if (e?.resolver) e.resolver();
 }
 $sitename.onblur = async function (e) {
     let sitename = $sitename.value;
@@ -536,7 +537,7 @@ $sitename.onblur = async function (e) {
         }
     }
     clearDatalist("sitenames");
-    if (resolvers.sitenameblurResolver) resolvers.sitenameblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $sitename3bluedots.onmouseover = function (e) {
     if ($sitename.value) {
@@ -624,7 +625,7 @@ $username.onkeyup = async function (e) {
     await handlekeyup(e, "username");
     clearDatalist("usernames");
     $username.onfocus();
-    if (resolvers.usernamekeyupResolver) resolvers.usernamekeyupResolver();
+    if (e?.resolver) e.resolver();
 }
 $username.onblur = async function (e) {
     await handleblur(e, "username");
@@ -696,7 +697,7 @@ $sitepw.onblur = async function (e) {
     let computed = await ask2generate(bg)
     bg.settings.xor = xorStrings(provided, computed);
     if (logging) console.log("popup sitepw onblur", bg.settings.pwlength);
-    if (resolvers.sitepwblurResolver) resolvers.sitepwblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $sitepw.onkeyup = function (e) {
     $sitepw.onblur(e);
@@ -787,7 +788,10 @@ $sitepwmenuhide.onclick = function () {
     $sitepwmenushow.classList.toggle("nodisplay");
     $sitepwmenuhide.classList.toggle("nodisplay");
 }
-$settingsshow.onclick = showsettings;
+$settingsshow.onclick = async function(e) {
+    await showsettings();
+    if (e?.resolver) e.resolver();
+}
 $clearclipboard.onclick = async function() {
     if (logging) console.log("popup clear clipboard");
     try {
@@ -805,7 +809,7 @@ $clearclipboard.onclick = async function() {
 }
 document.oncopy = function (e) {
     if (e.target.id !== "sitepw") {
-        $clearclipboard.onclick;
+        $clearclipboard.click();
     } else {
         $sitepwmenucopy.click();
     }
@@ -836,102 +840,99 @@ $providesitepw.onclick = async function (e) {
         $sitepw.placeholder = "Your site password";
     }
     await handleblur(e, "providesitepw");
-    if (resolvers.providesitepwclickResolver) resolvers.providesitepwclickResolver();
+    if (e?.resolver) e.resolver();
 }
-$clearsuperpw.onclick = function () {
+$clearsuperpw.onclick = function (e) {
     database.clearsuperpw = $clearsuperpw.checked;
-    if (resolvers.clearsuperpwclickResolver) resolvers.clearsuperpwclickResolver();
+    if (e?.resolver) e.resolver();
 }
-$hidesitepw.onclick = function () {
+$hidesitepw.onclick = function (e) {
     database.hidesitepw = $hidesitepw.checked;
     hidesitepw();
-    if (resolvers.hidesitepwclickResolver) resolvers.hidesitepwclickResolver();
+    if (e?.resolver) e.resolver();
 }
 $pwlength.onmouseout = async function (e) {
     await handleblur(e, "pwlength");
-    if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $pwlength.onblur = async function (e) {
     await handleblur(e, "pwlength");
-    if (resolvers.pwlengthblurResolver) resolvers.pwlengthblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $pwlength.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "pwlength");
 }; 
 $startwithletter.onclick = async function (e) {
     await handleblur(e, "startwithletter");
-    if (resolvers.startwithletterclickResolver) resolvers.startwithletterclickResolver();
+    if (e?.resolver) e.resolver();
 }
 $allowlowercheckbox.onclick = async function (e) {
     restrictStartsWithLetter();
     bg.settings.allowlower = $allowlowercheckbox.checked;
     $minlower.disabled = false;
     await handleclick(e, "lower");
-    if (resolvers.allowlowercheckboxclickResolver) resolvers.allowlowercheckboxclickResolver();
+    if (e?.resolver) e.resolver();
 }
 $allowuppercheckbox.onclick = async function (e) {
     restrictStartsWithLetter();
     await handleclick(e, "upper");
-    bg.settings.allowupper = $allowuppercheckbox.checked;
-    if (resolvers.allowuppercheckboxclickResolver) resolvers.allowuppercheckboxclickResolver();
+    if (e?.resolver) e.resolver();
 }
 $allownumbercheckbox.onclick = async function (e) {
     await handleclick(e, "number");
-    bg.settings.allownumber = $allownumbercheckbox.checked;
-    if (resolvers.allownumbercheckboxclickResolver) resolvers.allownumbercheckboxclickResolver();
+    if (e?.resolver) e.resolver();
 }
 $allowspecialcheckbox.onclick = async function (e) {
     await handleclick(e, "special");
-    bg.settings.allowspecial = $allowspecialcheckbox.checked;
-    if (resolvers.allowspecialcheckboxclickResolver) resolvers.allowspecialcheckboxclickResolver();
+    if (e?.resolver) e.resolver();
 }
 $minlower.onmouseout = async function (e) {
     await handleblur(e, "minlower");
-    if (resolvers.minlowerblurResolver) resolvers.minlowerblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $minlower.onblur = async function (e) {
     await handleblur(e, "minlower");
-    if (resolvers.minlowerblurResolver) resolvers.minlowerblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $minlower.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "minlower");
-    if (resolvers.minlowerblurResolver) resolvers.minlowerblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $minupper.onmouseout = async function (e) {
     await handleblur(e, "minupper");
-    if (resolvers.minupperblurResolver) resolvers.minupperblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $minupper.onblur = async function (e) {
     await handleblur(e, "minupper");
-    if (resolvers.minupperblurResolver) resolvers.minupperblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $minupper.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "minupper");
-    if (resolvers.minupperblurResolver) resolvers.minupperblurResolver();
+    if (e?.resolver) e.resolver();
 };
 $minnumber.onmouseout = async function (e) {
     await handleblur(e, "minnumber");
-    if (resolvers.minnumberblurResolver) resolvers.minnumberblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $minnumber.onblur = async function (e) {
     await handleblur(e, "minnumber");
-    if (resolvers.minnumberblurResolver) resolvers.minnumberblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $minnumber.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "minnumber");
-    if (resolvers.minnumberblurResolver) resolvers.minnumberblurResolver();
+    if (e?.resolver) e.resolver();
 } 
 $minspecial.onmouseout = async function (e) {
     await handleblur(e, "minspecial");
-    if (resolvers.minspecialblurResolver) resolvers.minspecialblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $minspecial.onblur = async function (e) {
     await handleblur(e, "minspecial");
-    if (resolvers.minspecialblurResolver) resolvers.minspecialblurResolver();
+    if (e?.resolver) e.resolver();
 }
  $minspecial.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "minspecial");
-    if (resolvers.minspecialblurResolver) resolvers.minspecialblurResolver();
+    if (e?.resolver) e.resolver();
 }
 // In an older version I needed to limit the number of 
 // specials because generate() computed a number between 
@@ -953,7 +954,7 @@ $specials.onblur = async function(e) {
     }
     bg.settings.specials = $specials.value;
     await handlekeyup(e, "specials");
-    if (resolvers.specialsblurResolver) resolvers.specialsblurResolver();
+    if (e?.resolver) e.resolver();
 }
 $specials.onmouseleave = async function(e) {
     await $specials.onblur(e); // So it runs in the same turn
@@ -963,7 +964,7 @@ $specials.onkeyup = async function(e) {
     await handlekeyupnopw(e, "specials");
     if (resolvers.specialsblurResolver) resolvers.specialsblurResolver();
 } 
-$makedefaultbutton.onclick = async function () {
+$makedefaultbutton.onclick = async function (e) {
     let newDefaults = {
         sitename: "",
         username: "",
@@ -990,7 +991,7 @@ $makedefaultbutton.onclick = async function () {
         console.error("Error sending newDefaults message:", error);
     }
     if (logging) console.log("popup newDefaults sent", newDefaults);
-    if (resolvers.makedefaultbuttonclickResolver) resolvers.makedefaultbuttonclickResolver("makedefaultbuttonclickPromise");
+    if (e?.resolver) e.resolver();
 }
 $sitedatagetbutton.onclick = sitedataHTML;
 $exportbutton.onclick = exportPasswords;
@@ -1012,7 +1013,7 @@ $cancelwarning.onclick = async function (e) {
     $username.value = "";
     sameacct = false;
     chrome.tabs.update(activetab.id, {url: "chrome://newtab"});
-    if (resolvers.cancelwarningclickResolver) resolvers.cancelwarningclickResolver("cancelwarningPromise");
+    if (e?.resolver) e.resolver();
 }
 $sameacctbutton.onclick = async function (e) {
     $superpw.disabled = false;
@@ -1040,8 +1041,7 @@ $sameacctbutton.onclick = async function (e) {
     $sitepw.value = await ask2generate();
     autoclose = false;
     sameacct = true;
-    $mainpanel.onmouseleave(); // So it runs in the same turn and after the state changes
-    if (resolvers.sameacctbuttonclickResolver) resolvers.sameacctbuttonclickResolver();
+    if (e?.resolver) e.resolver();
 }
 $nicknamebutton.onclick = function (e) {
     msgoff("phishing");
@@ -1065,7 +1065,7 @@ $suffixcancelbutton.onclick = function (e) {
 $suffixacceptbutton.onclick = async function (e) {
     msgoff("suffix");
     await $sameacctbutton.onclick(e); // So it runs in the same turn
-    if (resolvers.suffixacceptbuttonclickResolver) resolvers.suffixacceptbuttonclickResolver();
+    if (e?.resolver) e.resolver();
 }
 // Forget buttons
 $forgetbutton.onclick = async function (e) {
@@ -1087,7 +1087,7 @@ $forgetbutton.onclick = async function (e) {
     try {
         let response = await retrySendMessage({"cmd": "forget", "toforget": list});
         if (logging) console.log("popup forget response", response);
-        if (resolvers.forgetclickResolver) resolvers.forgetclickResolver();
+        if (e?.resolver) e.resolver();
         $forgetcancelbutton.onclick(); // So it runs in the same turn
     } catch (error) {
         console.error("Error sending forget message:", error);
@@ -1118,8 +1118,8 @@ $superpwchangekeepbutton.onclick = function (e) {
 document.addEventListener('DOMContentLoaded', function () {
     let links = document.querySelectorAll('.external-link');
     links.forEach(function(link) {
-        link.addEventListener('click', function(event) {
-            event.preventDefault();
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
             chrome.tabs.create({url: this.href});
         });
     });
@@ -1572,7 +1572,6 @@ async function showsettings() {
     $superpw.value = bg.superpw || "";
     await fill();
     pwoptions(["lower", "upper", "number", "special"]);
-    if (resolvers.settingsshowclickResolver) resolvers.settingsshowclickResolver();
 }
 function hidesettings() {
     $settingsshow.style.display = "inline";
