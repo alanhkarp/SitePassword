@@ -568,8 +568,8 @@ async function testDuplicateBkmks() {
 async function testClearSuperpw() {
     if (loggingClearsuperpw) console.log("testClearSuperpw");
     await resetState();
-    await triggerEvent("click", $settingsshow);
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+    await triggerEvent("click", $settingsshow); // For debugging
     await triggerEvent("click", $clearsuperpw);
     restoreForTesting();
     await triggerEvent("mouseleave", $mainpanel);
