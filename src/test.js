@@ -214,13 +214,6 @@ async function testRememberForm() {
         };
         let tests = await testFormElement(setupFn, "allow " + which);
         tests = tests && !regex.test($sitepw.value);
-        if (tests) {
-            console.log("Passed: Remember form: allow " + which);
-            passed++;
-        } else {
-            console.warn("Failed: Remember form: allow " + which, $sitepw.value);
-            failed++;
-        }
         return tests;
     }
     async function testFormElement(setupFn, description) {
