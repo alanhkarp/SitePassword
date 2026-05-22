@@ -218,13 +218,6 @@ async function testRememberForm() {
         };
         let tests = await testFormElement(setupFn, "allow " + which);
         tests = tests && !regex.test($sitepw.value);
-        if (tests) {
-            console.log("Passed: Remember form: allow " + which);
-            passed++;
-        } else {
-            console.warn("Failed: Remember form: allow " + which, $sitepw.value);
-            failed++;
-        }
         return tests;
     }
     async function testFormElement(setupFn, description) {
@@ -572,8 +565,8 @@ async function testDuplicateBkmks() {
 async function testClearSuperpw() {
     if (loggingClearsuperpw) console.log("testClearSuperpw");
     await resetState();
-    await triggerEvent("click", $settingsshow);
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
+    await triggerEvent("click", $settingsshow);
     await triggerEvent("click", $clearsuperpw);
     restoreForTesting();
     await triggerEvent("mouseleave", $mainpanel);
