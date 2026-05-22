@@ -96,19 +96,19 @@ export async function runTests() {
     }
     if (!restart) { 
         await testCalculation(); 
-        // await testRememberSuperpw();
-        // await testChangePassword();
+        await testRememberSuperpw();
+        await testChangePassword();
         await testRememberForm();
-        // await testProvidedpw();
-        // await testPhishing();
-        // await testSharedCredentials();
-        // await testForget();
-        // await testClearSuperpw();
-        // await testHideSitepw();
-        // await testLegacyBkmks();
-        // await testDuplicateBkmks();
-        // await testSafeSuffixes();
-        // await testChangeAccount();
+        await testProvidedpw();
+        await testPhishing();
+        await testSharedCredentials();
+        await testForget();
+        await testClearSuperpw();
+        await testHideSitepw();
+        await testLegacyBkmks();
+        await testDuplicateBkmks();
+        await testSafeSuffixes();
+        await testChangeAccount();
         // await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
@@ -138,7 +138,28 @@ async function testCalculation() {
         failed++;
     }
 }
-// Test change password
+// Test remembering super password
+async function testRememberSuperpw() {
+    await resetState();
+    let expectedsuperpw = "MySuperPassword";
+    if (loggingRemember) console.log("testRememberSuperpw state reset", $superpw.value);
+    $superpw.value = expectedsuperpw;
+    await triggerEvent("blur", $superpw);
+    let expected = $sitepw.value;
+    await triggerEvent("mouseleave", $mainpanel);  // $mainpanel.onmouseleave(); saves the settings
+    clearForm();
+    restoreForTesting();
+    await triggerEvent("blur", $domainname);
+    let test = $superpw.value === expectedsuperpw && $sitepw.value === expected;
+    if (test) {
+        console.log("Passed: Remember super password");
+        passed++;
+    } else {
+        console.warn("Failed: Remember super password", "expected", expectedsuperpw, "got", $superpw.value);
+        failed++;
+    }
+}
+// Test change site password
 async function testChangePassword() {
     await phishingSetup();
     await triggerEvent("click", $sameacctbutton);
