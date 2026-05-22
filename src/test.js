@@ -22,11 +22,12 @@ let loggingReset = false;
 let loggingTrigger = false;
 let loggingWrapHandler = false;
 let loggingRememberForm = false;
+let loggingRememberSuperpw = false;
 if (logging) {
     loggingCalculation = loggingClear = loggingDefault = loggingFill = 
                          loggingForget = loggingPhishing = loggingProvide = 
                          loggingReset = loggingTrigger = loggingWrapHandler = 
-                         loggingRememberForm = true;
+                         loggingRememberForm = loggingRememberSuperpw = true;
 }
 // #region Fields needed for tests
 const $account = get("account");
@@ -91,6 +92,7 @@ export async function runTests() {
     }
     if (!restart) {
         await testCalculation(); 
+        await testRememberSuperpw();
         await testChangePassword();
         await testRememberForm();
         // await testProvidedpw(); // Debugging on branch providepw
@@ -129,6 +131,27 @@ async function testCalculation() {
     } else {
         let inputs = {"expectedpw": expectedpw, "actual": actual, "superpw": $superpw.value, "sitename": $sitename.value, "username": $username.value};
         console.warn("Failed: Calculation", inputs);
+        failed++;
+    }
+}
+// Test remembering super password
+async function testRememberSuperpw() {
+    await resetState();
+    let expectedsuperpw = "MySuperPassword";
+    if (loggingRememberSuperpw) console.log("testRememberSuperpw state reset", $superpw.value);
+    $superpw.value = expectedsuperpw;
+    await triggerEvent("blur", $superpw);
+    let expected = $sitepw.value;
+    await triggerEvent("mouseleave", $mainpanel);  // $mainpanel.onmouseleave(); saves the settings
+    clearForm();
+    restoreForTesting();
+    await triggerEvent("blur", $domainname);
+    let test = $superpw.value === expectedsuperpw && $sitepw.value === expected;
+    if (test) {
+        console.log("Passed: Remember super password");
+        passed++;
+    } else {
+        console.warn("Failed: Remember super password", "expected", expectedsuperpw, "got", $superpw.value);
         failed++;
     }
 }
