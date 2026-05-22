@@ -97,7 +97,7 @@ export async function runTests() {
     if (!restart) { 
         await testCalculation(); 
         await testRememberSuperpw();
-        await testChangePassword();
+        await testChangeSitePassword();
         await testRememberForm();
         await testProvidedpw();
         await testPhishing();
@@ -160,7 +160,7 @@ async function testRememberSuperpw() {
     }
 }
 // Test change site password
-async function testChangePassword() {
+async function testChangeSitePassword() {
     await phishingSetup();
     await triggerEvent("click", $sameacctbutton);
     restoreForTesting();
@@ -175,10 +175,10 @@ async function testChangePassword() {
     await triggerEvent("blur", $domainname);
     let test = $sitename.value === "Guru2" && $username.value === "Alan" && $sitepw.value === actual;
     if (test) {
-        console.log("Passed: Remember super password");
+        console.log("Passed: Change site password");
         passed++;
     } else {
-        console.warn("Failed: Change password", "Guru2", "Alan", actual, $sitename.value, $username.value, $sitepw.value);
+        console.warn("Failed: Change site password", "Guru2", "Alan", actual, $sitename.value, $username.value, $sitepw.value);
         failed++;
     }
 }
