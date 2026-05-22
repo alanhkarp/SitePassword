@@ -896,24 +896,13 @@ async function phishingSetup() {
     await triggerEvent("blur", $sitename);
 }
 async function triggerEvent(event, element) {
-    let elementId = element.id;
-    let resolverName = elementId + event + "Resolver";
-    let promise = wrapHandler(resolverName);
     if (event === "click") element.checked = !element.checked;
     if (loggingTrigger) console.log("triggerEvent", element.id, event, resolverName, promise);
     let e = new Event(event);
+    let promise = new Promise((resolve, reject) => e.resolver = resolve);
     element.dispatchEvent(e);
     await promise;
     if (loggingTrigger) console.log("triggerEvent promise resolved", element.id, event, promise, resolvers);
-}
-function wrapHandler(resolverName) {
-    if (loggingWrapHandler) console.log("wrapHandler create promise", resolverName, resolvers);
-    let promise = new Promise((resolve, reject) => {
-        resolvers[resolverName] = resolve;
-        if (loggingWrapHandler) console.log("wrapHandler promise created", resolverName, resolvers);
-    });
-    if (loggingWrapHandler) console.log("wrapHandler return promise", resolverName, promise);
-    return promise;
 }
 function get(id) {
     return document.getElementById(id);
