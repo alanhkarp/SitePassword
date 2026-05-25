@@ -95,7 +95,7 @@ export async function runTests() {
         await testRememberSuperpw();
         await testChangePassword();
         await testRememberForm();
-        // await testProvidedpw(); // Debugging on branch providepw
+        await testProvidedpw(); // Debugging on branch providepw
         await testPhishing();
         await testSharedCredentials();
         await testForget();
@@ -105,7 +105,7 @@ export async function runTests() {
         await testDuplicateBkmks();
         await testSafeSuffixes();
         await testChangeAccount();
-        await testChangeSuperpw();
+        // await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         await testSaveAsDefault();
@@ -263,6 +263,7 @@ async function testProvidedpw() {
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
     document.activeElement.blur(); // So sitepw field is not the active element
     await triggerEvent("blur", $domainname);
+    await triggerEvent("click", $settingsshow); // For debugging
     if (loggingProvide) console.log("testProvidedpw domainname blur", $sitepw.value, $providesitepw.checked);
     let test = $sitepw.value === expectedpw
     if (test) {

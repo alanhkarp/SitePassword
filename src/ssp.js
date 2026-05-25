@@ -199,9 +199,6 @@ window.onload = async function () {
     await getsettings();
 }
 async function init() {
-    $superpw.value = bg.superpw || "";
-    $sitename.value = bg.settings.sitename || "";
-    $username.value = bg.settings.username || "";
     await fill();
     let protocol = activetab.url.split(":")[0];
     if (logging) console.log("popup testing for http", protocol);
@@ -424,7 +421,6 @@ $superpw.onkeyup = async function (e) {
     // Start the reminder clock ticking
     await chrome.storage.local.set({"reminder": Date.now()});
     bg.superpw = $superpw.value || "";
-    $sitepw.value = await ask2generate();
     setMeter("superpw");
     setMeter("sitepw");
     await handlekeyup(e, "superpw");
@@ -517,15 +513,8 @@ $sitename.onblur = async function (e) {
         msgoff("phishing");
         $superpw.disabled = false;
         $username.disabled = false;
-        let isChanged = sitename !== bg.settings.sitename;
         await handleblur(e, "sitename");
         await changePlaceholder();
-        if (isChanged) {
-            bg.settings = clone(database.sites[normalize(sitename)] || bg.settings || bgDefault.settings);
-            $sitename.value = bg.settings.sitename || sitename;
-            $username.value = bg.settings.username || $username.value;
-            $sitepw.value = await ask2generate();
-        }
     }
     clearDatalist("sitenames");
     if (e?.resolver) e.resolver();
@@ -685,13 +674,9 @@ $sitepw.onblur = async function (e) {
     if ($sitepw.readOnly || !$sitepw.value) return;
     let provided = $sitepw.value;
     if (provided.length > bg.settings.pwlength) bg.settings.pwlength = provided.length;
-    let computed = await ask2generate(bg)
-    bg.settings.xor = xorStrings(provided, computed);
+    await ask2generate(bg)
     if (logging) console.log("popup sitepw onblur", bg.settings.pwlength);
     if (e?.resolver) e.resolver();
-}
-$sitepw.onkeyup = function (e) {
-    $sitepw.onblur(e);
 }
 $sitepwmenu.onmouseleave = function (e) {
     menuOff("sitepw", e);
@@ -1398,7 +1383,6 @@ async function handleblur(event, element) {
     let sitepw = $sitepw.value || "";
     let pw = await ask2generate()
     if ($providesitepw.checked) $sitepw.value = sitepw; // So it doesn't change while the user is typing
-    bg.settings.xor = xorStrings(sitepw, pw);  
     setMeter("superpw");
     setMeter("sitepw");
     updateExportButton(); 
@@ -1448,7 +1432,7 @@ async function ask2generate() {
     if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
         msgon("nopw");
         computed = "";
-        Promise.resolve(); // To match the await in the other branch
+        return Promise.resolve(""); // To match the await in the other branch
     } else {
         msgoff("nopw"); // I don't want to hide any other open messages
         const computed = await generatePassword(bg);
@@ -1459,12 +1443,16 @@ async function ask2generate() {
                 msgon("nopw");
             }
         }
+        if (bg.settings.providesitepw && $sitepw.value) {
+            bg.settings.xor = xorStrings($sitepw.value, computed);
+            if (logging) console.log("popup generated password", computed);
+        }
         let provided = stringXorArray(computed, bg.settings.xor);
         if (logging) console.log("popup filling sitepw field", computed, provided, bg.settings.xor);
         if (document.activeElement !== $sitepw) $sitepw.value = provided;
         hidesitepw();
         setMeter("sitepw");
-        return computed;
+        return provided;
     }
 }
 async function fill() {

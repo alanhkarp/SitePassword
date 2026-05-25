@@ -15,9 +15,6 @@ export async function generatePassword(bg) {
     }
     let salt = n.toString() + '\t' + u.toString();
     let p = await computePassword(m, salt, settings);
-    if (!settings.providesitepw) {
-        settings.xor = xorStrings(p, p); // set to 0s
-    }
     return p;
     function isConsistent(settings) {
         if (bg.settings.providesitepw) return true; // Any password the user enters is OK
