@@ -514,6 +514,7 @@ $sitename.onblur = async function (e) {
         msgoff("phishing");
         $superpw.disabled = false;
         $username.disabled = false;
+        let isChanged = sitename !== bg.settings.sitename;
         await handleblur(e, "sitename");
         await changePlaceholder();
         if (isChanged) {
