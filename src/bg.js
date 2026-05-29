@@ -269,8 +269,8 @@ async function setup() {
                     bg.settings.domainname = domainname;
                     if (testMode) domainname = request.domainname;
                     bg.settings = bgsettings(domainname);
-                    let p = await generatePassword(bg);
-                    p = stringXorArray(p, bg.settings.xor);
+                    let computed = await generatePassword(bg);
+                    let p = stringXorArray(computed, bg.settings.xor);
                     if (!isReadyForClick(bg.superpw, bg.settings.sitename, bg.settings.username)) p = "";
                     if (database.common.clearsuperpw) {
                         if (logging) console.log("bg clear superpw")

@@ -15,9 +15,6 @@ export async function generatePassword(bg) {
     }
     let salt = n.toString() + '\t' + u.toString();
     let p = await computePassword(m, salt, settings);
-    if (!settings.providesitepw) {
-        settings.xor = xorStrings(p, p); // set to 0s
-    }
     return p;
     function isConsistent(settings) {
         if (bg.settings.providesitepw) return true; // Any password the user enters is OK
@@ -239,12 +236,9 @@ export function xorStrings(provided, sitepw) {
 export function stringXorArray(sitepw, array) {
     if (!sitepw) return "";
     let b = sitepw;
-    while (array.length > b.length) {
-        b += sitepw;
-    }
-    b = b.substring(0, array.length);
     let a = string2array(b);
-    for (let i = 0; i < array.length; i++) {
+    let len = Math.min(b.length, array.length);
+    for (let i = 0; i < len; i++) {
         a[i] = a[i] ^ array[i];
     }
     let result = array2string(a);

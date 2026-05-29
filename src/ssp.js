@@ -352,6 +352,7 @@ $mainpanel.onmouseleave = async function (e) {
         changePlaceholder();
         if (logging) console.log("popup sending siteData", bg.settings, database);
         try {
+            await ask2generate(); // So that the site password gets generated and any changes to settings get applied before the data is sent to bg.js  
             let response = await retrySendMessage({
                 "cmd": "siteData",
                 "sitename": sitename,
@@ -424,7 +425,6 @@ $superpw.onkeyup = async function (e) {
     // Start the reminder clock ticking
     await chrome.storage.local.set({"reminder": Date.now()});
     bg.superpw = $superpw.value || "";
-    $sitepw.value = await ask2generate();
     setMeter("superpw");
     setMeter("sitepw");
     await handlekeyup(e, "superpw");
@@ -524,7 +524,7 @@ $sitename.onblur = async function (e) {
             bg.settings = clone(database.sites[normalize(sitename)] || bg.settings || bgDefault.settings);
             $sitename.value = bg.settings.sitename || sitename;
             $username.value = bg.settings.username || $username.value;
-            $sitepw.value = await ask2generate();
+            $sitepw.value = await ask2generate(e);
         }
     }
     clearDatalist("sitenames");
@@ -683,15 +683,13 @@ $usernamehelptextmore.onclick = function (e) {
 $sitepw.onblur = async function (e) {
     menuOff("sitepw", e);
     if ($sitepw.readOnly || !$sitepw.value) return;
-    let provided = $sitepw.value;
-    if (provided.length > bg.settings.pwlength) bg.settings.pwlength = provided.length;
-    let computed = await ask2generate(bg)
-    bg.settings.xor = xorStrings(provided, computed);
-    if (logging) console.log("popup sitepw onblur", bg.settings.pwlength);
+    bg.settings.pwlength = $sitepw.value.length;
+    let provided = await ask2generate(e); // So bg.settings.xor gets set
+    if (logging) console.log("popup sitepw onblur", bg.settings.pwlength, provided);
     if (e?.resolver) e.resolver();
 }
 $sitepw.onkeyup = function (e) {
-    $sitepw.onblur(e);
+    setMeter("sitepw");
 }
 $sitepwmenu.onmouseleave = function (e) {
     menuOff("sitepw", e);
@@ -806,6 +804,7 @@ document.oncopy = function (e) {
 $settingssave.onclick = hidesettings;
 $providesitepw.onclick = async function (e) {
     if (!($sitename.value && $username.value)) return;
+    bg.settings.providesitepw = $providesitepw.checked;
     if ($providesitepw.checked) {
         $defaultsettings.classList.add("fade-out");
         $sitepw.readOnly = false;
@@ -819,6 +818,8 @@ $providesitepw.onclick = async function (e) {
         $sitepw.placeholder = "Enter your site password";
         await Promise.resolve(); // To match the await of the other branch
     } else {
+        bg.settings.xor = xorStrings($sitepw.value, $sitepw.value); // Reset to 0s
+        $sitepw.value = await ask2generate(e);
         $defaultsettings.classList.remove("fade-out");
         $sitepw.readOnly = true;
         $sitepw.style.backgroundColor = "rgb(136, 204, 255, 20%)";
@@ -828,7 +829,6 @@ $providesitepw.onclick = async function (e) {
         $sitepwmenuhelp.classList.add("menu-icon-blue");
         $sitepw.placeholder = "Your site password";
     }
-    await handleblur(e, "providesitepw");
     if (e?.resolver) e.resolver();
 }
 $clearsuperpw.onclick = function (e) {
@@ -845,6 +845,7 @@ $pwlength.onmouseout = async function (e) {
     if (e?.resolver) e.resolver();
 }
 $pwlength.onblur = async function (e) {
+    bg.settings.pwlength = Number($pwlength.value);
     await handleblur(e, "pwlength");
     if (e?.resolver) e.resolver();
 }
@@ -1023,7 +1024,7 @@ $sameacctbutton.onclick = async function (e) {
     if (testMode) bg.domainname = $domainname.value;
     database.domains[normalize($domainname.value)] = normalize(bg.settings.sitename);
     $username.value = bg.settings.username;
-    $sitepw.value = await ask2generate();
+    $sitepw.value = await ask2generate(e);
     autoclose = false;
     sameacct = true;
     if (e?.resolver) e.resolver();
@@ -1395,10 +1396,8 @@ async function handleblur(event, element) {
         $providesitepw.disabled = true;
     }
     bg.settings.characters = characters(bg.settings, database);
-    let sitepw = $sitepw.value || "";
-    let pw = await ask2generate()
-    if ($providesitepw.checked) $sitepw.value = sitepw; // So it doesn't change while the user is typing
-    bg.settings.xor = xorStrings(sitepw, pw);  
+    let pw = await ask2generate(event);
+    $sitepw.value = pw; // So it doesn't change while the user is typing
     setMeter("superpw");
     setMeter("sitepw");
     updateExportButton(); 
@@ -1443,14 +1442,18 @@ function defaultfocus() {
     if (!$sitename.value && !$sitename.disabled) $sitename.focus();
     if (!$superpw.value && !$superpw.disabled) $superpw.focus();
 }
-async function ask2generate() {
+async function ask2generate(event) {
+    let sitepwWasActive = !!(event?.currentTarget === $sitepw);
     if (bg.settings.providesitepw && bg.settings.pwlength === 0) return "";
-    if (!(bg.settings || bg.settings.allowlower || bg.settings.allownumber)) {
+    if (!(bg.settings.allowlower || bg.settings.allowupper || bg.settings.allownumber)) {
         msgon("nopw");
-        computed = "";
-        Promise.resolve(); // To match the await in the other branch
+        return Promise.resolve(""); // To match the await in the other branch
     } else {
         msgoff("nopw"); // I don't want to hide any other open messages
+        if (sitepwWasActive) {
+            let p = $sitepw.value;
+            if (p.length > bg.settings.pwlength) bg.settings.pwlength = p.length;
+        }
         const computed = await generatePassword(bg);
         if (computed) {
             msgoff("nopw"); // I don't want to hide any other open messages
@@ -1459,12 +1462,14 @@ async function ask2generate() {
                 msgon("nopw");
             }
         }
+        if ($sitepw.value && bg.settings.providesitepw) {
+            bg.settings.xor = xorStrings(computed, $sitepw.value);
+        }
         let provided = stringXorArray(computed, bg.settings.xor);
         if (logging) console.log("popup filling sitepw field", computed, provided, bg.settings.xor);
-        if (document.activeElement !== $sitepw) $sitepw.value = provided;
         hidesitepw();
         setMeter("sitepw");
-        return computed;
+        return provided;
     }
 }
 async function fill() {

@@ -95,7 +95,7 @@ export async function runTests() {
         await testRememberSuperpw();
         await testChangePassword();
         await testRememberForm();
-        // await testProvidedpw(); // Debugging on branch providepw
+        await testProvidedpw(); // Debugging on branch providepw
         await testPhishing();
         await testSharedCredentials();
         await testForget();
@@ -244,12 +244,12 @@ async function testRememberForm() {
     }
 }
 async function testProvidedpw() {
-    loggingProvide = false;
     const expectedpw = "MyStrongPassword";
     await resetState();
-    // Set up for tests
+    // Test remembering provided password longer than computed password
     if (loggingProvide) console.log("testProvidedpw state reset");
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+    let unprovided = $sitepw.value; // For later tests to make sure it changes when I go back to computed password
     await triggerEvent("click", $settingsshow);
     if (loggingProvide) console.log("testProvidedpw providepw before", $providesitepw.disabled, $providesitepw.checked);
     await triggerEvent("click", $providesitepw);
@@ -266,23 +266,41 @@ async function testProvidedpw() {
     if (loggingProvide) console.log("testProvidedpw domainname blur", $sitepw.value, $providesitepw.checked);
     let test = $sitepw.value === expectedpw
     if (test) {
-        console.log("Passed: Remembers provided pw");
+        console.log("Passed: Remembers provided pw longer than computed pw");
         passed++;
     } else {
-        console.warn("Failed: Remembers provided pw", expectedpw, "|" + $sitepw.value + "|");
+        console.warn("Failed: Remembers provided pw longer than computed pw", expectedpw, "|" + $sitepw.value + "|");
+        failed++;
+    }
+    // Test remembering provided password shorter than computed password
+    await resetState();
+    let expectedpw2 = "short";
+    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
+    await triggerEvent("click", $settingsshow);
+    await triggerEvent("click", $providesitepw);
+    $sitepw.value = "short";
+    await triggerEvent("blur", $sitepw);
+    await triggerEvent("mouseleave", $mainpanel);
+    clearForm();
+    await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
+    await triggerEvent("blur", $domainname);
+    test = $sitepw.value === expectedpw2;
+    if (test) {
+        console.log("Passed: Remembers provided pw shorter than computed pw");
+        passed++;
+    } else {
+        console.warn("Failed: Remembers provided pw shorter than computed pw", expectedpw2, "|" + $sitepw.value + "|");
         failed++;
     }
     // // See if I can change the sitename without it forgetting the provided password
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
     $sitename.value = "Guru2";
     await triggerEvent("keyup", $sitename);
-    test = $sitepw.value === expectedpw && $sitename.value === "Guru2";
+    test = $sitepw.value === expectedpw2 && $sitename.value === "Guru2";
     if (test) {
         console.log("Passed: Change sitename with provided pw");
         passed++;
     } else {
-        console.warn("Failed: Change sitename with provided pw", expectedpw, "|" + $sitepw.value + "|", "Guru2", "|" + $sitename.value + "|");
+        console.warn("Failed: Change sitename with provided pw", expectedpw2, "|" + $sitepw.value + "|", "Guru2", "|" + $sitename.value + "|");
         failed++;
     }
     // // See if I can change the username without it forgetting the provided password
@@ -290,12 +308,12 @@ async function testProvidedpw() {
     await triggerEvent("blur", $domainname);
     $username.value = "alan2";
     await triggerEvent("keyup", $username);
-    test = $sitepw.value === expectedpw && $username.value === "alan2";
+    test = $sitepw.value === expectedpw2 && $username.value === "alan2";
     if (test) {
         console.log("Passed: Change username with provided pw");
         passed++;
     } else {
-        console.warn("Failed: Change username with provided pw", expectedpw, "|" + $sitepw.value + "|", "alan2", "|" + $username.value + "|");
+        console.warn("Failed: Change username with provided pw", expectedpw2, "|" + $sitepw.value + "|", "alan2", "|" + $username.value + "|");
         failed++;
     }
     // See what happens if I mouse out of the popup without blurring the domain name field.
@@ -304,14 +322,33 @@ async function testProvidedpw() {
     $sitename.value = "Guru2";
     await triggerEvent("keyup", $sitename);
     await triggerEvent("mouseleave", $mainpanel);
-    test = $sitepw.value === expectedpw;
+    test = $sitepw.value === expectedpw2;
     if (test) {
         console.log("Passed: Mouseleave with provided pw");
         passed++;
     } else {
-        console.warn("Failed: Mouseleave with provided pw", expectedpw, "|" + $sitepw.value + "|");
+        console.warn("Failed: Mouseleave with provided pw", expectedpw2, "|" + $sitepw.value + "|");
         failed++;
     }
+    // What happens if I go back to the computed password that's shorter than the provided password?
+    restoreForTesting ();
+    clearForm();
+    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
+    await triggerEvent("click", $settingsshow);
+    await triggerEvent("click", $providesitepw);
+    $pwlength.value = 12;
+    await triggerEvent("blur", $pwlength);
+    test = $sitepw.value === unprovided;
+    if (test) {
+        console.log("Passed: Go back to computed pw");
+        passed++;
+    } else {
+        console.warn("Failed: Go back to computed pw", unprovided, "|" + $sitepw.value + "|");
+        failed++;
+    }
+    // What happens if I go back to the computed password that's longer than the provided password?
+    restoreForTesting ();
+    clearForm();
     // See if I can change the super password without it forgetting the provided password
 }
 // Test phishing
