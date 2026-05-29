@@ -30,6 +30,8 @@ if (logging) console.log("Version 3.4");
     const $superpwmenuhelp = get("superpwmenuhelp");
     const $superpwhelptextclose = get("superpwhelptextclose");
     const $superpwhelptextmore = get("superpwhelptextmore");
+    const $superpwchangecancelbutton = get("superpwchangecancelbutton");
+    const $superpwchangekeepbutton = get("superpwchangekeepbutton");
     const $sitename = get("sitename");
     const $sitename3bluedots = get("sitename3bluedots");
     const $sitenamemenu = get("sitenamemenu");
@@ -356,6 +358,7 @@ $mainpanel.onmouseleave = async function (e) {
                 "clearsuperpw": get("clearsuperpw").checked,
                 "hidesitepw": get("hidesitepw").checked,
                 "safeSuffixes": database.common.safeSuffixes || {},
+                "superpwhash": database.common.superpwHash || "",
                 "sameacct": sameacct,
                 "bg": bg,
             });
@@ -431,20 +434,19 @@ $superpw.onblur = async function (e) {
     if (logging) console.log("popup superpw onmouseout");
     // See if this is a different super password
     let oldSuperPwHash = database.common.superpwHash || "";
-    let oldbg = clone(bg);
-    bg.settings.sitename = "";
-    bg.settings.username = "";
-    let superpwHash = await generatePassword(bg);
-    bg = oldbg;
+    let bgsuper = clone(bgDefault);
+    bgsuper.superpw = $superpw.value || "";
+    let superpwHash = await generatePassword(bgsuper);
     if (oldSuperPwHash) {
         if (superpwHash !== oldSuperPwHash) {
             // Handle the case where the super password has changed
             msgon("superpwchange");
+            if (e?.resolver) e.resolver();
+            return;
         }
     }
     database.common.superpwHash = superpwHash;
     await handleblur(e, "superpw");
-    await changePlaceholder();
     if (e?.resolver) e.resolver();
 }
 $superpwmenu.onmouseleave = function (e) {
@@ -488,6 +490,16 @@ $superpwhelptextclose.onclick = function (e) {
 $superpwhelptextmore.onclick = function (e) {
     helpAllOff;
     sectionClick("superpw");
+}
+$superpwchangecancelbutton.onclick = function (e) {
+    $superpw.value = "";
+    $superpw.focus();
+    msgoff("superpwchange");
+    if (e?.resolver) e.resolver();
+}
+$superpwchangekeepbutton.onclick = function (e) {
+    msgoff("superpwchange");
+    if (e?.resolver) e.resolver();
 }
 // Site Name
 $sitename.onfocus = function (e) {

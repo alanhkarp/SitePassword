@@ -255,6 +255,7 @@ async function setup() {
                     database.common.clearsuperpw = request.clearsuperpw;
                     database.common.hidesitepw = request.hidesitepw;
                     database.common.safeSuffixes = request.safeSuffixes || {};
+                    database.common.superpwHash = request.superpwhash || "";
                     if (!request.sameacct && bg.settings.sitename) {
                         database.domains[normalize(bg.settings.pwdomainname)] = normalize(bg.settings.sitename);
                         database.sites[normalize(bg.settings.sitename)] = clone(bg.settings);

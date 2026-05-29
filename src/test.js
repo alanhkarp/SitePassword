@@ -71,6 +71,8 @@ const $suffix = get("suffix");
 const $suffixacceptbutton = get("suffixacceptbutton");
 const $suffixcancelbutton = get("suffixcancelbutton");
 const $superpw = get("superpw");
+const $superpwchangecancelbutton = get("superpwchangecancelbutton");
+const $superpwchangekeepbutton = get("superpwchangekeepbutton");
 const $username = get("username");
 const $username3bluedots = get("username3bluedots");
 const $usernamemenuforget = get("usernamemenuforget");
@@ -138,6 +140,7 @@ async function testCalculation() {
 async function testRememberSuperpw() {
     await resetState();
     let expectedsuperpw = "MySuperPassword";
+    await fillForm("", "alantheguru.alanhkarp.com", "", "");
     if (loggingRememberSuperpw) console.log("testRememberSuperpw state reset", $superpw.value);
     $superpw.value = expectedsuperpw;
     await triggerEvent("blur", $superpw);
@@ -145,6 +148,7 @@ async function testRememberSuperpw() {
     await triggerEvent("mouseleave", $mainpanel);  // $mainpanel.onmouseleave(); saves the settings
     clearForm();
     restoreForTesting();
+    await fillForm("", "alantheguru.alanhkarp.com", "", "");
     await triggerEvent("blur", $domainname);
     let test = $superpw.value === expectedsuperpw && $sitepw.value === expected;
     if (test) {
@@ -152,6 +156,31 @@ async function testRememberSuperpw() {
         passed++;
     } else {
         console.warn("Failed: Remember super password", "expected", expectedsuperpw, "got", $superpw.value);
+        failed++;
+    }
+    // Test detecting super password typo
+    restoreForTesting();
+    clearForm();
+    await fillForm("", "alantheguru.alanhkarp.com", "", "");
+    $superpw.value = "TypoSuperPassword";
+    await triggerEvent("blur", $superpw);
+    test = $superpwchange.style.display !== "none";
+    if (test) {
+        console.log("Passed: Detect super password typo");
+        passed++;
+    } else {
+        console.warn("Failed: Detect super password typo", "expected", "TypoSuperPassword", "got", $superpw.value);
+        failed++;
+    }
+    // Test canceling change
+    await triggerEvent("click", $superpwchangecancelbutton);
+    test = $superpwchange.style.display === "none";
+    test = test && $superpw.value === "";
+    if (test) {
+        console.log("Passed: Cancel super password change");
+        passed++;
+    } else {
+        console.warn("Failed: Cancel super password change");
         failed++;
     }
 }
