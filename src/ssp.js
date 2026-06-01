@@ -499,6 +499,15 @@ $superpwchangecancelbutton.onclick = function (e) {
 }
 $superpwchangekeepbutton.onclick = function (e) {
     msgoff("superpwchange");
+    bg.superpw = $superpw.value || "";
+    // Detect if any sites have provided passwords
+    let provideds = Object.entries(database.sites).filter(site => site.providedPassword);
+    if (provideds.length > 0) {
+        // Handle sites with provided passwords
+        provideds.map(([key, site]) => {
+            console.log("Site with provided password:", key, site);
+        });
+    }
     if (e?.resolver) e.resolver();
 }
 // Site Name
