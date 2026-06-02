@@ -540,6 +540,8 @@ async function testDuplicateBkmks() {
     let children = await chrome.bookmarks.getChildren(rootFolder.id);
     // See if only one of the duplicats remains
     let test = children.length === 2; // because of the common settings bookmark
+    test = test && (children[0].title === title || children[0].title === "CommonSettings");
+    test = test && (children[1].title === title || children[1].title === "CommonSettings");
     if (test) {
         console.log("Passed: Identical duplicate bookmark handled");
         passed++;
@@ -551,9 +553,11 @@ async function testDuplicateBkmks() {
     let newUrl = url.replace("fred", "barney");
     if (loggingDuplicateBkmks) console.log("testDuplicateBkmks creating different duplicate bookmark");
     await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": newUrl });
-    await triggerEvent("mouseleave", $mainpanel);
-    children = await chrome.bookmarks.getChildren(rootFolder.id);
-    test = children.length === 3; // because of the common settings bookmark
+    await triggerEvent("load", window);
+    let alertString = await chrome.storage.local.get("alertString");
+    alertString = alertString?.alertString;
+    test = !!alertString;
+    test = test && alertString?.includes("You have duplicate bookmarks");
     if (test) {
         console.log("Passed: Different duplicate bookmark handled");
         passed++;
@@ -570,22 +574,30 @@ async function testDuplicateBkmks() {
     url = "ssp://%7B%22clearsuperpw%22%3Afalse%2C%22hidesitepw%22%3Afalse%2C%22safeSuffixes%22%3A%7B%7D%2C%22defaultSettings%22%3A%7B%22sitename%22%3A%22%22%2C%22username%22%3A%22%22%2C%22providesitepw%22%3Afalse%2C%22xor%22%3A%5B0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%5D%2C%22pwlength%22%3A12%2C%22domainname%22%3A%22%22%2C%22pwdomainname%22%3A%22%22%2C%22startwithletter%22%3Atrue%2C%22allowlower%22%3Atrue%2C%22allowupper%22%3Atrue%2C%22allownumber%22%3Atrue%2C%22allowspecial%22%3Afalse%2C%22minlower%22%3A1%2C%22minupper%22%3A1%2C%22minnumber%22%3A1%2C%22minspecial%22%3A1%2C%22specials%22%3A%22%24%2F!%3D%40%3F._-%22%7D%7D";
     title = "CommonSettings";
     await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
-    await triggerEvent("mouseleave", $mainpanel);
+    url = url.replace("false", "true");
+    await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
+    await triggerEvent("load", window);
     children = await chrome.bookmarks.getChildren(rootFolder.id);
-    test = children.length === 1; 
+    alertString = await chrome.storage.local.get("alertString");
+    alertString = alertString?.alertString;
+    test = !!alertString;
+    test = test && alertString?.includes("You have duplicate bookmarks");
     if (test) {
-        console.log("Passed: Identical duplicate common settings bookmark handled");
+        console.log("Passed: Duplicate common settings bookmark handled");
         passed++;
     } else {
-        console.warn("Failed: Identical duplicate common settings bookmark not handled");
+        console.warn("Failed: Duplicate common settings bookmark not handled");
         failed++;
     }
-    newUrl = url.replace("12", "15");
+    // Test duplicate folders
+    await resetState();
     if (loggingDuplicateBkmks) console.log("testDuplicateBkmks creating different duplicate common settings bookmark");
-    await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": newUrl });
-    await triggerEvent("mouseleave", $mainpanel);
-    children = await chrome.bookmarks.getChildren(rootFolder.id);
-    test = children.length === 2;
+    await chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordDataTest" });
+    await triggerEvent("blur", $domainname);
+    alertString = await chrome.storage.local.get("alertString");
+    alertString = alertString?.alertString;
+    test = !!alertString;
+    test = test && alertString?.includes("You have multiple bookmark folders with the title");
     if (test) {
         console.log("Passed: Different duplicate common settings bookmark handled");
         passed++;
@@ -593,6 +605,7 @@ async function testDuplicateBkmks() {
         console.warn("Failed: Different duplicate common settings bookmark not handled");
         failed++;
     }
+    await resetState();
 }
 // Test clear superpw
 async function testClearSuperpw() {
@@ -744,11 +757,10 @@ async function testChangeAccount() {
     $sitepw3bluedots.onmouseover();
     $sitepwmenuaccount.onclick();
     $accountnicknameinput.value = "newGuru";
-    $accountnicknamesavebutton.onclick();
+    await triggerEvent("click", $accountnicknamesavebutton);
     test = $account.style.display === "none";
     test = test && normalize($sitename.value) === normalize("newGuru");
     await triggerEvent("mouseleave", $mainpanel);
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
     await triggerEvent("blur", $domainname);
     test = test && normalize($sitename.value) === normalize("newGuru");
@@ -767,7 +779,7 @@ async function testChangeAccount() {
     $sitepw3bluedots.onmouseover();
     $sitepwmenuaccount.onclick();
     $accountnicknameinput.value = "Guru";
-    $accountnicknamenewbutton.onclick(); 
+    await triggerEvent("click", $accountnicknamenewbutton);
     test = $account.style.display === "none";
     await triggerEvent("mouseleave", $mainpanel);
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
@@ -857,10 +869,14 @@ async function testSaveAsDefault2() {
 
 // I want to start with a clean slate for each set of tests.
 async function resetState() {
-    if (loggingReset) console.log("resetState");
     if (loggingReset) console.log("resetState send reset message");
     let response = await chrome.runtime.sendMessage({"cmd": "reset"}, );
     if (chrome.runtime.lastError) console.error("resetState reset message error", chrome.runtime.lastError);
+    // Only works when only folders have the title "SitePasswordDataTest"
+    const toDelete = await chrome.bookmarks.search({"title": "SitePasswordDataTest"});
+    for (const bookmark of toDelete) {
+        await chrome.bookmarks.removeTree(bookmark.id);
+    }
     if (loggingReset) console.log("resetState reset message response", response);
     clearForm();
     restoreForTesting();
