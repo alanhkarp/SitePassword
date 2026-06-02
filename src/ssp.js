@@ -136,6 +136,7 @@ export function restoreForTesting() {
     exporting = false;
     warningMsg = false;
     warnings.forEach(msg => msg.ison = false);
+    chrome.storage.local.remove("alertString");
 }
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
@@ -145,7 +146,7 @@ if (logging) console.log("popup starting", database);
 // no longer work.  Fortunately, using the password requires a click
 // outside the popup window.  I can't use window.onblur because the 
 // popup window closes before the message it sends gets delivered.
-window.onload = async function () {
+window.onload = async function (e) {
     // I need to set activetab before the await if I'm in debug mode.
     // Otherwise, activetab is undefined when the popup opens.
     try {
@@ -199,6 +200,7 @@ window.onload = async function () {
     instructionSetup();
     sectionrefSetup();
     await getsettings();
+    if (e?.resolver) e.resolver();
 }
 async function init() {
     await fill();
@@ -228,7 +230,6 @@ export async function getsettings() {
     if (logging) console.log("popup getsettings response", response);
     let alertString = "";
     if (response.duplicate) {
-        if (testMode) alert("Duplicate bookmarks with title '" + response.duplicate + "'.  Please delete one and try again.");
         alertString += "You have duplicate bookmarks with the title '" + response.duplicate + "'.  Please delete one and try again.\n\n";
         if (response.duplicate === "CommonSettings") {
             alertString += "You can see what's in each of them by mousing over the entry by opening the Bookmarks Manager,";
@@ -237,15 +238,19 @@ export async function getsettings() {
             alertString += "An easy way to see what's in the other duplicate bookmarks is to dbl-click on them.  "
             alertString += "They will open sitepassword.info with the settings for that bookmark.";
         }
-        return;
     }
     if (response.multiple) {
-        if (testMode) alert("You have multiple bookmark folders with the title '" + response.multiple + "'.  Please delete one and try again.");
         alertString += "You have multiple bookmark folders with the title '" + response.multiple + "'.  Please delete one and try again.\n\n";
         alertString += "You can look at which bookmarks are in the folders to decide which one you want to keep.";
+     }
+    if (alertString) {
+        if (testMode) {
+            chrome.storage.local.set({ "alertString": alertString });
+        } else {
+            alert(alertString);
+        }
         return;
     }
-    if (alertString) alert(alertString);
     bg = response.bg;
     database = response.database;
     hidesitepw();

@@ -13,6 +13,7 @@ const errorLogging = false;
 
 // State I want to keep around
 const commonSettingsTitle = "CommonSettings";
+// Update restoreState() in test.js if you change the name of the test folder
 const sitedataBookmark = "SitePasswordData" + (debugMode ? "Debug" : "") + (testMode ? "Test" : "") + (demoMode ? "Demo" : "");
 if (logging) console.log("bg sitedataBookmark", sitedataBookmark);
 // Global variables (I should be able to get rid of some of these)
@@ -298,11 +299,7 @@ async function setup() {
                     database.common = clone(commonBaseDefault);
                     if (testLogging) console.log("bg removing bookmarks folder for testing", defaultSettings.pwlength);
                     rootFolder = await getRootFolder(sendResponse);
-                    if (rootFolder.id !== rootFolderDefaultId) {
-                        await chrome.bookmarks.removeTree(rootFolder.id);
-                        createBookmarksFolder = true;
-                        if (testLogging) console.log("bg removed bookmarks folder", rootFolder.title, defaultSettings.pwlength);
-                    }
+                    createBookmarksFolder = true;
                     respondToMessage("reset", sender, sendResponse);
                 } else if (request.cmd === "newDefaults") {
                     if (logging) console.log("bg got new default settings", request.newDefaults);
@@ -580,7 +577,7 @@ async function persistMetadata(sendResponse) {
 // sender argument for debugging
 async function retrieveMetadata(sendResponse, request, sender, callback) {
     if (logging) console.log("bg find SSP bookmark folder", request);
-    let rootFolder = await getRootFolder(sendResponse);
+    let rootFolder = await getRootFolder(sendResponse, sender);
     if (rootFolder.id !== rootFolderDefaultId) {
         if (logging) console.log("bg found bookmarks folder: ", rootFolder);
         await parseBkmk(rootFolder.id, callback, sender, sendResponse);
@@ -671,7 +668,7 @@ async function parseBkmk(rootFolderId, callback, sender, sendResponse) {
     database = newdb;
     await retrieved(callback);
 }
-export async function getRootFolder(sendResponse) { // Exported for testing
+export async function getRootFolder(sendResponse, sender) { // Exported for testing
     if (logging) console.log("bg getRootFolder", sitedataBookmark);
     // bookmarks.search finds any bookmark with a title containing the
     // search string, but I need to find one with an exact match.  I
@@ -694,10 +691,10 @@ export async function getRootFolder(sendResponse) { // Exported for testing
                 if (syncingFolders.length === 1) {
                     return syncingFolders[0];
                 } else {
+                    if (sendResponse) respondToMessage({"multiple": folders[0]?.title}, sender, sendResponse);
                     return rootFolderDefault
                 }
             }
-            if (sendResponse) respondToMessage("multiple", sender, sendResponse);
         } else if (folders.length === 0) {
             if (logging) console.log("bg found no", sitedataBookmark, "folders");
             return rootFolderDefault
