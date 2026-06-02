@@ -97,7 +97,7 @@ export async function runTests() {
         // await testRememberSuperpw();
         // await testChangePassword();
         // await testRememberForm();
-        // await testProvidedpw(); // Debugging on branch providepw
+        await testProvidedpw(); // Debugging on branch providepw
         // await testPhishing();
         // await testSharedCredentials();
         // await testForget();
@@ -297,15 +297,7 @@ async function testProvidedpw() {
     await resetState();
     // Test remembering provided password longer than computed password
     if (loggingProvide) console.log("testProvidedpw state reset");
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
-    let unprovided = $sitepw.value; // For later tests to make sure it changes when I go back to computed password
-    await triggerEvent("click", $settingsshow);
-    if (loggingProvide) console.log("testProvidedpw providepw before", $providesitepw.disabled, $providesitepw.checked);
-    await triggerEvent("click", $providesitepw);
-    if (loggingProvide) console.log("testProvidedpw clicked", $providesitepw.disabled, $providesitepw.checked);
-    $sitepw.value = expectedpw;
-    await triggerEvent("blur", $sitepw);
-    await triggerEvent("mouseleave", $mainpanel);
+    let unprovided = await providepwSetup(expectedpw, "alantheguru.alanhkarp.com");
     if (loggingProvide) console.log("testProvidedpw saved", $sitepw.value);
     // See if it remembers
     clearForm();
@@ -325,12 +317,7 @@ async function testProvidedpw() {
     // Test remembering provided password shorter than computed password
     await resetState();
     let expectedpw2 = "short";
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
-    await triggerEvent("click", $settingsshow);
-    await triggerEvent("click", $providesitepw);
-    $sitepw.value = "short";
-    await triggerEvent("blur", $sitepw);
-    await triggerEvent("mouseleave", $mainpanel);
+    unprovided = await providepwSetup(expectedpw2, "alantheguru.alanhkarp.com");
     clearForm();
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
     await triggerEvent("blur", $domainname);
@@ -1048,6 +1035,16 @@ async function triggerEvent(event, element) {
     element.dispatchEvent(e);
     await promise;
     if (loggingTrigger) console.log("triggerEvent promise resolved", element.id, event, promise, resolvers);
+}
+async function providepwSetup(providedpw, domainname) {
+    await fillForm("qwerty", domainname, "Guru", "alan");
+    let unprovided = $sitepw.value; // For later tests to make sure it changes when I go back to computed password
+    await triggerEvent("click", $settingsshow);
+    await triggerEvent("click", $providesitepw);
+    $sitepw.value = providedpw;
+    await triggerEvent("blur", $sitepw);
+    await triggerEvent("mouseleave", $mainpanel);
+    return unprovided;
 }
 function get(id) {
     return document.getElementById(id);
