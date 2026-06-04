@@ -200,6 +200,44 @@ to change all occurrences if ![](images...) to <img> tags.
             </div>
           </span>
         </div>
+        <div id="changesitename" class="warning nodisplay" style="width: 18em"
+          title="Site name changed.">
+          <span id="changesitenametext">
+            <img src="images/warning.png" class="icon warning-icon">
+            <span class="warningtext">Site Name Changed</span>
+            <p>
+              Changing your site name for this account won't change your account password
+              because you provided it.  You can just enter the new site password you want
+              or uncheck the "Provide your own account password" option in Settings.
+            </p>
+            <br />
+            <span class="warningtext">
+              <button id="changesitenameokbutton" type="button" class="buttonsafe"
+                title="Close this warning.">
+                <span class="btn-text" style="color: white">Close</span>
+              </button>
+            </span>
+          </span>
+        </div>
+        <div id="changeusername" class="warning nodisplay" style="width: 18em"
+          title="Username changed.">
+          <span id="changeusernametext">
+            <img src="images/warning.png" class="icon warning-icon">
+            <span class="warningtext">Username Changed</span>
+            <p>
+              Changing your username for this account won't change your account password
+              because you provided it.  You can just enter the new site password you want
+              or uncheck the "Provide your own account password" option in Settings.
+            </p>
+            <br />
+            <span class="warningtext">
+              <button id="changeusernameokbutton" type="button" class="buttonsafe"
+                title="Click to cancel changing the username for this account.">
+                <span class="btn-text" style="color: white">Ok</span>
+              </button>
+            </span>
+          </span>
+        </div>
         <div id="superpwchange" class="warning nodisplay" style="width: 18em"
           title="Different super password.">
           <span id="superpwchangetext">
@@ -217,11 +255,14 @@ to change all occurrences if ![](images...) to <img> tags.
               <br /><br />
               <button id="superpwchangekeepbutton" type="button" class="buttondangerous"
                 title="Click to keep the new super password.">
-                <span class="btn-text" style="color: white">Keep the new super password</span>
+                <span class="btn-text" style="color: white">
+                  Keep the new super password
+                </span>
+                <p>
+                  Your account passwords won't change, 
+                  but they will be treated as if you provided them.
+                </p>
               </button>
-              <p>
-                You can change back to your previous super password to get your old computed passwords.
-              </p>
             </div>
           </span>
         </div>

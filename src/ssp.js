@@ -47,6 +47,8 @@ if (logging) console.log("Version 3.4");
     const $sitenamemenuhelp = get("sitenamemenuhelp");
     const $sitenamehelptextclose = get("sitenamehelptextclose");
     const $sitenamehelptextmore = get("sitenamehelptextmore");
+    const $changesitename = get("changesitename");
+    const $changesitenameokbutton = get("changesitenameokbutton");
     const $username = get("username");
     const $username3bluedots = get("username3bluedots");
     const $usernamemenu = get("usernamemenu");
@@ -112,6 +114,10 @@ if (logging) console.log("Version 3.4");
     const $suffixtext2 = get("suffixtext2");
     const $suffixacceptbutton = get("suffixacceptbutton");
     const $suffixcancelbutton = get("suffixcancelbutton");
+    const $superpwchangeprovided = get("superpwchangeprovided");
+    const $superpwchangenewinput = get("superpwchangenewinput");
+    const $changeusername = get("changeusername");
+    const $changeusernameokbutton = get("changeusernameokbutton");
 // #endregion
 
 let messageQueue = Promise.resolve();
@@ -442,16 +448,25 @@ $superpw.onblur = async function (e) {
     let bgsuper = clone(bgDefault);
     bgsuper.superpw = $superpw.value || "";
     let superpwHash = await generatePassword(bgsuper);
-    if (oldSuperPwHash) {
-        if (superpwHash !== oldSuperPwHash) {
-            // Handle the case where the super password has changed
-            msgon("superpwchange");
-            if (e?.resolver) e.resolver();
-            return;
-        }
+    if (oldSuperPwHash && (superpwHash !== oldSuperPwHash)) {
+        // Handle the case where the super password has changed
+        msgon("superpwchange");
+        if (e?.resolver) e.resolver();
+        return;
     }
     database.common.superpwHash = superpwHash;
     await handleblur(e, "superpw");
+    if (e?.resolver) e.resolver();
+}
+$superpwchangecancelbutton.onclick = function (e) {
+    msgoff("superpwchange");
+    $superpw.value = "";
+    $superpw.focus();
+    if (e?.resolver) e.resolver();
+}
+$superpwchangekeepbutton.onclick = function (e) {
+    msgoff("superpwchange");
+    bg.superpw = $superpw.value || "";
     if (e?.resolver) e.resolver();
 }
 $superpwmenu.onmouseleave = function (e) {
@@ -496,25 +511,6 @@ $superpwhelptextmore.onclick = function (e) {
     helpAllOff;
     sectionClick("superpw");
 }
-$superpwchangecancelbutton.onclick = function (e) {
-    $superpw.value = "";
-    $superpw.focus();
-    msgoff("superpwchange");
-    if (e?.resolver) e.resolver();
-}
-$superpwchangekeepbutton.onclick = function (e) {
-    msgoff("superpwchange");
-    bg.superpw = $superpw.value || "";
-    // Detect if any sites have provided passwords
-    let provideds = Object.entries(database.sites).filter(site => site.providedPassword);
-    if (provideds.length > 0) {
-        // Handle sites with provided passwords
-        provideds.map(([key, site]) => {
-            console.log("Site with provided password:", key, site);
-        });
-    }
-    if (e?.resolver) e.resolver();
-}
 // Site Name
 $sitename.onfocus = function (e) {
     let set = new Set();
@@ -540,17 +536,17 @@ $sitename.onblur = async function (e) {
         msgoff("phishing");
         $superpw.disabled = false;
         $username.disabled = false;
-        let isChanged = sitename !== bg.settings.sitename;
-        await handleblur(e, "sitename");
-        await changePlaceholder();
-        if (isChanged) {
-            bg.settings = clone(database.sites[normalize(sitename)] || bg.settings || bgDefault.settings);
-            $sitename.value = bg.settings.sitename || sitename;
-            $username.value = bg.settings.username || $username.value;
-            $sitepw.value = await ask2generate(e);
-        }
+        let isChanged = normalize(sitename) !== normalize(bg.settings.sitename || "");
+        warning("changesitename", isChanged && $providesitepw.checked);
     }
+    bg.settings.sitename = $sitename.value;
+    $sitepw.value = await ask2generate(e);
+    changePlaceholder();
     clearDatalist("sitenames");
+    if (e?.resolver) e.resolver();
+}
+$changesitenameokbutton.onclick = function (e) {
+    msgoff("changesitename");
     if (e?.resolver) e.resolver();
 }
 $sitename3bluedots.onmouseover = function (e) {
@@ -642,12 +638,24 @@ $username.onkeyup = async function (e) {
     if (e?.resolver) e.resolver();
 }
 $username.onblur = async function (e) {
-    await handleblur(e, "username");
+    let username = $username.value;
+    let isChanged = (normalize(username)) !== normalize(bg.settings.username || "");
+    warning("changeusername", isChanged && $providesitepw.checked);
+    bg.settings.username = $username.value;
+    $sitepw.value = await ask2generate(e);
+    changePlaceholder();
     clearDatalist("usernames");
-    await changePlaceholder();
+    if (e?.resolver) e.resolver();
+}
+$changeusernameokbutton.onclick = async function (e) {
+    msgoff("changeusername");
+    if (e?.resolver) e.resolver();
 }
 $usernamemenu.onmouseleave = function (e) {
-    menuOff("username", e);
+    menuOff("changeusername", e);
+    $username.value = bg.settings.username || "";
+    $username.focus();
+    if (e?.resolver) e.resolver();
 }
 $username3bluedots.onmouseover = function (e) {
     let username = $username.value;
@@ -1833,6 +1841,8 @@ let warnings = [
     { name: "forget", ison: false, transient: false },
     { name: "phishing", ison: false, transient: false },
     { name: "superpwchange", ison: false, transient: false },
+    { name: "changesitename", ison: false, transient: false },
+    { name: "changeusername", ison: false, transient: false },
     { name: "suffix", ison: false, transient: false },
     { name: "account", ison: false, transient: false },
     { name: "nopw", ison: false, transient: false },
