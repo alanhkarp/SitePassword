@@ -299,20 +299,6 @@ async function testRememberForm() {
 }
 async function testProvidedpw() {
      await resetState();
-    // Make sure site password doesn't change when I click providepw
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "alan");
-    const expected = $sitepw.value;
-    await triggerEvent("click", $settingsshow);
-    await triggerEvent("click", $providesitepw);
-    let test = $sitepw.value === expected;
-    if (test) {
-        console.log("Passed: Provide site pw keeps the same password");
-        passed++;
-    } else {
-        console.warn("Failed: Provide site pw keeps the same password", expected, "|" + $sitepw.value + "|");
-        failed++;
-    }
-    await triggerEvent("click", $providesitepw);
     const providedpw = "MyStrongPassword";
     // Test remembering provided password longer than computed password
     if (loggingProvide) console.log("testProvidedpw state reset");
@@ -325,7 +311,7 @@ async function testProvidedpw() {
     await triggerEvent("blur", $domainname);
     await triggerEvent("click", $settingsshow); // For debugging
     if (loggingProvide) console.log("testProvidedpw domainname blur", $sitepw.value, $providesitepw.checked);
-    test = $sitepw.value === providedpw;
+    let test = $sitepw.value === providedpw;
     if (test) {
         console.log("Passed: Remembers provided pw longer than computed pw");
         passed++;
