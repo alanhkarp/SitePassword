@@ -127,6 +127,9 @@ let sameacct = true;
 let activetab;
 let domainname;
 let mainPanelTimer;
+let lastFocused = null;
+// The following is needed to trigger the event when debugging or testing
+document.addEventListener('focus', e => { lastFocused = e.target; }, true);
 const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 const defaultTitle = "SitePassword";
@@ -321,8 +324,12 @@ $mainpanel.onmouseleave = async function (e) {
     // Force a blur event on the currently focused element.  There is an inherent race condition
     // between the mouseleave event and the blur event in that the blur processing might not
     // complete before the popup closes.  This is not a problem in practice because of the delay 
-    // in closing the popup.
-    $mainpanel.focus();
+    // in closing the popup. Explicitly blur the last focused element rather than relying on focus movement,
+    // which doesn't work in DevTools or during tests.
+    if (lastFocused && lastFocused !== $mainpanel && $mainpanel.contains(lastFocused)) {
+        lastFocused.dispatchEvent(new Event("blur"));
+        lastFocused = null;
+    }
     let element = e ? (e.pageX ? document.elementFromPoint(e.pageX || 0, e.pageY || 0) : null) : null;
     // In case the user tries to type when the mouse is outside the popup
     if (!element) {
@@ -536,8 +543,14 @@ $sitename.onblur = async function (e) {
         msgoff("phishing");
         $superpw.disabled = false;
         $username.disabled = false;
-        let isChanged = normalize(sitename) !== normalize(bg.settings.sitename || "");
-        warning("changesitename", isChanged && $providesitepw.checked);
+        let isChanged = normalize(sitename) !== normalize(bg.settings.sitename);
+        if (isChanged && $providesitepw.checked) {
+            msgon("changesitename");
+            if (e?.resolver) e.resolver();
+            return;
+       } else {
+            msgoff("changesitename");
+        }
     }
     bg.settings.sitename = $sitename.value;
     $sitepw.value = await ask2generate(e);
@@ -547,6 +560,7 @@ $sitename.onblur = async function (e) {
 }
 $changesitenameokbutton.onclick = function (e) {
     msgoff("changesitename");
+    bg.settings.sitename = $sitename.value;
     if (e?.resolver) e.resolver();
 }
 $sitename3bluedots.onmouseover = function (e) {
@@ -640,7 +654,13 @@ $username.onkeyup = async function (e) {
 $username.onblur = async function (e) {
     let username = $username.value;
     let isChanged = (normalize(username)) !== normalize(bg.settings.username || "");
-    warning("changeusername", isChanged && $providesitepw.checked);
+    if (isChanged && $providesitepw.checked) {
+        msgon("changeusername");
+        if (e?.resolver) e.resolver();
+        return;
+    } else {
+        msgoff("changeusername");
+    }
     bg.settings.username = $username.value;
     $sitepw.value = await ask2generate(e);
     changePlaceholder();
@@ -649,6 +669,7 @@ $username.onblur = async function (e) {
 }
 $changeusernameokbutton.onclick = async function (e) {
     msgoff("changeusername");
+    bg.settings.username = $username.value;
     if (e?.resolver) e.resolver();
 }
 $usernamemenu.onmouseleave = function (e) {
