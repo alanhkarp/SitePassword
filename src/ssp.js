@@ -30,8 +30,8 @@ if (logging) console.log("Version 3.4");
     const $superpwmenuhelp = get("superpwmenuhelp");
     const $superpwhelptextclose = get("superpwhelptextclose");
     const $superpwhelptextmore = get("superpwhelptextmore");
-    const $superpwchangecancelbutton = get("superpwchangecancelbutton");
-    const $superpwchangekeepbutton = get("superpwchangekeepbutton");
+    const $changesuperpwcancelbutton = get("changesuperpwcancelbutton");
+    const $changesuperpwkeepbutton = get("changesuperpwkeepbutton");
     const $sitename = get("sitename");
     const $sitename3bluedots = get("sitename3bluedots");
     const $sitenamemenu = get("sitenamemenu");
@@ -116,6 +116,7 @@ if (logging) console.log("Version 3.4");
     const $suffixcancelbutton = get("suffixcancelbutton");
     const $superpwchangeprovided = get("superpwchangeprovided");
     const $superpwchangenewinput = get("superpwchangenewinput");
+    const $changesuperpwinput = get("changesuperpwinput");
     const $changeusername = get("changeusername");
     const $changeusernameokbutton = get("changeusernameokbutton");
 // #endregion
@@ -129,7 +130,8 @@ let domainname;
 let mainPanelTimer;
 let lastFocused = null;
 // The following is needed to trigger the event when debugging or testing
-document.addEventListener('focus', e => { lastFocused = e.target; }, true);
+document.addEventListener('focus', e => { lastFocused = e.target;     if (e?.resolver) e.resolver();
+}, true);
 const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
 const defaultTitle = "SitePassword";
@@ -303,11 +305,13 @@ $root.onmouseleave = function (e) {
             if (!debugMode) window.close();
         }, 750);
     }
+    if (e?.resolver) e.resolver();
 }
 $root.onmouseenter = function (e) {
     $root.style.opacity = 1; 
     defaultfocus();
     clearTimeout(mainPanelTimer);
+    if (e?.resolver) e.resolver();
 }
 $mainpanel.onmouseenter = function (e) {
     // Let the user type if the mouse reenters the popup
@@ -318,6 +322,7 @@ $mainpanel.onmouseenter = function (e) {
     $superpw.tabIndex = 0;
     $sitename.tabIndex = 0;
     $username.tabIndex = 0;
+    if (e?.resolver) e.resolver();
 }
 $mainpanel.onmouseleave = async function (e) {
     if (logging) console.log("popup mainpanel mouseleave", e);
@@ -369,7 +374,7 @@ $mainpanel.onmouseleave = async function (e) {
         changePlaceholder();
         if (logging) console.log("popup sending siteData", bg.settings, database);
         try {
-            await ask2generate(); // So that the site password gets generated and any changes to settings get applied before the data is sent to bg.js  
+            await ask2generate(e); // So that the site password gets generated and any changes to settings get applied before the data is sent to bg.js  
             let response = await retrySendMessage({
                 "cmd": "siteData",
                 "sitename": sitename,
@@ -390,8 +395,9 @@ $mainpanel.onmouseleave = async function (e) {
         if (e?.resolver) e.resolver();
     }
 }
-$title.onclick = function () {
+$title.onclick = function (e) {
     window.open("https://sitepassword.info", "_blank", "noopener,noreferrer");
+    if (e?.resolver) e.resolver();
 }
 // Domain Name
 // There are no actions the user can take on the domain name field,
@@ -405,6 +411,7 @@ $domainname.onblur = async function (e) {
 }
 $domainnamemenu.onmouseleave = function (e) {
     menuOff("domainname", e);
+    if (e?.resolver) e.resolver();
 }
 $domainname3bluedots.onmouseover = function (e) {
     let domainname = $domainname.value;
@@ -414,6 +421,7 @@ $domainname3bluedots.onmouseover = function (e) {
         $domainnamemenuforget.style.opacity = "0.5";
     }
     menuOn("domainname", e);
+    if (e?.resolver) e.resolver();
 }
 $domainname3bluedots.onclick = $domainname3bluedots.onmouseover;
 $domainname3bluedots.onmouseout = function (e) {
@@ -421,22 +429,27 @@ $domainname3bluedots.onmouseout = function (e) {
     if (!relatedTarget || !$domainnamemenu.contains(relatedTarget)) {
         menuOff("domainname", e);
     }
+    if (e?.resolver) e.resolver();
 };
 $domainnamemenuforget.onclick = function (e) {
     if (!$domainname.value) return;
     msgon("forget");
     let toforget = normalize($domainname.value);
     addForgetItem(toforget);
+    if (e?.resolver) e.resolver();
 }
 $domainnamemenuhelp.onclick = function (e) {
     helpItemOn("domainname");
+    if (e?.resolver) e.resolver();
 }
 $domainnamehelptextclose.onclick = function (e) {
     helpAllOff();
+    if (e?.resolver) e.resolver();
 }
 $domainnamehelptextmore.onclick = function (e) {
     helpAllOff();
     sectionClick("domainname");
+    if (e?.resolver) e.resolver();
 }
 // Super Password
 $superpw.onkeyup = async function (e) {
@@ -457,7 +470,7 @@ $superpw.onblur = async function (e) {
     let superpwHash = await generatePassword(bgsuper);
     if (oldSuperPwHash && (superpwHash !== oldSuperPwHash)) {
         // Handle the case where the super password has changed
-        msgon("superpwchange");
+        msgon("changesuperpw");
         if (e?.resolver) e.resolver();
         return;
     }
@@ -465,19 +478,43 @@ $superpw.onblur = async function (e) {
     await handleblur(e, "superpw");
     if (e?.resolver) e.resolver();
 }
-$superpwchangecancelbutton.onclick = function (e) {
-    msgoff("superpwchange");
+$changesuperpwcancelbutton.onclick = function (e) {
+    msgoff("changesuperpw");
     $superpw.value = "";
     $superpw.focus();
     if (e?.resolver) e.resolver();
 }
-$superpwchangekeepbutton.onclick = function (e) {
-    msgoff("superpwchange");
-    bg.superpw = $superpw.value || "";
+$changesuperpwkeepbutton.onclick = async function (e) {
+    msgoff("changesuperpw");
+    const eventForAsk = { currentTarget: e?.currentTarget };
+    // Update all site passwords to be provided
+    let db = clone(database);
+    for (const [key, settings] of Object.entries(db.sites)) {
+        domainname = settings.domainname;
+        let newSuperpw = $superpw.value;
+        await getsettings();
+        bg.settings = settings;
+        bg.superpw = $changesuperpwinput.value || ""; // Old superpw
+        let oldpw = await ask2generate(eventForAsk);
+        bg.superpw = newSuperpw || ""; // New superpw
+        bg.settings.providesitepw = true;
+        $superpw.value = newSuperpw;
+        let newpw = await ask2generate(eventForAsk);
+        if (oldpw === newpw) {
+            db.sites[key] = bg.settings;
+        } else {
+            console.error("Failed to reset super password for", key);
+        }
+    }
+    await retrySendMessage({"cmd": "updatedb", "database": db});
+    if (e?.resolver) e.resolver();
+}
+$changesuperpwinput.onblur = async function (e) {
     if (e?.resolver) e.resolver();
 }
 $superpwmenu.onmouseleave = function (e) {
     menuOff("superpw", e);
+    if (e?.resolver) e.resolver();
 }
 $superpw3bluedots.onmouseover = function (e) {
     if ($superpw.value) {
@@ -488,6 +525,7 @@ $superpw3bluedots.onmouseover = function (e) {
         $superpwmenuhide.style.opacity = "0.5";
     }
     menuOn("superpw", e);      
+    if (e?.resolver) e.resolver();
 }
 $superpw3bluedots.onclick = $superpw3bluedots.onmouseover;
 $superpw3bluedots.onmouseout = function (e) {
@@ -495,28 +533,34 @@ $superpw3bluedots.onmouseout = function (e) {
     if (!relatedTarget || !$superpwmenu.contains(relatedTarget)) {
         menuOff("superpw", e);
     }
+    if (e?.resolver) e.resolver();
 };
 $superpwmenushow.onclick = function(e) {
     if (!$superpw.value) return;
     $superpw.type = "text";
     $superpwmenuhide.classList.toggle("nodisplay");
     $superpwmenushow.classList.toggle("nodisplay")    ;
+    if (e?.resolver) e.resolver();
 }
 $superpwmenuhide.onclick = function(e) {
     if (!$superpw.value) return;
     $superpw.type = "password";
     $superpwmenuhide.classList.toggle("nodisplay");
     $superpwmenushow.classList.toggle("nodisplay")    ;
+    if (e?.resolver) e.resolver();
 }
 $superpwmenuhelp.onclick = function (e) {
     helpItemOn("superpw");
+    if (e?.resolver) e.resolver();
 }
 $superpwhelptextclose.onclick = function (e) {
     helpAllOff();
+    if (e?.resolver) e.resolver();
 }
 $superpwhelptextmore.onclick = function (e) {
-    helpAllOff;
+    helpAllOff();
     sectionClick("superpw");
+    if (e?.resolver) e.resolver();
 }
 // Site Name
 $sitename.onfocus = function (e) {
@@ -529,6 +573,7 @@ $sitename.onfocus = function (e) {
     let list = sortList([... set]);
     if (logging) console.log("popup sitename onfocus", database.sites, list);
     setupdatalist(this, list);
+    if (e?.resolver) e.resolver();
 }
 $sitename.onkeyup = async function (e) {
     await handlekeyup(e, "sitename");
@@ -572,6 +617,7 @@ $sitename3bluedots.onmouseover = function (e) {
         $sitenamemenuaccount.style.opacity = "0.5";
     }
     menuOn("sitename", e);
+    if (e?.resolver) e.resolver();
 }
 $sitename3bluedots.onclick = $sitename3bluedots.onmouseover;
 $sitename3bluedots.onmouseout = function (e) {
@@ -579,9 +625,11 @@ $sitename3bluedots.onmouseout = function (e) {
     if (!relatedTarget || !$sitenamemenu.contains(relatedTarget)) {
         menuOff("sitename", e);
     }
+    if (e?.resolver) e.resolver();
 };
 $sitenamemenu.onmouseleave = function (e) {
     menuOff("sitename", e);
+    if (e?.resolver) e.resolver();
 }
 $accountnicknameinput.onkeyup = function (e) {
     if ($accountnicknameinput.value && $accountnicknameinput.value !== $sitename.value) {
@@ -589,6 +637,7 @@ $accountnicknameinput.onkeyup = function (e) {
     } else {
         $accountnicknamesavebutton.disabled = true;
     }
+    if (e?.resolver) e.resolver();
 }
 $accountnicknamesavebutton.onclick = function (e) {
     if (!$accountnicknameinput.value) return;
@@ -597,10 +646,12 @@ $accountnicknamesavebutton.onclick = function (e) {
     $sitename.onblur(e); // So it runs in the same turn
     msgoff("account");
     autoclose = true;
+    if (e?.resolver) e.resolver();
 }
 $accountnicknamecancelbutton.onclick = function (e) {
     msgoff("account");
     autoclose = false;
+    if (e?.resolver) e.resolver();
 }
 $accountnicknamenewbutton.onclick = function (e) {
     $sitename.value = $accountnicknameinput.value;
@@ -608,6 +659,7 @@ $accountnicknamenewbutton.onclick = function (e) {
     msgoff("account");
     autoclose = true;
     sameacct = false;
+    if (e?.resolver) e.resolver();
 }
 $sitenamemenuforget.onclick = function (e) {
     if (!$sitename.value) return;
@@ -620,19 +672,24 @@ $sitenamemenuforget.onclick = function (e) {
             addForgetItem(domain);
         }
     }
+    if (e?.resolver) e.resolver();
 }
 $sitenamemenuaccount.onclick = function (e) {
     $sitepwmenuaccount.onclick(); // So it runs in the same turn
+    if (e?.resolver) e.resolver();
 }
 $sitenamemenuhelp.onclick = function (e) {
     helpItemOn("sitename");
+    if (e?.resolver) e.resolver();
 }
 $sitenamehelptextclose.onclick = function (e) {
     helpAllOff();
+    if (e?.resolver) e.resolver();
 }
 $sitenamehelptextmore.onclick = function (e) {
     helpAllOff();
     sectionClick("sitename");
+    if (e?.resolver) e.resolver();
 }
 // Site Username
 $username.onfocus = function (e) {
@@ -644,6 +701,7 @@ $username.onfocus = function (e) {
     })
     let list = sortList([... set]);
     setupdatalist(this, list);
+    if (e?.resolver) e.resolver();
 }
 $username.onkeyup = async function (e) {
     await handlekeyup(e, "username");
@@ -688,6 +746,7 @@ $username3bluedots.onmouseover = function (e) {
         $usernamemenucopy.style.opacity = "0.5";
     }
     menuOn("username", e);
+    if (e?.resolver) e.resolver();
 }
 $username3bluedots.onclick = $username3bluedots.onmouseover;
 $username3bluedots.onmouseout = function (e) {
@@ -695,6 +754,7 @@ $username3bluedots.onmouseout = function (e) {
     if (!relatedTarget || !$usernamemenu.contains(relatedTarget)) {
         menuOff("username", e);
     }
+    if (e?.resolver) e.resolver();
 };
 $usernamemenuforget.onclick = function (e) {
     if (!$username.value) return;
@@ -707,6 +767,7 @@ $usernamemenuforget.onclick = function (e) {
             addForgetItem(domain);
         }
     }
+    if (e?.resolver) e.resolver();
 }
 $usernamemenucopy.onclick = async function(e) {
     let username = $username.value;
@@ -720,21 +781,28 @@ $usernamemenucopy.onclick = async function(e) {
         if (logging) console.log("popup username clipboard write failed", e);
     });
     menuOff("username", e); 
+    if (e?.resolver) e.resolver();
 }
 $usernamemenuhelp.onclick = function (e) {
     helpItemOn("username");
+    if (e?.resolver) e.resolver();
 }
 $usernamehelptextclose.onclick = function (e) {
     helpAllOff();
+    if (e?.resolver) e.resolver();
 }
 $usernamehelptextmore.onclick = function (e) {
     helpAllOff();
     sectionClick("username");
+    if (e?.resolver) e.resolver();
 }
 // Site Password
 $sitepw.onblur = async function (e) {
     menuOff("sitepw", e);
-    if ($sitepw.readOnly || !$sitepw.value) return;
+    if ($sitepw.readOnly || !$sitepw.value) {
+        if (e?.resolver) e.resolver();
+        return;
+    }
     bg.settings.pwlength = $sitepw.value.length;
     let provided = await ask2generate(e); // So bg.settings.xor gets set
     if (logging) console.log("popup sitepw onblur", bg.settings.pwlength, provided);
@@ -742,9 +810,11 @@ $sitepw.onblur = async function (e) {
 }
 $sitepw.onkeyup = function (e) {
     setMeter("sitepw");
+    if (e?.resolver) e.resolver();
 }
 $sitepwmenu.onmouseleave = function (e) {
     menuOff("sitepw", e);
+    if (e?.resolver) e.resolver();
 }
 $sitepw3bluedots.onmouseover = function (e) {
     let sitepw = $sitepw.value;
@@ -760,6 +830,7 @@ $sitepw3bluedots.onmouseover = function (e) {
         $sitepwmenuaccount.style.opacity = "0.5";
     }
     menuOn("sitepw", e);
+    if (e?.resolver) e.resolver();
 }
 $sitepw3bluedots.onclick = $sitepw3bluedots.onmouseover;
 $sitepw3bluedots.onmouseout = function (e) {
@@ -767,6 +838,7 @@ $sitepw3bluedots.onmouseout = function (e) {
     if (!relatedTarget || !$sitepwmenu.contains(relatedTarget)) {
         menuOff("sitepw", e);
     }
+    if (e?.resolver) e.resolver();
 };
 $sitepwmenuaccount.onclick = function (e) {
     // Can only change a password if there is one
@@ -788,6 +860,7 @@ $sitepwmenuaccount.onclick = function (e) {
     if (logging) console.log(`The sitename "${sitename}" appears ${sitenameCount} times in the database.`);
     msgon("account");
     $accountnicknameinput.value = $sitename.value;
+    if (e?.resolver) e.resolver();
 }
 $sitepwmenucopy.onclick = async function(e) {
     let sitepw = $sitepw.value;
@@ -806,32 +879,38 @@ $sitepwmenucopy.onclick = async function(e) {
         if (logging) console.log("popup sitepw clipboard write failed", e);
     });
     menuOff("sitepw", e);
+    if (e?.resolver) e.resolver();
 }
 $sitepwmenuhelp.onclick = function (e) {
     helpItemOn("sitepw");
+    if (e?.resolver) e.resolver();
 }
 $sitepwhelptextclose.onclick = function (e) {
     helpAllOff();
+    if (e?.resolver) e.resolver();
 }
 $sitepwhelptextmore.onclick = function (e) {
     helpAllOff();
     sectionClick("sitepw");
+    if (e?.resolver) e.resolver();
 }
-$sitepwmenushow.onclick = function () {
+$sitepwmenushow.onclick = function (e) {
     $sitepw.type = "text";
     $sitepwmenushow.classList.toggle("nodisplay");
     $sitepwmenuhide.classList.toggle("nodisplay");
+    if (e?.resolver) e.resolver();
 }
-$sitepwmenuhide.onclick = function () {
+$sitepwmenuhide.onclick = function (e) {
     $sitepw.type = "password";
     $sitepwmenushow.classList.toggle("nodisplay");
     $sitepwmenuhide.classList.toggle("nodisplay");
+    if (e?.resolver) e.resolver();
 }
 $settingsshow.onclick = async function(e) {
     await showsettings();
     if (e?.resolver) e.resolver();
 }
-$clearclipboard.onclick = async function() {
+$clearclipboard.onclick = async function(e) {
     if (logging) console.log("popup clear clipboard");
     try {
         await navigator.clipboard.writeText("");
@@ -845,6 +924,7 @@ $clearclipboard.onclick = async function() {
     } catch(e) {
         if (logging) console.log("popup clear clipboard failed", e);
     }
+    if (e?.resolver) e.resolver();
 }
 document.oncopy = function (e) {
     if (e.target.id !== "sitepw") {
@@ -852,11 +932,14 @@ document.oncopy = function (e) {
     } else {
         $sitepwmenucopy.click();
     }
+    if (e?.resolver) e.resolver();
 }
-$settingssave.onclick = hidesettings;
+$settingssave.onclick = function closesettings(e) {
+    hidesettings(e);
+    if (e?.resolver) e.resolver();
+};
 $providesitepw.onclick = async function (e) {
     if (!($sitename.value && $username.value)) return;
-    bg.settings.providesitepw = $providesitepw.checked;
     if ($providesitepw.checked) {
         $defaultsettings.classList.add("fade-out");
         $sitepw.readOnly = false;
@@ -903,6 +986,7 @@ $pwlength.onblur = async function (e) {
 }
 $pwlength.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "pwlength");
+    if (e?.resolver) e.resolver();
 }; 
 $startwithletter.onclick = async function (e) {
     await handleblur(e, "startwithletter");
@@ -999,9 +1083,11 @@ $specials.onblur = async function(e) {
 }
 $specials.onmouseleave = async function(e) {
     await $specials.onblur(e); // So it runs in the same turn
+    if (e?.resolver) e.resolver();
 }
 $specials.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "specials");
+    if (e?.resolver) e.resolver();
 } 
 $makedefaultbutton.onclick = async function (e) {
     let newDefaults = {
@@ -1034,7 +1120,7 @@ $makedefaultbutton.onclick = async function (e) {
 }
 $sitedatagetbutton.onclick = sitedataHTML;
 $exportbutton.onclick = exportPasswords;
-$maininfo.onclick = function () {
+$maininfo.onclick = function (e) {
     if ($instructionpanel.style.display == "none") {
         showInstructions();
         hidesettings();
@@ -1043,6 +1129,7 @@ $maininfo.onclick = function () {
         hideInstructions();
     }
     autoclose = false;
+    if (e?.resolver) e.resolver();
 }
 // Phishing buttons
 $cancelwarning.onclick = async function (e) {
@@ -1090,6 +1177,7 @@ $nicknamebutton.onclick = function (e) {
     sameacct = false;
     $sitename.focus();
     autoclose = false;
+    if (e?.resolver) e.resolver();
 }
 // Phishing methods when there is a safe suffix
 $suffixcancelbutton.onclick = function (e) {
@@ -1099,6 +1187,7 @@ $suffixcancelbutton.onclick = function (e) {
     $username.disabled = false;
     $sitename.focus();
     autoclose = false;
+    if (e?.resolver) e.resolver();
 }
 $suffixacceptbutton.onclick = async function (e) {
     msgoff("suffix");
@@ -1131,23 +1220,26 @@ $forgetbutton.onclick = async function (e) {
         console.error("Error sending forget message:", error);
     }
 }
-$forgetcancelbutton.onclick = function () {
+$forgetcancelbutton.onclick = function (e) {
     // Can't just set list to [] because I need to remove the 
     // corresponding DOM elements
     while ( $toforgetlist.firstChild ) {
         $toforgetlist.removeChild($toforgetlist.firstChild);
     }
     msgoff("forget");
+    if (e?.resolver) e.resolver();
 }
 // Handle external links in the instructions and help
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function (e) {
     let links = document.querySelectorAll('.external-link');
     links.forEach(function(link) {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             chrome.tabs.create({url: this.href});
-        });
+                    if (e?.resolver) e.resolver();
+});
     });
+    if (e?.resolver) e.resolver();
 });
 // Generic code for menus
 function copied(which) {
@@ -1495,7 +1587,7 @@ function defaultfocus() {
     if (!$superpw.value && !$superpw.disabled) $superpw.focus();
 }
 async function ask2generate(event) {
-    let sitepwWasActive = !!(event?.currentTarget === $sitepw);
+    let sitepwWasActive = !!(event?.currentTarget === $sitepw || event?.currentTarget === $changesuperpwkeepbutton);
     if (bg.settings.providesitepw && bg.settings.pwlength === 0) return "";
     if (!(bg.settings.allowlower || bg.settings.allowupper || bg.settings.allownumber)) {
         msgon("nopw");
@@ -1503,8 +1595,7 @@ async function ask2generate(event) {
     } else {
         msgoff("nopw"); // I don't want to hide any other open messages
         if (sitepwWasActive) {
-            let p = $sitepw.value;
-            if (p.length > bg.settings.pwlength) bg.settings.pwlength = p.length;
+            bg.settings.pwlength = $sitepw.value.length;
         }
         const computed = await generatePassword(bg);
         if (computed) {
@@ -1514,7 +1605,7 @@ async function ask2generate(event) {
                 msgon("nopw");
             }
         }
-        if ($sitepw.value && bg.settings.providesitepw) {
+        if (sitepwWasActive && $sitepw.value && bg.settings.providesitepw.checked) {
             bg.settings.xor = xorStrings(computed, $sitepw.value);
         }
         let provided = stringXorArray(computed, bg.settings.xor);
@@ -1535,6 +1626,8 @@ async function fill() {
         bg.settings.username = normalize($username.value);
     }
     $superpw.value = bg.superpw || "";
+    $sitename.value = bg.settings.sitename;
+    $username.value = bg.settings.username;
     $providesitepw.checked = bg.settings.providesitepw;
     if ($providesitepw.checked) {
         $defaultsettings.classList.add("fade-out");
@@ -1674,7 +1767,7 @@ async function exportPasswords() {
         link.click();    
         document.body.removeChild(link);
         exporting = false;
-        $sitepw.value =await ask2generate(); // To get the right password to show up
+        $sitepw.value = await ask2generate(); // To get the right password to show up
     } catch (e) {
         alert("Export error: Close SitePassword and try again.");
         console.log("popup exportPasswords error", e);
@@ -1861,7 +1954,7 @@ function isSupportedProtocol(v) {
 let warnings = [
     { name: "forget", ison: false, transient: false },
     { name: "phishing", ison: false, transient: false },
-    { name: "superpwchange", ison: false, transient: false },
+    { name: "changesuperpw", ison: false, transient: false },
     { name: "changesitename", ison: false, transient: false },
     { name: "changeusername", ison: false, transient: false },
     { name: "suffix", ison: false, transient: false },
@@ -1917,6 +2010,7 @@ function sectionrefSetup() {
         section.onclick = function (e) {
             e.stopPropagation();
             sectionClick(this.id.slice(0, -3));
+            if (e?.resolver) e.resolver();
         }
     }
 }
@@ -1926,7 +2020,10 @@ function instructionSetup() {
     if (logging) console.log("popup instructions", instructions);
     for (let instruction of instructions) {
         let section = instruction.id.replace("info", "");
-        instruction.onclick = function () { sectionClick(section); }
+        instruction.onclick = function (e) {
+            sectionClick(section);
+            if (e?.resolver) e.resolver();
+        }
     }
 }
 function sectionClick(which) {

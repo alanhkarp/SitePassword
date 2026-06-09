@@ -238,30 +238,34 @@ to change all occurrences if ![](images...) to <img> tags.
             </span>
           </span>
         </div>
-        <div id="superpwchange" class="warning nodisplay" style="width: 18em"
+        <div id="changesuperpw" class="warning nodisplay" style="width: 18em"
           title="Different super password.">
-          <span id="superpwchangetext">
+          <span id="changesuperpwtext">
             <img src="images/warning.png" class="icon warning-icon">
             <span class="warningtext">Different Super Password</span>
             <p>
               You entered a different super password than the one you used last time.
-              Changing your super password will change the computed passwords for all of your accounts.
             </p>
             <div>
-              <button id="superpwchangecancelbutton" type="button" class="buttonsafe" 
+              <button id="changesuperpwcancelbutton" type="button" class="buttonsafe" 
                 title="Cancel changing your super password.">
                 <span class="btn-text" style="color: white">Keep my old super password</span>
               </button>
               <br /><br />
-              <button id="superpwchangekeepbutton" type="button" class="buttondangerous"
+              <p>
+                If you enter your old super password below, your account passwords won't be changed,
+                but they will be treated as if you provided them.  If you don't enter your super password, 
+                all your account passwords will change.
+              </p>
+              <input type="text" id="changesuperpwinput" style="width: 96%" class="input" 
+                placeholder="Enter your old superpassword."
+                title="Enter your old super password." />
+              <br /><br />
+              <button id="changesuperpwkeepbutton" type="button" class="buttondangerous"
                 title="Click to keep the new super password.">
                 <span class="btn-text" style="color: white">
                   Keep the new super password
                 </span>
-                <p>
-                  Your account passwords won't change, 
-                  but they will be treated as if you provided them.
-                </p>
               </button>
             </div>
           </span>

@@ -306,6 +306,10 @@ async function setup() {
                     database.common.defaultSettings = request.newDefaults;
                     await persistMetadata(sendResponse);
                     respondToMessage("persisted", sender, sendResponse);
+                } else if (request.cmd === "updatedb") {
+                    database = request.database;
+                    await persistMetadata(sendResponse);
+                    respondToMessage("updatedb", sender, sendResponse);
                 } else if (request.cmd === "forget") {
                     if (logging) console.log("bg forget", request.cmd);
                     rootFolder = await getRootFolder(sendResponse);
@@ -345,7 +349,7 @@ async function setup() {
                     if (logging) console.log("bg got unknown request", request);
                     respondToMessage("unknown request", sender, sendResponse);
                     await Promise.resolve(); // To match the awaits in the other branches
-                }
+                } 
                 if (logging) console.log("bg addListener returning", isSuperPw(superpw));
             });
         });
@@ -378,21 +382,23 @@ async function getMetadata(request, sender, sendResponse) {
     bg.domainname = request.domainname; // Keep for compatibility with V3.0.12
     bg.settings.domainname = request.domainname;
     activetab = request.activetab;
-    if (logging) console.log("bg got active tab", activetab);
-    // Don't lose database across async call
     let db = database;
-    if (logging) console.log("bg got active tab", activetab);
-    // Restores data stored the last time this page was loaded
-    let s = await chrome.storage.session.get(["savedData"]); // Returns {} if nothing is saved
-    let savedData = s.savedData || {};
-    if (logging) console.log("bg got saved data", s);
-    if (s && Object.keys(s).length > 0) savedData = s.savedData;
-    pwcount = savedData[activetab.url] || 0;
-    if (logging) console.log("bg got saved data for", activetab.url, savedData[activetab.url]);
-    bg.pwcount = pwcount;
-    domainname = getdomainname(activetab.url);
-    if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
-    if (logging) console.log("bg sending metadata", isSuperPw(bg.superpw), bg.settings, db);
+    if (activetab) { // No active tab when changing superpw
+        if (logging) console.log("bg got active tab", activetab);
+        // Don't lose database across async call
+        if (logging) console.log("bg got active tab", activetab);
+        // Restores data stored the last time this page was loaded
+        let s = await chrome.storage.session.get(["savedData"]); // Returns {} if nothing is saved
+        let savedData = s.savedData || {};
+        if (logging) console.log("bg got saved data", s);
+        if (s && Object.keys(s).length > 0) savedData = s.savedData;
+        pwcount = savedData[activetab.url] || 0;
+        if (logging) console.log("bg got saved data for", activetab.url, savedData[activetab.url]);
+        bg.pwcount = pwcount;
+        domainname = getdomainname(activetab.url);
+        if (!bg.settings.xor) bg.settings.xor = clone(defaultSettings.xor);
+        if (logging) console.log("bg sending metadata", isSuperPw(bg.superpw), bg.settings, db);
+    }
     let syncing = rootFolder.syncing;
     respondToMessage({"test" : testMode, "superpw": superpw || "", "pwcount": pwcount, "bg": bg, "database": db, "syncing": syncing}, sender, sendResponse);
 }
