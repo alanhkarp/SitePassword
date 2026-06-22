@@ -25,13 +25,16 @@ if (logging) console.log("Version 3.4");
     const $superpw = get("superpw");
     const $superpwmenu = get("superpwmenu");
     const $superpw3bluedots = get("superpw3bluedots");
+    const $superpwmenuaccount = get("superpwmenuaccount");
     const $superpwmenushow = get("superpwmenushow");
     const $superpwmenuhide = get("superpwmenuhide");
     const $superpwmenuhelp = get("superpwmenuhelp");
     const $superpwhelptextclose = get("superpwhelptextclose");
     const $superpwhelptextmore = get("superpwhelptextmore");
+    const $superpwtypobutton = get("superpwtypobutton");
     const $changesuperpwcancelbutton = get("changesuperpwcancelbutton");
     const $changesuperpwkeepbutton = get("changesuperpwkeepbutton");
+    const $changesuperpwtypo = get("changesuperpwtypo");
     const $sitename = get("sitename");
     const $sitename3bluedots = get("sitename3bluedots");
     const $sitenamemenu = get("sitenamemenu");
@@ -462,30 +465,32 @@ $superpw.onkeyup = async function (e) {
     if (e?.resolver) e.resolver();
 }
 $superpw.onblur = async function (e) {
-    if (logging) console.log("popup superpw onmouseout");
+    if (!$superpw.value) return;
+    if (logging) console.log("popup superpw onblur");
     // See if this is a different super password
-    let oldSuperPwHash = database.common.superpwHash || "";
-    let bgsuper = clone(bgDefault);
-    bgsuper.superpw = $superpw.value || "";
-    let superpwHash = await generatePassword(bgsuper);
-    if (oldSuperPwHash && (superpwHash !== oldSuperPwHash)) {
+    let same = await sameSuperpw($superpw.value);
+    if (!same) {
         // Handle the case where the super password has changed
-        msgon("changesuperpw");
+        msgon("superpwtypo");
         if (e?.resolver) e.resolver();
         return;
     }
-    database.common.superpwHash = superpwHash;
     await handleblur(e, "superpw");
     if (e?.resolver) e.resolver();
 }
-$changesuperpwcancelbutton.onclick = function (e) {
-    msgoff("changesuperpw");
+$superpwtypobutton.onclick = function (e) {
+    msgoff("superpwtypo");
     $superpw.value = "";
     $superpw.focus();
     if (e?.resolver) e.resolver();
 }
 $changesuperpwkeepbutton.onclick = async function (e) {
     msgoff("changesuperpw");
+    if (await sameSuperpw($superpw.value)) {
+        $changesuperpwtypo.classList.remove("nodisplay");
+        if (e?.resolver) e.resolver();
+        return;
+    }
     const eventForAsk = { currentTarget: e?.currentTarget };
     // Update all site passwords to be provided
     let db = clone(database);
@@ -509,7 +514,12 @@ $changesuperpwkeepbutton.onclick = async function (e) {
     await retrySendMessage({"cmd": "updatedb", "database": db});
     if (e?.resolver) e.resolver();
 }
+$changesuperpwinput.onkeyup = function (e) {
+    $changesuperpwtypo.classList.add("nodisplay"); // Don't show the typo warning when typing a new value
+    if (e?.resolver) e.resolver();
+}
 $changesuperpwinput.onblur = async function (e) {
+    $changesuperpwtypo.classList.remove("nodisplay"); // Show the typo warning 
     if (e?.resolver) e.resolver();
 }
 $superpwmenu.onmouseleave = function (e) {
@@ -535,6 +545,11 @@ $superpw3bluedots.onmouseout = function (e) {
     }
     if (e?.resolver) e.resolver();
 };
+$superpwmenuaccount.onclick = function (e) {
+    // Trigger the super password change options
+    msgon("changesuperpw");
+    if (e?.resolver) e.resolver();
+}
 $superpwmenushow.onclick = function(e) {
     if (!$superpw.value) return;
     $superpw.type = "text";
@@ -1254,7 +1269,6 @@ function notcopied(which) {
         get(which + "notcopied").classList.add("nodisplay");
     }, 2000);
 }
-
 function menuOn(which, e) {
     allMenusOff();
     get(which + "3bluedots").style.display = "none";
@@ -1404,6 +1418,18 @@ function clearDatalist(listid) {
 }
 function sortList(list) {
     return list.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+}
+// See if the entered super password is the same as last time
+// Reset the database value for the super password hash if it has changed or is not set
+async function sameSuperpw(superpwValue) {
+    let oldSuperPwHash = database.common.superpwHash || "";
+    let bgsuper = clone(bgDefault);
+    bgsuper.superpw = superpwValue || "";
+    let superpwHash = await generatePassword(bgsuper);
+    if (!oldSuperPwHash) database.common.superpwHash = superpwHash;
+    let same = superpwHash === database.common.superpwHash;
+    if (!same || !oldSuperPwHash) database.common.superpwHash = superpwHash;
+    return same;
 }
 // Thanks, Copilot
 function scrollbarWidth() {
@@ -1956,6 +1982,7 @@ let warnings = [
     { name: "phishing", ison: false, transient: false },
     { name: "changesuperpw", ison: false, transient: false },
     { name: "changesitename", ison: false, transient: false },
+    { name: "superpwtypo", ison: false, transient: false },
     { name: "changeusername", ison: false, transient: false },
     { name: "suffix", ison: false, transient: false },
     { name: "account", ison: false, transient: false },

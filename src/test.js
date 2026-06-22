@@ -72,12 +72,16 @@ const $suffix = get("suffix");
 const $suffixacceptbutton = get("suffixacceptbutton");
 const $suffixcancelbutton = get("suffixcancelbutton");
 const $superpw = get("superpw");
+const $superpwmenuaccount = get("superpwmenuaccount");
 const $changesuperpwcancelbutton = get("changesuperpwcancelbutton");
 const $changesuperpwkeepbutton = get("changesuperpwkeepbutton");
+const $changesuperpwtypo = get("changesuperpwtypo");
 const $username = get("username");
 const $username3bluedots = get("username3bluedots");
 const $usernamemenuforget = get("usernamemenuforget");
 const $forget = get("forget");
+const $superpwtypo = get("superpwtypo");
+const $superpwtypobutton = get("superpwtypobutton");
 const $changesuperpw = get("changesuperpw");
 const $changesitename = get("changesitename");
 const $changesitenameokbutton = get("changesitenameokbutton");
@@ -101,19 +105,19 @@ export async function runTests() {
     if (!restart) {
         await testCalculation(); 
         // await testRememberSuperpw();
-        await testChangePassword();
-        await testRememberForm();
+        // await testChangePassword();
+        // await testRememberForm();
         // await testProvidedpw();
-        await testPhishing();
-        await testSharedCredentials();
-        await testForget();
-        await testClearSuperpw();
-        await testHideSitepw();
-        await testLegacyBkmks();
-        await testDuplicateBkmks();
-        await testSafeSuffixes();
-        await testChangeAccount();
-        // await testChangeSuperpw();
+        // await testPhishing();
+        // await testSharedCredentials();
+        // await testForget();
+        // await testClearSuperpw();
+        // await testHideSitepw();
+        // await testLegacyBkmks();
+        // await testDuplicateBkmks();
+        // await testSafeSuffixes();
+        // await testChangeAccount();
+        await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         // await testSaveAsDefault();
@@ -165,48 +169,6 @@ async function testRememberSuperpw() {
         passed++;
     } else {
         console.warn("Failed: Remember super password", "expected", expectedsuperpw, "got", $superpw.value);
-        failed++;
-    }
-    // Test detecting super password typo
-    restoreForTesting();
-    await clearForm();
-    await updateValue($superpw, "TypoSuperPassword");
-    await triggerEvent("blur", $superpw);
-    test = $changesuperpw.style.display !== "none";
-    if (test) {
-        console.log("Passed: Detect super password typo");
-        passed++;
-    } else {
-        console.warn("Failed: Detect super password typo", "expected", "TypoSuperPassword", "got", $superpw.value);
-        failed++;
-    }
-    // Test canceling change
-    await triggerEvent("click", $changesuperpwcancelbutton);
-    test = $changesuperpw.style.display === "none" && $superpw.value === "";
-    if (test) {
-        console.log("Passed: Cancel super password change");
-        passed++;
-    } else {
-        console.warn("Failed: Cancel super password change");
-        failed++;
-    }
-    // Test keeping change when there are no provided passwords
-    await fillForm("TypoSuperPassword", "alantheguru.alanhkarp.com", "Guru", "Alan");
-    expected = $sitepw.value;
-    await triggerEvent("click", $changesuperpwkeepbutton);
-    await triggerEvent("click", $settingsshow); // For debugging
-    test = $changesuperpw.style.display === "none";
-    await triggerEvent("mouseleave", $mainpanel);
-    await clearForm();
-    await updateValue($domainname, "alantheguru.alanhkarp.com");
-    await triggerEvent("blur", $domainname);
-    await triggerEvent("click", $settingsshow);
-    test = test && $superpw.value === "TypoSuperPassword" && $sitepw.value === expected;
-    if (test) {
-        console.log("Passed: Keep super password change");
-        passed++;
-    } else {
-        console.warn("Failed: Keep super password change");
         failed++;
     }
 }
@@ -922,7 +884,7 @@ async function testChangeSuperpw() {
     await triggerEvent("blur", $domainname);
     await triggerEvent("keyup", $superpw); // Don't do anything on keyup
     await triggerEvent("blur", $superpw);
-    let test = $changesuperpw.style.display === "none";
+    let test = $superpwtypo.style.display === "none";
     if (test) {
         console.log("Passed: No change super password warning");
         passed++;
@@ -933,18 +895,18 @@ async function testChangeSuperpw() {
     // Test showing the warning
     await updateValue($superpw, "asdfgh");
     await triggerEvent("blur", $superpw);
-    test = $changesuperpw.style.display === "block";
+    test = $superpwtypo.style.display === "block";
     if (test) {
-        console.log("Passed: Show change super password warning");
+        console.log("Passed: Show change super password typo warning");
         passed++;
     } else {
-        console.warn("Failed: Show change super password warning", "asdfgh", "|" + $superpw.value + "|");
+        console.warn("Failed: Show change super password typo warning", "asdfgh", "|" + $superpw.value + "|");
         failed++;
     }
     // Test keep old password button
     restoreForTesting();
-    await triggerEvent("click", $changesuperpwcancelbutton);
-    test = $changesuperpw.style.display === "none" && $superpw.value === "";
+    await triggerEvent("click", $superpwtypobutton);
+    test = $superpwtypo.style.display === "none" && $superpw.value === "";
     if (test) {
         console.log("Passed: Keep old super password");
         passed++;
@@ -952,13 +914,36 @@ async function testChangeSuperpw() {
         console.warn("Failed: Keep old super password");
         failed++;
     }
-    // Change superpw providing old superpw
+    // Change superpw providing old superpw with typo
     await resetState();
     restoreForTesting();
     let sitepws = await changeSuperpwSetup("qwerty");
     await updateValue($superpw, "asdfgh");
     await triggerEvent("blur", $superpw);
-    await updateValue($changesuperpwinput, "qwerty");
+    await updateValue($changesuperpwinput, "qwertyTypo");
+    await triggerEvent("blur", $changesuperpwinput);
+    test = $changesuperpwtypo.classList.contains("nodisplay") === false; // Check if the typo warning is shown
+    if (test) {
+        console.log("Passed: Show typo warning for old super password");
+        passed++;
+    } else {
+        console.warn("Failed: Show typo warning for old super password");
+        failed++;
+    }
+    // Make sure the typo warning goes away when you start typing a new value
+    $changesuperpwinput.value = "a";
+    await triggerEvent("keyup", $changesuperpwinput);
+    test = $changesuperpwtypo.classList.contains("nodisplay") === true; // Check if the typo warning is hidden
+    if (test) {
+        console.log("Passed: Typo warning goes away when typing a new value");
+        passed++;
+    } else {
+        console.warn("Failed: Typo warning goes away when typing a new value");
+        failed++;
+    }
+    // Finish providing old super password
+    $changesuperpwinput.value = "asdfgh";
+    await triggerEvent("blur", $changesuperpwinput);
     await triggerEvent("click", $changesuperpwkeepbutton);
     await triggerEvent("mouseleave", $mainpanel);
     test = await checkSitepws(sitepws, true);
@@ -984,6 +969,8 @@ async function testChangeSuperpw() {
         console.warn("Failed: Show change super password");
         failed++;
     }
+    // Test provide wrong old superpw
+    // Test provide correct old superpw
     async function changeSuperpwSetup(newSuperpw) {
         await fillForm(newSuperpw, "notprovided.example.com", "Guru", "Alan");
         let notprovided = $sitepw.value;

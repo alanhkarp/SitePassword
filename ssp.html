@@ -238,6 +238,24 @@ to change all occurrences if ![](images...) to <img> tags.
             </span>
           </span>
         </div>
+        <div id="superpwtypo" class="warning nodisplay" style="width: 18em"
+          title="Super password typo.">
+          <span id="superpwtypotext">
+            <img src="images/warning.png" class="icon warning-icon">
+            <span class="warningtext">Super Password Typo</span>
+            <p>
+              The super password you entered appears to be a typo.
+              Please check and enter your super password correctly.
+            </p>
+            <br />
+            <span class="warningtext">
+              <button id="superpwtypobutton" type="button" class="buttonsafe"
+                title="Close this warning.">
+                <span class="btn-text" style="color: white">Close</span>
+              </button>
+            </span>
+          </span>
+        </div>
         <div id="changesuperpw" class="warning nodisplay" style="width: 18em"
           title="Different super password.">
           <span id="changesuperpwtext">
@@ -261,6 +279,10 @@ to change all occurrences if ![](images...) to <img> tags.
                 placeholder="Enter your old superpassword."
                 title="Enter your old super password." />
               <br /><br />
+              <p id="changesuperpwtypo" class="nodisplay">
+                The super password you entered appears to be a typo.
+                Please check and enter your old super password correctly.
+              </p>
               <button id="changesuperpwkeepbutton" type="button" class="buttondangerous"
                 title="Click to keep the new super password.">
                 <span class="btn-text" style="color: white">
@@ -1571,6 +1593,10 @@ to change all occurrences if ![](images...) to <img> tags.
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M7 6.362A9.707 9.707 0 0 1 12 5c6.307 0 9.367 5.683 9.91 6.808.06.123.06.261 0 .385-.352.728-1.756 3.362-4.41 5.131M14 18.8a9.93 9.93 0 0 1-2 .2c-6.307 0-9.367-5.683-9.91-6.808a.44.44 0 0 1 0-.386c.219-.452.84-1.632 1.91-2.885m6 .843A3 3 0 0 1 14.236 14M3 3l18 18" />
               </svg>
+            </div>
+            <div id="superpwmenuaccount"
+              title="Click to change your super password.">
+              <img src="images/account.png" class="icon menu-icon">
             </div>
             <div id="superpwmenuhide" class="nodisplay" title="Hide your super password">
               <svg class="icon menu-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
