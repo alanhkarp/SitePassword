@@ -16,15 +16,15 @@ export async function generatePassword(bg) {
     let salt = n.toString() + '\t' + u.toString();
     let p = await computePassword(m, salt, settings);
     return p;
-    function isConsistent(settings) {
-        if (bg.settings.providesitepw) return true; // Any password the user enters is OK
-        let total = 0
-        if (settings.allowupper) total += settings.minupper - 0;
-        if (settings.allowlower) total += settings.minlower - 0;
-        if (settings.allownumber) total += settings.minnumber - 0;
-        if (settings.allowspecial) total += settings.minspecial - 0;
-        return total <= settings.pwlength;
-    }
+}
+export function isConsistent(settings) {
+    if (settings.providesitepw) return true; // Any password the user enters is OK
+    let total = 0
+    if (settings.allowupper) total += settings.minupper - 0;
+    if (settings.allowlower) total += settings.minlower - 0;
+    if (settings.allownumber) total += settings.minnumber - 0;
+    if (settings.allowspecial) total += settings.minspecial - 0;
+    return total <= settings.pwlength;
 }
 export function isSuperPw(superpw) {
     if (superpw) return "SuperPW";

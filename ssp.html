@@ -89,7 +89,7 @@ to change all occurrences if ![](images...) to <img> tags.
           </button>
           <br /><br />
         </div>
-        <div id="suffix" class="warning " style="width: 25em;  border: #007bff solid 4px">
+        <div id="suffix" class="warning nodisplay" style="width: 25em;  border: #007bff solid 4px">
           <p>
             <span class="warningtext" style="text-align: center; display: block;">Related Domain Name</span>
           </p>
@@ -253,44 +253,76 @@ to change all occurrences if ![](images...) to <img> tags.
                 title="Close this warning.">
                 <span class="btn-text" style="color: white">Close</span>
               </button>
+              <br /><br />
+              <button id="superpwtypochangebutton" type="button" class="buttondangerous"
+                title="Change your super password.">
+                <span class="btn-text" style="color: white">Change</span>
+              </button>
             </span>
           </span>
         </div>
         <div id="changesuperpw" class="warning nodisplay" style="width: 18em"
-          title="Different super password.">
-          <span id="changesuperpwtext">
-            <img src="images/warning.png" class="icon warning-icon">
-            <span class="warningtext">Different Super Password</span>
+          title="Change super password.">
+            <br />
+            <span class="warningtext" style="text-align: center; display: block;">Change Super Password</span>
             <p>
-              You entered a different super password than the one you used last time.
+              You have two options when changing your super password.
             </p>
+            <hr />
             <div>
-              <button id="changesuperpwcancelbutton" type="button" class="buttonsafe" 
-                title="Cancel changing your super password.">
-                <span class="btn-text" style="color: white">Keep my old super password</span>
-              </button>
-              <br /><br />
               <p>
-                If you enter your old super password below, your account passwords won't be changed,
-                but they will be treated as if you provided them.  If you don't enter your super password, 
-                all your account passwords will change.
+                Enter your new super password in the field below and click 
+                "Change all account passwords" to start using the new super password.
+                Note that any passwords you provided will be lost.
               </p>
-              <input type="text" id="changesuperpwinput" style="width: 96%" class="input" 
+              <input type="text" id="changesuperpwnewloseinput" style="width: 96%" class="input" 
+                placeholder="Enter your new superpassword."
+                title="Enter your new super password." />
+              <br /><br />
+              <span class="btn-text" style="color: white">
+                <button id="changesuperpwchangelosebutton" type="button" class="buttondangerous"
+                  disabled
+                  title="Change all account passwords.">
+                    Change all account passwords
+                </button>
+              </span>
+            </div>
+            <hr />
+            <div>
+              <p>
+                You can keep your existing account passwords by providing your old super password.
+              </p>
+              <input type="text" id="changesuperpwoldinput" style="width: 96%" class="input" 
                 placeholder="Enter your old superpassword."
                 title="Enter your old super password." />
-              <br /><br />
-              <p id="changesuperpwtypo" class="nodisplay">
+              <p id="changesuperpwtypo" class="nodisplay" style="color:red;">
                 The super password you entered appears to be a typo.
                 Please check and enter your old super password correctly.
               </p>
-              <button id="changesuperpwkeepbutton" type="button" class="buttondangerous"
-                title="Click to keep the new super password.">
-                <span class="btn-text" style="color: white">
-                  Keep the new super password
-                </span>
+              <p id="changesuperpwnotypo">
+                Then enter your new super password.  Be sure to enter it correctly.
+                SitePassword cannot help you if you forget it or enter it incorrectly.
+                When you are ready, click "Use new superpassword."
+              </p>  
+              <input type="text" id="changesuperpwnewinput"  
+                style="width: 96%" class="input" 
+                placeholder="Enter your new superpassword."
+                title="Enter your new super password." />
+              <br /><br />
+              <button id="changesuperpwnewkeepbutton" type="button" class="buttondangerous" 
+                disabled
+                title="Use new super password.">
+                <span class="btn-text" style="color: white">Use new superpassword</span>
+              </button>
+              <hr>
+              <p>
+              Don't change your super password.
+              </p>
+              <button id="changesuperpwcancelbutton" type="button" class="buttonsafe" 
+                title="Cancel changing your super password.">
+                <span class="btn-text" style="color: white">Cancel</span>
               </button>
             </div>
-          </span>
         </div>
         <div id="nopw" class="warning nodisplay" style="width: 18em"
           title="You may need to enable some characters, increase the pasword length, or reduce the number of special characters you're asking for.">
@@ -467,7 +499,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#overview">Overview</h3>
+            <h3 ie="overview">Overview</h3>
             <div id="overviewdiv" style="display: none">
               <p>
                 It's too hard for you to remember a strong password for every account
@@ -508,7 +540,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#using-the-extension">Using the Extension</h3>
+            <h3 ie="using-the-extension">Using the Extension</h3>
             <div id="basicdiv" style="display: none">
               <p>
                 After you install the Chrome extension and visit a page with a
@@ -545,7 +577,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#the-domain-name">The Domain Name</h3>
+            <h3 ie="the-domain-name">The Domain Name</h3>
             <div id="domainnamediv" style="display:none">
               <p>
                 The domain name is associated with the settings for this account.
@@ -575,7 +607,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#your-super-password">Your Super Password</h3>
+            <h3 ie="your-super-password">Your Super Password</h3>
             <div id="superpwdiv" style="display:none">
               <p>
                 You should choose a strong super password, one with upper and
@@ -636,7 +668,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#your-site-nickname">Your Account Nickname</h3>
+            <h3 ie="your-site-nickname">Your Account Nickname</h3>
             <div id="sitenamediv" style="display: none;">
               <p>
                 You refer to an account by assigning it a nickname that should be easy to remember,
@@ -719,7 +751,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#your-site-password">Your Account Password</h3>
+            <h3 ie="your-site-password">Your Account Password</h3>
             <div id="sitepwdiv" style="display: none;">
               <p>
                 SitePassword uses your super password, nickname for the site, and
@@ -766,7 +798,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#providing-a-password">Providing a Password</h3>
+            <h3 ie="providing-a-password">Providing a Password</h3>
             <div id="providediv" style="display: none;">
               <p>
                 Unlike most password managers that calculate your password, SitePassword gives you
@@ -798,7 +830,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#input-field-menus">Input Field Menus</h3>
+            <h3 ie="input-field-menus">Input Field Menus</h3>
             <div id="menusdiv" style="display:none">
               <p>
                 Each of the input fields has a menu that shows up when you mouse over 
@@ -852,7 +884,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#additional-settings">Additional Settings</h3>
+            <h3 ie="additional-settings">Additional Settings</h3>
             <div id="settingsdiv" style="display:none">
               <p>
                 The settings panel is divided
@@ -906,7 +938,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#computing-an-acceptable-password">Computing an acceptable password</h3>
+            <h3 ie="computing-an-acceptable-password">Computing an acceptable password</h3>
             <div id="acceptablediv" style="display: none;">
               <p>
                 Some web sites have strict password rules, how long it must be,
@@ -946,7 +978,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#changing-an-account-password">Changing an Account Password</h3>
+            <h3 ie="changing-an-account-password">Changing an Account Password</h3>
             <div id="changediv" style="display: none;">
               <p>
                 Some sites make you change your password periodically. SitePassword
@@ -981,7 +1013,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#using-the-clipboard">Using the Clipboard</h3>
+            <h3 ie="using-the-clipboard">Using the Clipboard</h3>
             <div id="clipboarddiv" style="display: none;">
               <p>
                 There are two times when you won't be able to fill in your password in the login form by clicking on it.
@@ -1020,7 +1052,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#phishing-warning">Phishing Warning</h3>
+            <h3 ie="phishing-warning">Phishing Warning</h3>
             <div id="phishingdiv" style="display: none;">
               <p>
                 SitePassword includes an antiphishing feature. If you try to use
@@ -1159,7 +1191,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#downloading-your-settings">Downloading Your Settings</h3>
+            <h3 ie="downloading-your-settings">Downloading Your Settings</h3>
             <div id="downloaddiv" style="display: none;">
               <p>
                 There is a <em>Download Site Data</em> button at the bottom of
@@ -1186,7 +1218,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#exporting-your-passwords">Exporting Your Passwords</h3>
+            <h3 ie="exporting-your-passwords">Exporting Your Passwords</h3>
             <div id="exportdiv" style="display: none;">
               <p>
                 There may come a time when you want to use a different password manager.
@@ -1224,7 +1256,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#the-extension-and-the-web-page">The Extension and the Web Page</h3>
+            <h3 ie="the-extension-and-the-web-page">The Extension and the Web Page</h3>
             <div id="extensiondiv" style="display: none;">
               <p>
                 There will be times when you are on a device that doesn't have
@@ -1260,7 +1292,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#Browser Autofill">Browser Autofill</h3>
+            <h3 ie="browser-autofill">Browser Autofill</h3>
             <div id="autofilldiv" style="display: none;">
               <p>
                 The autofill feature of your browser can interfere with SitePassword.
@@ -1283,7 +1315,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#source-code">Source Code</h3>
+            <h3 ie="source-code">Source Code</h3>
             <div id="sourcediv" style="display: none">
               <p>
                 If you are worried that SitePassword might go away, you can
@@ -1313,7 +1345,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#developers">Developers</h3>
+            <h3 ie="developers">Developers</h3>
             <div id="developersdiv" style="display: none">
               <p>
                 The SitePassword extension can be installed for Firefox most Chromium browsers using the code here.  
@@ -1354,7 +1386,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="m9 13 3-3 3 3" />
             </svg>
-            <h3 id="#voluntary-payment">Voluntary Payment</h3>
+            <h3 ie="voluntary-payment">Voluntary Payment</h3>
             <div id="paymentdiv" style="display: none">
               <p>
                 If you like SitePassword, please make a contribution to the
@@ -1588,15 +1620,15 @@ to change all occurrences if ![](images...) to <img> tags.
             <img src="images/3bluedots.png" class="dots">
           </div>
           <div id="superpwmenu" class="nodisplay menu inner-icon-2">
+            <div id="superpwmenuaccount"
+              title="Click to change your super password.">
+              <img src="images/account.png" class="icon menu-icon">
+            </div>
             <div id="superpwmenushow" title="Show your super password">
               <svg class="icon menu-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M7 6.362A9.707 9.707 0 0 1 12 5c6.307 0 9.367 5.683 9.91 6.808.06.123.06.261 0 .385-.352.728-1.756 3.362-4.41 5.131M14 18.8a9.93 9.93 0 0 1-2 .2c-6.307 0-9.367-5.683-9.91-6.808a.44.44 0 0 1 0-.386c.219-.452.84-1.632 1.91-2.885m6 .843A3 3 0 0 1 14.236 14M3 3l18 18" />
               </svg>
-            </div>
-            <div id="superpwmenuaccount"
-              title="Click to change your super password.">
-              <img src="images/account.png" class="icon menu-icon">
             </div>
             <div id="superpwmenuhide" class="nodisplay" title="Hide your super password">
               <svg class="icon menu-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">

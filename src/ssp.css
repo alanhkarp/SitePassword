@@ -298,6 +298,13 @@ button:enabled:active {
   color: white;
   width: 100%;
 }
+.buttondangerous:disabled {
+  background-color: rgb(213, 28, 36);
+  margin: auto;
+  color: white;
+  width: 100%;
+  opacity: 0.5;
+}
 .buttondangerous:enabled:hover {
   background-color: rgb(213, 28, 36, 80%);
   color: white;

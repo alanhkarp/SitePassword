@@ -5,6 +5,7 @@
 import { baseDefaultSettings, getRootFolder } from "./bg.js";
 import { normalize } from "./generate.js";
 import { getsettings, restoreForTesting } from "./ssp.js";
+import {$, get} from "./domElements.js";
 
 export let resolvers = {};
 
@@ -29,66 +30,6 @@ if (logging) {
                          loggingReset = loggingTrigger = loggingWrapHandler = 
                          loggingRememberForm = loggingRememberSuperpw = true;
 }
-// #region Fields needed for tests
-const $account = get("account");
-const $accountnicknamecancelbutton = get("accountnicknamecancelbutton");
-const $accountnicknameinput = get("accountnicknameinput");
-const $accountnicknamenewbutton = get("accountnicknamenewbutton");
-const $accountnicknamesavebutton = get("accountnicknamesavebutton");
-const $allowlowercheckbox = get("allowlowercheckbox");
-const $allownumbercheckbox = get("allownumbercheckbox");
-const $allowspecialcheckbox = get("allowspecialcheckbox");
-const $allowuppercheckbox = get("allowuppercheckbox");
-const $clearsuperpw = get("clearsuperpw");
-const $domainname = get("domainname");
-const $domainname3bluedots = get("domainname3bluedots");
-const $domainnamemenuforget = get("domainnamemenuforget");
-const $forgetbutton = get("forgetbutton");
-const $hidesitepw = get("hidesitepw");
-const $makedefaultbutton = get("makedefaultbutton");
-const $mainpanel = get("mainpanel");
-const $minlower = get("minlower");
-const $minnumber = get("minnumber");
-const $minspecial = get("minspecial");
-const $minupper = get("minupper");
-const $nicknamebutton = get("nicknamebutton");
-const $phishing = get("phishing");
-const $providesitepw = get("providesitepw");
-const $pwlength = get("pwlength");
-const $sameacctbutton = get("sameacctbutton");
-const $settingsmenu = get("settingsmenu");
-const $settingsshow = get("settingsshow");
-const $settingssave = get("settingssave");
-const $sitename = get("sitename");
-const $sitename3bluedots = get("sitename3bluedots");
-const $sitepw = get("sitepw");
-const $sitepw3bluedots = get("sitepw3bluedots");
-const $sitepwmenu = get("sitepwmenu");
-const $sitepwmenuaccount = get("sitepwmenuaccount");
-const $sitenamemenuforget = get("sitenamemenuforget");
-const $specials = get("specials");
-const $startwithletter = get("startwithletter");
-const $suffix = get("suffix");
-const $suffixacceptbutton = get("suffixacceptbutton");
-const $suffixcancelbutton = get("suffixcancelbutton");
-const $superpw = get("superpw");
-const $superpwmenuaccount = get("superpwmenuaccount");
-const $changesuperpwcancelbutton = get("changesuperpwcancelbutton");
-const $changesuperpwkeepbutton = get("changesuperpwkeepbutton");
-const $changesuperpwtypo = get("changesuperpwtypo");
-const $username = get("username");
-const $username3bluedots = get("username3bluedots");
-const $usernamemenuforget = get("usernamemenuforget");
-const $forget = get("forget");
-const $superpwtypo = get("superpwtypo");
-const $superpwtypobutton = get("superpwtypobutton");
-const $changesuperpw = get("changesuperpw");
-const $changesitename = get("changesitename");
-const $changesitenameokbutton = get("changesitenameokbutton");
-const $changeusername = get("changeusername");
-const $changeusernameokbutton = get("changeusernameokbutton");
-const $changesuperpwinput = get("changesuperpwinput");
-// #endregion
 
 let passed = 0;
 let failed = 0;
@@ -104,23 +45,23 @@ export async function runTests() {
     }
     if (!restart) {
         await testCalculation(); 
-        // await testRememberSuperpw();
-        // await testChangePassword();
-        // await testRememberForm();
-        // await testProvidedpw();
-        // await testPhishing();
-        // await testSharedCredentials();
-        // await testForget();
-        // await testClearSuperpw();
-        // await testHideSitepw();
-        // await testLegacyBkmks();
-        // await testDuplicateBkmks();
-        // await testSafeSuffixes();
-        // await testChangeAccount();
+        await testRememberSuperpw();
+        await testChangePassword();
+        await testRememberForm();
+        await testProvidedpw();
+        await testPhishing();
+        await testSharedCredentials();
+        await testForget();
+        await testClearSuperpw();
+        await testHideSitepw();
+        await testLegacyBkmks();
+        await testDuplicateBkmks();
+        await testSafeSuffixes();
+        await testChangeAccount();
         await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
-        // await testSaveAsDefault();
+        await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -133,15 +74,15 @@ export async function runTests() {
 // Test password calculation
 async function testCalculation() {
     await resetState();
-    if (loggingCalculation) console.log("testCalculation state reset", $pwlength.value);
+    if (loggingCalculation) console.log("testCalculation state reset", $.pwlength.value);
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
-    if (loggingCalculation) console.log("testCalculation form filled", $sitename.value, $username.value);
-    let actual = $sitepw.value;
+    if (loggingCalculation) console.log("testCalculation form filled", $.sitename.value, $.username.value);
+    let actual = $.sitepw.value;
     if (actual === expectedpw) {
         console.log("Passed: Calculation");
         passed++;
     } else {
-        let inputs = {"expectedpw": expectedpw, "actual": actual, "superpw": $superpw.value, "sitename": $sitename.value, "username": $username.value};
+        let inputs = {"expectedpw": expectedpw, "actual": actual, "superpw": $.superpw.value, "sitename": $.sitename.value, "username": $.username.value};
         console.warn("Failed: Calculation", inputs);
         failed++;
     }
@@ -151,73 +92,73 @@ async function testRememberSuperpw() {
     await resetState();
     let expectedsuperpw = "MySuperPassword";
     await fillForm(expectedsuperpw, "alantheguru.alanhkarp.com", "Guru", "Alan");
-    if (loggingRememberSuperpw) console.log("testRememberSuperpw state reset", $superpw.value);
-    await triggerEvent("click", $settingsshow);
+    if (loggingRememberSuperpw) console.log("testRememberSuperpw state reset", $.superpw.value);
+    await triggerEvent("click", $.settingsshow);
     // superpwhash uses default settings, so make sure it ignores non-default setings
-    await updateValue($pwlength, "16");
-    await triggerEvent("blur", $pwlength);
-    let expected = $sitepw.value;
-    await triggerEvent("mouseleave", $mainpanel);  // $mainpanel.onmouseleave(); saves the settings
+    await updateValue($.pwlength, "16");
+    await triggerEvent("blur", $.pwlength);
+    let expected = $.sitepw.value;
+    await triggerEvent("mouseleave", $.mainpanel);  // $.mainpanel.onmouseleave(); saves the settings
     await clearForm();
     restoreForTesting();
-    await updateValue($domainname, "alantheguru.alanhkarp.com");
-    await triggerEvent("blur", $domainname);
-    await triggerEvent("click", $settingsshow); // For debugging
-    let test = $superpw.value === expectedsuperpw && $sitepw.value === expected;
+    await updateValue($.domainname, "alantheguru.alanhkarp.com");
+    await triggerEvent("blur", $.domainname);
+    await triggerEvent("click", $.settingsshow); // For debugging
+    let test = $.superpw.value === expectedsuperpw && $.sitepw.value === expected;
     if (test) {
         console.log("Passed: Remember super password");
         passed++;
     } else {
-        console.warn("Failed: Remember super password", "expected", expectedsuperpw, "got", $superpw.value);
+        console.warn("Failed: Remember super password", "expected", expectedsuperpw, "got", $.superpw.value);
         failed++;
     }
 }
 // Test change password
 async function testChangePassword() {
     await phishingSetup();
-    await triggerEvent("click", $sameacctbutton);
+    await triggerEvent("click", $.sameacctbutton);
     restoreForTesting();
-    await triggerEvent("mouseleave", $mainpanel);
+    await triggerEvent("mouseleave", $.mainpanel);
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
-    await updateValue($sitename, "Guru2");
-    await triggerEvent("blur", $sitename);
-    let actual = $sitepw.value;
-    await triggerEvent("mouseleave", $mainpanel);
+    await updateValue($.sitename, "Guru2");
+    await triggerEvent("blur", $.sitename);
+    let actual = $.sitepw.value;
+    await triggerEvent("mouseleave", $.mainpanel);
     restoreForTesting();
     await fillForm("qwerty", "allantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    let test = $sitename.value === "Guru2" && $username.value === "Alan" && $sitepw.value === actual;
+    await triggerEvent("blur", $.domainname);
+    let test = $.sitename.value === "Guru2" && $.username.value === "Alan" && $.sitepw.value === actual;
     if (test) {
         console.log("Passed: Change password");
         passed++;
     } else {
-        console.warn("Failed: Change password", "Guru2", "Alan", actual, $sitename.value, $username.value, $sitepw.value);
+        console.warn("Failed: Change password", "Guru2", "Alan", actual, $.sitename.value, $.username.value, $.sitepw.value);
         failed++;
     }
 }
 async function testRememberForm() {
     if (loggingRememberForm) console.log("testRememberForm state reset");
     let setupFn = async () => {
-        await triggerEvent("click", $startwithletter);
+        await triggerEvent("click", $.startwithletter);
     };
     let tests = await testFormElement(setupFn, "start with letter, password correct");
-    tests = tests && /^\d/.test($sitepw.value);
+    tests = tests && /^\d/.test($.sitepw.value);
     if (tests) {
         console.log("Passed: Remember form password starts with letter");
         passed++;
     } else {
-        console.warn("Failed: Remember form password starts with letter", $sitepw.value);
+        console.warn("Failed: Remember form password starts with letter", $.sitepw.value);
         failed++;
     }
     setupFn = async () => {
-        await triggerEvent("click", $allowspecialcheckbox);
-        await updateValue($specials, "/!=@?._-");
-        await triggerEvent("blur", $specials); // For debugging
+        await triggerEvent("click", $.allowspecialcheckbox);
+        await updateValue($.specials, "/!=@?._-");
+        await triggerEvent("blur", $.specials); // For debugging
     };
     tests = tests && await testFormElement(setupFn, "allow special characters");
     setupFn = async () => {
-        await updateValue($pwlength, 16);
-        await triggerEvent("blur", $pwlength);
+        await updateValue($.pwlength, 16);
+        await triggerEvent("blur", $.pwlength);
     };
     tests = tests && await testFormElement(setupFn, "password length");
     tests = tests && await testAllows("lower");
@@ -230,56 +171,57 @@ async function testRememberForm() {
             await triggerEvent("click", get(element));
         };
         let tests = await testFormElement(setupFn, "allow " + which);
-        tests = tests && !regex.test($sitepw.value);
+        tests = tests && !regex.test($.sitepw.value);
         return tests;
     }
     async function testFormElement(setupFn, description) {
         await resetState();
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
-        await triggerEvent("click", $settingsshow);
+        await triggerEvent("click", $.settingsshow);
         await setupFn();
-        let expectdpw = $sitepw.value;
-        await triggerEvent("mouseleave", $mainpanel);  // $mainpanel.onmouseleave(); saves the settings
-        if (loggingRememberForm) console.log("testRememberForm filled form", $sitename.value, $username.value);
+        let expectdpw = $.sitepw.value;
+        await triggerEvent("mouseleave", $.mainpanel);  // $.mainpanel.onmouseleave(); saves the settings
+        if (loggingRememberForm) console.log("testRememberForm filled form", $.sitename.value, $.username.value);
         // See if it remembers
         await clearForm();
         await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-        if (loggingRememberForm) console.log("testRememberForm filled form", $sitename.value, $username.value);
-        await triggerEvent("blur", $domainname);
-        await triggerEvent("click", $settingsshow); // For debugging
-        let tests = $sitename.value === "Guru";
-        tests = tests && $username.value === "Alan";
-        tests = tests && $sitepw.value === expectdpw;
+        if (loggingRememberForm) console.log("testRememberForm filled form", $.sitename.value, $.username.value);
+        await triggerEvent("blur", $.domainname);
+        await triggerEvent("click", $.settingsshow); // For debugging
+        let tests = $.sitename.value === "Guru";
+        tests = tests && $.username.value === "Alan";
+        tests = tests && $.sitepw.value === expectdpw;
         if (tests) {
             console.log("Passed: Remember form:", description);
             passed++;
         } else {
-            console.warn("Failed: Remember form:", description, "expected pw", expectdpw, "got", $sitepw.value);
+            console.warn("Failed: Remember form:", description, "expected pw", expectdpw, "got", $.sitepw.value);
             failed++;
         }
         return tests;
     }
 }
 async function testProvidedpw() {
-     await resetState();
+    await resetState();
     const providedpw = "MyStrongPassword";
     // Test remembering provided password longer than computed password
     if (loggingProvide) console.log("testProvidedpw state reset");
     let unprovided = await providepwSetup("qwerty", providedpw, "alantheguru.alanhkarp.com", "Guru", "Alan");
-    if (loggingProvide) console.log("testProvidedpw saved", $sitepw.value);
+    await triggerEvent("mouseleave", $.mainpanel);
+    if (loggingProvide) console.log("testProvidedpw saved", $.sitepw.value);
     // See if it remembers
     await clearForm();
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
     document.activeElement.blur(); // So sitepw field is not the active element
-    await triggerEvent("blur", $domainname);
-    await triggerEvent("click", $settingsshow); // For debugging
-    if (loggingProvide) console.log("testProvidedpw domainname blur", $sitepw.value, $providesitepw.checked);
-    let test = $sitepw.value === providedpw;
+    await triggerEvent("blur", $.domainname);
+    await triggerEvent("click", $.settingsshow); // For debugging
+    if (loggingProvide) console.log("testProvidedpw domainname blur", $.sitepw.value, $.providesitepw.checked);
+    let test = $.sitepw.value === providedpw;
     if (test) {
         console.log("Passed: Remembers provided pw longer than computed pw");
         passed++;
     } else {
-        console.warn("Failed: Remembers provided pw longer than computed pw", providedpw, "|" + $sitepw.value + "|");
+        console.warn("Failed: Remembers provided pw longer than computed pw", providedpw, "|" + $.sitepw.value + "|");
         failed++;
     }
     // Test remembering provided password shorter than computed password
@@ -288,151 +230,89 @@ async function testProvidedpw() {
     unprovided = await providepwSetup("qwerty", expectedpw2, "alantheguru.alanhkarp.com", "Guru", "Alan");
     await clearForm();
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    test = $sitepw.value === expectedpw2;
+    await triggerEvent("blur", $.domainname);
+    test = $.sitepw.value === expectedpw2;
     if (test) {
         console.log("Passed: Remembers provided pw shorter than computed pw");
         passed++;
     } else {
-        console.warn("Failed: Remembers provided pw shorter than computed pw", expectedpw2, "|" + $sitepw.value + "|");
+        console.warn("Failed: Remembers provided pw shorter than computed pw", expectedpw2, "|" + $.sitepw.value + "|");
         failed++;
     }
     // See if I ignore case when deciding if site name was changed
-    await updateValue($sitename, "guru");
-    await triggerEvent("blur", $sitename);
-    test = $changesitename.style.display === "none";
+    await updateValue($.sitename, "guru");
+    await triggerEvent("blur", $.sitename);
+    test = $.changesitename.style.display === "none";
     if (test) {
         console.log("Passed: Ignores case when deciding if site name was changed");
         passed++;
     } else {
-        console.warn("Failed: Ignores case when deciding if site name was changed", expectedpw2, "|" + $sitepw.value + "|", "guru", "|" + $sitename.value + "|");
+        console.warn("Failed: Ignores case when deciding if site name was changed", expectedpw2, "|" + $.sitepw.value + "|", "guru", "|" + $.sitename.value + "|");
         failed++;
     }
     // See if I ignore case when deciding if user name was changed
-    await updateValue($username, "Alan");
-    await triggerEvent("blur", $username);
-    test = $changeusername.style.display === "none";
+    await updateValue($.username, "alan");
+    await triggerEvent("blur", $.username);
+    test = $.changeusername.style.display === "none";
     if (test) {
         console.log("Passed: Ignores case when deciding if username was changed");
         passed++;
     } else {
-        console.warn("Failed: Ignores case when deciding if username was changed", expectedpw2, "|" + $sitepw.value + "|", "Alan", "|" + $username.value + "|");
+        console.warn("Failed: Ignores case when deciding if username was changed", expectedpw2, "|" + $.sitepw.value + "|", "Alan", "|" + $.username.value + "|");
         failed++;
     }
     // See if I get a warning when I change the site name
-    await updateValue($sitename, "Guru2");
-    await triggerEvent("blur", $sitename);
-    await triggerEvent("mouseleave", $mainpanel);
-    test = $changesitename.style.display !== "none";
-    await triggerEvent("click", $changesitenameokbutton);
-    test = test && $changesitename.style.display == "none";
-    test = test && $sitepw.value === expectedpw2;
+    await updateValue($.sitename, "Guru2");
+    await triggerEvent("blur", $.sitename);
+    test = $.changesitename.style.display !== "none";
+    await triggerEvent("click", $.changesitenameokbutton);
+    test = test && $.changesitename.style.display == "none";
+    test = test && $.sitepw.value === expectedpw2;
     if (test) {
         console.log("Passed: Change sitename with provided pw");
         passed++;
     } else {
-        console.warn("Failed: Change sitename with provided pw", expectedpw2, "|" + $sitepw.value + "|", "Guru2", "|" + $sitename.value + "|");
+        console.warn("Failed: Change sitename with provided pw", expectedpw2, "|" + $.sitepw.value + "|", "Guru2", "|" + $.sitename.value + "|");
         failed++;
     }
     // See if I get a warning when I change the user name
-    await updateValue($username, "Alan2");
-    await triggerEvent("blur", $username);
-    await triggerEvent("mouseleave", $mainpanel);
-    test = $changeusername.style.display !== "none";
-    await triggerEvent("click", $changeusernameokbutton);
-    test = test && $changeusername.style.display === "none";
-    await triggerEvent("click", $changeusernameokbutton);
-    test = test && $sitepw.value === expectedpw2;
+    await updateValue($.username, "Alan2");
+    await triggerEvent("blur", $.username);
+    await triggerEvent("mouseleave", $.mainpanel);
+    test = $.changeusername.style.display !== "none";
+    await triggerEvent("click", $.changeusernameokbutton);
+    test = test && $.changeusername.style.display === "none";
+    await triggerEvent("click", $.changeusernameokbutton);
+    test = test && $.sitepw.value === expectedpw2;
     if (test) {
         console.log("Passed: Change username with provided pw");
         passed++;
     } else {
-        console.warn("Failed: Change username with provided pw", expectedpw2, "|" + $sitepw.value + "|", "Alan2", "|" + $username.value + "|");
-        failed++;
-    }
-    // See if I can change the sitename without it forgetting the provided password
-    await updateValue($sitename, "Guru");
-    await triggerEvent("blur", $sitename);
-    test = $changesitename.style.display !== "none";
-    await triggerEvent("click", $changesitenameokbutton);
-    test = test && $changesitename.style.display === "none";
-    await triggerEvent("mouseleave", $mainpanel);
-    if (test) {
-        console.log("Passed: Change sitename triggers warning");
-        passed++;
-    } else {
-        console.warn("Failed: Change sitename triggers warning");
-        failed++;
-    }
-    test = $sitepw.value === expectedpw2 && $sitename.value === "Guru" && $changesitename.style.display === "none";
-    if (test) {
-        console.log("Passed: Change sitename and keep with provided pw");
-        passed++;
-    } else {
-        console.warn("Failed: Change sitename and keep with provided pw", expectedpw2, "|" + $sitepw.value + "|", "Guru", "|" + $sitename.value + "|");
-        failed++;
-    }
-    // See if I can change the username without it forgetting the provided password
-    await updateValue($username, "Alan");
-    await triggerEvent("blur", $username);
-    test = $changeusername.style.display !== "none";
-    await triggerEvent("click", $changeusernameokbutton);
-    test = test && $changeusername.style.display === "none";
-    await triggerEvent("mouseleave", $mainpanel);
-    if (test) {
-        console.log("Passed: Change username triggers warning");
-        passed++;
-    } else {
-        console.warn("Failed: Change username triggers warning");
-        failed++;
-    }
-    test = $sitepw.value === expectedpw2 && $username.value === "Alan" && $changeusername.style.display === "none";
-    if (test) {
-        console.log("Passed: Change username and keep with provided pw");
-        passed++;
-    } else {
-        console.warn("Failed: Change username and keep with provided pw", expectedpw2, "|" + $sitepw.value + "|", "Alan", "|" + $username.value + "|");
-        failed++;
-    }
-    // See what happens if I mouse out of the popup without blurring the domain name field.
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    await updateValue($sitename, "Guru2");
-    await triggerEvent("keyup", $sitename);
-    await triggerEvent("mouseleave", $mainpanel);
-    test = $sitepw.value === expectedpw2;
-    if (test) {
-        console.log("Passed: Mouseleave with provided pw");
-        passed++;
-    } else {
-        console.warn("Failed: Mouseleave with provided pw", expectedpw2, "|" + $sitepw.value + "|");
+        console.warn("Failed: Change username with provided pw", expectedpw2, "|" + $.sitepw.value + "|", "Alan2", "|" + $.username.value + "|");
         failed++;
     }
     // What happens if I go back to the computed password that's shorter than the provided password
     restoreForTesting ();
     await clearForm();
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
-    await triggerEvent("click", $settingsshow);
-    await triggerEvent("click", $providesitepw);
-    await updateValue($pwlength, 12);
-    await triggerEvent("blur", $pwlength);
-    test = $sitepw.value === unprovided;
+    await triggerEvent("click", $.settingsshow);
+    await triggerEvent("click", $.providesitepw);
+    await updateValue($.pwlength, 12);
+    await triggerEvent("blur", $.pwlength);
+    test = $.sitepw.value === unprovided;
     if (test) {
         console.log("Passed: Go back to computed pw");
         passed++;
     } else {
-        console.warn("Failed: Go back to computed pw", unprovided, "|" + $sitepw.value + "|");
+        console.warn("Failed: Go back to computed pw", unprovided, "|" + $.sitepw.value + "|");
         failed++;
     }
-    // What happens if I go back to the computed password that's longer than the provided password
-    restoreForTesting ();
-    await clearForm();
 }
 // Test phishing
 async function testPhishing() {
     await phishingSetup();
     // Does warning appear?
-    let test = $phishing.style.display === "block";
+    let test = $.phishing.style.display === "block";
     if (test) {
         console.log("Passed: Phishing warning is showing");
         passed++;
@@ -445,9 +325,9 @@ async function testPhishing() {
     // Does setting new site name work?
     await phishingSetup();
     if (loggingPhishing) console.log("testPhishing phishingSetup done");
-    $nicknamebutton.click();
-    test = $phishing.style.display === "none" && $sitename.value === normalize("Guru") 
-        && document.activeElement === $sitename;
+    $.nicknamebutton.click();
+    test = $.phishing.style.display === "none" && $.sitename.value === normalize("Guru") 
+        && document.activeElement === $.sitename;
     if (test) {
         console.log("Passed: Phishing new site name");
         passed++;
@@ -457,13 +337,13 @@ async function testPhishing() {
     }
     // Does same account option work?
     await phishingSetup();
-    await triggerEvent("click", $sameacctbutton);
+    await triggerEvent("click", $.sameacctbutton);
     restoreForTesting();
-    await triggerEvent("mouseleave", $mainpanel);
-    if (loggingPhishing) console.log("testPhishing same account", $phishing.style.display, $sitename.value, $username.value);
-    test = $phishing.style.display === "none";
-    test = test && $sitename.value === normalize("Guru");
-    test = test && $username.value === "Alan";
+    await triggerEvent("mouseleave", $.mainpanel);
+    if (loggingPhishing) console.log("testPhishing same account", $.phishing.style.display, $.sitename.value, $.username.value);
+    test = $.phishing.style.display === "none";
+    test = test && $.sitename.value === normalize("Guru");
+    test = test && $.username.value === "Alan";
     if (test) {
         console.log("Passed: Phishing same account");
         passed++;
@@ -473,8 +353,8 @@ async function testPhishing() {
     }
     await clearForm();
     await fillForm("", "allantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    test = $sitename.value === normalize("Guru") && $username.value === "Alan";
+    await triggerEvent("blur", $.domainname);
+    test = $.sitename.value === normalize("Guru") && $.username.value === "Alan";
         if (test) {
         console.log("Passed: Phishing remembered same account");
         passed++;
@@ -487,18 +367,18 @@ async function testPhishing() {
 async function testSharedCredentials() {
     await resetState();
     await fillForm("qwerty", "disney.com", "Disney", "Alan");
-    await triggerEvent("mouseleave", $mainpanel);  // $mainpanel.onmouseleave(); saves the settings
-    let expected = $sitepw.value;
+    await triggerEvent("mouseleave", $.mainpanel);  // $.mainpanel.onmouseleave(); saves the settings
+    let expected = $.sitepw.value;
     restoreForTesting();
     await fillForm("qwerty", "hulu.com", "Disney", "");
-    await triggerEvent("blur", $sitename);
-    await triggerEvent("mouseleave", $mainpanel);  // $mainpanel.onmouseleave(); saves the settings
+    await triggerEvent("blur", $.sitename);
+    await triggerEvent("mouseleave", $.mainpanel);  // $.mainpanel.onmouseleave(); saves the settings
     restoreForTesting();
     await fillForm("qwerty", "hulu.com", "", "");
-    await triggerEvent("blur", $domainname);
-    let test = $phishing.style.display === "none";
-    test = test && $username.value === "Alan";
-    test = test && $sitepw.value === expected;
+    await triggerEvent("blur", $.domainname);
+    let test = $.phishing.style.display === "none";
+    test = test && $.username.value === "Alan";
+    test = test && $.sitepw.value === expected;
     if (test) {
         console.log("Passed: Shared credentials");
         passed++;
@@ -513,13 +393,13 @@ async function testForget() {
     if (loggingForget) console.log("testForget");
     await resetState();
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
-    await triggerEvent("mouseleave", $mainpanel);
+    await triggerEvent("mouseleave", $.mainpanel);
     await forgetDomainname();
     // See if it forgot
     await clearForm();
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    let test = $sitename.value === "" && $username.value === "";
+    await triggerEvent("blur", $.domainname);
+    let test = $.sitename.value === "" && $.username.value === "";
     if (test) {
         console.log("Passed: Forget by domain name");
         passed++;
@@ -529,12 +409,12 @@ async function testForget() {
     }
     // See if database still has site name if it should
     await phishingSetup();
-    await triggerEvent("click", $sameacctbutton); // Now I have two domain names pointing to the same site name
-    await triggerEvent("mouseleave", $mainpanel);
+    await triggerEvent("click", $.sameacctbutton); // Now I have two domain names pointing to the same site name
+    await triggerEvent("mouseleave", $.mainpanel);
     await forgetDomainname();
     await fillForm("qwerty", "allantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    test = $sitename.value === "" && $username.value === "";
+    await triggerEvent("blur", $.domainname);
+    test = $.sitename.value === "" && $.username.value === "";
     if (test) {
         console.log("Passed: Forget site name when it should");
         passed++;
@@ -544,15 +424,15 @@ async function testForget() {
     }
     // See if forget by site name works
     await phishingSetup();
-    await triggerEvent("click", $sameacctbutton); // Now I have two domain names pointing to the same site name
+    await triggerEvent("click", $.sameacctbutton); // Now I have two domain names pointing to the same site name
     await forgetSitename();
-    await triggerEvent("click", $forgetbutton);
+    await triggerEvent("click", $.forgetbutton);
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    test = $sitename.value === "" && $username.value === "";
+    await triggerEvent("blur", $.domainname);
+    test = $.sitename.value === "" && $.username.value === "";
     await fillForm("qwerty", "allantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    test = test && $sitename.value === "" && $username.value === "";
+    await triggerEvent("blur", $.domainname);
+    test = test && $.sitename.value === "" && $.username.value === "";
     if (test) {
         console.log("Passed: Forget by site name");
         passed++;
@@ -562,17 +442,17 @@ async function testForget() {
     }
     // See if forget by username works
     await phishingSetup();
-    await triggerEvent("click", $sameacctbutton); // Now I have two domain names pointing to the same site name
+    await triggerEvent("click", $.sameacctbutton); // Now I have two domain names pointing to the same site name
     if (loggingForget) console.log("testForget forget by username");
     await forgetUsername();
-    await triggerEvent("click", $forgetbutton);
+    await triggerEvent("click", $.forgetbutton);
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    if (loggingForget) console.log("testForget forgot by username", $sitename.value, $username.value);
-    test = $sitename.value === "" && $username.value === "";
+    await triggerEvent("blur", $.domainname);
+    if (loggingForget) console.log("testForget forgot by username", $.sitename.value, $.username.value);
+    test = $.sitename.value === "" && $.username.value === "";
     await fillForm("qwerty", "allantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    test = test && $sitename.value === "" && $username.value === "";
+    await triggerEvent("blur", $.domainname);
+    test = test && $.sitename.value === "" && $.username.value === "";
     if (test) {
         console.log("Passed: Forget by username");
         passed++;
@@ -582,9 +462,9 @@ async function testForget() {
     } 
     // See if forget works even if you don't leave the popup
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
-    await triggerEvent("mouseleave", $mainpanel);
+    await triggerEvent("mouseleave", $.mainpanel);
     await forgetDomainname();
-    test = $forget.style.display === "none";
+    test = $.forget.style.display === "none";
     if (test) {
         console.log("Passed: Forget without leaving popup no warning");
         passed++;
@@ -593,7 +473,7 @@ async function testForget() {
         failed++;
     }
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "");
-    test = $username.value === "";
+    test = $.username.value === "";
     if (test) {
         console.log("Passed: Forget without leaving popup no username");
         passed++;
@@ -607,13 +487,13 @@ async function testDuplicateBkmks() {
     let title = "duplicate.bkmk.com";
     let url = "https://sitepassword.info/?bkmk=ssp://%7B%22sitename%22%3A%22usps%22%2C%22username%22%3A%22fred%22%2C%22providesitepw%22%3Afalse%2C%22xor%22%3A%5B0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%5D%2C%22domainname%22%3A%22reg.usps.com%22%2C%22pwdomainname%22%3A%22reg.usps.com%22%2C%22pwlength%22%3A%2212%22%2C%22startwithletter%22%3Atrue%2C%22allowlower%22%3Atrue%2C%22allowupper%22%3Atrue%2C%22allownumber%22%3Atrue%2C%22allowspecial%22%3Afalse%2C%22minlower%22%3A%221%22%2C%22minupper%22%3A%221%22%2C%22minnumber%22%3A%221%22%2C%22minspecial%22%3A%221%22%2C%22specials%22%3A%22%24%2F!%3D%40%3F._-%22%2C%22characters%22%3A%220123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz%22%7D";
     await resetState();
-    await triggerEvent("mouseleave", $mainpanel);
+    await triggerEvent("mouseleave", $.mainpanel);
     // Create a duplicate bookmark
     let rootFolder = await getRootFolder();
     if (loggingDuplicateBkmks) console.log("testDuplicateBkmks creating identical duplicate bookmarks");
     await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
     await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
-    await triggerEvent("mouseleave", $mainpanel);
+    await triggerEvent("mouseleave", $.mainpanel);
     let children = await chrome.bookmarks.getChildren(rootFolder.id);
     // See if only one of the duplicats remains
     let test = children.length === 2; // because of the common settings bookmark
@@ -644,7 +524,7 @@ async function testDuplicateBkmks() {
     }
     // Test duplicate common settings bookmark
     await resetState();
-    await triggerEvent("mouseleave", $mainpanel);
+    await triggerEvent("mouseleave", $.mainpanel);
     rootFolder = await getRootFolder();
     // Create a duplicate common settings bookmark}
     if (loggingDuplicateBkmks) console.log("testDuplicateBkmks creating identical duplicate common settings bookmark");
@@ -670,7 +550,7 @@ async function testDuplicateBkmks() {
     await resetState();
     if (loggingDuplicateBkmks) console.log("testDuplicateBkmks creating different duplicate common settings bookmark");
     await chrome.bookmarks.create({ "parentId": "1", "title": "SitePasswordDataTest" });
-    await triggerEvent("blur", $domainname);
+    await triggerEvent("blur", $.domainname);
     alertString = await chrome.storage.local.get("alertString");
     alertString = alertString?.alertString;
     test = !!alertString;
@@ -689,14 +569,14 @@ async function testClearSuperpw() {
     if (loggingClearsuperpw) console.log("testClearSuperpw");
     await resetState();
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
-    await triggerEvent("click", $settingsshow); // For debugging
-    await triggerEvent("click", $clearsuperpw);
+    await triggerEvent("click", $.settingsshow); // For debugging
+    await triggerEvent("click", $.clearsuperpw);
     restoreForTesting();
-    await triggerEvent("mouseleave", $mainpanel);
+    await triggerEvent("mouseleave", $.mainpanel);
     let response = await chrome.runtime.sendMessage({"cmd": "getPassword", "domainname": "alantheguru.alanhkarp.com"});
-    await triggerEvent("blur", $domainname);
+    await triggerEvent("blur", $.domainname);
     if (loggingClearsuperpw || logging) console.log("testClearSuperpw getPassword", response);
-    let test = $superpw.value === "" && response === expectedpw;
+    let test = $.superpw.value === "" && response === expectedpw;
     if (test) {
         console.log("Passed: Clear superpw");
         passed++;
@@ -709,11 +589,11 @@ async function testClearSuperpw() {
 async function testHideSitepw() {
     await resetState();
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
-    await triggerEvent("mouseleave", $mainpanel);
-    await triggerEvent("click", $hidesitepw);
-    await triggerEvent("mouseleave", $mainpanel);
-    await triggerEvent("blur", $domainname);
-    let test = $sitepw.type === "password";
+    await triggerEvent("mouseleave", $.mainpanel);
+    await triggerEvent("click", $.hidesitepw);
+    await triggerEvent("mouseleave", $.mainpanel);
+    await triggerEvent("blur", $.domainname);
+    let test = $.sitepw.type === "password";
     if (test) {
         console.log("Passed: Hide sitepw");
         passed++;
@@ -727,10 +607,10 @@ async function testLegacyBkmks() {
     // Create a legacy bookmark
     await resetState();
     let title = "legacy.bkmk.com";
-    let url = "https://sitepassword.info/?bkmk=ssp://{%22sitename%22:%22usps%22,%22username%22:%22fred%22,%22providesitepw%22:false,%22xor%22:[0,0,0,0,0,0,0,0,0,0,0,0],%22pwlength%22:12,%22domainname%22:%22reg.usps.com%22,%22pwdomainname%22:%22reg.usps.com%22,%22startwithletter%22:true,%22allowlower%22:true,%22allowupper%22:true,%22allownumber%22:true,%22allowspecial%22:false,%22minlower%22:1,%22minupper%22:1,%22minnumber%22:1,%22minspecial%22:1,%22specials%22:%22$/!=@?._-%22,%22characters%22:%220123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz%22}";
+    let url = "https://sitepassword.info/?bkmk=ssp://{%22sitename%22:%22usps%22,%22username%22:%22fred%22,%22providesitepw%22:false,%22xor%22:[0,0,0,0,0,0,0,0,0,0,0,0],%22pwlength%22:12,%22domainname%22:%22reg.usps.com%22,%22pwdomainname%22:%22reg.usps.com%22,%22startwithletter%22:true,%22allowlower%22:true,%22allowupper%22:true,%22allownumber%22:true,%22allowspecial%22:false,%22minlower%22:1,%22minupper%22:1,%22minnumber%22:1,%22minspecial%22:1,%22specials%22:%22$./!=@?._-%22,%22characters%22:%220123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz%22}";
     let rootFolder = await getRootFolder();
     await chrome.bookmarks.create({ "parentId": rootFolder.id, "title": title, "url": url });
-    await triggerEvent("mouseleave", $mainpanel);
+    await triggerEvent("mouseleave", $.mainpanel);
     let children = await chrome.bookmarks.getChildren(rootFolder.id);
     let test = children[0].url.indexOf("{") === -1;
     if (test) {
@@ -746,16 +626,16 @@ async function testSafeSuffixes() {
     // Test that you get the simple phishing warning with a safe suffix
     await resetState();
     await phishingSetup();
-    await triggerEvent("click", $sameacctbutton);
+    await triggerEvent("click", $.sameacctbutton);
     restoreForTesting();
-    await triggerEvent("mouseleave", $mainpanel);
+    await triggerEvent("mouseleave", $.mainpanel);
     await fillForm("qwerty", "ahktheguru.alanhkarp.com", "Guru", "");
-    await triggerEvent("blur", $sitename);
-    let test = $suffix.style.display === "block";
-    await triggerEvent("click", $suffixacceptbutton);
-    test = test && $suffix.style.display === "none";
-    test = test && $username.value === "Alan" && $sitepw.value === expectedpw && $suffix.style.display === "none";
-    await triggerEvent("mouseleave", $mainpanel);
+    await triggerEvent("blur", $.sitename);
+    let test = $.suffix.style.display === "block";
+    await triggerEvent("click", $.suffixacceptbutton);
+    test = test && $.suffix.style.display === "none";
+    test = test && $.username.value === "Alan" && $.sitepw.value === expectedpw && $.suffix.style.display === "none";
+    await triggerEvent("mouseleave", $.mainpanel);
     if (test) {
         console.log("Passed: Safe suffix");
         passed++;
@@ -766,8 +646,8 @@ async function testSafeSuffixes() {
     // Test that you do get a phishing warning with an unsafe suffix
     restoreForTesting();
     await fillForm("qwerty", "alantheguru.allanhkarp.com", "Guru", "");
-    await triggerEvent("blur", $sitename);
-    test = $username.value === "" && $phishing.style.display === "block";
+    await triggerEvent("blur", $.sitename);
+    test = $.username.value === "" && $.phishing.style.display === "block";
     if (test) {
         console.log("Passed: Unsafe suffixes");
         passed++;
@@ -778,13 +658,13 @@ async function testSafeSuffixes() {
     // Test that you don't get an entry in the public suffix list in the safe suffixes
     restoreForTesting();
     await fillForm("qwerty", "alantheguru.allanhkarp.com", "Guru", "");
-    await triggerEvent("blur", $sitename);
-    await triggerEvent("click", $sameacctbutton);
+    await triggerEvent("blur", $.sitename);
+    await triggerEvent("click", $.sameacctbutton);
     restoreForTesting();
-    await triggerEvent("mouseleave", $mainpanel);
+    await triggerEvent("mouseleave", $.mainpanel);
     await fillForm("qwerty", "alantheguru.alenhkarp.com", "Guru", "");
-    await triggerEvent("blur", $sitename);
-    test = $phishing.style.display === "block";
+    await triggerEvent("blur", $.sitename);
+    test = $.phishing.style.display === "block";
     get("phishing").style.display = "none";
     if (test) {
         console.log("Passed: Not in safe suffixes");
@@ -798,13 +678,13 @@ async function testSafeSuffixes() {
 async function testChangeAccount() {
     await resetState();
     await phishingSetup();
-    await triggerEvent("click", $sameacctbutton);
+    await triggerEvent("click", $.sameacctbutton);
     restoreForTesting();
-    $sitepw3bluedots.style.display = "none"; // Can't use mouseout because call gets a null event
-    await triggerEvent("mouseleave", $mainpanel);
-    $sitepw3bluedots.onmouseover();
-    $sitepwmenuaccount.onclick();
-    let test = $account.style.display === "block";
+    $.sitepw3bluedots.style.display = "none"; // Can't use mouseout because call gets a null event
+    await triggerEvent("mouseleave", $.mainpanel);
+    $.sitepw3bluedots.onmouseover();
+    $.sitepwmenuaccount.onclick();
+    let test = $.account.style.display === "block";
     let elements = document.getElementsByName("hassuffix");
     for (let element of elements) {
         test = test && !element.classList.contains("nodisplay");
@@ -817,11 +697,11 @@ async function testChangeAccount() {
         failed++;
     }
     restoreForTesting();
-    $sitepwmenu.style.display = "none";
-    await updateValue($accountnicknameinput, "newGuru");
-    $accountnicknamecancelbutton.onclick();
-    test = $account.style.display === "none";
-    test = test && normalize($sitename.value) === "guru";
+    $.sitepwmenu.style.display = "none";
+    await updateValue($.accountnicknameinput, "newGuru");
+    $.accountnicknamecancelbutton.onclick();
+    test = $.account.style.display === "none";
+    test = test && normalize($.sitename.value) === "guru";
     if (test) {
         console.log("Passed: Change account cancel");
         passed++;
@@ -830,20 +710,20 @@ async function testChangeAccount() {
         failed++;
     }
     restoreForTesting();
-    $sitepwmenu.style.display = "none";
-    $sitepw3bluedots.onmouseover();
-    $sitepwmenuaccount.onclick();
-    await updateValue($accountnicknameinput, "newGuru");
-    await triggerEvent("click", $accountnicknamesavebutton);
-    test = $account.style.display === "none";
-    test = test && normalize($sitename.value) === normalize("newGuru");
-    await triggerEvent("mouseleave", $mainpanel);
+    $.sitepwmenu.style.display = "none";
+    $.sitepw3bluedots.onmouseover();
+    $.sitepwmenuaccount.onclick();
+    await updateValue($.accountnicknameinput, "newGuru");
+    await triggerEvent("click", $.accountnicknamesavebutton);
+    test = $.account.style.display === "none";
+    test = test && normalize($.sitename.value) === normalize("newGuru");
+    await triggerEvent("mouseleave", $.mainpanel);
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    test = test && normalize($sitename.value) === normalize("newGuru");
+    await triggerEvent("blur", $.domainname);
+    test = test && normalize($.sitename.value) === normalize("newGuru");
     await fillForm("qwerty", "allantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    test = test && normalize($sitename.value) === normalize("newGuru");
+    await triggerEvent("blur", $.domainname);
+    test = test && normalize($.sitename.value) === normalize("newGuru");
     if (test) {
         console.log("Passed: Change account save");
         passed++;
@@ -852,19 +732,19 @@ async function testChangeAccount() {
         failed++;
     }
     restoreForTesting();
-    $sitepwmenu.style.display = "none";
-    $sitepw3bluedots.onmouseover();
-    $sitepwmenuaccount.onclick();
-    await updateValue($accountnicknameinput, "Guru");
-    await triggerEvent("click", $accountnicknamenewbutton);
-    test = $account.style.display === "none";
-    await triggerEvent("mouseleave", $mainpanel);
+    $.sitepwmenu.style.display = "none";
+    $.sitepw3bluedots.onmouseover();
+    $.sitepwmenuaccount.onclick();
+    await updateValue($.accountnicknameinput, "Guru");
+    await triggerEvent("click", $.accountnicknamenewbutton);
+    test = $.account.style.display === "none";
+    await triggerEvent("mouseleave", $.mainpanel);
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    test = test && normalize($sitename.value) === normalize("Guru");
+    await triggerEvent("blur", $.domainname);
+    test = test && normalize($.sitename.value) === normalize("Guru");
     await fillForm("qwerty", "allantheguru.alanhkarp.com", "", "");
-    await triggerEvent("blur", $domainname);
-    test = test && normalize($sitename.value) === normalize("guru");
+    await triggerEvent("blur", $.domainname);
+    test = test && normalize($.sitename.value) === normalize("guru");
     if (test) {
         console.log("Passed: Change account new");
         passed++;
@@ -878,51 +758,78 @@ async function testChangeSuperpw() {
     await resetState();
     // Test no warning
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
-    await triggerEvent("mouseleave", $mainpanel);
+    await triggerEvent("mouseleave", $.mainpanel);
     await clearForm();
-    await updateValue($domainname, "alantheguru.alanhkarp.com");
-    await triggerEvent("blur", $domainname);
-    await triggerEvent("keyup", $superpw); // Don't do anything on keyup
-    await triggerEvent("blur", $superpw);
-    let test = $superpwtypo.style.display === "none";
+    await updateValue($.domainname, "alantheguru.alanhkarp.com");
+    await triggerEvent("blur", $.domainname);
+    await triggerEvent("keyup", $.superpw); // Don't do anything on keyup
+    await triggerEvent("blur", $.superpw);
+    let test = $.superpwtypo.style.display === "none";
     if (test) {
-        console.log("Passed: No change super password warning");
+        console.log("Passed: No super password typo warning");
         passed++;
     } else {
-        console.warn("Failed: No change super password warning", "qwerty", "|" + $superpw.value + "|");
+        console.warn("Failed: No super password typo warning", "qwerty", "|" + $.superpw.value + "|");
         failed++;
     }
     // Test showing the warning
-    await updateValue($superpw, "asdfgh");
-    await triggerEvent("blur", $superpw);
-    test = $superpwtypo.style.display === "block";
+    await updateValue($.superpw, "asdfgh");
+    await triggerEvent("blur", $.superpw);
+    test = $.superpwtypo.style.display === "block";
     if (test) {
         console.log("Passed: Show change super password typo warning");
         passed++;
     } else {
-        console.warn("Failed: Show change super password typo warning", "asdfgh", "|" + $superpw.value + "|");
+        console.warn("Failed: Show change super password typo warning", "asdfgh", "|" + $.superpw.value + "|");
         failed++;
     }
-    // Test keep old password button
+    // Test close warning button
     restoreForTesting();
-    await triggerEvent("click", $superpwtypobutton);
-    test = $superpwtypo.style.display === "none" && $superpw.value === "";
+    await triggerEvent("click", $.superpwtypobutton);
+    test = $.superpwtypo.style.display === "none" && $.superpw.value !== "";
     if (test) {
-        console.log("Passed: Keep old super password");
+        console.log("Passed: Close super password typo warning");
         passed++;
     } else {
-        console.warn("Failed: Keep old super password");
+        console.warn("Failed: Close super password typo warning");
+        failed++;
+    }
+    // Test change super password button
+    $.superpw.value = "qwerty";
+    await triggerEvent("blur", $.superpw);
+    await triggerEvent("click", $.superpwtypochangebutton);
+    test = $.changesuperpw.style.display === "block";
+    if (test) {
+        console.log("Passed: Change super password button opens message");
+        passed++;
+    } else {
+        console.warn("Failed: Change super password button opens message");
+        failed++;
+    }
+    // Change superpw without providing old superpw
+    await resetState();
+    let sitepws = await changeSuperpwSetup("asdfgh");
+    await triggerEvent("mouseover", $.superpw3bluedots);
+    await triggerEvent("click", $.superpwmenuaccount);
+    await updateValue($.changesuperpwnewloseinput, "qwerty");
+    await triggerEvent("blur", $.changesuperpwnewloseinput);
+    test = !await checkSitepws(sitepws);
+    if (test) {
+        console.log("Passed: Show change super password, account passwords changed");
+        passed++;
+    } else {
+        console.warn("Failed: Show change super password, account passwords not changed");
         failed++;
     }
     // Change superpw providing old superpw with typo
     await resetState();
     restoreForTesting();
-    let sitepws = await changeSuperpwSetup("qwerty");
-    await updateValue($superpw, "asdfgh");
-    await triggerEvent("blur", $superpw);
-    await updateValue($changesuperpwinput, "qwertyTypo");
-    await triggerEvent("blur", $changesuperpwinput);
-    test = $changesuperpwtypo.classList.contains("nodisplay") === false; // Check if the typo warning is shown
+    sitepws = await changeSuperpwSetup("asdfgh");
+    await triggerEvent("mouseover", $.superpw3bluedots);
+    await triggerEvent("click", $.superpwmenuaccount);
+    await updateValue($.changesuperpwoldinput, "qwertyTypo");
+    await triggerEvent("blur", $.changesuperpwoldinput);
+    test = $.changesuperpwtypo.classList.contains("nodisplay") === false; // Check if the typo warning is shown
     if (test) {
         console.log("Passed: Show typo warning for old super password");
         passed++;
@@ -931,9 +838,9 @@ async function testChangeSuperpw() {
         failed++;
     }
     // Make sure the typo warning goes away when you start typing a new value
-    $changesuperpwinput.value = "a";
-    await triggerEvent("keyup", $changesuperpwinput);
-    test = $changesuperpwtypo.classList.contains("nodisplay") === true; // Check if the typo warning is hidden
+    $.changesuperpwoldinput.value = "a";
+    await triggerEvent("keyup", $.changesuperpwoldinput);
+    test = $.changesuperpwtypo.classList.contains("nodisplay") === true; // Check if the typo warning is hidden
     if (test) {
         console.log("Passed: Typo warning goes away when typing a new value");
         passed++;
@@ -942,11 +849,15 @@ async function testChangeSuperpw() {
         failed++;
     }
     // Finish providing old super password
-    $changesuperpwinput.value = "asdfgh";
-    await triggerEvent("blur", $changesuperpwinput);
-    await triggerEvent("click", $changesuperpwkeepbutton);
-    await triggerEvent("mouseleave", $mainpanel);
-    test = await checkSitepws(sitepws, true);
+    await resetState();
+    let passwords = await changeSuperpwSetup("qwerty");
+    await triggerEvent("mouseover", $.superpw3bluedots);
+    await triggerEvent("click", $.superpwmenuaccount);
+    $.changesuperpwoldinput.value = "qwerty";
+    $.changesuperpwnewinput.value = "asdfgh";
+    await triggerEvent("click", $.changesuperpwnewkeepbutton);
+    await clearForm();
+    test = await checkSitepws([passwords.provideds]);
     if (test) {
         console.log("Passed: Change super password with old super password");
         passed++;
@@ -954,83 +865,66 @@ async function testChangeSuperpw() {
         console.warn("Failed: Change super password with old super password");
         failed++;
     }
-    // Change superpw without providing old superpw
-    await resetState();
-    sitepws = await changeSuperpwSetup("qwerty");
-    await updateValue($superpw, "asdfgh");
-    await triggerEvent("blur", $superpw);
-    await updateValue($changesuperpwinput, "");
-    await triggerEvent("blur", $changesuperpwinput);
-    test = await checkSitepws(sitepws, false);
-    if (test) {
-        console.log("Passed: Show change super password");
-        passed++;
-    } else {
-        console.warn("Failed: Show change super password");
-        failed++;
-    }
-    // Test provide wrong old superpw
     // Test provide correct old superpw
     async function changeSuperpwSetup(newSuperpw) {
         await fillForm(newSuperpw, "notprovided.example.com", "Guru", "Alan");
-        let notprovided = $sitepw.value;
-        await triggerEvent("mouseleave", $mainpanel);
-        await providepwSetup(newSuperpw, "provided1", "provided1.example.com", "Provided1", "Alan");
-        await triggerEvent("mouseleave", $mainpanel);
-        await providepwSetup(newSuperpw, "provided2", "provided2.example.com", "Provided2", "Alan");
-        await triggerEvent("mouseleave", $mainpanel);
-        await providepwSetup(newSuperpw, "provided3", "provided3.example.com", "Provided3", "Alan");
-        await triggerEvent("mouseleave", $mainpanel);
-        return [notprovided, "provided1", "provided2", "provided3"];
+        await triggerEvent("mouseleave", $.mainpanel);
+        let notprovided = $.sitepw.value;
+        let unprovided1 = await providepwSetup(newSuperpw, "provided1", "provided1.example.com", "Provided1", "Alan");
+        let unprovided2 = await providepwSetup(newSuperpw, "provided2", "provided2.example.com", "Provided2", "Alan");
+        let unprovided3 = await providepwSetup(newSuperpw, "provided3", "provided3.example.com", "Provided3", "Alan");
+        return {"unprovideds": [notprovided, unprovided1, unprovided2, unprovided3],
+                "provideds": [notprovided, "provided1", "provided2", "provided3"]
+        };
     }
-    async function checkSitepws(sitepws, direction) {
-        $domainname.value = "notprovided.example.com";
-        await triggerEvent("blur", $domainname);
-        let test = $sitepw.value === sitepws[0];
-        $domainname.value = "provided1.example.com";
-        await triggerEvent("blur", $domainname);
-        test = test && $sitepw.value === sitepws[1];
-        $domainname.value = "provided2.example.com";
-        await triggerEvent("blur", $domainname);
-        test = test && $sitepw.value === sitepws[2];
-        $domainname.value = "provided3.example.com";
-        await triggerEvent("blur", $domainname);
-        test = test && $sitepw.value === sitepws[3];
-        return direction ? test : !test;
+    async function checkSitepws(sitepws) {
+        $.domainname.value = "notprovided.example.com";
+        await triggerEvent("blur", $.domainname);
+        let test = $.sitepw.value === sitepws[0];
+        $.domainname.value = "provided1.example.com";
+        await triggerEvent("blur", $.domainname);
+        test = test && $.sitepw.value === sitepws[1];
+        $.domainname.value = "provided2.example.com";
+        await triggerEvent("blur", $.domainname);
+        test = test && $.sitepw.value === sitepws[2];
+        $.domainname.value = "provided3.example.com";
+        await triggerEvent("blur", $.domainname);
+        test = test && $.sitepw.value === sitepws[3];
+        return test;
     }
 }
 // Test save as default
 async function testSaveAsDefault() {
     if (loggingDefault) console.log("testSaveAsDefault");
     await resetState();
-    await triggerEvent("mouseleave", $mainpanel);
-    await triggerEvent("click", $settingsshow);
+    await triggerEvent("mouseleave", $.mainpanel);
+    await triggerEvent("click", $.settingsshow);
     if (loggingDefault) console.log("testSaveAsDefault state reset");
-    await updateValue($pwlength, 15);
-    await triggerEvent("blur", $pwlength);
+    await updateValue($.pwlength, 15);
+    await triggerEvent("blur", $.pwlength);
     if (loggingDefault) console.log("testSaveAsDefault blur pwlength");
-    await triggerEvent("click", $allowspecialcheckbox);
+    await triggerEvent("click", $.allowspecialcheckbox);
     if (loggingDefault) console.log("testSaveAsDefault click allowspecialcheckbox");
-    await updateValue($specials, "%^&");
-    if (loggingDefault) console.log("testSaveAsDefault blur |" + $pwlength.value + "|" + $specials.value + "|" + $allowspecialcheckbox.checked + "|");
-    await triggerEvent("blur", $specials);
-    if (loggingDefault) console.log("testSaveAsDefault click |" + $pwlength.value + "|" + $specials.value + "|" + $allowspecialcheckbox.checked + "|");
-    await triggerEvent("click", $makedefaultbutton);
+    await updateValue($.specials, "%^&");
+    if (loggingDefault) console.log("testSaveAsDefault blur |" + $.pwlength.value + "|" + $.specials.value + "|" + $.allowspecialcheckbox.checked + "|");
+    await triggerEvent("blur", $.specials);
+    if (loggingDefault) console.log("testSaveAsDefault click |" + $.pwlength.value + "|" + $.specials.value + "|" + $.allowspecialcheckbox.checked + "|");
+    await triggerEvent("click", $.makedefaultbutton);
     localStorage.restart = "testSaveAsDefault2";
     alert("Inspect the extension again to see the results of testSaveAsDefault.");
 }
 async function testSaveAsDefault2() {
-    if (loggingDefault) console.log("testSaveAsDefault2 |" + $pwlength.value + "|" + $specials.value + "|" + $allowspecialcheckbox.checked + "|");
-    await triggerEvent("click", $settingsshow);
+    if (loggingDefault) console.log("testSaveAsDefault2 |" + $.pwlength.value + "|" + $.specials.value + "|" + $.allowspecialcheckbox.checked + "|");
+    await triggerEvent("click", $.settingsshow);
     localStorage.restart = "";
-    let tests = $pwlength.value === "15";
-    tests = tests && $allowspecialcheckbox.checked;
-    tests = tests && $specials.value === "%^&";
+    let tests = $.pwlength.value === "15";
+    tests = tests && $.allowspecialcheckbox.checked;
+    tests = tests && $.specials.value === "%^&";
     if (tests) {
         console.log("Passed: Save as default");
         passed++;
     } else {
-        console.warn("Failed: Save as default |" + $pwlength.value + "|" + $specials.value + "|" + $allowspecialcheckbox.checked + "|");
+        console.warn("Failed: Save as default |" + $.pwlength.value + "|" + $.specials.value + "|" + $.allowspecialcheckbox.checked + "|");
         failed++;
     }
 }
@@ -1050,76 +944,76 @@ async function resetState() {
     restoreForTesting();
     await getsettings("");
     await clearForm();
-    if (loggingClear) console.log("resetState done", $pwlength.value);
+    if (loggingClear) console.log("resetState done", $.pwlength.value);
 }
 async function clearForm() {
     if (loggingClear) console.log("clearForm", baseDefaultSettings.pwlength);
-    await updateValue($domainname, "");
-    await updateValue($superpw, "");
-    await updateValue($sitename, "");
-    await updateValue($username, "");
-    await updateValue($sitepw, "");
-    $providesitepw.checked = baseDefaultSettings.providesitepw;
-    $clearsuperpw.checked = baseDefaultSettings.clearsuperpw;
-    $hidesitepw.checked = baseDefaultSettings.hidesitepw;
-    await updateValue($pwlength, baseDefaultSettings.pwlength);
-    $startwithletter.checked = baseDefaultSettings.startwithletter;
-    $allowlowercheckbox.checked = baseDefaultSettings.allowlower;
-    $allowuppercheckbox.checked = baseDefaultSettings.allowupper;
-    $allownumbercheckbox.checked = baseDefaultSettings.allownumber;
-    $allowspecialcheckbox.checked = baseDefaultSettings.allowspecial;
-    await updateValue($minlower, baseDefaultSettings.minlower);
-    await updateValue($minupper, baseDefaultSettings.minupper);
-    await updateValue($minnumber, baseDefaultSettings.minnumber);
-    await updateValue($minspecial, baseDefaultSettings.minspecial);
-    await updateValue($specials, baseDefaultSettings.specials);
-    $settingsmenu.style.display = "none";
-    if (loggingClear) console.log("clearForm done", $pwlength.value);
+    await updateValue($.domainname, "");
+    await updateValue($.superpw, "");
+    await updateValue($.sitename, "");
+    await updateValue($.username, "");
+    await updateValue($.sitepw, "");
+    $.providesitepw.checked = baseDefaultSettings.providesitepw;
+    $.clearsuperpw.checked = baseDefaultSettings.clearsuperpw;
+    $.hidesitepw.checked = baseDefaultSettings.hidesitepw;
+    await updateValue($.pwlength, baseDefaultSettings.pwlength);
+    $.startwithletter.checked = baseDefaultSettings.startwithletter;
+    $.allowlowercheckbox.checked = baseDefaultSettings.allowlower;
+    $.allowuppercheckbox.checked = baseDefaultSettings.allowupper;
+    $.allownumbercheckbox.checked = baseDefaultSettings.allownumber;
+    $.allowspecialcheckbox.checked = baseDefaultSettings.allowspecial;
+    await updateValue($.minlower, baseDefaultSettings.minlower);
+    await updateValue($.minupper, baseDefaultSettings.minupper);
+    await updateValue($.minnumber, baseDefaultSettings.minnumber);
+    await updateValue($.minspecial, baseDefaultSettings.minspecial);
+    await updateValue($.specials, baseDefaultSettings.specials);
+    $.settingsmenu.style.display = "none";
+    if (loggingClear) console.log("clearForm done", $.pwlength.value);
 }
 async function fillForm(superpw, domainname, sitename, username) {
     // Simulate user filling the form
     if (loggingFill) console.log("fillForm", superpw, domainname, sitename, username);
     await clearForm();
-    await updateValue($domainname, domainname);
+    await updateValue($.domainname, domainname);
     if (superpw) {
-        await updateValue($superpw, superpw);
-        await triggerEvent("keyup", $superpw);
+        await updateValue($.superpw, superpw);
+        await triggerEvent("keyup", $.superpw);
         if (loggingFill) console.log("fillForm superpw");
     }
-    $superpw.onblur();
-    await updateValue($sitename, sitename);
-    await triggerEvent("keyup", $sitename);
+    $.superpw.onblur();
+    await updateValue($.sitename, sitename);
+    await triggerEvent("keyup", $.sitename);
     if (loggingFill) console.log("fillForm sitename");
-    $sitename.onblur();
-    await updateValue($username, username);
-    await triggerEvent("keyup", $username);
+    $.sitename.onblur();
+    await updateValue($.username, username);
+    await triggerEvent("keyup", $.username);
     if (loggingFill) console.log("fillForm username");
-    $username.onblur();
-    if (loggingFill) console.log("fillForm", $domainname.value, $superpw.value, $sitename.value, $username.value);
+    $.username.onblur();
+    if (loggingFill) console.log("fillForm", $.domainname.value, $.superpw.value, $.sitename.value, $.username.value);
 }
 
 async function forgetDomainname() {
     if (loggingForget) console.log("forgetDomainname");
-    $domainname3bluedots.onmouseover();
-    $domainnamemenuforget.click();
-    await triggerEvent("click", $forgetbutton);
+    $.domainname3bluedots.onmouseover();
+    $.domainnamemenuforget.click();
+    await triggerEvent("click", $.forgetbutton);
     if (loggingForget) console.log("forgetDomainname done");
 }
 
 async function forgetSitename() {
     if (loggingForget) console.log("forgetSitename");
-    $sitename3bluedots.onmouseover();
-    $sitenamemenuforget.click();
-    await triggerEvent("click", $forgetbutton);
+    $.sitename3bluedots.onmouseover();
+    $.sitenamemenuforget.click();
+    await triggerEvent("click", $.forgetbutton);
     if (loggingForget) console.log("forgetSitename done");
 }
 
 async function forgetUsername() {
     if (loggingForget) console.log("forgetUsername");
-    $username3bluedots.onmouseover();
-    $usernamemenuforget.click();
+    $.username3bluedots.onmouseover();
+    $.usernamemenuforget.click();
     if (loggingForget) console.log("forgetUsername click forgetbutton forgetclickResolver");
-    await triggerEvent("click", $forgetbutton);
+    await triggerEvent("click", $.forgetbutton);
     if (loggingForget) console.log("forgetUsername forgetclickResolver done");
 }
 async function phishingSetup() {
@@ -1127,17 +1021,18 @@ async function phishingSetup() {
     await resetState();
     if (loggingPhishing) console.log("phishingSetup state reset");
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
-    if (loggingPhishing) console.log("phishingSetup mouseleave", $domainname.value, $sitename.value, $username.value);
-    await triggerEvent("mouseleave", $mainpanel);
+    if (loggingPhishing) console.log("phishingSetup mouseleave", $.domainname.value, $.sitename.value, $.username.value);
+    await triggerEvent("mouseleave", $.mainpanel);
     restoreForTesting();
-    // if (loggingPhishing) console.log("phishingSetup domainname blur", $sitename.value, $username.value);
-    // await triggerEvent("blur", $domainname);
-    if (loggingPhishing) console.log("phishingSetup allantheguru click", $domainname.value, $sitename.value, $username.value);
+    // if (loggingPhishing) console.log("phishingSetup domainname blur", $.sitename.value, $.username.value);
+    // await triggerEvent("blur", $.domainname);
+    if (loggingPhishing) console.log("phishingSetup allantheguru click", $.domainname.value, $.sitename.value, $.username.value);
     await fillForm("qwerty", "allantheguru.alanhkarp.com", "guru", "");
-    if (loggingPhishing) console.log("phishingSetup sitename blur", $sitename.value, $username.value);
-    await triggerEvent("blur", $sitename);
+    if (loggingPhishing) console.log("phishingSetup sitename blur", $.sitename.value, $.username.value);
+    await triggerEvent("blur", $.sitename);
 }
 async function triggerEvent(event, element) {
+    if (!element["on" + event]) alert("Element " + element.id + " does not have an event handler for " + event + ".");
     if (event === "click") element.checked = !element.checked;
     if (loggingTrigger) console.log("triggerEvent", element.id, event, resolverName, promise);
     let e = new Event(event);
@@ -1147,14 +1042,17 @@ async function triggerEvent(event, element) {
     if (loggingTrigger) console.log("triggerEvent promise resolved", element.id, event, promise, resolvers);
 }
 async function providepwSetup(superpw, providedpw, domainname, sitename, username) {
+    $.pwlength.value = 12;
+    await triggerEvent("blur", $.pwlength);
+    if ($.providesitepw.checked) await triggerEvent("click", $.providesitepw);
     await fillForm(superpw, domainname, sitename, username);
-    let unprovided = $sitepw.value; // For later tests to make sure it changes when I go back to computed password
-    await triggerEvent("click", $settingsshow);
-    if (!$providesitepw.checked) await triggerEvent("click", $providesitepw);
-    await updateValue($sitepw, providedpw);
-    await triggerEvent("blur", $sitepw);
-    await triggerEvent("click", $settingssave);
-    await triggerEvent("mouseleave", $mainpanel);
+    let unprovided = $.sitepw.value; // For later tests to make sure it changes when I go back to computed password
+    await triggerEvent("click", $.settingsshow);
+    await triggerEvent("click", $.providesitepw);
+    await updateValue($.sitepw, providedpw);
+    await triggerEvent("blur", $.sitepw);
+    await triggerEvent("click", $.settingssave);
+    await triggerEvent("mouseleave", $.mainpanel);
     return unprovided;
 }
 async function updateValue(element, value, eventName = "focus") {
@@ -1165,7 +1063,4 @@ async function updateValue(element, value, eventName = "focus") {
     element.dispatchEvent(e);
     element.value = value;
     await promise;
-}
-function get(id) {
-    return document.getElementById(id);
 }
