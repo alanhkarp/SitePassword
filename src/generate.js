@@ -127,37 +127,32 @@ async function candidatePassword(args) {
     let passphrase = new TextEncoder().encode(payload);
     // Use Password Based Key Derivation Function because repeated iterations
     // don't weaken the result as much as repeated SHA-256 hashing.
-    return crypto.subtle.importKey("raw", passphrase, { name: "PBKDF2" }, false, ["deriveBits"])
-    .then(async (passphraseImported) => {
-        let start = Date.now();
-        return crypto.subtle.deriveBits(
-            {
-                name: "PBKDF2",
-                hash: 'SHA-256',
-                salt: new TextEncoder().encode(salt),
-                iterations: iters
-            },
-            passphraseImported,
-            keysize 
-        )  
-        .then((bits) => {
-            const cset = characters(settings);
-            if (logging && Date.now() - start > 2) console.log("deriveBits did", iters, "iterations in", Date.now() - start, "ms");
-            let bytes = new Uint8Array(bits);
-            // Convert the Uint32Array to a string using a custom algorithm               
-            let pw = uint2chars(bytes.slice(0, 2*settings.pwlength), cset);
-            return pw;
-            function uint2chars(array) {
-                let chars = "";
-                let len = array.length;
-                for (let i = 0; i < len; i += 2) {
-                    let index = (array[i] << 8) + array[i + 1];
-                    chars += cset[index % cset.length];
-                }
-                return chars;
-            }            
-        }); 
-    });
+    const passphraseImported = await crypto.subtle.importKey("raw", passphrase, { name: "PBKDF2" }, false, ["deriveBits"]);
+    let start = Date.now();
+    const bits = await crypto.subtle.deriveBits(
+        {
+            name: "PBKDF2",
+            hash: 'SHA-256',
+            salt: new TextEncoder().encode(salt),
+            iterations: iters
+        },
+        passphraseImported,
+        keysize
+    );
+    const cset = characters(settings);
+    if (logging && Date.now() - start > 2) console.log("deriveBits did", iters, "iterations in", Date.now() - start, "ms");
+    let bytes = new Uint8Array(bits);
+    // Convert the Uint32Array to a string using a custom algorithm
+    return uint2chars(bytes.slice(0, 2*settings.pwlength), cset);
+    function uint2chars(array) {
+        let chars = "";
+        let len = array.length;
+        for (let i = 0; i < len; i += 2) {
+            let index = (array[i] << 8) + array[i + 1];
+            chars += cset[index % cset.length];
+        }
+        return chars;
+    }
 }
 function verifyPassword(pw, settings) {
     let report = zxcvbn(pw);

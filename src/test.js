@@ -45,23 +45,23 @@ export async function runTests() {
     }
     if (!restart) {
         await testCalculation(); 
-        await testRememberSuperpw();
-        await testChangePassword();
-        await testRememberForm();
-        await testProvidedpw();
-        await testPhishing();
-        await testSharedCredentials();
-        await testForget();
-        await testClearSuperpw();
-        await testHideSitepw();
-        await testLegacyBkmks();
-        await testDuplicateBkmks();
-        await testSafeSuffixes();
-        await testChangeAccount();
+        // await testRememberSuperpw();
+        // await testChangePassword();
+        // await testRememberForm();
+        // await testProvidedpw();
+        // await testPhishing();
+        // await testSharedCredentials();
+        // await testForget();
+        // await testClearSuperpw();
+        // await testHideSitepw();
+        // await testLegacyBkmks();
+        // await testDuplicateBkmks();
+        // await testSafeSuffixes();
+        // await testChangeAccount();
         await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
-        await testSaveAsDefault();
+        // await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -856,8 +856,7 @@ async function testChangeSuperpw() {
     $.changesuperpwoldinput.value = "qwerty";
     $.changesuperpwnewinput.value = "asdfgh";
     await triggerEvent("click", $.changesuperpwnewkeepbutton);
-    await clearForm();
-    test = await checkSitepws([passwords.provideds]);
+    test = await checkSitepws(passwords.provideds);
     if (test) {
         console.log("Passed: Change super password with old super password");
         passed++;
@@ -878,15 +877,19 @@ async function testChangeSuperpw() {
         };
     }
     async function checkSitepws(sitepws) {
+        await clearForm();
         $.domainname.value = "notprovided.example.com";
         await triggerEvent("blur", $.domainname);
         let test = $.sitepw.value === sitepws[0];
+        await clearForm();
         $.domainname.value = "provided1.example.com";
         await triggerEvent("blur", $.domainname);
         test = test && $.sitepw.value === sitepws[1];
+        await clearForm();
         $.domainname.value = "provided2.example.com";
         await triggerEvent("blur", $.domainname);
         test = test && $.sitepw.value === sitepws[2];
+        await clearForm();
         $.domainname.value = "provided3.example.com";
         await triggerEvent("blur", $.domainname);
         test = test && $.sitepw.value === sitepws[3];

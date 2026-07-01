@@ -425,7 +425,7 @@ $.changesuperpwnewkeepbutton.onclick = async function (e) {
         db.sites[key] = bg.settings;
     }
     database = db;
-    await retrySendMessage({"cmd": "updatedb", "database": db});
+    await retrySendMessage({"cmd": "updatedb", "database": db, "superpw": newSuperpw});
     if (e?.resolver) e.resolver();
 }
 $.changesuperpwnewinput.onkeyup = function (e) {

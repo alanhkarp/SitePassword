@@ -308,6 +308,8 @@ async function setup() {
                     respondToMessage("persisted", sender, sendResponse);
                 } else if (request.cmd === "updatedb") {
                     database = request.database;
+                    bg.superpw = request.superpw;
+                    superpw = request.superpw;
                     await persistMetadata(sendResponse);
                     respondToMessage("updatedb", sender, sendResponse);
                 } else if (request.cmd === "forget") {
