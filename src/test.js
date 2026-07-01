@@ -45,23 +45,23 @@ export async function runTests() {
     }
     if (!restart) {
         await testCalculation(); 
-        // await testRememberSuperpw();
-        // await testChangePassword();
-        // await testRememberForm();
-        // await testProvidedpw();
-        // await testPhishing();
-        // await testSharedCredentials();
-        // await testForget();
-        // await testClearSuperpw();
-        // await testHideSitepw();
-        // await testLegacyBkmks();
-        // await testDuplicateBkmks();
-        // await testSafeSuffixes();
-        // await testChangeAccount();
+        await testRememberSuperpw();
+        await testChangePassword();
+        await testRememberForm();
+        await testProvidedpw();
+        await testPhishing();
+        await testSharedCredentials();
+        await testForget();
+        await testClearSuperpw();
+        await testHideSitepw();
+        await testLegacyBkmks();
+        await testDuplicateBkmks();
+        await testSafeSuffixes();
+        await testChangeAccount();
         await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
-        // await testSaveAsDefault();
+        await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
