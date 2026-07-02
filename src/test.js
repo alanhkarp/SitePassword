@@ -864,7 +864,20 @@ async function testChangeSuperpw() {
         console.warn("Failed: Change super password with old super password");
         failed++;
     }
-    // Test provide correct old superpw
+    // Test going back to old super password
+    await triggerEvent("mouseover", $.superpw3bluedots);
+    await triggerEvent("click", $.superpwmenuaccount);
+    $.changesuperpwoldinput.value = "asdfgh";
+    $.changesuperpwnewinput.value = "qwerty";
+    await triggerEvent("click", $.changesuperpwnewkeepbutton);
+    test = await checkSitepws(passwords.provideds);
+    if (test) {
+        console.log("Passed: Change back to old super password");
+        passed++;
+    } else {
+        console.warn("Failed: Change back to old super password");
+        failed++;
+    }
     async function changeSuperpwSetup(newSuperpw) {
         await fillForm(newSuperpw, "notprovided.example.com", "Guru", "Alan");
         await triggerEvent("mouseleave", $.mainpanel);
