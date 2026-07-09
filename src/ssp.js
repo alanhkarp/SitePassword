@@ -5,8 +5,7 @@ import { resolvers, runTests } from "./test.js";
 import { characters, isConsistent, generatePassword, isSuperPw, normalize, stringXorArray, xorStrings } from "./generate.js";
 import { isSharedCredentials } from "./sharedCredentials.js"; 
 import { commonSuffix } from "./public_suffix_list.js"; 
-// testMode must start as false.  Its value will come in a message from bg.js.
-let testMode = false;
+let testMode = false; // testMode must start as false.  Its value will come in a message from bg.js.
 const debugMode = false; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
 
 let logging = false;
@@ -33,12 +32,12 @@ let bg = clone(bgDefault);
 // Some actions prevent the settings being saved when mousing out of the main panel.
 // However, some tests want to save the settings.  This function sets certain values
 // to what they have when the popup is opened.
-export function restoreForTesting() {
+export async function restoreForTesting() {
     autoclose = true;
     exporting = false;
     warningMsg = false;
     warnings.forEach(msg => msg.ison = false);
-    chrome.storage.local.remove("alertString");
+    await chrome.storage.local.remove("alertString");
 }
 // I need all the metadata stored in database for both the phishing check
 // and for downloading the site data.
@@ -147,7 +146,7 @@ export async function getsettings() {
      }
     if (alertString) {
         if (testMode) {
-            chrome.storage.local.set({ "alertString": alertString });
+            await chrome.storage.local.set({ "alertString": alertString });
         } else {
             alert(alertString);
         }
@@ -172,7 +171,9 @@ export async function getsettings() {
     if (logging) console.log("popup got metadata", bg, database);
     if (!testMode && response.test) { // Only run tests once
         testMode = true;
-        runTests();
+        // Give popup DevTools time to attach before runTests hits debugger statements.
+        await new Promise(resolve => setTimeout(resolve, 750));
+        await runTests();
     }
     try {
         if (logging) console.log("popup sending update", activetab.url, $.username.value || "", readyForClick); 
@@ -190,10 +191,10 @@ export async function getsettings() {
 // this race is the source of any problems related to loss of the message sent here.
 ($.root).onmouseleave = function (e) {
     // If I close the window immediately, then messages in flight get lost
-    if (autoclose && !exporting && !document.elementFromPoint(e.pageX, e.pageY)) {
+    if (autoclose && !exporting && !testMode && !document.elementFromPoint(e.pageX, e.pageY)) {
         if (!debugMode) $.root.style.opacity = 0.1;
         mainPanelTimer = setTimeout(() => {
-            if (!debugMode) window.close();
+            if (!debugMode && !testMode) window.close();
         }, 750);
     }
     if (e?.resolver) e.resolver();
@@ -366,46 +367,79 @@ $.superpw.onblur = async function (e) {
     await handleblur(e, "superpw");
     if (e?.resolver) e.resolver();
 }
+$.superpw.onmouseleave = async function (e) {
+    await $.superpw.onblur(e);
+    if (e?.resolver) e.resolver();
+};
 $.superpwtypobutton.onclick = function (e) {
     msgoff("superpwtypo");
     $.superpw.focus();
     if (e?.resolver) e.resolver();
 }
-$.changesuperpwoldinput.onblur = async function (e) {
-    let isSame = await sameSuperpw($.changesuperpwoldinput.value);
-    if (!isSame) $.changesuperpwtypo.classList.remove("nodisplay");
-    if (e?.resolver) e.resolver();
-}
-$.changesuperpwoldinput.onkeyup = function (e) {
-    $.changesuperpwtypo.classList.add("nodisplay"); // Don't show the typo warning when typing a new value
-    if (e?.resolver) e.resolver();
-}
-$.changesuperpwnewloseinput.onkeyup = function (e) {
-    $.changesuperpwtypo.classList.add("nodisplay"); // Don't show the typo warning when typing a new value
-    if (e?.resolver) e.resolver();
-}
 $.superpwtypochangebutton.onclick = function (e) {
     msgoff("superpwtypo");
-    $.changesuperpwnewloseinput.value = $.superpw.value;
-    $.changesuperpwnewinput.value = $.superpw.value;
     msgon("changesuperpw");
     if (e?.resolver) e.resolver();
 }
-$.changesuperpwnewloseinput.onblur = async function (e) {
-    $.superpw.value = $.changesuperpwnewloseinput.value;
+// Change super password options
+$.changesuperpwoptionkeepbutton.onclick = function (e) {
+    $.changesuperpwoptions.classList.add("nodisplay");
+    $.changesuperpwkeepnewinput.value = $.superpw.value;
+    $.changesuperpwkeep.classList.remove("nodisplay");
     if (e?.resolver) e.resolver();
 }
-$.changesuperpwnewkeepbutton.onclick = async function (e) {
+$.changesuperpwoptionlosebutton.onblur = async function (e) {
+    $.changesuperpwoptions.classList.add("nodisplay");
+    $.changesuperpwloseinput = $.superpw.value;
+    $.changesuperpwlose.classList.remove("nodisplay");
+    if (e?.resolver) e.resolver();
+}
+$.changesuperpwoptioncancelbutton.onmouseleave = async function (e) {
     msgoff("changesuperpw");
-    if (await sameSuperpw($.changesuperpwnewinput.value)) {
-        $.changesuperpwtypo.classList.remove("nodisplay");
+    $.superpw.focus();
+    if (e?.resolver) e.resolver();
+}
+// Change super password = keep all account passwords
+$.changesuperpwkeepoldinput.onblur = async function(e) {
+    let same = await sameSuperpw($.superpw.value);
+    if (!same) {
+        $.changesuperpwkeepoldtypo.classList.remove("nodisplay");
+        if (e?.resolver) e.resolver();
+        return;
+    }
+    if (e?.resolver) e.resolver();
+}
+$.changesuperpwkeepoldinput.onmouseleave = async function(e) {
+    await $.changesuperpwkeepoldinput.onblur(e);
+    if (e?.resolver) e.resolver();
+}
+$.changesuperpwkeepoldinput.onkeyup = async function(e) {
+    $.changesuperpwkeepoldtypo.classList.add("nodisplay");
+    if (e?.resolver) e.resolver();
+}
+$.changesuperpwkeepnewinput.onblur = async function (e) {
+    $.changesuperpwkeepnewtypo.classList.remove("nodisplay"); // Show the typo warning 
+    if (e?.resolver) e.resolver();
+}
+$.changesuperpwkeepnewinput.onmouseleave = async function(e) {
+    await $.changesuperpwkeepnewinput.onblur(e);
+    if (e?.resolver) e.resolver();
+}
+$.changesuperpwkeepnewinput.onkeyup = function (e) {
+    $.changesuperpwkeepnewtypo.classList.add("nodisplay"); // Don't show the typo warning when typing a new value
+    if (e?.resolver) e.resolver();
+}
+$.changesuperpwkeepbutton.onclick = async function (e) {
+    msgoff("changesuperpw");
+    if (await sameSuperpw($.changesuperpwkeepnewinput.value)) {
+        $.changesuperpwkeepnewtypo.classList.remove("nodisplay");
         if (e?.resolver) e.resolver();
         return;
     }
     const eventForAsk = { currentTarget: e?.currentTarget };
     // Update all site passwords to be provided
     let oldSuperpw = $.changesuperpwoldinput.value || "";
-    let newSuperpw = $.changesuperpwnewinput.value || "";
+    let newSuperpw = $.changesuperpwkeepnewinput.value || "";
     if (!newSuperpw) {
         if (e?.resolver) e.resolver();
         return;
@@ -428,12 +462,55 @@ $.changesuperpwnewkeepbutton.onclick = async function (e) {
     await retrySendMessage({"cmd": "updatedb", "database": db, "superpw": newSuperpw});
     if (e?.resolver) e.resolver();
 }
-$.changesuperpwnewinput.onkeyup = function (e) {
-    $.changesuperpwtypo.classList.add("nodisplay"); // Don't show the typo warning when typing a new value
+// Change super password - change all account passwords
+$.changesuperpwloseinput.onkeyup = function (e) {
+    $.changesuperpwchangelosebutton.disabled = false;
     if (e?.resolver) e.resolver();
 }
-$.changesuperpwtypo.onblur = async function (e) {
-    $.changesuperpwtypo.classList.remove("nodisplay"); // Show the typo warning 
+$.changesuperpwloseinput.onblur = async function (e) {
+    let isSame = await sameSuperpw($.changesuperpwoldinput.value);
+    if (!isSame) $.changesuperpwkeeptypo.classList.remove("nodisplay");
+    if (e?.resolver) e.resolver();
+}
+$.changesuperpwloseinput.onmouseleave = async function (e) {
+    await $.changesuperpwoldinput.onblur(e);
+    if (e?.resolver) e.resolver();
+}
+$.changesuperpwloseinput.onkeyup = async function (e) {
+    await $.changesuperpwoldinput.onblur(e);
+    if (e?.resolver) e.resolver();
+}
+$.changesuperpwlosechangebutton.onclick = async function (e) {
+    msgoff("changesuperpw");
+    let newSuperpw = $.changesuperpwloseinput.value || "";
+    const eventForAsk = { currentTarget: e?.currentTarget };
+    if (!newSuperpw) {
+        if (e?.resolver) e.resolver();
+        return;
+    }   
+   let same = await sameSuperpw(newSuperpw);
+    if (same) {
+        $.changesuperpwlosetypo.classList.remove("nodisplay");
+        if (e?.resolver) e.resolver();
+        return;
+    }
+    $.superpw.value = newSuperpw;
+    let db = clone(database);
+    for (const [key, settings] of Object.entries(db.sites)) {
+        domainname = settings.domainname;
+        bg.settings = settings;
+        bg.superpw = newSuperpw; // New superpw
+        let newpw = await generatePassword(bg);
+        bg.settings.xor = xorStrings(oldpw, newpw);
+        bg.settings.providesitepw = true;
+        db.sites[key] = bg.settings;
+    }
+    database = db;
+    await retrySendMessage({"cmd": "updatedb", "database": db, "superpw": newSuperpw});
+    if (e?.resolver) e.resolver();
+}
+$.changesuperpwlosecancelbutton.onclick = function (e) {
+    msgoff("changesuperpw");
     if (e?.resolver) e.resolver();
 }
 $.superpwmenu.onmouseleave = function (e) {
@@ -462,6 +539,8 @@ $.superpw3bluedots.onmouseout = function (e) {
 $.superpwmenuaccount.onclick = function (e) {
     // Trigger the super password change options
     msgon("changesuperpw");
+    $.changesuperpwloseinput.value = $.superpw.value;
+    if ($.superpw.value) $.changesuperpwlosebutton.disabled = false;
     if (e?.resolver) e.resolver();
 }
 $.superpwmenushow.onclick = function(e) {
@@ -1027,17 +1106,17 @@ $.makedefaultbutton.onclick = async function (e) {
         xor: new Array(12).fill(0),
         domainname: "",
         pwdomainname: "",
-        pwlength: $.pwlength.value,
+        pwlength: Number($.pwlength.value),
         providesitepw: $.providesitepw.checked,
         startwithletter: $.startwithletter.checked,
         allowlower: $.allowlowercheckbox.checked,
         allowupper: $.allowuppercheckbox.checked,
         allownumber: $.allownumbercheckbox.checked,
         allowspecial: $.allowspecialcheckbox.checked,
-        minlower: $.minlower.value,
-        minupper: $.minupper.value,
-        minnumber: $.minnumber.value,
-        minspecial: $.minspecial.value,
+        minlower: Number($.minlower.value),
+        minupper: Number($.minupper.value),
+        minnumber: Number($.minnumber.value),
+        minspecial: Number($.minspecial.value),
         specials: $.specials.value,
     }
     try {
@@ -1068,7 +1147,7 @@ $.cancelwarning.onclick = async function (e) {
     $.sitename.value = "";
     $.username.value = "";
     sameacct = false;
-    chrome.tabs.update(activetab.id, {url: "chrome://newtab"});
+    await chrome.tabs.update(activetab.id, {url: "chrome://newtab"});
     if (e?.resolver) e.resolver();
 }
 $.sameacctbutton.onclick = async function (e) {
@@ -1163,9 +1242,9 @@ $.forgetcancelbutton.onclick = function (e) {
 document.addEventListener('DOMContentLoaded', function (e) {
     let links = document.querySelectorAll('.external-link');
     links.forEach(function(link) {
-        link.addEventListener('click', function(e) {
+        link.addEventListener('click', async function(e) {
             e.preventDefault();
-            chrome.tabs.create({url: this.href});
+            await chrome.tabs.create({url: this.href});
                     if (e?.resolver) e.resolver();
 });
     });
@@ -1343,7 +1422,6 @@ async function sameSuperpw(superpwValue) {
     let superpwHash = await generatePassword(bgsuper);
     if (!oldSuperPwHash) database.common.superpwHash = superpwHash;
     let same = superpwHash === database.common.superpwHash;
-    if (!same || !oldSuperPwHash) database.common.superpwHash = superpwHash;
     return same;
 }
 // Thanks, Copilot
@@ -1530,7 +1608,7 @@ function defaultfocus() {
     if (!$.superpw.value && !$.superpw.disabled) $.superpw.focus();
 }
 async function ask2generate(event) {
-    let sitepwWasActive = !!(event?.currentTarget === $.sitepw || event?.currentTarget === $.changesuperpwnewinput);
+    let sitepwWasActive = !!(event?.currentTarget === $.sitepw || event?.currentTarget === $.changesuperpwkeepnewinput);
     if (bg.settings.providesitepw && bg.settings.pwlength === 0) return "";
     if (!isConsistent(bg.settings)) {
         msgon("nopw");

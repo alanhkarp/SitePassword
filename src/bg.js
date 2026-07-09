@@ -242,7 +242,7 @@ async function setup() {
                 if (request.cmd === "getMetadata") {
                     await getMetadata(request, sender, sendResponse);
                 } else if (request.cmd === "popupWarning") {
-                    chrome.tabs.remove(sender.tab.id);
+                    await chrome.tabs.remove(sender.tab.id);
                     chrome.windows.create({ url: request.url });
                     respondToMessage("popup warning handled", sender, sendResponse);
                 } else if (request.cmd === "resetIcon") {
@@ -334,8 +334,8 @@ async function setup() {
                         if (currentWindow && currentWindow.tabs) {
                             chrome.windows.getCurrent({populate: true}, function(window) {
                                 if (!window || !window.tabs) return;
-                                window.tabs.forEach(tab => {
-                                    if (tab.id) chrome.tabs.reload(tab.id);
+                                window.tabs.forEach(async tab => {
+                                    if (tab.id) await chrome.tabs.reload(tab.id);
                                 });
                             });
                         }
@@ -877,7 +877,7 @@ export function isReadyForClick(superpw, sitename, username) {
     return readyForClick;
 }   
 function clone(object) {
-    return JSON.parse(JSON.stringify(object));
+    return structuredClone(object);
 }
 function getdomainname(url) {
     return url.split("/")[2];
