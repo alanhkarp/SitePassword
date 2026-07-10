@@ -20,7 +20,9 @@ let domainname;
 let mainPanelTimer;
 let lastFocused = null;
 // The following is needed to trigger the event when debugging or testing
-document.addEventListener('focus', e => { lastFocused = e.target;     if (e?.resolver) e.resolver();
+document.addEventListener('focus', e => { 
+    lastFocused = e.target;     
+    return done(e);
 }, true);
 const strengthText = ["Too Weak", "Very weak", "Weak", "Good", "Strong"];
 const strengthColor = ["#bbb", "#f06", "#f90", "#093", "#036"]; // 0,3,6,9,C,F
@@ -101,7 +103,7 @@ window.onload = async function (e) {
     instructionSetup();
     sectionrefSetup();
     await getsettings();
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 async function init() {
     await fill();
@@ -197,13 +199,13 @@ export async function getsettings() {
             if (!debugMode && !testMode) window.close();
         }, 750);
     }
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.root.onmouseenter = function (e) {
     $.root.style.opacity = 1; 
     defaultfocus();
     clearTimeout(mainPanelTimer);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.mainpanel.onmouseenter = function (e) {
     // Let the user type if the mouse reenters the popup
@@ -214,7 +216,7 @@ $.mainpanel.onmouseenter = function (e) {
     $.superpw.tabIndex = 0;
     $.sitename.tabIndex = 0;
     $.username.tabIndex = 0;
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.mainpanel.onmouseleave = async function (e) {
     if (logging) console.log("popup mainpanel mouseleave", e);
@@ -247,8 +249,7 @@ $.mainpanel.onmouseleave = async function (e) {
     // Don't persist if: phishing sites, exporting, the mouse is in the panel, or if event triggered by closing a help or instruction panel
     if (phishingDomain || exporting || element) {
         if (logging) console.log("popup phishing mouseleave resolve  mainpanelmouseleaveResolver", phishingDomain, resolvers);
-        if (e?.resolver) e.resolver();
-        return;
+        return done(e);
     }
     if (logging) console.log("popup mainpanel mouseleave update bg", document.activeElement.id, bg);
     // window.onblur fires before I even have a chance to see the window, much less focus it
@@ -278,18 +279,18 @@ $.mainpanel.onmouseleave = async function (e) {
                 "bg": bg,
             });
             if (logging) console.log("popup siteData resolve  mainpanelmouseleaveResolver", response, resolvers);
-            if (e?.resolver) e.resolver();
+            return done(e);
         } catch (error) {
             console.error("Error sending siteData message:", error);
         }
     } else {
         if (logging) console.log("popup no bg.settings mouseleave resolve", resolvers);
-        if (e?.resolver) e.resolver();
+        return done(e);
     }
 }
 $.title.onclick = function (e) {
     window.open("https://sitepassword.info", "_blank", "noopener,noreferrer");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 // Domain Name
 // There are no actions the user can take on the domain name field,
@@ -299,11 +300,11 @@ $.domainname.onblur = async function (e) {
     if (testMode) domainname = $.domainname.value;
     await getsettings(domainname);
     await fill();
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.domainnamemenu.onmouseleave = function (e) {
     menuOff("domainname", e);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.domainname3bluedots.onmouseover = function (e) {
     let domainname = $.domainname.value;
@@ -313,7 +314,7 @@ $.domainname3bluedots.onmouseover = function (e) {
         $.domainnamemenuforget.style.opacity = "0.5";
     }
     menuOn("domainname", e);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.domainname3bluedots.onclick = $.domainname3bluedots.onmouseover;
 $.domainname3bluedots.onmouseout = function (e) {
@@ -321,27 +322,27 @@ $.domainname3bluedots.onmouseout = function (e) {
     if (!relatedTarget || !$.domainnamemenu.contains(relatedTarget)) {
         menuOff("domainname", e);
     }
-    if (e?.resolver) e.resolver();
+    return done(e);
 };
 $.domainnamemenuforget.onclick = function (e) {
     if (!$.domainname.value) return;
     msgon("forget");
     let toforget = normalize($.domainname.value);
     addForgetItem(toforget);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.domainnamemenuhelp.onclick = function (e) {
     helpItemOn("domainname");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.domainnamehelptextclose.onclick = function (e) {
     helpAllOff();
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.domainnamehelptextmore.onclick = function (e) {
     helpAllOff();
     sectionClick("domainname");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 // Super Password
 $.superpw.onkeyup = async function (e) {
@@ -351,98 +352,95 @@ $.superpw.onkeyup = async function (e) {
     setMeter("superpw");
     setMeter("sitepw");
     await handlekeyup(e, "superpw");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.superpw.onblur = async function (e) {
-    if (!$.superpw.value) return;
+    if (!$.superpw.value) return done(e);
     if (logging) console.log("popup superpw onblur");
     // See if this is a different super password
     let same = await sameSuperpw($.superpw.value);
     if (!same) {
         // Handle the case where the super password has changed
         msgon("superpwtypo");
-        if (e?.resolver) e.resolver();
-        return;
+        return done(e);
     }
     await handleblur(e, "superpw");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.superpw.onmouseleave = async function (e) {
     await $.superpw.onblur(e);
-    if (e?.resolver) e.resolver();
+    return done(e);
 };
 $.superpwtypobutton.onclick = function (e) {
     msgoff("superpwtypo");
     $.superpw.focus();
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.superpwtypochangebutton.onclick = function (e) {
     msgoff("superpwtypo");
     msgon("changesuperpw");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 // Change super password options
 $.changesuperpwoptionkeepbutton.onclick = function (e) {
     $.changesuperpwoptions.classList.add("nodisplay");
     $.changesuperpwkeepnewinput.value = $.superpw.value;
     $.changesuperpwkeep.classList.remove("nodisplay");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.changesuperpwoptionlosebutton.onblur = async function (e) {
     $.changesuperpwoptions.classList.add("nodisplay");
-    $.changesuperpwloseinput = $.superpw.value;
+    $.changesuperpwloseinput.value = $.superpw.value;
     $.changesuperpwlose.classList.remove("nodisplay");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
-$.changesuperpwoptioncancelbutton.onmouseleave = async function (e) {
+$.changesuperpwoptioncancelbutton.onclick = async function (e) {
     msgoff("changesuperpw");
     $.superpw.focus();
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 // Change super password = keep all account passwords
 $.changesuperpwkeepoldinput.onblur = async function(e) {
     let same = await sameSuperpw($.superpw.value);
     if (!same) {
         $.changesuperpwkeepoldtypo.classList.remove("nodisplay");
-        if (e?.resolver) e.resolver();
-        return;
+        return done(e);
     }
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.changesuperpwkeepoldinput.onmouseleave = async function(e) {
     await $.changesuperpwkeepoldinput.onblur(e);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.changesuperpwkeepoldinput.onkeyup = async function(e) {
     $.changesuperpwkeepoldtypo.classList.add("nodisplay");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.changesuperpwkeepnewinput.onblur = async function (e) {
     $.changesuperpwkeepnewtypo.classList.remove("nodisplay"); // Show the typo warning 
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.changesuperpwkeepnewinput.onmouseleave = async function(e) {
     await $.changesuperpwkeepnewinput.onblur(e);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.changesuperpwkeepnewinput.onkeyup = function (e) {
     $.changesuperpwkeepnewtypo.classList.add("nodisplay"); // Don't show the typo warning when typing a new value
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.changesuperpwkeepbutton.onclick = async function (e) {
     msgoff("changesuperpw");
     if (await sameSuperpw($.changesuperpwkeepnewinput.value)) {
         $.changesuperpwkeepnewtypo.classList.remove("nodisplay");
-        if (e?.resolver) e.resolver();
+        return done(e);
         return;
     }
     const eventForAsk = { currentTarget: e?.currentTarget };
     // Update all site passwords to be provided
-    let oldSuperpw = $.changesuperpwoldinput.value || "";
+    let oldSuperpw = $.changesuperpwkeepoldinput.value || "";
     let newSuperpw = $.changesuperpwkeepnewinput.value || "";
     if (!newSuperpw) {
-        if (e?.resolver) e.resolver();
-        return;
+        return done(e);
     }   
     $.superpw.value = newSuperpw;
     let db = clone(database);
@@ -460,39 +458,37 @@ $.changesuperpwkeepbutton.onclick = async function (e) {
     }
     database = db;
     await retrySendMessage({"cmd": "updatedb", "database": db, "superpw": newSuperpw});
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 // Change super password - change all account passwords
 $.changesuperpwloseinput.onkeyup = function (e) {
-    $.changesuperpwchangelosebutton.disabled = false;
-    if (e?.resolver) e.resolver();
+    $.changesuperpwlosechangebutton.disabled = false;
+    return done(e);
 }
 $.changesuperpwloseinput.onblur = async function (e) {
-    let isSame = await sameSuperpw($.changesuperpwoldinput.value);
-    if (!isSame) $.changesuperpwkeeptypo.classList.remove("nodisplay");
-    if (e?.resolver) e.resolver();
+    let isSame = await sameSuperpw($.changesuperpwloseinput.value);
+    if (!isSame) $.changesuperpwlosetypo.classList.remove("nodisplay");
+    return done(e);
 }
 $.changesuperpwloseinput.onmouseleave = async function (e) {
-    await $.changesuperpwoldinput.onblur(e);
-    if (e?.resolver) e.resolver();
+    await $.changesuperpwloseinput.onblur(e);
+    return done(e);
 }
 $.changesuperpwloseinput.onkeyup = async function (e) {
-    await $.changesuperpwoldinput.onblur(e);
-    if (e?.resolver) e.resolver();
+    await $.changesuperpwloseinput.onblur(e);
+    return done(e);
 }
 $.changesuperpwlosechangebutton.onclick = async function (e) {
     msgoff("changesuperpw");
     let newSuperpw = $.changesuperpwloseinput.value || "";
     const eventForAsk = { currentTarget: e?.currentTarget };
     if (!newSuperpw) {
-        if (e?.resolver) e.resolver();
-        return;
+        return done(e);
     }   
    let same = await sameSuperpw(newSuperpw);
     if (same) {
         $.changesuperpwlosetypo.classList.remove("nodisplay");
-        if (e?.resolver) e.resolver();
-        return;
+        return done(e);
     }
     $.superpw.value = newSuperpw;
     let db = clone(database);
@@ -507,15 +503,15 @@ $.changesuperpwlosechangebutton.onclick = async function (e) {
     }
     database = db;
     await retrySendMessage({"cmd": "updatedb", "database": db, "superpw": newSuperpw});
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.changesuperpwlosecancelbutton.onclick = function (e) {
     msgoff("changesuperpw");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.superpwmenu.onmouseleave = function (e) {
     menuOff("superpw", e);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.superpw3bluedots.onmouseover = function (e) {
     if ($.superpw.value) {
@@ -526,7 +522,7 @@ $.superpw3bluedots.onmouseover = function (e) {
         $.superpwmenuhide.style.opacity = "0.5";
     }
     menuOn("superpw", e);      
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.superpw3bluedots.onclick = $.superpw3bluedots.onmouseover;
 $.superpw3bluedots.onmouseout = function (e) {
@@ -534,41 +530,41 @@ $.superpw3bluedots.onmouseout = function (e) {
     if (!relatedTarget || !$.superpwmenu.contains(relatedTarget)) {
         menuOff("superpw", e);
     }
-    if (e?.resolver) e.resolver();
+    return done(e);
 };
 $.superpwmenuaccount.onclick = function (e) {
     // Trigger the super password change options
     msgon("changesuperpw");
     $.changesuperpwloseinput.value = $.superpw.value;
-    if ($.superpw.value) $.changesuperpwlosebutton.disabled = false;
-    if (e?.resolver) e.resolver();
+    if ($.superpw.value) $.changesuperpwlosechangebutton.disabled = false;
+    return done(e);
 }
 $.superpwmenushow.onclick = function(e) {
     if (!$.superpw.value) return;
     $.superpw.type = "text";
     $.superpwmenuhide.classList.toggle("nodisplay");
     $.superpwmenushow.classList.toggle("nodisplay")    ;
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.superpwmenuhide.onclick = function(e) {
     if (!$.superpw.value) return;
     $.superpw.type = "password";
     $.superpwmenuhide.classList.toggle("nodisplay");
     $.superpwmenushow.classList.toggle("nodisplay")    ;
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.superpwmenuhelp.onclick = function (e) {
     helpItemOn("superpw");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.superpwhelptextclose.onclick = function (e) {
     helpAllOff();
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.superpwhelptextmore.onclick = function (e) {
     helpAllOff();
     sectionClick("superpw");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 // Site Name
 $.sitename.onfocus = function (e) {
@@ -581,13 +577,13 @@ $.sitename.onfocus = function (e) {
     let list = sortList([... set]);
     if (logging) console.log("popup sitename onfocus", database.sites, list);
     setupdatalist(this, list);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitename.onkeyup = async function (e) {
     await handlekeyup(e, "sitename");
     clearDatalist("sitenames");
     $.sitename.onfocus(); // So it runs in the same turn
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitename.onblur = async function (e) {
     let sitename = $.sitename.value;
@@ -599,8 +595,7 @@ $.sitename.onblur = async function (e) {
         let isChanged = normalize(sitename) !== normalize(bg.settings.sitename);
         if (isChanged && $.providesitepw.checked) {
             msgon("changesitename");
-            if (e?.resolver) e.resolver();
-            return;
+            return done(e);
        } else {
             msgoff("changesitename");
         }
@@ -609,11 +604,11 @@ $.sitename.onblur = async function (e) {
     $.sitepw.value = await ask2generate(e);
     changePlaceholder();
     clearDatalist("sitenames");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.changesitenameokbutton.onclick = async function (e) {
     msgoff("changesitename");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitename3bluedots.onmouseover = function (e) {
     if ($.sitename.value) {
@@ -624,7 +619,7 @@ $.sitename3bluedots.onmouseover = function (e) {
         $.sitenamemenuaccount.style.opacity = "0.5";
     }
     menuOn("sitename", e);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitename3bluedots.onclick = $.sitename3bluedots.onmouseover;
 $.sitename3bluedots.onmouseout = function (e) {
@@ -632,11 +627,11 @@ $.sitename3bluedots.onmouseout = function (e) {
     if (!relatedTarget || !$.sitenamemenu.contains(relatedTarget)) {
         menuOff("sitename", e);
     }
-    if (e?.resolver) e.resolver();
+    return done(e);
 };
 $.sitenamemenu.onmouseleave = function (e) {
     menuOff("sitename", e);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.accountnicknameinput.onkeyup = function (e) {
     if ($.accountnicknameinput.value && $.accountnicknameinput.value !== $.sitename.value) {
@@ -644,7 +639,7 @@ $.accountnicknameinput.onkeyup = function (e) {
     } else {
         $.accountnicknamesavebutton.disabled = true;
     }
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.accountnicknamesavebutton.onclick = function (e) {
     if (!$.accountnicknameinput.value) return;
@@ -653,12 +648,12 @@ $.accountnicknamesavebutton.onclick = function (e) {
     $.sitename.onblur(e); // So it runs in the same turn
     msgoff("account");
     autoclose = true;
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.accountnicknamecancelbutton.onclick = function (e) {
     msgoff("account");
     autoclose = false;
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.accountnicknamenewbutton.onclick = function (e) {
     $.sitename.value = $.accountnicknameinput.value;
@@ -666,7 +661,7 @@ $.accountnicknamenewbutton.onclick = function (e) {
     msgoff("account");
     autoclose = true;
     sameacct = false;
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitenamemenuforget.onclick = function (e) {
     if (!$.sitename.value) return;
@@ -679,24 +674,24 @@ $.sitenamemenuforget.onclick = function (e) {
             addForgetItem(domain);
         }
     }
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitenamemenuaccount.onclick = function (e) {
     $.sitepwmenuaccount.onclick(); // So it runs in the same turn
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitenamemenuhelp.onclick = function (e) {
     helpItemOn("sitename");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitenamehelptextclose.onclick = function (e) {
     helpAllOff();
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitenamehelptextmore.onclick = function (e) {
     helpAllOff();
     sectionClick("sitename");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 // Site Username
 $.username.onfocus = function (e) {
@@ -708,21 +703,20 @@ $.username.onfocus = function (e) {
     })
     let list = sortList([... set]);
     setupdatalist(this, list);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.username.onkeyup = async function (e) {
     await handlekeyup(e, "username");
     clearDatalist("usernames");
     $.username.onfocus();
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.username.onblur = async function (e) {
     let username = $.username.value;
     let isChanged = (normalize(username)) !== normalize(bg.settings.username || "");
     if (isChanged && $.providesitepw.checked) {
         msgon("changeusername");
-        if (e?.resolver) e.resolver();
-        return;
+        return done(e);
     } else {
         msgoff("changeusername");
     }
@@ -730,18 +724,18 @@ $.username.onblur = async function (e) {
     $.sitepw.value = await ask2generate(e);
     changePlaceholder();
     clearDatalist("usernames");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.changeusernameokbutton.onclick = async function (e) {
     msgoff("changeusername");
     bg.settings.username = $.username.value;
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.usernamemenu.onmouseleave = function (e) {
     menuOff("changeusername", e);
     $.username.value = bg.settings.username || "";
     $.username.focus();
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.username3bluedots.onmouseover = function (e) {
     let username = $.username.value;
@@ -753,7 +747,7 @@ $.username3bluedots.onmouseover = function (e) {
         $.usernamemenucopy.style.opacity = "0.5";
     }
     menuOn("username", e);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.username3bluedots.onclick = $.username3bluedots.onmouseover;
 $.username3bluedots.onmouseout = function (e) {
@@ -761,7 +755,7 @@ $.username3bluedots.onmouseout = function (e) {
     if (!relatedTarget || !$.usernamemenu.contains(relatedTarget)) {
         menuOff("username", e);
     }
-    if (e?.resolver) e.resolver();
+    return done(e);
 };
 $.usernamemenuforget.onclick = function (e) {
     if (!$.username.value) return;
@@ -774,7 +768,7 @@ $.usernamemenuforget.onclick = function (e) {
             addForgetItem(domain);
         }
     }
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.usernamemenucopy.onclick = async function(e) {
     let username = $.username.value;
@@ -788,41 +782,40 @@ $.usernamemenucopy.onclick = async function(e) {
         if (logging) console.log("popup username clipboard write failed", e);
     });
     menuOff("username", e); 
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.usernamemenuhelp.onclick = function (e) {
     helpItemOn("username");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.usernamehelptextclose.onclick = function (e) {
     helpAllOff();
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.usernamehelptextmore.onclick = function (e) {
     helpAllOff();
     sectionClick("username");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 // Site Password
 $.sitepw.onblur = async function (e) {
     menuOff("sitepw", e);
     if ($.sitepw.readOnly || !$.sitepw.value) {
-        if (e?.resolver) e.resolver();
-        return;
+        return done(e);
     }
     bg.settings.pwlength = $.sitepw.value.length;
     bg.settings.providesitepw = true;
     let provided = await ask2generate(e); // So bg.settings.xor gets set
     if (logging) console.log("popup sitepw onblur", bg.settings.pwlength, provided);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitepw.onkeyup = function (e) {
     setMeter("sitepw");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitepwmenu.onmouseleave = function (e) {
     menuOff("sitepw", e);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitepw3bluedots.onmouseover = function (e) {
     let sitepw = $.sitepw.value;
@@ -838,7 +831,7 @@ $.sitepw3bluedots.onmouseover = function (e) {
         $.sitepwmenuaccount.style.opacity = "0.5";
     }
     menuOn("sitepw", e);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitepw3bluedots.onclick = $.sitepw3bluedots.onmouseover;
 $.sitepw3bluedots.onmouseout = function (e) {
@@ -846,11 +839,11 @@ $.sitepw3bluedots.onmouseout = function (e) {
     if (!relatedTarget || !$.sitepwmenu.contains(relatedTarget)) {
         menuOff("sitepw", e);
     }
-    if (e?.resolver) e.resolver();
+    return done(e);
 };
 $.sitepwmenuaccount.onclick = function (e) {
     // Can only change a password if there is one
-    if (!$.sitepw.value || !$.sitename.value) return;
+    if (!$.sitepw.value || !$.sitename.value) return done(e);
     let sitename = $.sitename.value;
     let sitenameCount = Object.values(database.domains).filter(domainSitename => normalize(domainSitename) === normalize(sitename)).length;
     // Can only change a password if the site is in the database
@@ -868,7 +861,7 @@ $.sitepwmenuaccount.onclick = function (e) {
     if (logging) console.log(`The sitename "$.{sitename}" appears $.{sitenameCount} times in the database.`);
     msgon("account");
     $.accountnicknameinput.value = $.sitename.value;
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitepwmenucopy.onclick = async function(e) {
     let sitepw = $.sitepw.value;
@@ -887,36 +880,36 @@ $.sitepwmenucopy.onclick = async function(e) {
         if (logging) console.log("popup sitepw clipboard write failed", e);
     });
     menuOff("sitepw", e);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitepwmenuhelp.onclick = function (e) {
     helpItemOn("sitepw");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitepwhelptextclose.onclick = function (e) {
     helpAllOff();
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitepwhelptextmore.onclick = function (e) {
     helpAllOff();
     sectionClick("sitepw");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitepwmenushow.onclick = function (e) {
     $.sitepw.type = "text";
     $.sitepwmenushow.classList.toggle("nodisplay");
     $.sitepwmenuhide.classList.toggle("nodisplay");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitepwmenuhide.onclick = function (e) {
     $.sitepw.type = "password";
     $.sitepwmenushow.classList.toggle("nodisplay");
     $.sitepwmenuhide.classList.toggle("nodisplay");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.settingsshow.onclick = async function(e) {
     await showsettings();
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.clearclipboard.onclick = async function(e) {
     if (logging) console.log("popup clear clipboard");
@@ -932,7 +925,7 @@ $.clearclipboard.onclick = async function(e) {
     } catch(e) {
         if (logging) console.log("popup clear clipboard failed", e);
     }
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 document.oncopy = function (e) {
     if (e.target.id !== "sitepw") {
@@ -940,11 +933,11 @@ document.oncopy = function (e) {
     } else {
         $.sitepwmenucopy.click();
     }
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.settingssave.onclick = function closesettings(e) {
     hidesettings(e);
-    if (e?.resolver) e.resolver();
+    return done(e);
 };
 $.providesitepw.onclick = async function (e) {
     bg.settings.providesitepw = $.providesitepw.checked;
@@ -973,100 +966,100 @@ $.providesitepw.onclick = async function (e) {
         $.sitepwmenuhelp.classList.add("menu-icon-blue");
         $.sitepw.placeholder = "Your site password";
     }
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.clearsuperpw.onclick = function (e) {
     database.clearsuperpw = $.clearsuperpw.checked;
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.hidesitepw.onclick = function (e) {
     database.hidesitepw = $.hidesitepw.checked;
     hidesitepw();
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.pwlength.onmouseout = async function (e) {
     await handleblur(e, "pwlength");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.pwlength.onblur = async function (e) {
     bg.settings.pwlength = Number($.pwlength.value);
     await handleblur(e, "pwlength");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.pwlength.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "pwlength");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }; 
 $.startwithletter.onclick = async function (e) {
     await handleblur(e, "startwithletter");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
  $.allowlowercheckbox.onclick = async function (e) {
     restrictStartsWithLetter();
     $.minlower.disabled = false;
     await handleclick(e, "lower");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
  $.allowuppercheckbox.onclick = async function (e) {
     restrictStartsWithLetter();
     await handleclick(e, "upper");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
  $.allownumbercheckbox.onclick = async function (e) {
     await handleclick(e, "number");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.allowspecialcheckbox.onclick = async function (e) {
     await handleclick(e, "special");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
  $.minlower.onmouseout = async function (e) {
     await handleblur(e, "minlower");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
  $.minlower.onblur = async function (e) {
     await handleblur(e, "minlower");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
  $.minlower.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "minlower");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
  $.minupper.onmouseout = async function (e) {
     await handleblur(e, "minupper");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.minupper.onblur = async function (e) {
     await handleblur(e, "minupper");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
  $.minupper.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "minupper");
-    if (e?.resolver) e.resolver();
+    return done(e);
 };
  $.minnumber.onmouseout = async function (e) {
     await handleblur(e, "minnumber");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
  $.minnumber.onblur = async function (e) {
     await handleblur(e, "minnumber");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
  $.minnumber.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "minnumber");
-    if (e?.resolver) e.resolver();
+    return done(e);
 } 
  $.minspecial.onmouseout = async function (e) {
     await handleblur(e, "minspecial");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
  $.minspecial.onblur = async function (e) {
     await handleblur(e, "minspecial");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
  $.minspecial.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "minspecial");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 // In an older version I needed to limit the number of 
 // specials because generate() computed a number between 
@@ -1088,15 +1081,15 @@ $.specials.onblur = async function(e) {
     }
     bg.settings.specials = $.specials.value;
     await handlekeyup(e, "specials");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.specials.onmouseleave = async function(e) {
     await $.specials.onblur(e); // So it runs in the same turn
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.specials.onkeyup = async function(e) { 
     await handlekeyupnopw(e, "specials");
-    if (e?.resolver) e.resolver();
+    return done(e);
 } 
 $.makedefaultbutton.onclick = async function (e) {
     let newDefaults = {
@@ -1125,7 +1118,7 @@ $.makedefaultbutton.onclick = async function (e) {
         console.error("Error sending newDefaults message:", error);
     }
     if (logging) console.log("popup newDefaults sent", newDefaults);
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sitedatagetbutton.onclick = sitedataHTML;
 $.exportbutton.onclick = exportPasswords;
@@ -1138,7 +1131,7 @@ $.maininfo.onclick = function (e) {
         hideInstructions();
     }
     autoclose = false;
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 // Phishing buttons
 $.cancelwarning.onclick = async function (e) {
@@ -1148,7 +1141,7 @@ $.cancelwarning.onclick = async function (e) {
     $.username.value = "";
     sameacct = false;
     await chrome.tabs.update(activetab.id, {url: "chrome://newtab"});
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.sameacctbutton.onclick = async function (e) {
     $.superpw.disabled = false;
@@ -1175,7 +1168,7 @@ $.sameacctbutton.onclick = async function (e) {
     $.sitepw.value = await ask2generate(e);
     autoclose = false;
     sameacct = true;
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.nicknamebutton.onclick = function (e) {
     msgoff("phishing");
@@ -1186,7 +1179,7 @@ $.nicknamebutton.onclick = function (e) {
     sameacct = false;
     $.sitename.focus();
     autoclose = false;
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 // Phishing methods when there is a safe suffix
 $.suffixcancelbutton.onclick = function (e) {
@@ -1196,12 +1189,12 @@ $.suffixcancelbutton.onclick = function (e) {
     $.username.disabled = false;
     $.sitename.focus();
     autoclose = false;
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 $.suffixacceptbutton.onclick = async function (e) {
     msgoff("suffix");
     await $.sameacctbutton.onclick(e); // So it runs in the same turn
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 // Forget buttons
 $.forgetbutton.onclick = async function (e) {
@@ -1223,7 +1216,7 @@ $.forgetbutton.onclick = async function (e) {
     try {
         let response = await retrySendMessage({"cmd": "forget", "toforget": list});
         if (logging) console.log("popup forget response", response);
-        if (e?.resolver) e.resolver();
+        return done(e);
         $.forgetcancelbutton.onclick(); // So it runs in the same turn
     } catch (error) {
         console.error("Error sending forget message:", error);
@@ -1236,7 +1229,7 @@ $.forgetcancelbutton.onclick = function (e) {
         $.toforgetlist.removeChild($.toforgetlist.firstChild);
     }
     msgoff("forget");
-    if (e?.resolver) e.resolver();
+    return done(e);
 }
 // Handle external links in the instructions and help
 document.addEventListener('DOMContentLoaded', function (e) {
@@ -1245,10 +1238,10 @@ document.addEventListener('DOMContentLoaded', function (e) {
         link.addEventListener('click', async function(e) {
             e.preventDefault();
             await chrome.tabs.create({url: this.href});
-                    if (e?.resolver) e.resolver();
+                    return done(e);
 });
     });
-    if (e?.resolver) e.resolver();
+    return done(e);
 });
 // Generic code for menus
 function copied(which) {
@@ -2033,7 +2026,7 @@ function sectionrefSetup() {
         section.onclick = function (e) {
             e.stopPropagation();
             sectionClick(this.id.slice(0, -3));
-            if (e?.resolver) e.resolver();
+            return done(e);
         }
     }
 }
@@ -2045,7 +2038,7 @@ function instructionSetup() {
         let section = instruction.id.replace("info", "");
         instruction.onclick = function (e) {
             sectionClick(section);
-            if (e?.resolver) e.resolver();
+            return done(e);
         }
     }
 }
@@ -2077,6 +2070,13 @@ function closeAllInstructions() {
         let section = instruction.id.replace("info", "");
         closeInstructionSection(section);
     }
+}
+// Tests generate events that wait for a promise.  Each event handler 
+// needs to resolve the promise before returning, but that's inconvenient
+// when there are multiple returns in a handler.  This function takes
+// care of that
+function done(e) {
+    if (e?.resolver) e.resolver();
 }
 // Sometimes messages fail because the receiving side isn't quite ready.
 // That's most often the service worker as it's starting up.

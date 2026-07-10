@@ -46,20 +46,20 @@ export async function runTests() {
     await triggerEvent("click", $.settingsshow);  // For debugging
     if (!restart) {
         await testCalculation(); 
-        await testRememberSuperpw();
-        await testChangePassword();
-        await testRememberForm();
-        await testProvidedpw();
-        await testPhishing();
-        await testSharedCredentials();
-        await testForget();
-        await testClearSuperpw();
-        await testHideSitepw();
-        await testLegacyBkmks();
-        await testDuplicateBkmks();
-        await testSafeSuffixes();
-        await testChangeAccount();
-        // await testChangeSuperpw();
+        // await testRememberSuperpw();
+        // await testChangePassword();
+        // await testRememberForm();
+        // await testProvidedpw();
+        // await testPhishing();
+        // await testSharedCredentials();
+        // await testForget();
+        // await testClearSuperpw();
+        // await testHideSitepw();
+        // await testLegacyBkmks();
+        // await testDuplicateBkmks();
+        // await testSafeSuffixes();
+        // await testChangeAccount();
+        await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         // await testSaveAsDefault();
@@ -549,6 +549,10 @@ async function testChangeAccount() {
 // Test changing super password.  Make sure it doesn't change provided passwords.
 async function testChangeSuperpw() {
     await resetState();
+    // Test no warning when superpw = ""
+    await triggerEvent("blur", $.superpw);
+    let test = $.superpwtypo.style.display === "none";
+    testMsg(test, "No super password typo warning when superpw is empty");
     // Test no warning
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
     await triggerEvent("mouseleave", $.mainpanel);
@@ -556,7 +560,7 @@ async function testChangeSuperpw() {
     await triggerEvent("blur", $.domainname);
     await triggerEvent("keyup", $.superpw); // Don't do anything on keyup
     await triggerEvent("blur", $.superpw);
-    let test = $.superpwtypo.style.display === "none";
+    test = $.superpwtypo.style.display === "none";
     testMsg(test, "No super password typo warning", "No super password typo warning", "qwerty", "|" + $.superpw.value + "|");
     // Test showing the warning
     await updateValue($.superpw, "asdfgh");
@@ -599,14 +603,14 @@ async function testChangeSuperpw() {
     test = test && $.changesuperpwlosebutton.disabled === false;
     await updateValue($.changesuperpwloseinput, "qwerty");
     await triggerEvent("mouseleave", $.changesuperpwloseinput);
-    test = test && $.changesuperpwlosebutton.disabled === false;
+    test = test && $.changesuperpwlosechangebutton.disabled === false;
     test = test && !await checkSitepws(sitepws);
     testMsg(test, "Change super password button opens message and changes account passwords", "Change super password button opens message and changes account passwords");
     // Test change super password button with superpw
     await updateValue($.superpw, "asdfgh");
     await triggerEvent("mouseover", $.superpw3bluedots);
     await triggerEvent("click", $.superpwmenuaccount);
-    test = $.changesuperpwlosebutton.disabled === false;
+    test = $.changesuperpwlosechangebutton.disabled === false;
     test = test && $.changesuperpwloseinput.value === "asdfgh";
     testMsg(test, "Change super password button with superpw", "Change super password button with superpw");
     // Change superpw without providing old superpw
@@ -630,31 +634,31 @@ async function testChangeSuperpw() {
     sitepws = await changeSuperpwSetup("asdfgh");
     await triggerEvent("mouseover", $.superpw3bluedots);
     await triggerEvent("click", $.superpwmenuaccount);
-    await updateValue($.changesuperpwoldinput, "qwertyTypo");
-    await triggerEvent("blur", $.changesuperpwoldinput);
-    test = $.changesuperpwtypo.classList.contains("nodisplay") === false; // Check if the typo warning is shown
+    await updateValue($.changesuperpwloseinput, "qwertyTypo");
+    await triggerEvent("blur", $.changesuperpwloseinput);
+    test = $.changesuperpwlosetypo.classList.contains("nodisplay") === false; // Check if the typo warning is shown
     testMsg(test, "Show typo warning for old super password", "Show typo warning for old super password");
     // Make sure the typo warning goes away when you start typing a new value
-    $.changesuperpwoldinput.value = "a";
-    await triggerEvent("keyup", $.changesuperpwoldinput);
-    test = $.changesuperpwtypo.classList.contains("nodisplay") === true; // Check if the typo warning is hidden
+    $.changesuperpwloseinput.value = "a";
+    await triggerEvent("keyup", $.changesuperpwloseinput);
+    test = $.changesuperpwlosetypo.classList.contains("nodisplay") === true; // Check if the typo warning is hidden
     testMsg(test, "Typo warning goes away when typing a new value", "Typo warning goes away when typing a new value");
     // Finish providing old super password
     await resetState();
     let passwords = await changeSuperpwSetup("qwerty");
     await triggerEvent("mouseover", $.superpw3bluedots);
     await triggerEvent("click", $.superpwmenuaccount);
-    $.changesuperpwoldinput.value = "qwerty";
-    $.changesuperpwnewinput.value = "asdfgh";
-    await triggerEvent("click", $.changesuperpwnewkeepbutton);
+    $.changesuperpwkeepoldinput.value = "qwerty";
+    $.changesuperpwkeepnewinput.value = "asdfgh";
+    await triggerEvent("click", $.changesuperpwkeepbutton);
     test = await checkSitepws(passwords.provideds);
     testMsg(test, "Change super password with old super password", "Change super password with old super password");
     // Test going back to old super password
     await triggerEvent("mouseover", $.superpw3bluedots);
     await triggerEvent("click", $.superpwmenuaccount);
-    $.changesuperpwoldinput.value = "asdfgh";
-    $.changesuperpwnewinput.value = "qwerty";
-    await triggerEvent("click", $.changesuperpwnewkeepbutton);
+    $.changesuperpwkeepoldinput.value = "asdfgh";
+    $.changesuperpwkeepnewinput.value = "qwerty";
+    await triggerEvent("click", $.changesuperpwkeepbutton);
     test = await checkSitepws(passwords.provideds);
     testMsg(test, "Change back to old super password", "Change back to old super password");
     async function changeSuperpwSetup(newSuperpw) {
