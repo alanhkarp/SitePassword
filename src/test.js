@@ -568,9 +568,14 @@ async function testChangeSuperpw() {
     test = $.superpwtypo.style.display === "block";
     testMsg(test, "Show change super password typo warning", "Show change super password typo warning", "asdfgh", "|" + $.superpw.value + "|");
     // Test close warning button
-    await triggerEvent("click", $.superpwtypobutton);
+    await triggerEvent("click", $.superpwtypocancelbutton);
     test = $.superpwtypo.style.display === "none" && $.superpw.value === "asdfgh";
-    testMsg(test, "Close super password typo warning", "Close super password typo warning");
+    testMsg(test, "Close super password typo warning");
+    // Click Change with superpw
+    await triggerEvent("blur", $.superpw);
+    await triggerEvent("click", $.superpwtypochangebutton);
+    test = $.changesuperpw.style.display === "none" && $.superpw.value === "asdfgh";
+    testMsg(test, "Change with super password");
     // Test change super password lose button with no superpw
     await resetState();
     let sitepws = await changeSuperpwSetup("qwerty");
@@ -859,10 +864,10 @@ async function updateValue(element, value, eventName = "focus") {
 }
 function testMsg(test, passMsg, failMsg = passMsg, ...details) {
     if (test) {
-        console.log("", passMsg);
+        console.log("Passed:", passMsg);
         passed++;
     } else {
-        console.warn("", failMsg, ...details);
+        console.warn("Failed:", failMsg, ...details);
         failed++;
     }
 }

@@ -8,7 +8,8 @@ import { commonSuffix } from "./public_suffix_list.js";
 let testMode = false; // testMode must start as false.  Its value will come in a message from bg.js.
 const debugMode = false; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
 
-let logging = false;
+const logging = false;
+const recordEvents = false;
 if (logging) console.log("Version 3.4");
 
 let messageQueue = Promise.resolve();
@@ -371,14 +372,14 @@ $.superpw.onmouseleave = async function (e) {
     await $.superpw.onblur(e);
     return done(e);
 };
-$.superpwtypobutton.onclick = function (e) {
+$.superpwtypocancelbutton.onclick = function (e) {
     msgoff("superpwtypo");
     $.superpw.focus();
     return done(e);
 }
 $.superpwtypochangebutton.onclick = function (e) {
     msgoff("superpwtypo");
-    msgon("changesuperpw");
+    
     return done(e);
 }
 // Change super password options
@@ -1410,12 +1411,17 @@ function sortList(list) {
 // Reset the database value for the super password hash if it has changed or is not set
 async function sameSuperpw(superpwValue) {
     let oldSuperPwHash = database.common.superpwHash || "";
-    let bgsuper = clone(bgDefault);
-    bgsuper.superpw = superpwValue || "";
-    let superpwHash = await generatePassword(bgsuper);
+    let superpwHash = await computeSuperpwHash(superpwValue);
     if (!oldSuperPwHash) database.common.superpwHash = superpwHash;
     let same = superpwHash === database.common.superpwHash;
     return same;
+}
+async function computeSuperpwHash(superpwValue) {
+    const oldsuperpw = bgDefault.superpw || "";
+    bgDefault.superpw = superpwValue || "";
+    let hash = await generatePassword(bgDefault);
+    bgDefault.superpw = oldsuperpw;
+    return hash;
 }
 // Thanks, Copilot
 function scrollbarWidth() {
@@ -2076,6 +2082,11 @@ function closeAllInstructions() {
 // when there are multiple returns in a handler.  This function takes
 // care of that
 function done(e) {
+    if (recordEvents && e) {
+        const nowMs = Date.now();
+        const hms = new Date(nowMs).toLocaleTimeString("en-US", { hour12: false });
+        console.log(hms, e);
+    };
     if (e?.resolver) e.resolver();
 }
 // Sometimes messages fail because the receiving side isn't quite ready.

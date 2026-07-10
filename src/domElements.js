@@ -54,7 +54,7 @@ export const $ = {
 
     superpwtypo: get("superpwtypo"),
     superpwtypotext: get("superpwtypotext"),
-    superpwtypobutton: get("superpwtypobutton"),
+    superpwtypocancelbutton: get("superpwtypocancelbutton"),
     superpwtypochangebutton: get("superpwtypochangebutton"),
 
     changesuperpw: get("changesuperpw"),
