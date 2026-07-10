@@ -377,9 +377,10 @@ $.superpwtypocancelbutton.onclick = function (e) {
     $.superpw.focus();
     return done(e);
 }
-$.superpwtypochangebutton.onclick = function (e) {
+$.superpwtypochangebutton.onclick = async function (e) {
     msgoff("superpwtypo");
-    
+    let superpwHash = await computeSuperpwHash($.superpw.value);
+    database.common.superpwHash = superpwHash;
     return done(e);
 }
 // Change super password options

@@ -564,7 +564,8 @@ async function testChangeSuperpw() {
     testMsg(test, "No super password typo warning", "No super password typo warning", "qwerty", "|" + $.superpw.value + "|");
     // Test showing the warning
     await updateValue($.superpw, "asdfgh");
-    await triggerEvent("mouseleave", $.superpw);
+    await triggerEvent("keyup", $.superpw);
+    await triggerEvent("blur", $.superpw);
     test = $.superpwtypo.style.display === "block";
     testMsg(test, "Show change super password typo warning", "Show change super password typo warning", "asdfgh", "|" + $.superpw.value + "|");
     // Test close warning button
@@ -574,29 +575,42 @@ async function testChangeSuperpw() {
     // Click Change with superpw
     await triggerEvent("blur", $.superpw);
     await triggerEvent("click", $.superpwtypochangebutton);
+    await triggerEvent("mouseleave", $.mainpanel);
+    await clearForm();
+    await updateValue($.domainname, "alantheguru.alanhkarp.com");
+    await triggerEvent("blur", $.domainname);
     test = $.changesuperpw.style.display === "none" && $.superpw.value === "asdfgh";
     testMsg(test, "Change with super password");
-    // Test change super password lose button with no superpw
+    // Test change super password lose button with a superpw
     await resetState();
     let sitepws = await changeSuperpwSetup("qwerty");
-    await updateValue($.superpw, "");
     // Make sure the change all passwords buttons is disabled.
     await triggerEvent("mouseover", $.superpw3bluedots);
     await triggerEvent("click", $.superpwmenuaccount);
     // Is the warning for entering the old super password showing?
     test = $.changesuperpwoptions.style.display === "block";
+    testMsg(test, "Change super password options show", "Change super password options don't show");
     // Does Cancel work
     await triggerEvent("click", $.changesuperpwoptioncancelbutton);
-    test = test && $.changesuperpw.style.display === "none";
+    test = $.changesuperpw.style.display === "none";
+    testMsg(test, "Change super password options cancel button works", "Change super password cancel button doesn't work");
     // Does the Keep button open the right message?
+    await clearForm();
     await triggerEvent("mouseover", $.superpw3bluedots);
     await triggerEvent("click", $.superpwmenuaccount);
     await triggerEvent("click", $.changesuperpwoptionkeepbutton);
-    test = test && $.changesuperpwkeep.style.display === "block";
+    test = $.changesuperpwkeep.style.display === "block";
+    testMsg(test, "Change super password options keep button works", "Change super password options keep button doesn't work");
     // Enter the wrong old superpw
     $.changesuperpwkeepoldinput.value = "wrongpassword";
-    test = test && $.changesuperpwkeepoldtypo.style.display === "block";
-
+    test = $.changesuperpwkeepoldtypo.style.display === "block";
+    testMsg(test, "Change super password keep old password typo warning shows", "Change super password keep old password typo warning doesn't show");
+    // Make sure the warning goes away when you start typing a new value
+    $.changesuperpwkeepoldinput.value = "a";
+    await triggerEvent("keyup", $.changesuperpwkeepoldinput);
+    test = $.changesuperpwkeepoldtypo.style.display === "none";
+    testMsg(test, "Change super password keep old password typo warning goes away when typing a new value", "Change super password keep old password typo warning doesn't go away when typing a new value");
+    // Enter the wrong old superpw in the lose all passwords flow
     await updateValue($.changesuperpwloseinput, "asdfgh");
     await triggerEvent("mouseleave", $.changesuperpwloseinput);
     test = test && $.newsuperpwmsg.style.display === "block";
@@ -605,7 +619,7 @@ async function testChangeSuperpw() {
     await triggerEvent("keyup", $.changesuperpwloseinput);
     test = test && $.newsuperpwmsg.style.display === "none";
     // Test if the button is enabled
-    test = test && $.changesuperpwlosebutton.disabled === false;
+    test = test && $.changesuperpwlosechangebutton.disabled === false;
     await updateValue($.changesuperpwloseinput, "qwerty");
     await triggerEvent("mouseleave", $.changesuperpwloseinput);
     test = test && $.changesuperpwlosechangebutton.disabled === false;
