@@ -369,7 +369,7 @@ $.superpw.onblur = async function (e) {
     return done(e);
 }
 $.superpw.onmouseleave = async function (e) {
-    await $.superpw.onblur(e);
+    await $.superpw.onblur();
     return done(e);
 };
 $.superpwtypocancelbutton.onclick = function (e) {
@@ -411,7 +411,7 @@ $.changesuperpwkeepoldinput.onblur = async function(e) {
     return done(e);
 }
 $.changesuperpwkeepoldinput.onmouseleave = async function(e) {
-    await $.changesuperpwkeepoldinput.onblur(e);
+    await $.changesuperpwkeepoldinput.onblur();
     return done(e);
 }
 $.changesuperpwkeepoldinput.onkeyup = async function(e) {
@@ -423,7 +423,7 @@ $.changesuperpwkeepnewinput.onblur = async function (e) {
     return done(e);
 }
 $.changesuperpwkeepnewinput.onmouseleave = async function(e) {
-    await $.changesuperpwkeepnewinput.onblur(e);
+    await $.changesuperpwkeepnewinput.onblur();
     return done(e);
 }
 $.changesuperpwkeepnewinput.onkeyup = function (e) {
@@ -473,11 +473,11 @@ $.changesuperpwloseinput.onblur = async function (e) {
     return done(e);
 }
 $.changesuperpwloseinput.onmouseleave = async function (e) {
-    await $.changesuperpwloseinput.onblur(e);
+    await $.changesuperpwloseinput.onblur();
     return done(e);
 }
 $.changesuperpwloseinput.onkeyup = async function (e) {
-    await $.changesuperpwloseinput.onblur(e);
+    await $.changesuperpwloseinput.onblur();
     return done(e);
 }
 $.changesuperpwlosechangebutton.onclick = async function (e) {
@@ -1086,7 +1086,7 @@ $.specials.onblur = async function(e) {
     return done(e);
 }
 $.specials.onmouseleave = async function(e) {
-    await $.specials.onblur(e); // So it runs in the same turn
+    await $.specials.onblur(); // So it runs in the same turn
     return done(e);
 }
 $.specials.onkeyup = async function(e) { 
@@ -1195,7 +1195,7 @@ $.suffixcancelbutton.onclick = function (e) {
 }
 $.suffixacceptbutton.onclick = async function (e) {
     msgoff("suffix");
-    await $.sameacctbutton.onclick(e); // So it runs in the same turn
+    await $.sameacctbutton.onclick(); // So it runs in the same turn
     return done(e);
 }
 // Forget buttons
