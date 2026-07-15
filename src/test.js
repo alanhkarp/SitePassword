@@ -59,7 +59,9 @@ export async function runTests() {
         // await testDuplicateBkmks();
         // await testSafeSuffixes();
         // await testChangeAccount();
-        await testChangeSuperpw();
+        await testChangeSuperpwTypo();
+        await testChangeSuperpwOptions();
+        await testChangeSuperpwKeep();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         // await testSaveAsDefault();
@@ -546,8 +548,8 @@ async function testChangeAccount() {
     test = test && normalize($.sitename.value) === normalize("guru");
     testMsg(test, "Change account new", "Change account new");
 }
-// Test changing super password.  Make sure it doesn't change provided passwords.
-async function testChangeSuperpw() {
+// Test changing super password with the typo warning
+async function testChangeSuperpwTypo() {
     await resetState();
     // Test no warning when superpw = ""
     await triggerEvent("blur", $.superpw);
@@ -564,7 +566,9 @@ async function testChangeSuperpw() {
     testMsg(test, "No super password typo warning", "No super password typo warning", "qwerty", "|" + $.superpw.value + "|");
     // Test showing the warning
     await updateValue($.superpw, "asdfgh");
-    await triggerEvent("keyup", $.superpw);
+    await triggerEvent("keyup", $.superpw); // Don't show warning on keyup
+    test = $.superpwtypo.style.display === "none";
+    testMsg(test, "No super password typo warning on keyup", "No super password typo warning on keyup", "asdfgh", "|" + $.superpw.value + "|");
     await triggerEvent("blur", $.superpw);
     test = $.superpwtypo.style.display === "block";
     testMsg(test, "Show change super password typo warning", "Show change super password typo warning", "asdfgh", "|" + $.superpw.value + "|");
@@ -573,21 +577,20 @@ async function testChangeSuperpw() {
     test = $.superpwtypo.style.display === "none" && $.superpw.value === "asdfgh";
     testMsg(test, "Close super password typo warning");
     // Click Change with superpw
+    let sitepws = await changeSuperpwSetup("qwerty");
     await triggerEvent("blur", $.superpw);
     await triggerEvent("click", $.superpwtypochangebutton);
     await triggerEvent("mouseleave", $.mainpanel);
-    await clearForm();
-    await updateValue($.domainname, "alantheguru.alanhkarp.com");
-    await triggerEvent("blur", $.domainname);
-    test = $.changesuperpw.style.display === "none" && $.superpw.value === "asdfgh";
-    testMsg(test, "Change with super password");
+    test = await checkSitepws(sitepws);
+    testMsg(test, "Change super password. all account passwords change");
+}
+// Test changing super password with the Options warning
+async function testChangeSuperpwOptions() {
     // Test change super password lose button with a superpw
     await resetState();
-    let sitepws = await changeSuperpwSetup("qwerty");
-    // Make sure the change all passwords buttons is disabled.
     await triggerEvent("mouseover", $.superpw3bluedots);
     await triggerEvent("click", $.superpwmenuaccount);
-    // Is the warning for entering the old super password showing?
+    // Does the options warning open?
     test = $.changesuperpwoptions.style.display === "block";
     testMsg(test, "Change super password options show", "Change super password options don't show");
     // Does Cancel work
@@ -595,13 +598,28 @@ async function testChangeSuperpw() {
     test = $.changesuperpw.style.display === "none";
     testMsg(test, "Change super password options cancel button works", "Change super password cancel button doesn't work");
     // Does the Keep button open the right message?
-    await clearForm();
     await triggerEvent("mouseover", $.superpw3bluedots);
     await triggerEvent("click", $.superpwmenuaccount);
     await triggerEvent("click", $.changesuperpwoptionkeepbutton);
     test = $.changesuperpwkeep.style.display === "block";
     testMsg(test, "Change super password options keep button works", "Change super password options keep button doesn't work");
+    // Does the Change button work
+    await triggerEvent("click", $.changesuperpwoptionlosebutton);
+    test = $.changesuperpwkeep.style.display === "none";
+    test = test && $.changesuperpwoptions.style.display === "none";
+    test = test && $.changesuperpwlose.style.display === "block";
+    testMsg(test, "Change super password keep options Change button works", "Change super password keep options Change button doesn't work");
+}
+// Test Change all account passwords warning
+async function testChangeSuperpwKeep() {    
+    test = $.changesuperpwkeepoldtypo.style.display === "block";
+    testMsg(test, "Change super password keep button requires old super password", "Change super password keep button doesn't require old super password");
+    clearForm();
     // Enter the wrong old superpw
+    await triggerEvent("mouseover", $.superpw3bluedots);
+    await triggerEvent("click", $.superpwmenuaccount);
+    await triggerEvent("click", $.changesuperpwoptionkeepbutton);
+    test = $.changesuperpwkeep.style.display === "block";
     $.changesuperpwkeepoldinput.value = "wrongpassword";
     test = $.changesuperpwkeepoldtypo.style.display === "block";
     testMsg(test, "Change super password keep old password typo warning shows", "Change super password keep old password typo warning doesn't show");
@@ -632,6 +650,9 @@ async function testChangeSuperpw() {
     test = $.changesuperpwlosechangebutton.disabled === false;
     test = test && $.changesuperpwloseinput.value === "asdfgh";
     testMsg(test, "Change super password button with superpw", "Change super password button with superpw");
+}
+// TODO: Implement these tests
+async function testChangeSuperpwOptions() {
     // Change superpw without providing old superpw
     // await resetState();
     // sitepws = await changeSuperpwSetup("asdfgh");

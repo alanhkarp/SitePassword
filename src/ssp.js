@@ -6,10 +6,10 @@ import { characters, isConsistent, generatePassword, isSuperPw, normalize, strin
 import { isSharedCredentials } from "./sharedCredentials.js"; 
 import { commonSuffix } from "./public_suffix_list.js"; 
 let testMode = false; // testMode must start as false.  Its value will come in a message from bg.js.
-const debugMode = false; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
+const debugMode = true; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
 
 const logging = false;
-const recordEvents = false;
+const recordEvents = true;
 if (logging) console.log("Version 3.4");
 
 let messageQueue = Promise.resolve();
@@ -192,7 +192,7 @@ export async function getsettings() {
 // is a race between message delivery and the next user click.  Fortunately, messages
 // are delivered in just a couple of ms, so there's no problem.  Just be aware that
 // this race is the source of any problems related to loss of the message sent here.
-($.root).onmouseleave = function (e) {
+$.root.onmouseleave = function (e) {
     // If I close the window immediately, then messages in flight get lost
     if (autoclose && !exporting && !testMode && !document.elementFromPoint(e.pageX, e.pageY)) {
         if (!debugMode) $.root.style.opacity = 0.1;
@@ -221,6 +221,10 @@ $.mainpanel.onmouseenter = function (e) {
 }
 $.mainpanel.onmouseleave = async function (e) {
     if (logging) console.log("popup mainpanel mouseleave", e);
+    if (msgoffState) {
+        msgoffState = false;
+        return done(e);
+    }
     // Force a blur event on the currently focused element.  There is an inherent race condition
     // between the mouseleave event and the blur event in that the blur processing might not
     // complete before the popup closes.  This is not a problem in practice because of the delay 
@@ -363,18 +367,14 @@ $.superpw.onblur = async function (e) {
     if (!same) {
         // Handle the case where the super password has changed
         msgon("superpwtypo");
-        return done(e);
-    }
-    await handleblur(e, "superpw");
+    } else {
+        msgoff("superpwtypo");
+        await handleblur(e, "superpw");
+     }
     return done(e);
 }
-$.superpw.onmouseleave = async function (e) {
-    await $.superpw.onblur();
-    return done(e);
-};
 $.superpwtypocancelbutton.onclick = function (e) {
     msgoff("superpwtypo");
-    $.superpw.focus();
     return done(e);
 }
 $.superpwtypochangebutton.onclick = async function (e) {
@@ -1991,7 +1991,11 @@ function msgon(msgname) {
     warning(msgname, true);
     autoclose = false;
 }
+// I don't want to process mouseleave events on mainpanel and root
+// just because the mouse is outside the popup when I close a message.
+let msgoffState = false;
 function msgoff(msgname) {
+    msgoffState = true;
     warning(msgname, false);
     autoclose = true;
 }
@@ -2086,7 +2090,7 @@ function done(e) {
     if (recordEvents && e) {
         const nowMs = Date.now();
         const hms = new Date(nowMs).toLocaleTimeString("en-US", { hour12: false });
-        console.log(hms, e);
+        console.log(hms, e.type, e.target.id || e.currentTarget.id);
     };
     if (e?.resolver) e.resolver();
 }
