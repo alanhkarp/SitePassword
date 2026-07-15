@@ -62,6 +62,7 @@ export async function runTests() {
         await testChangeSuperpwTypo();
         await testChangeSuperpwOptions();
         await testChangeSuperpwKeep();
+        await testChangeSuperpwLose();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         // await testSaveAsDefault();
@@ -558,7 +559,7 @@ async function testChangeSuperpwTypo() {
     // Test no warning
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
     await triggerEvent("mouseleave", $.mainpanel);
-    await fillForm("qwerty", "alantheguru.alanhkarp.com", "", "");
+    await fillForm("", "alantheguru.alanhkarp.com", "", "");
     await triggerEvent("blur", $.domainname);
     await triggerEvent("keyup", $.superpw); // Don't do anything on keyup
     await triggerEvent("blur", $.superpw);
@@ -581,6 +582,7 @@ async function testChangeSuperpwTypo() {
     await triggerEvent("blur", $.superpw);
     await triggerEvent("click", $.superpwtypochangebutton);
     await triggerEvent("mouseleave", $.mainpanel);
+    await triggerEvent("mouseleave", $.root);
     test = await checkSitepws(sitepws);
     testMsg(test, "Change super password. all account passwords change");
 }
@@ -591,7 +593,7 @@ async function testChangeSuperpwOptions() {
     await triggerEvent("mouseover", $.superpw3bluedots);
     await triggerEvent("click", $.superpwmenuaccount);
     // Does the options warning open?
-    test = $.changesuperpwoptions.style.display === "block";
+    let test = $.changesuperpwoptions.style.display === "block";
     testMsg(test, "Change super password options show", "Change super password options don't show");
     // Does Cancel work
     await triggerEvent("click", $.changesuperpwoptioncancelbutton);
@@ -604,7 +606,7 @@ async function testChangeSuperpwOptions() {
     test = $.changesuperpwkeep.style.display === "block";
     testMsg(test, "Change super password options keep button works", "Change super password options keep button doesn't work");
     // Does the Change button work
-    await triggerEvent("click", $.changesuperpwoptionlosebutton);
+    await triggerEvent("click", $.changesuperpwoptioncancelbutton);
     test = $.changesuperpwkeep.style.display === "none";
     test = test && $.changesuperpwoptions.style.display === "none";
     test = test && $.changesuperpwlose.style.display === "block";
@@ -612,7 +614,7 @@ async function testChangeSuperpwOptions() {
 }
 // Test Change all account passwords warning
 async function testChangeSuperpwKeep() {    
-    test = $.changesuperpwkeepoldtypo.style.display === "block";
+    let test = $.changesuperpwkeepoldtypo.style.display === "block";
     testMsg(test, "Change super password keep button requires old super password", "Change super password keep button doesn't require old super password");
     clearForm();
     // Enter the wrong old superpw
@@ -652,7 +654,7 @@ async function testChangeSuperpwKeep() {
     testMsg(test, "Change super password button with superpw", "Change super password button with superpw");
 }
 // TODO: Implement these tests
-async function testChangeSuperpwOptions() {
+async function testChangeSuperpwLose() {
     // Change superpw without providing old superpw
     // await resetState();
     // sitepws = await changeSuperpwSetup("asdfgh");
@@ -670,13 +672,13 @@ async function testChangeSuperpwOptions() {
     // }
     // Change superpw providing old superpw with typo
     await resetState();
-    restoreForTesting();
-    sitepws = await changeSuperpwSetup("asdfgh");
+    await restoreForTesting();
+    // let sitepws = await changeSuperpwSetup("asdfgh");
     await triggerEvent("mouseover", $.superpw3bluedots);
     await triggerEvent("click", $.superpwmenuaccount);
     await updateValue($.changesuperpwloseinput, "qwertyTypo");
     await triggerEvent("blur", $.changesuperpwloseinput);
-    test = $.changesuperpwlosetypo.classList.contains("nodisplay") === false; // Check if the typo warning is shown
+    let test = $.changesuperpwlosetypo.classList.contains("nodisplay") === false; // Check if the typo warning is shown
     testMsg(test, "Show typo warning for old super password", "Show typo warning for old super password");
     // Make sure the typo warning goes away when you start typing a new value
     $.changesuperpwloseinput.value = "a";
@@ -701,36 +703,6 @@ async function testChangeSuperpwOptions() {
     await triggerEvent("click", $.changesuperpwkeepbutton);
     test = await checkSitepws(passwords.provideds);
     testMsg(test, "Change back to old super password", "Change back to old super password");
-    async function changeSuperpwSetup(newSuperpw) {
-        await fillForm(newSuperpw, "notprovided.example.com", "Guru", "Alan");
-        await triggerEvent("mouseleave", $.mainpanel);
-        let notprovided = $.sitepw.value;
-        let unprovided1 = await providepwSetup(newSuperpw, "provided1", "provided1.example.com", "Provided1", "Alan");
-        let unprovided2 = await providepwSetup(newSuperpw, "provided2", "provided2.example.com", "Provided2", "Alan");
-        let unprovided3 = await providepwSetup(newSuperpw, "provided3", "provided3.example.com", "Provided3", "Alan");
-        return {"unprovideds": [notprovided, unprovided1, unprovided2, unprovided3],
-                "provideds": [notprovided, "provided1", "provided2", "provided3"]
-        };
-    }
-    async function checkSitepws(sitepws) {
-        await clearForm();
-        $.domainname.value = "notprovided.example.com";
-        await triggerEvent("blur", $.domainname);
-        let test = $.sitepw.value === sitepws[0];
-        await clearForm();
-        $.domainname.value = "provided1.example.com";
-        await triggerEvent("blur", $.domainname);
-        test = test && $.sitepw.value === sitepws[1];
-        await clearForm();
-        $.domainname.value = "provided2.example.com";
-        await triggerEvent("blur", $.domainname);
-        test = test && $.sitepw.value === sitepws[2];
-        await clearForm();
-        $.domainname.value = "provided3.example.com";
-        await triggerEvent("blur", $.domainname);
-        test = test && $.sitepw.value === sitepws[3];
-        return test;
-    }
 }
 // Test save as default
 async function testSaveAsDefault() {
@@ -888,6 +860,38 @@ async function providepwSetup(superpw, providedpw, domainname, sitename, usernam
     await triggerEvent("mouseleave", $.mainpanel);
     return unprovided;
 }
+// Utility functions for testing changeing super password
+async function changeSuperpwSetup(newSuperpw) {
+    await fillForm(newSuperpw, "notprovided.example.com", "Guru", "Alan");
+    await triggerEvent("mouseleave", $.mainpanel);
+    let notprovided = $.sitepw.value;
+    let unprovided1 = await providepwSetup(newSuperpw, "provided1", "provided1.example.com", "Provided1", "Alan");
+    let unprovided2 = await providepwSetup(newSuperpw, "provided2", "provided2.example.com", "Provided2", "Alan");
+    let unprovided3 = await providepwSetup(newSuperpw, "provided3", "provided3.example.com", "Provided3", "Alan");
+    return {"unprovideds": [notprovided, unprovided1, unprovided2, unprovided3],
+            "provideds": [notprovided, "provided1", "provided2", "provided3"]
+    };
+}
+async function checkSitepws(sitepws) {
+    await clearForm();
+    $.domainname.value = "notprovided.example.com";
+    await triggerEvent("blur", $.domainname);
+    let test = $.sitepw.value === sitepws[0];
+    await clearForm();
+    $.domainname.value = "provided1.example.com";
+    await triggerEvent("blur", $.domainname);
+    test = test && $.sitepw.value === sitepws[1];
+    await clearForm();
+    $.domainname.value = "provided2.example.com";
+    await triggerEvent("blur", $.domainname);
+    test = test && $.sitepw.value === sitepws[2];
+    await clearForm();
+    $.domainname.value = "provided3.example.com";
+    await triggerEvent("blur", $.domainname);
+    test = test && $.sitepw.value === sitepws[3];
+    return test;
+}
+// Just setting the value of a DOM element doeesn't take effed immediately
 async function updateValue(element, value, eventName = "focus") {
     const e = new Event(eventName);
     const promise = new Promise((resolve) => {

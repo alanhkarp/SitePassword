@@ -6,10 +6,10 @@ import { characters, isConsistent, generatePassword, isSuperPw, normalize, strin
 import { isSharedCredentials } from "./sharedCredentials.js"; 
 import { commonSuffix } from "./public_suffix_list.js"; 
 let testMode = false; // testMode must start as false.  Its value will come in a message from bg.js.
-const debugMode = true; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
+const debugMode = false; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
 
 const logging = false;
-const recordEvents = true;
+const recordEvents = false; // Set to true to record events for testing.  This is not the same as testMode.
 if (logging) console.log("Version 3.4");
 
 let messageQueue = Promise.resolve();
@@ -20,6 +20,7 @@ let activetab;
 let domainname;
 let mainPanelTimer;
 let lastFocused = null;
+let msgoffState = false;
 // The following is needed to trigger the event when debugging or testing
 document.addEventListener('focus', e => { 
     lastFocused = e.target;     
@@ -1993,9 +1994,7 @@ function msgon(msgname) {
 }
 // I don't want to process mouseleave events on mainpanel and root
 // just because the mouse is outside the popup when I close a message.
-let msgoffState = false;
 function msgoff(msgname) {
-    msgoffState = true;
     warning(msgname, false);
     autoclose = true;
 }
@@ -2010,9 +2009,12 @@ function warning(msgname, turnon) {
         ison = ison || msg.ison;
     }
     if (ison) {
+        msgoffState = false;
         $.warnings.style.display = "block";
     } else {
-        $.warnings.style.display = "none";
+        let display = $.warnings.style.display;
+        if (display === "block") msgoffState = true;
+        display = "none";
     }
     let height = mainHeight();
     $.main.style.height = height + "px";
