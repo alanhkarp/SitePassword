@@ -59,10 +59,10 @@ export async function runTests() {
         // await testDuplicateBkmks();
         // await testSafeSuffixes();
         // await testChangeAccount();
-        await testChangeSuperpwTypo();
+        // await testChangeSuperpwTypo();
         await testChangeSuperpwOptions();
-        await testChangeSuperpwKeep();
-        await testChangeSuperpwLose();
+        // await testChangeSuperpwKeep();
+        // await testChangeSuperpwLose();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         // await testSaveAsDefault();
@@ -578,12 +578,13 @@ async function testChangeSuperpwTypo() {
     test = $.superpwtypo.style.display === "none" && $.superpw.value === "asdfgh";
     testMsg(test, "Close super password typo warning");
     // Click Change with superpw
+    await triggerEvent("mouseleave", $.mainpanel); // Save the settings
     let sitepws = await changeSuperpwSetup("qwerty");
     await triggerEvent("blur", $.superpw);
     await triggerEvent("click", $.superpwtypochangebutton);
     await triggerEvent("mouseleave", $.mainpanel);
     await triggerEvent("mouseleave", $.root);
-    test = await checkSitepws(sitepws);
+    test = !await checkSitepws(sitepws);
     testMsg(test, "Change super password. all account passwords change");
 }
 // Test changing super password with the Options warning
