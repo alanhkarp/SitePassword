@@ -24,14 +24,6 @@ export const $ = {
     suffixacceptbutton: get("suffixacceptbutton"),
     suffixcancelbutton: get("suffixcancelbutton"),
 
-    account: get("account"),
-    accounttext0: get("accounttext0"),
-    accountnicknameinput: get("accountnicknameinput"),
-    accountnicknamesavebutton: get("accountnicknamesavebutton"),
-    accountnicknamecancelbutton: get("accountnicknamecancelbutton"),
-    accounttext1: get("accounttext1"),
-    accountnicknamenewbutton: get("accountnicknamenewbutton"),
-
     http: get("http"),
     httptext: get("httptext"),
 
@@ -52,29 +44,14 @@ export const $ = {
     changeusernametext: get("changeusernametext"),
     changeusernameokbutton: get("changeusernameokbutton"),
 
-    superpwtypo: get("superpwtypo"),
-    superpwtypotext: get("superpwtypotext"),
-    superpwtypocancelbutton: get("superpwtypocancelbutton"),
-    superpwtypochangebutton: get("superpwtypochangebutton"),
-
     changesuperpw: get("changesuperpw"),
-    changesuperpwoptions: get("changesuperpwoptions"),
-    changesuperpwoptionkeepbutton: get("changesuperpwoptionkeepbutton"),
-    changesuperpwoptionlosebutton: get("changesuperpwoptionlosebutton"),
-    changesuperpwoptioncancelbutton: get("changesuperpwoptioncancelbutton"),
-    changesuperpwkeep: get("changesuperpwkeep"),
+    changesuperpwcancelbutton: get("changesuperpwcancelbutton"),
+    // Change all account passwords, even provided ones
+    changesuperpwlosebutton: get("changesuperpwlosebutton"),
+    // Keep account passwords as if provided
     changesuperpwkeepoldinput: get("changesuperpwkeepoldinput"),
     changesuperpwkeepoldtypo: get("changesuperpwkeepoldtypo"),
-    changesuperpwkeepnotypo: get("changesuperpwkeepnotypo"),
-    changesuperpwkeepnewinput: get("changesuperpwkeepnewinput"),
-    changesuperpwkeepnewtypo: get("changesuperpwkeepnewtypo"),
     changesuperpwkeepbutton: get("changesuperpwkeepbutton"),
-    changesuperpwkeepcancelbutton: get("changesuperpwkeepcancelbutton"),
-    changesuperpwlose: get("changesuperpwlose"),
-    changesuperpwloseinput: get("changesuperpwloseinput"),
-    changesuperpwlosechangebutton: get("changesuperpwlosechangebutton"),
-    changesuperpwlosetypo: get("changesuperpwlosetypo"),
-    changesuperpwlosecancelbutton: get("changesuperpwlosecancelbutton"),
 
     nopw: get("nopw"),
     nopwtext: get("nopwtext"),

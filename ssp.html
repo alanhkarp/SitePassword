@@ -113,45 +113,6 @@ to change all occurrences if ![](images...) to <img> tags.
             </button>
           </span>
         </div>
-        <div id="account" class="warning nodisplay" style="width: 25em">
-          <img src="images/warning.png" class="icon warning-icon">
-          <span class="warningtext">Change Password</span>
-          <p>
-            You can change your password
-            <span name="hassuffix" class="nodisplay">for all login pages ending in 
-                <span id="accounttext0" class="phishing">alanhkarp.com</span>
-            </span> by providing a new account nickname.
-          </p>
-          <input id="accountnicknameinput" type="text"
-              style="width:95%; position: relative; left: 10px" 
-              placeholder="Enter a different site nickname for this account."
-              title="This domain name is for a different account."
-          </input>
-          <br /><br />
-          <span style="display: flex; justify-content: space-between; width: 100%;">
-            <button id="accountnicknamesavebutton" class="buttonretry"
-              disabled
-              title="Use the new password for this account.">
-              <span class="btn-text" style="color: white">Change password</span>
-            </button> 
-            <span style="width: 10px;"></span>
-            <button id="accountnicknamecancelbutton" class="buttonsafe"
-              title="Use the old password for this account.">
-              <span class="btn-text" style="color: white">Don't change password</span>
-            </button>
-          </span>
-          <div name="hassuffix" class="nodisplay">
-            <p>
-              The domain name 
-              <span id="accounttext1" class="phishing"></span>
-              is for a different account.
-            </p>
-            <button id="accountnicknamenewbutton" class="buttonretry"
-              title="Use the new password for this domain name.">
-              <span class="btn-text" style="color: white">Use the new password for this account.</span>
-            </button>
-          </div>
-        </div>
         <div id="http" class="warning nodisplay" style="width: 18em">
           <span id="httptext">
             <img src="images/warning.png" class="icon warning-icon">
@@ -200,6 +161,54 @@ to change all occurrences if ![](images...) to <img> tags.
             </div>
           </span>
         </div>
+        <div id="changesuperpw" class="warning nodisplay" style="width: 18em"
+          title="Change super password.">
+          <br />
+          <span class="warningtext" style="text-align: center; display: block;">Change Super Password</span>
+          <div>
+            <p>
+              Your super password is different from the one you used last time.
+            </p>
+            <span class="btn-text" style="color: white">
+              <button id="changesuperpwcancelbutton" type="button" class="buttonsafe"
+                title="Cancel changing your super password.">
+                  Cancel
+              </button>
+            </span>
+            <div id="changesuperpwlose">
+              <p>
+                Change all your account passwords, including the ones you provided.
+                You will have to go through the change password process at all
+                your accounts individually.  You can get all your account passwords 
+                back by using your old super password the next time.
+              </p>
+              <span class="btn-text" style="color: white">
+                <button id="changesuperpwlosebutton" type="button" class="buttondangerous"
+                  title="Change all account passwords.">
+                    Change all account passwords
+                </button>
+              </span>
+            </div>
+            <div>
+              <p>
+                You can keep your existing account passwords by providing your old super password.
+              </p>
+              <input type="text" id="changesuperpwkeepoldinput" style="width: 96%" class="input" 
+                placeholder="Enter your old superpassword."
+                title="Enter your old super password." />
+              <p id="changesuperpwkeepoldtypo" class="nodisplay" style="color:red;">
+                The super password you entered appears to be a typo.
+                Please check and enter your old super password correctly.
+              </p>
+              <p></p>
+              <button id="changesuperpwkeepbutton" type="button" class="buttondangerous" 
+                disabled
+                title="Use new super password.">
+                <span class="btn-text" style="color: white">Use new superpassword</span>
+              </button>
+            </div>
+          </div>
+        </div>
         <div id="changesitename" class="warning nodisplay" style="width: 18em"
           title="Site name changed.">
           <span id="changesitenametext">
@@ -237,127 +246,6 @@ to change all occurrences if ![](images...) to <img> tags.
               </button>
             </span>
           </span>
-        </div>
-        <div id="superpwtypo" class="warning nodisplay" style="width: 18em"
-          title="Super password typo.">
-          <span id="superpwtypotext">
-            <img src="images/warning.png" class="icon warning-icon">
-            <span class="warningtext">Super Password Typo</span>
-            <p>
-              The super password you entered appears to be a typo.
-              Please check and enter your super password correctly.
-              
-            </p>
-            <br />
-            <span class="warningtext">
-              <button id="superpwtypocancelbutton" type="button" class="buttonsafe"
-                title="Close this warning.">
-                <span class="btn-text" style="color: white">Cancel</span>
-              </button>
-              <p>
-                Click "Change" to start using the new super password.
-                All your account passwords will be changed, including the ones you provided.
-                Be sure not to forget your new super password.  SitePassword can't help you if you do.
-              </p>
-              <button id="superpwtypochangebutton" type="button" class="buttondangerous"
-                title="Change your super password.">
-                <span class="btn-text" style="color: white">Change all account passwords</span>
-              </button>
-            </span>
-          </span>
-        </div>
-        <div id="changesuperpw" class="warning nodisplay" style="width: 18em"
-          title="Change super password.">
-          <br />
-          <span class="warningtext" style="text-align: center; display: block;">Change Super Password</span>
-          <div id="changesuperpwoptions">
-            <p>
-              You have two options when changing your super password.  You can keep all your account passwords
-              by providing your old super password, or you can just provide a new super password and
-              change all your existing account passwords.
-            </p>
-            <span class="btn-text" style="color: white">
-              <button id="changesuperpwoptionkeepbutton" type="button" class="buttonwarning"
-                title="Keep all account passwords.">
-                  Keep all account passwords
-              </button>
-              <p></p>
-              <button id="changesuperpwoptionlosebutton" type="button" class="buttondangerous"
-                title="Change all account passwords.">
-                  Change all account passwords
-              </button>
-              <p></p>
-              <button id="changesuperpwoptioncancelbutton" type="button" class="buttonsafe"
-                title="Cancel changing your super password.">
-                  Cancel
-              </button>
-            </span>
-          </div>
-          <div id="changesuperpwkeep" class="nodisplay">
-            <p>
-              You can keep your existing account passwords by providing your old super password.
-            </p>
-            <input type="text" id="changesuperpwkeepoldinput" style="width: 96%" class="input" 
-              placeholder="Enter your old superpassword."
-              title="Enter your old super password." />
-            <p id="changesuperpwkeepoldtypo" class="nodisplay" style="color:red;">
-              The super password you entered appears to be a typo.
-              Please check and enter your old super password correctly.
-            </p>
-            <p id="changesuperpwkeepnotypo">
-              Then enter your new super password.  Be sure to enter it correctly.
-              SitePassword cannot help you if you forget it or enter it incorrectly.
-              When you are ready, click "Use new superpassword."
-            </p>  
-            <input type="text" id="changesuperpwkeepnewinput"  
-              style="width: 96%" class="input" 
-              placeholder="Enter your new superpassword."
-              title="Enter your new super password." />
-              <p id="changesuperpwkeepnewtypo" class="nodisplay" style="color:red;">
-                The new super password is the same as the old one.
-                Please enter a new super password or click Cancel.
-              </p>
-            <br /><br />
-            <button id="changesuperpwkeepbutton" type="button" class="buttondangerous" 
-              disabled
-              title="Use new super password.">
-              <span class="btn-text" style="color: white">Use new superpassword</span>
-            </button>
-            <p></p>
-            <button id="changesuperpwkeepcancelbutton" type="button" class="buttonsafe" 
-              title="Cancel changing your super password.">
-              <span class="btn-text" style="color: white">Cancel</span>
-            </button>
-          </div>
-          <div id="changesuperpwlose" class="nodisplay">
-            <p>
-              Enter your new super password in the field below and click 
-              "Change all account passwords" to start using the new super password.
-              Note that all your account passwords will be changed, and any passwords you provided will be lost.
-            </p>
-            <input type="text" id="changesuperpwloseinput" style="width: 96%" class="input" 
-              placeholder="Enter your new superpassword."
-              title="Enter your new super password." />
-            <div id="changesuperpwlosetypo" class="nodisplay" style="color:red;">
-              <p>
-                You entered your old super password instead of a new one.
-                If you changed your mind, click the "Cancel" button.
-              </p>
-            </div>
-            <p></p>
-            <span class="btn-text" style="color: white">
-              <button id="changesuperpwlosechangebutton" type="button" class="buttondangerous"
-                disabled
-                title="Change all account passwords.">
-                  Change all account passwords
-              </button>
-            </span>
-            <p></p>
-            <button id="changesuperpwlosecancelbutton" type="button" class="buttonsafe"
-              title="Cancel all account password changes.">
-                Cancel
-            </button>
-          </div>
         </div>
         <div id="nopw" class="warning nodisplay" style="width: 18em"
           title="You may need to enable some characters, increase the pasword length, or reduce the number of special characters you're asking for.">
@@ -1656,6 +1544,7 @@ to change all occurrences if ![](images...) to <img> tags.
           </div>
           <div id="superpwmenu" class="nodisplay menu inner-icon-2">
             <div id="superpwmenuaccount"
+              disabled
               title="Click to change your super password.">
               <img src="images/account.png" class="icon menu-icon">
             </div>

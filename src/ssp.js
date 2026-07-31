@@ -355,7 +355,8 @@ $.superpw.onkeyup = async function (e) {
     // Start the reminder clock ticking
     await chrome.storage.local.set({"reminder": Date.now()});
     bg.superpw = $.superpw.value || "";
-    setMeter("superpw");
+    $.superpwmenuaccount.disabled = true;
+    if ($.superpw.value) $.superpwmenuaccount.disabled = false;
     setMeter("sitepw");
     await handlekeyup(e, "superpw");
     return done(e);
@@ -367,81 +368,65 @@ $.superpw.onblur = async function (e) {
     let same = await sameSuperpw($.superpw.value);
     if (!same) {
         // Handle the case where the super password has changed
-        msgon("superpwtypo");
+        msgon("changesuperpw");
     } else {
-        msgoff("superpwtypo");
         await handleblur(e, "superpw");
-     }
+    }
     return done(e);
 }
-$.superpwtypocancelbutton.onclick = function (e) {
-    msgoff("superpwtypo");
+$.superpw.onmouseleave = async function (e) {
+    if (!$.superpw.value) return done(e);
+    let same = await sameSuperpw($.superpw.value);
+    if (same) {
+        await handleblur(e, "superpw");
+    } else {
+        $.superpw.disabled = true;
+        msgon("changesuperpw");
+    }
     return done(e);
 }
-$.superpwtypochangebutton.onclick = async function (e) {
-    msgoff("superpwtypo");
-    let superpwHash = await computeSuperpwHash($.superpw.value);
-    database.common.superpwHash = superpwHash;
-    return done(e);
-}
-// Change super password options
-$.changesuperpwoptionkeepbutton.onclick = function (e) {
-    $.changesuperpwoptions.classList.add("nodisplay");
-    $.changesuperpwkeepnewinput.value = $.superpw.value;
-    $.changesuperpwkeep.classList.remove("nodisplay");
-    return done(e);
-}
-$.changesuperpwoptionlosebutton.onblur = async function (e) {
-    $.changesuperpwoptions.classList.add("nodisplay");
-    $.changesuperpwloseinput.value = $.superpw.value;
-    $.changesuperpwlose.classList.remove("nodisplay");
-    return done(e);
-}
-$.changesuperpwoptioncancelbutton.onclick = async function (e) {
+// Change super password - change all account passwords
+$.changesuperpwcancelbutton.onclick = function (e) {
     msgoff("changesuperpw");
-    $.superpw.focus();
+    return done(e);
+}
+$.changesuperpwlosebutton.onclick = async function (e) {
+    msgoff("changesuperpw");
+    let pw = await ask2generate();
+    $.sitepw.value = stringXorArray(pw, bg.settings.xor);
+    await $.mainpanel.onmouseleave(); // Save new superpw
     return done(e);
 }
 // Change super password = keep all account passwords
-$.changesuperpwkeepoldinput.onblur = async function(e) {
-    let same = await sameSuperpw($.superpw.value);
-    if (!same) {
-        $.changesuperpwkeepoldtypo.classList.remove("nodisplay");
-        return done(e);
+$.changesuperpwkeepoldinput.onblur = async function (e) {
+    let same = await sameSuperpw(this.value);
+    if (same) {
+        $.changesuperpwkeepoldtypo.classList.add("nodisplay"); // Show the typo warning 
+        $.changesuperpwkeepbutton.disabled = false;
+    } else {
+        $.changesuperpwkeepoldtypo.classList.remove("nodisplay"); // Hide the typo warning
+        $.changesuperpwkeepbutton.disabled = true;
     }
     return done(e);
+}
+$.changesuperpwkeepoldinput.onkeyup = async function (e) {
+    if ($.changesuperpwkeepoldinput.value) $.changesuperpwkeepoldtypo.classList.add("nodisplay");
+    done(e);
 }
 $.changesuperpwkeepoldinput.onmouseleave = async function(e) {
     await $.changesuperpwkeepoldinput.onblur();
     return done(e);
 }
-$.changesuperpwkeepoldinput.onkeyup = async function(e) {
-    $.changesuperpwkeepoldtypo.classList.add("nodisplay");
-    return done(e);
-}
-$.changesuperpwkeepnewinput.onblur = async function (e) {
-    $.changesuperpwkeepnewtypo.classList.remove("nodisplay"); // Show the typo warning 
-    return done(e);
-}
-$.changesuperpwkeepnewinput.onmouseleave = async function(e) {
-    await $.changesuperpwkeepnewinput.onblur();
-    return done(e);
-}
-$.changesuperpwkeepnewinput.onkeyup = function (e) {
-    $.changesuperpwkeepnewtypo.classList.add("nodisplay"); // Don't show the typo warning when typing a new value
-    return done(e);
-}
 $.changesuperpwkeepbutton.onclick = async function (e) {
+    // Can't get here unless the old super password input has a value
     msgoff("changesuperpw");
-    if (await sameSuperpw($.changesuperpwkeepnewinput.value)) {
-        $.changesuperpwkeepnewtypo.classList.remove("nodisplay");
+    if (!await sameSuperpw($.changesuperpwkeepoldinput.value)) {
+        $.changesuperpwkeepoldtypo.classList.remove("nodisplay");
         return done(e);
-        return;
     }
-    const eventForAsk = { currentTarget: e?.currentTarget };
     // Update all site passwords to be provided
     let oldSuperpw = $.changesuperpwkeepoldinput.value || "";
-    let newSuperpw = $.changesuperpwkeepnewinput.value || "";
+    let newSuperpw = $.changesuperpwkeepoldinput.value || "";
     if (!newSuperpw) {
         return done(e);
     }   
@@ -463,55 +448,6 @@ $.changesuperpwkeepbutton.onclick = async function (e) {
     await retrySendMessage({"cmd": "updatedb", "database": db, "superpw": newSuperpw});
     return done(e);
 }
-// Change super password - change all account passwords
-$.changesuperpwloseinput.onkeyup = function (e) {
-    $.changesuperpwlosechangebutton.disabled = false;
-    return done(e);
-}
-$.changesuperpwloseinput.onblur = async function (e) {
-    let isSame = await sameSuperpw($.changesuperpwloseinput.value);
-    if (!isSame) $.changesuperpwlosetypo.classList.remove("nodisplay");
-    return done(e);
-}
-$.changesuperpwloseinput.onmouseleave = async function (e) {
-    await $.changesuperpwloseinput.onblur();
-    return done(e);
-}
-$.changesuperpwloseinput.onkeyup = async function (e) {
-    await $.changesuperpwloseinput.onblur();
-    return done(e);
-}
-$.changesuperpwlosechangebutton.onclick = async function (e) {
-    msgoff("changesuperpw");
-    let newSuperpw = $.changesuperpwloseinput.value || "";
-    const eventForAsk = { currentTarget: e?.currentTarget };
-    if (!newSuperpw) {
-        return done(e);
-    }   
-   let same = await sameSuperpw(newSuperpw);
-    if (same) {
-        $.changesuperpwlosetypo.classList.remove("nodisplay");
-        return done(e);
-    }
-    $.superpw.value = newSuperpw;
-    let db = clone(database);
-    for (const [key, settings] of Object.entries(db.sites)) {
-        domainname = settings.domainname;
-        bg.settings = settings;
-        bg.superpw = newSuperpw; // New superpw
-        let newpw = await generatePassword(bg);
-        bg.settings.xor = xorStrings(oldpw, newpw);
-        bg.settings.providesitepw = true;
-        db.sites[key] = bg.settings;
-    }
-    database = db;
-    await retrySendMessage({"cmd": "updatedb", "database": db, "superpw": newSuperpw});
-    return done(e);
-}
-$.changesuperpwlosecancelbutton.onclick = function (e) {
-    msgoff("changesuperpw");
-    return done(e);
-}
 $.superpwmenu.onmouseleave = function (e) {
     menuOff("superpw", e);
     return done(e);
@@ -520,9 +456,11 @@ $.superpw3bluedots.onmouseover = function (e) {
     if ($.superpw.value) {
         $.superpwmenushow.style.opacity = "1";
         $.superpwmenuhide.style.opacity = "1";
+        $.superpwmenuaccount.style.opacity = "1";
     } else {
         $.superpwmenushow.style.opacity = "0.5";
         $.superpwmenuhide.style.opacity = "0.5";
+        $.superpwmenuaccount.style.opacity = "0.5";
     }
     menuOn("superpw", e);      
     return done(e);
@@ -536,24 +474,23 @@ $.superpw3bluedots.onmouseout = function (e) {
     return done(e);
 };
 $.superpwmenuaccount.onclick = function (e) {
-    // Trigger the super password change options
-    msgon("changesuperpw");
-    $.changesuperpwloseinput.value = $.superpw.value;
-    if ($.superpw.value) $.changesuperpwlosechangebutton.disabled = false;
+    if ($.superpw.value) msgon("changesuperpw");
     return done(e);
 }
 $.superpwmenushow.onclick = function(e) {
-    if (!$.superpw.value) return;
-    $.superpw.type = "text";
-    $.superpwmenuhide.classList.toggle("nodisplay");
-    $.superpwmenushow.classList.toggle("nodisplay")    ;
+    if ($.superpw.value) {
+        $.superpw.type = "text";
+        $.superpwmenuhide.classList.toggle("nodisplay");
+        $.superpwmenushow.classList.toggle("nodisplay")    ;
+    }
     return done(e);
 }
 $.superpwmenuhide.onclick = function(e) {
-    if (!$.superpw.value) return;
-    $.superpw.type = "password";
-    $.superpwmenuhide.classList.toggle("nodisplay");
-    $.superpwmenushow.classList.toggle("nodisplay")    ;
+    if ($.superpw.value) {
+        $.superpw.type = "password";
+        $.superpwmenuhide.classList.toggle("nodisplay");
+        $.superpwmenushow.classList.toggle("nodisplay")    ;
+    }
     return done(e);
 }
 $.superpwmenuhelp.onclick = function (e) {
@@ -634,36 +571,6 @@ $.sitename3bluedots.onmouseout = function (e) {
 };
 $.sitenamemenu.onmouseleave = function (e) {
     menuOff("sitename", e);
-    return done(e);
-}
-$.accountnicknameinput.onkeyup = function (e) {
-    if ($.accountnicknameinput.value && $.accountnicknameinput.value !== $.sitename.value) {
-        $.accountnicknamesavebutton.disabled = false;
-    } else {
-        $.accountnicknamesavebutton.disabled = true;
-    }
-    return done(e);
-}
-$.accountnicknamesavebutton.onclick = function (e) {
-    if (!$.accountnicknameinput.value) return;
-    $.sitename.value = $.accountnicknameinput.value;
-    sameacct = true;
-    $.sitename.onblur(e); // So it runs in the same turn
-    msgoff("account");
-    autoclose = true;
-    return done(e);
-}
-$.accountnicknamecancelbutton.onclick = function (e) {
-    msgoff("account");
-    autoclose = false;
-    return done(e);
-}
-$.accountnicknamenewbutton.onclick = function (e) {
-    $.sitename.value = $.accountnicknameinput.value;
-    $.sitename.onblur(e); // So it runs in the same turn
-    msgoff("account");
-    autoclose = true;
-    sameacct = false;
     return done(e);
 }
 $.sitenamemenuforget.onclick = function (e) {
@@ -1139,9 +1046,7 @@ $.maininfo.onclick = function (e) {
 // Phishing buttons
 $.cancelwarning.onclick = async function (e) {
     msgoff("phishing");
-    $.domainname.value = "";
     $.sitename.value = "";
-    $.username.value = "";
     sameacct = false;
     await chrome.tabs.update(activetab.id, {url: "chrome://newtab"});
     return done(e);
@@ -1207,8 +1112,6 @@ $.forgetbutton.onclick = async function (e) {
     for (let child of children) {
         list.push(child.innerText);
     }
-    delete database.domains[normalize($.domainname.value)];
-    delete database.sites[normalize($.sitename.value)];
     $.sitename.value = "";
     $.username.value = "";
     let superpw = bg.superpw;
@@ -1219,8 +1122,8 @@ $.forgetbutton.onclick = async function (e) {
     try {
         let response = await retrySendMessage({"cmd": "forget", "toforget": list});
         if (logging) console.log("popup forget response", response);
-        return done(e);
         $.forgetcancelbutton.onclick(); // So it runs in the same turn
+        return done(e);
     } catch (error) {
         console.error("Error sending forget message:", error);
     }
@@ -1564,7 +1467,6 @@ async function handleblur(event, element) {
     bg.settings.characters = characters(bg.settings, database);
     let pw = await ask2generate(event);
     $.sitepw.value = pw; // So it doesn't change while the user is typing
-    setMeter("superpw");
     setMeter("sitepw");
     updateExportButton(); 
     let readyForClick = isReadyForClick($.superpw.value, $.sitename.value, $.username.value, pw);
@@ -1609,7 +1511,7 @@ function defaultfocus() {
     if (!$.superpw.value && !$.superpw.disabled) $.superpw.focus();
 }
 async function ask2generate(event) {
-    let sitepwWasActive = !!(event?.currentTarget === $.sitepw || event?.currentTarget === $.changesuperpwkeepnewinput);
+    let sitepwWasActive = !!(event?.currentTarget === $.sitepw);
     if (bg.settings.providesitepw && bg.settings.pwlength === 0) return "";
     if (!isConsistent(bg.settings)) {
         msgon("nopw");
@@ -1975,18 +1877,16 @@ function isSupportedProtocol(v) {
  }
 // Messages in priority order high to low
 let warnings = [
-    { name: "forget", ison: false, transient: false },
     { name: "phishing", ison: false, transient: false },
-    { name: "changesuperpw", ison: false, transient: false },
-    { name: "changesitename", ison: false, transient: false },
-    { name: "superpwtypo", ison: false, transient: false },
-    { name: "changeusername", ison: false, transient: false },
     { name: "suffix", ison: false, transient: false },
-    { name: "account", ison: false, transient: false },
     { name: "nopw", ison: false, transient: false },
     { name: "http", ison: false, transient: false },
     { name: "zero", ison: false, transient: false },
-    { name: "multiple", ison: false, transient: false }
+    { name: "multiple", ison: false, transient: false },
+    { name: "forget", ison: false, transient: false },
+    { name: "changesuperpw", ison: false, transient: false },
+    { name: "changesitename", ison: false, transient: false },
+    { name: "changeusername", ison: false, transient: false },
 ];
 function msgon(msgname) {
     warning(msgname, true);
@@ -1998,30 +1898,29 @@ function msgoff(msgname) {
     warning(msgname, false);
     autoclose = true;
 }
-// Show only the highest priority message that is on
+// Make sure only one message is turned on
 function warning(msgname, turnon) {
-    let ison = false;
-    for (let i = 0; i < warnings.length; i++) {
-        let msg = warnings[i];
-        if (msg.name == msgname) msg.ison = turnon;
-        get(msg.name).style.display = msg.ison ? "block" : "none";
-        if (ison) get(msg.name).style.display = "none";
-        ison = ison || msg.ison;
-    }
-    if (ison) {
+    let element = get(msgname);
+    if (turnon) {
+        for (let warning of warnings) {
+            get(warning.name).style.display = "none";
+        }
+        element.style.display = "block";
         msgoffState = false;
-        $.warnings.style.display = "block";
-    } else {
-        let display = $.warnings.style.display;
-        if (display === "block") msgoffState = true;
-        display = "none";
+    }  else {
+        if (element.style.display === "block") msgoffState = true;
+        element.style.display = "none";
     }
     let height = mainHeight();
     $.main.style.height = height + "px";
     $.instructionpanel.style.height = height + "px";
     if (height <= 575) $.main.style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
-    warningMsg = ison;
-    autoclose = !ison;
+    warningMsg = turnon;
+    autoclose = !turnon;
+    // I get a mainpanel.mouseleave event when a warning closes, but I don't want
+    // to do anything until the user actually moves the mouse out of the main panel.
+    // I do want to do something when a test triggers a mouseleave event.
+    if (testMode) msgoffState = false;
 }
 function mainHeight() {
     let padding = $.main.style.padding.split(" ");
