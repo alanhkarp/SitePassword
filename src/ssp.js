@@ -9,7 +9,7 @@ let testMode = false; // testMode must start as false.  Its value will come in a
 const debugMode = true; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
 
 const logging = false;
-const recordEvents = false; // Set to true to record events for testing.  This is not the same as testMode.
+const recordEvents = true; // Set to true to record events for testing.  This is not the same as testMode.
 if (logging) console.log("Version 3.4");
 
 let messageQueue = Promise.resolve();
@@ -235,8 +235,11 @@ $.mainpanel.onmouseleave = async function (e) {
         lastFocused.dispatchEvent(new Event("blur"));
         lastFocused = null;
     }
-    let element = e ? (e.pageX ? document.elementFromPoint(e.pageX || 0, e.pageY || 0) : null) : null;
+    // Don't save a typo superpw
+    let same = await sameSuperpw($.superpw.value);
+    if (!same) return done(e);
     // In case the user tries to type when the mouse is outside the popup
+    let element = e ? (e.pageX ? document.elementFromPoint(e.pageX || 0, e.pageY || 0) : null) : null;
     if (!element) {
         $.superpw.disabled = true;
         $.sitename.disabled = true;
@@ -375,7 +378,11 @@ $.superpw.onblur = async function (e) {
     return done(e);
 }
 $.superpw.onmouseleave = async function (e) {
-    if (!$.superpw.value || this !== document.activeElement) return done(e);
+    if (!$.superpw.value || 
+        this !== document.activeElement ||
+        document.activeElement === $.superpw3bluedots ||
+        document.activeElement === $.superpwmenu
+        ) return done(e);
     let same = await sameSuperpw($.superpw.value);
     if (same) {
         await handleblur(e, "superpw");
@@ -416,6 +423,7 @@ $.changesuperpwkeepoldinput.onkeyup = async function (e) {
     done(e);
 }
 $.changesuperpwkeepoldinput.onmouseleave = async function(e) {
+    if (!$.changesuperpwkeepoldinput.value) return done(e);
     await $.changesuperpwkeepoldinput.onblur();
     return done(e);
 }
@@ -452,6 +460,7 @@ $.changesuperpwkeepbutton.onclick = async function (e) {
 }
 $.superpwmenu.onmouseleave = function (e) {
     menuOff("superpw", e);
+    $.superpw.focus();
     return done(e);
 }
 $.superpw3bluedots.onmouseover = function (e) {
