@@ -375,7 +375,7 @@ $.superpw.onblur = async function (e) {
     return done(e);
 }
 $.superpw.onmouseleave = async function (e) {
-    if (!$.superpw.value) return done(e);
+    if (!$.superpw.value || this !== document.activeElement) return done(e);
     let same = await sameSuperpw($.superpw.value);
     if (same) {
         await handleblur(e, "superpw");
@@ -388,6 +388,7 @@ $.superpw.onmouseleave = async function (e) {
 // Change super password - change all account passwords
 $.changesuperpwcancelbutton.onclick = function (e) {
     msgoff("changesuperpw");
+    $.superpw.disabled = false;
     return done(e);
 }
 $.changesuperpwlosebutton.onclick = async function (e) {
