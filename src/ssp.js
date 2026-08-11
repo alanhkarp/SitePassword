@@ -391,9 +391,10 @@ $.changesuperpwcancelbutton.onclick = function (e) {
     return done(e);
 }
 $.changesuperpwlosebutton.onclick = async function (e) {
+    // Only get here if the superpw isn't blank
     msgoff("changesuperpw");
-    let pw = await ask2generate();
-    $.sitepw.value = stringXorArray(pw, bg.settings.xor);
+    let pwhash = await computeSuperpwHash($.superpw.value);
+    database.common.superpwHash = pwhash;
     await $.mainpanel.onmouseleave(); // Save new superpw
     return done(e);
 }
@@ -1169,6 +1170,7 @@ function menuOn(which, e) {
 }
 function menuOff(which, e) {
     dotsAllOn();
+    if (!get(which + "menu")) console.log("menuOff: no menu for", which);
     get(which + "menu").style.display = "none";
 }
 function allMenusOff() {
