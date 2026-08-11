@@ -6,7 +6,7 @@ import { characters, isConsistent, generatePassword, isSuperPw, normalize, strin
 import { isSharedCredentials } from "./sharedCredentials.js"; 
 import { commonSuffix } from "./public_suffix_list.js"; 
 let testMode = false; // testMode must start as false.  Its value will come in a message from bg.js.
-const debugMode = false; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
+const debugMode = true; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
 
 const logging = false;
 const recordEvents = false; // Set to true to record events for testing.  This is not the same as testMode.
@@ -643,7 +643,7 @@ $.changeusernameokbutton.onclick = async function (e) {
     return done(e);
 }
 $.usernamemenu.onmouseleave = function (e) {
-    menuOff("changeusername", e);
+    msgoff("changeusername");
     $.username.value = bg.settings.username || "";
     $.username.focus();
     return done(e);
@@ -1170,7 +1170,6 @@ function menuOn(which, e) {
 }
 function menuOff(which, e) {
     dotsAllOn();
-    if (!get(which + "menu")) console.log("menuOff: no menu for", which);
     get(which + "menu").style.display = "none";
 }
 function allMenusOff() {
@@ -1993,7 +1992,7 @@ function done(e) {
     if (recordEvents && e) {
         const nowMs = Date.now();
         const hms = new Date(nowMs).toLocaleTimeString("en-US", { hour12: false });
-        console.log(hms, e.type, e.target.id || e.currentTarget.id);
+        console.log(hms, e.type, e.target.id || e.currentTarget.id, e);
     };
     if (e?.resolver) e.resolver();
 }
