@@ -21,3 +21,7 @@ Versions
 3.0.11 - Fixed forget problem
 3.0.12 - Handle duplicate common settings bookmarks
 3.0.13 - Reload content script on extension update
+4.0 - Detect different super password
+      Reduce number of full phising warnings by providing a less scary one
+      Don't change provided passwords when changing sitename
+      Convert all passwords to provided as option when changing super password.
