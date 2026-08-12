@@ -436,23 +436,25 @@ $.changesuperpwkeepbutton.onclick = async function (e) {
     }
     // Update all site passwords to be provided
     let oldSuperpw = $.changesuperpwkeepoldinput.value || "";
-    let newSuperpw = $.changesuperpwkeepoldinput.value || "";
-    if (!newSuperpw) {
-        return done(e);
-    }   
+    let newSuperpw = $.superpw.value || "";
+    if (!newSuperpw) return done(e);
     $.superpw.value = newSuperpw;
+    let pwhash = await computeSuperpwHash($.superpw.value);
+    database.common.superpwHash = pwhash;
     let db = clone(database);
-    for (const [key, settings] of Object.entries(db.sites)) {
+    for (const [sitename, settings] of Object.entries(db.sites)) {
         domainname = settings.domainname;
-        bg.settings = settings;
-        bg.superpw = oldSuperpw; // Old superpw
-        let oldpw = await generatePassword(bg);
-        oldpw = stringXorArray(oldpw, bg.settings.xor);
-        bg.superpw = newSuperpw; // New superpw
-        let newpw = await generatePassword(bg);
-        bg.settings.xor = xorStrings(oldpw, newpw);
-        bg.settings.providesitepw = true;
-        db.sites[key] = bg.settings;
+        let bgsite = clone(bgDefault);
+        bgsite.settings = settings;
+        bgsite.superpw = oldSuperpw; // Old superpw
+        let oldpw = await generatePassword(bgsite);
+        oldpw = stringXorArray(oldpw, bgsite.settings.xor);
+        bgsite.superpw = newSuperpw; // New superpw
+        let newpw = await generatePassword(bgsite);
+        bgsite.settings.xor = xorStrings(oldpw, newpw);
+        bgsite.settings.providesitepw = true;
+        if (domainname === $.domainname.value) $.sitepw.value = oldpw;
+        db.sites[sitename] = bgsite.settings;
     }
     database = db;
     await retrySendMessage({"cmd": "updatedb", "database": db, "superpw": newSuperpw});
@@ -2002,7 +2004,7 @@ function done(e) {
     if (recordEvents && e) {
         const nowMs = Date.now();
         const hms = new Date(nowMs).toLocaleTimeString("en-US", { hour12: false });
-        console.log(hms, e.type, e.target.id || e.currentTarget.id, e);
+        console.log(hms, e.type, e.target?.id || e.currentTarget?.id, e);
     };
     if (e?.resolver) e.resolver();
 }
@@ -2025,7 +2027,7 @@ async function retrySendMessageRest(message, retries = 5, delay = 100) {
             const response = await chrome.runtime.sendMessage(message);
             return response; // Message sent successfully
         } catch (error) {
-            console.log(`popup attempt $.{attempt} failed:`, error);
+            console.log(`popup attempt ${attempt} failed:`, error);
             if (attempt < retries) {
                 await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
             } else {
