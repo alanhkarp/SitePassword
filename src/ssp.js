@@ -6,10 +6,10 @@ import { characters, isConsistent, generatePassword, isSuperPw, normalize, strin
 import { isSharedCredentials } from "./sharedCredentials.js"; 
 import { commonSuffix } from "./public_suffix_list.js"; 
 let testMode = false; // testMode must start as false.  Its value will come in a message from bg.js.
-const debugMode = true; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
+const debugMode = false; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
 
 const logging = false;
-const recordEvents = true; // Set to true to record events for testing.  This is not the same as testMode.
+const recordEvents = false; // Set to true to record events for testing.  This is not the same as testMode.
 if (logging) console.log("Version 3.4");
 
 let messageQueue = Promise.resolve();
@@ -360,6 +360,7 @@ $.superpw.onkeyup = async function (e) {
     bg.superpw = $.superpw.value || "";
     $.superpwmenuaccount.disabled = true;
     if ($.superpw.value) $.superpwmenuaccount.disabled = false;
+    $.changesuperpw.style.display = "none";
     setMeter("sitepw");
     await handlekeyup(e, "superpw");
     return done(e);
@@ -410,16 +411,16 @@ $.changesuperpwlosebutton.onclick = async function (e) {
 $.changesuperpwkeepoldinput.onblur = async function (e) {
     let same = await sameSuperpw(this.value);
     if (same) {
-        $.changesuperpwkeepoldtypo.classList.add("nodisplay"); // Show the typo warning 
+        $.changesuperpwkeepoldtypo.style.display = "none"; // Show the typo warning
         $.changesuperpwkeepbutton.disabled = false;
     } else {
-        $.changesuperpwkeepoldtypo.classList.remove("nodisplay"); // Hide the typo warning
+        $.changesuperpwkeepoldtypo.style.display = "block"; // Hide the typo warning
         $.changesuperpwkeepbutton.disabled = true;
     }
     return done(e);
 }
 $.changesuperpwkeepoldinput.onkeyup = async function (e) {
-    if ($.changesuperpwkeepoldinput.value) $.changesuperpwkeepoldtypo.classList.add("nodisplay");
+    if ($.changesuperpwkeepoldinput.value) $.changesuperpwkeepoldtypo.style.display = "none";
     done(e);
 }
 $.changesuperpwkeepoldinput.onmouseleave = async function(e) {
@@ -431,7 +432,7 @@ $.changesuperpwkeepbutton.onclick = async function (e) {
     // Can't get here unless the old super password input has a value
     msgoff("changesuperpw");
     if (!await sameSuperpw($.changesuperpwkeepoldinput.value)) {
-        $.changesuperpwkeepoldtypo.classList.remove("nodisplay");
+        $.changesuperpwkeepoldtypo.style.display = "block";
         return done(e);
     }
     // Update all site passwords to be provided

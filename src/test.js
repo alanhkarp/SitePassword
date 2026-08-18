@@ -557,12 +557,12 @@ async function testChangeSuperpw() {
     test = $.changesuperpw.style.display === "block";
     testMsg(test, "Change super password opens when different super password entered", 
                   "Change super password does not open when different super password entered");
-    // Enter the wrong old superpw 
-    await updateValue($.superpw, "asdfgh");
-    await triggerEvent("mouseleave", $.superpw);
-    test = $.superpw.disabled === true;
-    testMsg(test, "Super password input disabled when old super password is wrong", 
-                  "Super password input not disabled when old super password is wrong");
+    // Edit the superpw
+    await updateValue($.superpw, "q");
+    await triggerEvent("keyup", $.superpw);
+    test = $.changesuperpw.style.display === "none";
+    testMsg(test, "Change super password does not remain open when super password edited",
+                  "Change super password remains open when super password edited");
     // Change all account passwords after changing the super password
     let sitepws = await changeSuperpwSetup("qwerty");
     await updateValue($.superpw, "asdfgh");
@@ -578,29 +578,38 @@ async function testChangeSuperpw() {
     test = $.changesuperpw.style.display === "none";
     testMsg(test, "New super password saved", 
                   "New super password not saved");
-    // Keep all account passwords when changing the super password
+    // Typo message shows when the old super password is not entered correctly
     sitepws = await changeSuperpwSetup("asdfgh");
     await updateValue($.superpw, "qwerty");
     await triggerEvent("blur", $.superpw);
     await updateValue($.changesuperpwkeepoldinput, "ghjkl");
     await triggerEvent("blur", $.changesuperpwkeepoldinput);
-    test = !$.changesuperpwkeepoldtypo.classList.contains("nodisplay");
+    test = $.changesuperpwkeepoldtypo.style.display === "block";
     testMsg(test, "Change super password keep old input typo shows", 
                   "Change super password keep old input typo does not show");
+    // Typo message disappears when the old super password is edited
     await updateValue($.changesuperpwkeepoldinput, "a");
     await triggerEvent("keyup", $.changesuperpwkeepoldinput);
-    test = $.changesuperpwkeepoldtypo.classList.contains("nodisplay");
+    test = $.changesuperpwkeepoldtypo.style.display === "none";
     testMsg(test, "Change super password keep old input typo hidden", 
                   "Change super password keep old input typo not hidden");
+    // Typo message does not show when the old super password is entered correctly
     await updateValue($.changesuperpwkeepoldinput, "asdfgh");
     await triggerEvent("blur", $.changesuperpwkeepoldinput);
-    test = $.changesuperpwkeepoldtypo.classList.contains("nodisplay");
-    testMsg(test, "Change super password keep old input typo shows after correct input", 
-                  "Change super password keep old input typo does not show after correct input");
+    test = $.changesuperpwkeepoldtypo.style.display === "none";
+    testMsg(test, "Change super password keep old input typo does not show after correct input", 
+                  "Change super password keep old input typo shows after correct input");
+    // Keep all account passwords after changing the super password
     await triggerEvent("click", $.changesuperpwkeepbutton);
     test = await checkSitepws(sitepws);
-    testMsg(test, "Keep all account passwords when changing the super password", 
-                  "Keep all account passwords when changing the super password failed");
+    testMsg(test, "Keep all account passwords when changing the super password");
+    // Is the pwdhash updated in the common settings bookmark?
+    await triggerEvent("mouseleave", $.mainpanel);
+    await updateValue($.superpw, "qwerty");
+    await triggerEvent("blur", $.superpw);
+    test = $.changesuperpw.style.display === "none";
+    testMsg(test, "New pwhash saved in common settings bookmark", 
+                  "New pwhash not saved in common settings bookmark");
 }
 // Test save as default
 async function testSaveAsDefault() {
