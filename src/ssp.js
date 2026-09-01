@@ -395,12 +395,14 @@ $.superpw.onmouseleave = async function (e) {
 }
 // Change super password - change all account passwords
 $.changesuperpwcancelbutton.onclick = function (e) {
+    $.changesuperpwkeepoldinput.value = "";
     msgoff("changesuperpw");
     $.superpw.disabled = false;
     return done(e);
 }
 $.changesuperpwlosebutton.onclick = async function (e) {
     // Only get here if the superpw isn't blank
+    $.changesuperpwkeepoldinput.value = "";
     msgoff("changesuperpw");
     let pwhash = await computeSuperpwHash($.superpw.value);
     database.common.superpwHash = pwhash;
@@ -430,7 +432,6 @@ $.changesuperpwkeepoldinput.onmouseleave = async function(e) {
 }
 $.changesuperpwkeepbutton.onclick = async function (e) {
     // Can't get here unless the old super password input has a value
-    msgoff("changesuperpw");
     if (!await sameSuperpw($.changesuperpwkeepoldinput.value)) {
         $.changesuperpwkeepoldtypo.style.display = "block";
         return done(e);
@@ -459,6 +460,8 @@ $.changesuperpwkeepbutton.onclick = async function (e) {
     }
     database = db;
     await retrySendMessage({"cmd": "updatedb", "database": db, "superpw": newSuperpw});
+    msgoff("changesuperpw");
+    $.changesuperpwkeepoldinput.value = "";
     return done(e);
 }
 $.superpwmenu.onmouseleave = function (e) {
