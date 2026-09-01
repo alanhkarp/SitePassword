@@ -9,7 +9,7 @@ let testMode = false; // testMode must start as false.  Its value will come in a
 const debugMode = false; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
 
 const logging = false;
-const recordEvents = false; // Set to true to write UI events to the console.
+const recordEvents = true; // Set to true to write UI events to the console.
 if (logging) console.log("Version 3.4");
 
 let messageQueue = Promise.resolve();
@@ -226,15 +226,6 @@ $.mainpanel.onmouseleave = async function (e) {
         msgoffState = false;
         return done(e);
     }
-    // Force a blur event on the currently focused element.  There is an inherent race condition
-    // between the mouseleave event and the blur event in that the blur processing might not
-    // complete before the popup closes.  This is not a problem in practice because of the delay 
-    // in closing the popup. Explicitly blur the last focused element rather than relying on focus movement,
-    // which doesn't work in DevTools or during tests.
-    if (lastFocused && lastFocused !== $.mainpanel && $.mainpanel.contains(lastFocused)) {
-        lastFocused.dispatchEvent(new Event("blur"));
-        lastFocused = null;
-    }
     // Don't save a typo superpw
     let same = await sameSuperpw($.superpw.value);
     if (!same) return done(e);
@@ -259,6 +250,15 @@ $.mainpanel.onmouseleave = async function (e) {
     if (phishingDomain || exporting || element) {
         if (logging) console.log("popup phishing mouseleave resolve  mainpanelmouseleaveResolver", phishingDomain, resolvers);
         return done(e);
+    }
+    // Force a blur event on the currently focused element.  There is an inherent race condition
+    // between the mouseleave event and the blur event in that the blur processing might not
+    // complete before the popup closes.  This is not a problem in practice because of the delay 
+    // in closing the popup. Explicitly blur the last focused element rather than relying on focus movement,
+    // which doesn't work in DevTools or during tests.
+    if (lastFocused && lastFocused !== $.mainpanel && $.mainpanel.contains(lastFocused)) {
+        lastFocused.dispatchEvent(new Event("blur"));
+        lastFocused = null;
     }
     if (logging) console.log("popup mainpanel mouseleave update bg", document.activeElement.id, bg);
     // window.onblur fires before I even have a chance to see the window, much less focus it
@@ -562,6 +562,12 @@ $.sitename.onblur = async function (e) {
     changePlaceholder();
     clearDatalist("sitenames");
     return done(e);
+}
+// Fires when the user selects a site name from the datalist
+$.sitename.onchange = function () {
+    if (logging) console.log("popup when sitename selected from datalist", $.sitename.value);
+    // Changing focus triggers blur on the sitename field opening the phishing warning if needed
+    if (getPhishingDomain(get("sitename").value)) get("superpw").focus();
 }
 $.changesitenameokbutton.onclick = async function (e) {
     msgoff("changesitename");
