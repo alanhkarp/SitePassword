@@ -177,7 +177,7 @@ to change all occurrences if ![](images...) to <img> tags.
             </span>
             <div id="changesuperpwlose">
               <p>
-                Change all your account passwords, including the ones you provided.
+                Change all your account passwords except the ones you provided.
                 You will have to go through the change password process at all
                 your accounts individually.  You can get all your account passwords 
                 back by using your old super password the next time.
@@ -192,6 +192,7 @@ to change all occurrences if ![](images...) to <img> tags.
             <div>
               <p>
                 You can keep your existing account passwords by providing your old super password.
+                (This option may take a while if you have a lot of accounts.)
               </p>
               <input type="text" id="changesuperpwkeepoldinput" style="width: 96%" class="input" 
                 placeholder="Enter your old superpassword."
@@ -203,8 +204,8 @@ to change all occurrences if ![](images...) to <img> tags.
               <p></p>
               <button id="changesuperpwkeepbutton" type="button" class="buttondangerous" 
                 disabled
-                title="Use new super password.">
-                <span class="btn-text" style="color: white">Use new superpassword</span>
+                title="Keep account passwords.">
+                <span class="btn-text" style="color: white">Keep account passwords</span>
               </button>
             </div>
           </div>
@@ -435,7 +436,7 @@ to change all occurrences if ![](images...) to <img> tags.
                 storing your passwords, it calculates them from a single super password
                 and your nickname and user name
                 for the account. That means you can usually get your password if
-                you remember those three things. (Some web pages require additional
+                you remember those three things. (Some accounts require additional
                 settings.) SitePassword automatically saves your settings, so
                 you don't have to remember them.
               </p>
@@ -468,7 +469,7 @@ to change all occurrences if ![](images...) to <img> tags.
               <p>
                 After you install the Chrome extension and visit a page with a
                 login form, you'll see that the password field tells you to
-                <em>Click SitePassword</em>. When you click on the SitePassword
+                <em>Click the SitePassword icon</em>. When you click on the SitePassword
                 icon
                 <img src="images/icon128.png" style="height: 16px; vertical-align: middle;">, you'll see a form with the domain name field filled in.
                 Enter your super password, an easy to remember nickname for the
@@ -628,7 +629,7 @@ to change all occurrences if ![](images...) to <img> tags.
                 associated with the nickname for the account and is used to 
                 calculate your account password.  That means you can only have a 
                 single user name for a given nickname.  If you want to use different 
-                user names for the same site, follow the instructions for 
+                user names for the same account, follow the instructions for 
                 <span id="sharedref" name="sectionref"><a href="#shared-machines">Shared Machines</a></span>. 
               </p>
               <p>
@@ -784,6 +785,7 @@ to change all occurrences if ![](images...) to <img> tags.
                 <img src="images/account.png" alt="change password" style="width: 16px; height: 16px; vertical-align: middle;"/> &nbsp;
                 Although you can change your account password by editing the nickname, 
                 the account nickname and account password fields have a Change Password option.
+                There is also an account icon in the superpassword field menu for changing your super password.
               </p>
               <p>
                 <img src="images/show.png" alt="forget" style="width: 16px; height: 16px; vertical-align: middle;"/> &nbsp;
@@ -1096,6 +1098,46 @@ to change all occurrences if ![](images...) to <img> tags.
                 SitePassword accomodates those uses with a feature provided by
                 your browser called <em>profiles</em>. Simply create one profile for the
                 shared account and one for each individual.
+              </p>
+            </div>
+          </section>
+          <section id="changesuperpwinfo" name="instructions" class="instructionpaneltext">
+            <svg id="openchangesuperpw" class="accordian" style="display: block;" width="24px" height="24px"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 11 3 3 3-3" />
+            </svg>
+            <svg id="closechangesuperpw" class="accordian" style="display: none;" width="24px" height="24px"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" />
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m9 13 3-3 3 3" />
+            </svg>
+            <h3 ie="change-superpw">Changing Your Super Password</h3>
+            <div id="changesuperpwdiv" style="display: none">
+              <p>
+                There are two times you may want to change your super password. The first
+                is when you use different super passwords for different kinds of accounts.
+                For example, you might use one super password for important accounts, such as banking,
+                and another one for sites you worry may be malicious.  The second is
+                when you think your super password has been compromised.  In that case, you should change it immediately
+                and go to each website and change your account passwords.
+              </p>
+              <p>
+                You can change your super password by entering the new super password or by clicking on the account icon
+                <img src="images/account.png" alt="account" style="width: 16px; height: 16px; vertical-align: middle;"/> 
+                in the super password field menu.  You'll be given a form to change it.  You will also see this form
+                if you mistype your super password.  Just click Cancel and try agaion.
+              </p>
+              <p>
+                There are two ways you can change your super password.  The first changes all your account passwords
+                except those you provided.
+                Don't worry, you get them back when you enter your original super password.  The second keeps your
+                account passwords the same by treating them  
+                <span id="provideref" name="sectionref"><a href="#providing-a-password">as if you provided them.</a></span>
               </p>
             </div>
           </section>
