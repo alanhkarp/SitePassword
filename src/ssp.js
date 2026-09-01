@@ -1201,19 +1201,15 @@ function dotsAllOn() {
 }
 function helpItemOn(which) {
     let element = get(which + "helptext");
+    helpAllOff();
     if (!element.style.display || element.style.display === "none") {
-        helpAllOff();
-        element.style.display = "block";
         element.style.display = "block";
         hideInstructions();
         hidesettings();
         autoclose = false;
-    } else {
-        helpAllOff();
     }
 }
 function helpItemOff(which) {
-    $.helptext.style.display = "none";
     get(which).style.display = "none";
     autoclose = false;
 }
