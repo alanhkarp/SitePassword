@@ -23,6 +23,7 @@
                 "https://calendar.google.com/*"
             ],
             "js": [
+                "src/visible.js",
                 "src/findpw.js"
             ],
             "all_frames": true

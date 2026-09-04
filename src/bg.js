@@ -3,9 +3,9 @@ import {isSuperPw, normalize, array2string, stringXorArray, generatePassword } f
 import { isSharedCredentials } from "./sharedCredentials.js";
 
 // Only one of these can be true at a time; reload the extension after changing them.
-const testMode  = false; // Set to true to run the tests in test.js.
+const testMode  = true; // Set to true to run the tests in test.js.
 const debugMode = false; // Set to true to run SitePassword with the debug bookmarks folder.
-const demoMode  = true; // Set to true to run the SitePassword demo with the demo bookmarks folder.
+const demoMode  = false; // Set to true to run the SitePassword demo with the demo bookmarks folder.
 
 const logging = false;
 const testLogging = false;
@@ -805,7 +805,11 @@ function stringifySettings(settings) {
 export function isUrlMatch(url) {
     const manifest = chrome.runtime.getManifest();
     const urlPatterns = manifest.content_scripts[0].matches;
-    return urlPatterns.some((pattern) => new RegExp(pattern).test(url));
+    // executeScript does not consider the exclude_mattches in the manifest
+    const excludedUrls = manifest.content_scripts[0].exclude_matches
+        .map((pattern) => pattern.replace(/\*$/, ""));
+    return urlPatterns.some((pattern) => new RegExp(pattern).test(url)) &&
+        !excludedUrls.some((excludedUrl) => url.startsWith(excludedUrl));
 }
 function parseURL(url) {
     // Returns settings or common settings object

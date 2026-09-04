@@ -3,9 +3,13 @@
 // Right click on the SitePassword icon and select "Inspect".  You will 
 // see an alert "Starting tests".  Click OK and check the console for results.
 import { baseDefaultSettings, getRootFolder } from "./bg.js";
-import { normalize } from "./generate.js";
 import { getsettings, restoreForTesting } from "./ssp.js";
 import {$, get} from "./domElements.js";
+// isHidden is needed in both the content script and the popup (for testing).
+// However, you can't import it into the content script because the content 
+// script is not a module, nor can the popup import it from the content script.
+// Hence, the solution suggested by Copilot is to attach it to the window object.
+let isHidden = window.isHidden;
 
 export let resolvers = {};
 
@@ -244,7 +248,7 @@ async function testProvidedpw() {
 async function testPhishing() {
     await phishingSetup();
     // Does warning appear?
-    let test = $.phishing.style.display === "block";
+    let test = !isHidden($.phishing);
     testMsg(test, "Phishing warning is showing", "Phishing warning not showing");
     // Test cancel button
     await triggerEvent("click", $.cancelwarning);
