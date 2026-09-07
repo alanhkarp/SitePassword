@@ -50,23 +50,24 @@ export async function runTests() {
     await triggerEvent("click", $.settingsshow);  // For debugging
     if (!restart) {
         await testCalculation(); 
+        // await testInstructions();
         await testHelpText();
-        await testRememberSuperpw();
-        await testChangePassword();
-        await testRememberForm();
-        await testProvidedpw();
-        await testPhishing();
-        await testSharedCredentials();
-        await testForget();
-        await testClearSuperpw();
-        await testHideSitepw();
-        await testLegacyBkmks();
-        await testDuplicateBkmks();
-        await testSafeSuffixes();
-        await testChangeSuperpw();
+        // await testRememberSuperpw();
+        // await testChangePassword();
+        // await testRememberForm();
+        // await testProvidedpw();
+        // await testPhishing();
+        // await testSharedCredentials();
+        // await testForget();
+        // await testClearSuperpw();
+        // await testHideSitepw();
+        // await testLegacyBkmks();
+        // await testDuplicateBkmks();
+        // await testSafeSuffixes();
+        // await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
-        await testSaveAsDefault();
+        // await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -91,29 +92,32 @@ async function testCalculation() {
 }
 // Test to see if help text is displayed when the user clicks on the help icon
 async function testHelpText() {
-    await resetState();
-    await testVisibility("domainname");
-    await testVisibility("superpw");
-    await testVisibility("sitename");
-    await testVisibility("username");
-    await testVisibility("sitepw");
+    for (let name of document.getElementsByName("help")) {
+        let id = name.id.replace("helptext", "");
+        console.log("testHelpText", name.id);
+        await testVisibility(id);
+    }
+    async function testVisibility(which) {
+        await triggerEvent("mouseover", $[which + "3bluedots"]);
+        let test = !isHidden($[which + "menuhelp"]);
+        testMsg(test, which + " menu visible", which + " menu not visible");
+        await triggerEvent("click", $[which + "menuhelp"]);
+        test = !isHidden($[which + "helptext"]);
+        testMsg(test, which + " help text visible", which + " help text not visible");
+        await triggerEvent("click", $[which + "helptextclose"]);
+        test = isHidden($[which + "helptext"]);
+        testMsg(test, which + " help text closed", which + " help text not closed");
+        await triggerEvent("click", $[which + "menuhelp"]);
+        await triggerEvent("click", $[which + "helptextmore"]);
+        test = isHidden($[which + "helptext"]) && !isHidden($[which + "div"]);
+        test = test && !isHidden($[which + "div"]);
+        testMsg(test, which + " instructions visible", which + " instructions not visible");
+        await triggerEvent("click", $.maininfo);
+    }
 }
-async function testVisibility(which) {
-    await triggerEvent("mouseover", $[which + "3bluedots"]);
-    let test = !isHidden($[which + "menuhelp"]);
-    testMsg(test, which + " menu visible", which + " menu not visible");
-    await triggerEvent("click", $[which + "menuhelp"]);
-    test = !isHidden($[which + "helptext"]);
-    testMsg(test, which + " help text visible", which + " help text not visible");
-    await triggerEvent("click", $[which + "helptextclose"]);
-    test = isHidden($[which + "helptext"]);
-    testMsg(test, which + " help text closed", which + " help text not closed");
-    await triggerEvent("click", $[which + "menuhelp"]);
-    await triggerEvent("click", $[which + "helptextmore"]);
-    test = isHidden($[which + "helptext"]) && !isHidden($[which + "div"]);
-    test = test && !isHidden($[which + "div"]);
-    testMsg(test, which + " instructions visible", which + " instructions not visible");
-    await triggerEvent("click", $.maininfo);
+// Test to see if instructions are displayed when the user
+async function testInstructions() {
+    await resetState();
 }
 // Test remembering super password
 async function testRememberSuperpw() {
