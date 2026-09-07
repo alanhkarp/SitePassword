@@ -50,8 +50,8 @@ export async function runTests() {
     await triggerEvent("click", $.settingsshow);  // For debugging
     if (!restart) {
         await testCalculation(); 
-        // await testInstructions();
-        await testHelpText();
+        await testInstructions();
+        // await testHelpText();
         // await testRememberSuperpw();
         // await testChangePassword();
         // await testRememberForm();
@@ -94,7 +94,6 @@ async function testCalculation() {
 async function testHelpText() {
     for (let name of document.getElementsByName("help")) {
         let id = name.id.replace("helptext", "");
-        console.log("testHelpText", name.id);
         await testVisibility(id);
     }
     async function testVisibility(which) {
@@ -117,7 +116,19 @@ async function testHelpText() {
 }
 // Test to see if instructions are displayed when the user
 async function testInstructions() {
-    await resetState();
+    await triggerEvent("click", $.maininfo);
+    let test = !isHidden($.instructionpanel);
+    testMsg(test, "Instructions visible", "Instructions not visible");
+    let instructions = document.getElementsByName("instructions");
+    for (let instruction of instructions) {
+        let id = instruction.id.replace("info", "");
+        await testVisibility(id);
+    }
+    async function testVisibility(which) {
+        await triggerEvent("click", $[which + "info"]);
+        let test = !isHidden($[which + "div"]);
+        testMsg(test, which + " instructions visible", which + " instructions not visible");
+    }
 }
 // Test remembering super password
 async function testRememberSuperpw() {

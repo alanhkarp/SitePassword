@@ -45,6 +45,7 @@ export const $ = {
     changeusernameokbutton: get("changeusernameokbutton"),
 
     changesuperpw: get("changesuperpw"),
+    changesuperpwinfo: get("changesuperpwinfo"),
     changesuperpwcancelbutton: get("changesuperpwcancelbutton"),
     // Change all account passwords, even provided ones
     changesuperpwlosebutton: get("changesuperpwlosebutton"),
