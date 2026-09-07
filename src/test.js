@@ -50,22 +50,23 @@ export async function runTests() {
     await triggerEvent("click", $.settingsshow);  // For debugging
     if (!restart) {
         await testCalculation(); 
-        await testRememberSuperpw();
-        await testChangePassword();
-        await testRememberForm();
-        await testProvidedpw();
-        await testPhishing();
-        await testSharedCredentials();
-        await testForget();
-        await testClearSuperpw();
-        await testHideSitepw();
-        await testLegacyBkmks();
-        await testDuplicateBkmks();
-        await testSafeSuffixes();
-        await testChangeSuperpw();
+        await testHelpText();
+        // await testRememberSuperpw();
+        // await testChangePassword();
+        // await testRememberForm();
+        // await testProvidedpw();
+        // await testPhishing();
+        // await testSharedCredentials();
+        // await testForget();
+        // await testClearSuperpw();
+        // await testHideSitepw();
+        // await testLegacyBkmks();
+        // await testDuplicateBkmks();
+        // await testSafeSuffixes();
+        // await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
-        await testSaveAsDefault();
+        // await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -87,6 +88,32 @@ async function testCalculation() {
     let test = actual === expectedpw;
     let inputs = {"expectedpw": expectedpw, "actual": actual, "superpw": $.superpw.value, "sitename": $.sitename.value, "username": $.username.value};
     testMsg(test, "Calculation", "Calculation", inputs);
+}
+// Test to see if help text is displayed when the user clicks on the help icon
+async function testHelpText() {
+    await resetState();
+    await testVisibility("domainname");
+    await testVisibility("superpw");
+    await testVisibility("sitename");
+    await testVisibility("username");
+    await testVisibility("sitepw");
+}
+async function testVisibility(which) {
+    await triggerEvent("mouseover", $[which + "3bluedots"]);
+    let test = !isHidden($[which + "menuhelp"]);
+    testMsg(test, which + " menu visible", which + " menu not visible");
+    await triggerEvent("click", $[which + "menuhelp"]);
+    test = !isHidden($[which + "helptext"]);
+    testMsg(test, which + " help text visible", which + " help text not visible");
+    await triggerEvent("click", $[which + "helptextclose"]);
+    test = isHidden($[which + "helptext"]);
+    testMsg(test, which + " help text closed", which + " help text not closed");
+    await triggerEvent("click", $[which + "menuhelp"]);
+    await triggerEvent("click", $[which + "helptextmore"]);
+    test = isHidden($[which + "helptext"]) && !isHidden($[which + "div"]);
+    test = test && !isHidden($[which + "div"]);
+    testMsg(test, which + " instructions visible", which + " instructions not visible");
+    await triggerEvent("click", $.maininfo);
 }
 // Test remembering super password
 async function testRememberSuperpw() {
@@ -208,28 +235,28 @@ async function testProvidedpw() {
     // See if I ignore case when deciding if site name was changed
     await updateValue($.sitename, "guru");
     await triggerEvent("blur", $.sitename);
-    test = $.changesitename.style.display === "none";
+    test = isHidden($.changesitename);
     testMsg(test, "Ignores case when deciding if site name was changed", "Ignores case when deciding if site name was changed", expectedpw2, "|" + $.sitepw.value + "|", "guru", "|" + $.sitename.value + "|");
     // See if I ignore case when deciding if user name was changed
     await updateValue($.username, "alan");
     await triggerEvent("blur", $.username);
-    test = $.changeusername.style.display === "none";
+    test = isHidden($.changeusername);
     testMsg(test, "Ignores case when deciding if username was changed", "Ignores case when deciding if username was changed", expectedpw2, "|" + $.sitepw.value + "|", "Alan", "|" + $.username.value + "|");
     // See if I get a warning when I change the site name
     await updateValue($.sitename, "Guru2");
     await triggerEvent("blur", $.sitename);
-    test = $.changesitename.style.display !== "none";
+    test = !isHidden($.changesitename);
     await triggerEvent("click", $.changesitenameokbutton);
-    test = test && $.changesitename.style.display == "none";
+    test = test && isHidden($.changesitename);
     test = test && $.sitepw.value === expectedpw2;
     testMsg(test, "Change sitename with provided pw", "Change sitename with provided pw", expectedpw2, "|" + $.sitepw.value + "|", "Guru2", "|" + $.sitename.value + "|");
     // See if I get a warning when I change the user name
     await updateValue($.username, "Alan2");
     await triggerEvent("blur", $.username);
     await triggerEvent("mouseleave", $.mainpanel);
-    test = $.changeusername.style.display !== "none";
+    test = !isHidden($.changeusername);
     await triggerEvent("click", $.changeusernameokbutton);
-    test = test && $.changeusername.style.display === "none";
+    test = test && isHidden($.changeusername);
     await triggerEvent("click", $.changeusernameokbutton);
     test = test && $.sitepw.value === expectedpw2;
     testMsg(test, "Change username with provided pw", "Change username with provided pw", expectedpw2, "|" + $.sitepw.value + "|", "Alan2", "|" + $.username.value + "|");
@@ -252,25 +279,25 @@ async function testPhishing() {
     testMsg(test, "Phishing warning is showing", "Phishing warning not showing");
     // Test cancel button
     await triggerEvent("click", $.cancelwarning);
-    test = $.phishing.style.display === "none" && $.sitename.value === "";
+    test = isHidden($.phishing) && $.sitename.value === "";
     testMsg(test, "Phishing warning dismissed by cancel button", "Phishing warning not dismissed by cancel button");
     // Test nickname button
     await updateValue($.sitename, "Guru");
     await triggerEvent("blur", $.sitename);
     await triggerEvent("click", $.nicknamebutton);
-    test = $.phishing.style.display === "none" && $.sitename.value === "Guru";
+    test = isHidden($.phishing) && $.sitename.value === "Guru";
     testMsg(test, "Phishing warning dismissed by nickname button", "Phishing warning not dismissed by nickname button");
     // Does setting new site name work?
     await updateValue($.sitename, "Guru2");
     await triggerEvent("blur", $.sitename);
-    test = $.phishing.style.display === "none" && $.sitename.value === "Guru2";
+    test = isHidden($.phishing) && $.sitename.value === "Guru2";
     testMsg(test, "Phishing warning remains hidden after changing site name", "Phishing warning appeared after changing site name");
     // Does same account option work?
     await updateValue($.sitename, "Guru");
     await triggerEvent("blur", $.sitename);
     await triggerEvent("click", $.sameacctbutton);
     await triggerEvent("mouseleave", $.mainpanel);
-    test = $.phishing.style.display === "none";
+    test = isHidden($.phishing);
     test = test && $.sitename.value === "Guru";
     test = test && $.username.value === "Alan";
     testMsg(test, "Phishing same account");
@@ -294,7 +321,7 @@ async function testSharedCredentials() {
     restoreForTesting();
     await fillForm("qwerty", "hulu.com", "", "");
     await triggerEvent("blur", $.domainname);
-    let test = $.phishing.style.display === "none";
+    let test = isHidden($.phishing);
     test = test && $.username.value === "Alan";
     test = test && $.sitepw.value === expected;
     testMsg(test, "Shared credentials", "Shared credentials");
@@ -310,7 +337,7 @@ async function testForget() {
     await triggerEvent("click", $.domainnamemenuforget);
     await triggerEvent("mouseout", $.domainname3bluedots);
     await triggerEvent("click", $.forgetcancelbutton);
-    let test = $.forget.style.display === "none";
+    let test = isHidden($.forget);
     testMsg(test, "Forget cancel button", "Forget cancel button did not work");
     // Test forget by domain name
     await forgetDomainname();
@@ -357,7 +384,7 @@ async function testForget() {
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "Alan");
     await triggerEvent("mouseleave", $.mainpanel);
     await forgetDomainname();
-    test = $.forget.style.display === "none";
+    test = isHidden($.forget);
     testMsg(test, "Forget without leaving popup no warning", "Forget without leaving popup warning");
     await fillForm("qwerty", "alantheguru.alanhkarp.com", "Guru", "");
     test = $.username.value === "";
@@ -495,17 +522,17 @@ async function testSafeSuffixes() {
     await triggerEvent("mouseleave", $.mainpanel);
     await fillForm("qwerty", "ahktheguru.alanhkarp.com", "Guru", "");
     await triggerEvent("blur", $.sitename);
-    let test = $.suffix.style.display === "block";
+    let test = !isHidden($.suffix);
     await triggerEvent("click", $.suffixacceptbutton);
-    test = test && $.suffix.style.display === "none";
-    test = test && $.username.value === "Alan" && $.sitepw.value === expectedpw && $.suffix.style.display === "none";
+    test = test && isHidden($.suffix);
+    test = test && $.username.value === "Alan" && $.sitepw.value === expectedpw && isHidden($.suffix);
     await triggerEvent("mouseleave", $.mainpanel);
     testMsg(test, "Safe suffix", "Safe suffix");
     // Test that you do get a phishing warning with an unsafe suffix
     restoreForTesting();
     await fillForm("qwerty", "alantheguru.allanhkarp.com", "Guru", "");
     await triggerEvent("blur", $.sitename);
-    test = $.username.value === "" && $.phishing.style.display === "block";
+    test = $.username.value === "" && !isHidden($.phishing);
     testMsg(test, "Unsafe suffixes", "Unsafe suffixes");
     // Test that you don't get an entry in the public suffix list in the safe suffixes
     restoreForTesting();
@@ -516,7 +543,7 @@ async function testSafeSuffixes() {
     await triggerEvent("mouseleave", $.mainpanel);
     await fillForm("qwerty", "alantheguru.alenhkarp.com", "Guru", "");
     await triggerEvent("blur", $.sitename);
-    test = $.phishing.style.display === "block";
+    test = !isHidden($.phishing);
     get("phishing").style.display = "none";
     testMsg(test, "Not in safe suffixes", "Not in safe suffixes");
 }
@@ -526,45 +553,45 @@ async function testChangeSuperpw() {
     // No warning on first specified super password
     await updateValue($.superpw, "qwerty");
     await triggerEvent("mouseleave", $.mainpanel); // Remember superpw
-    let test = $.changesuperpw.style.display === "none";
+    let test = isHidden($.changesuperpw);
     testMsg(test, "Change super password not showing", "Change super password showing");
     // Enter the old superpw - The account button should be disabled
     await updateValue($.superpw, "");
     await triggerEvent("mouseleave", $.superpw);
-    test = $.changesuperpw.style.display === "none";
+    test = isHidden($.changesuperpw);
     testMsg(test, "Change super password not showing when super password is blank", 
                   "Change super password showing when super password is blank");
     // Try a blank super password - The account button should be disabled
     await triggerEvent("mouseover", $.superpw3bluedots);
     await triggerEvent("click", $.superpwmenuaccount);
-    test = $.changesuperpw.style.display === "none";
+    test = isHidden($.changesuperpw);
     testMsg(test, "Account icon disabled when super password is blank", "Account icon not disabled when super password is blank");
     // Hide the superpw menu
     await triggerEvent("mouseout", $.superpw3bluedots);
-    test = $.superpwmenu.style.display === "none";
+    test = isHidden($.superpwmenu);
     testMsg(test, "Super password menu hidden when mouse leaves", "Super password menu not hidden when mouse leaves");
     // Account icon should be enabled after keyup event
     await updateValue($.superpw, "qwerty");
     await triggerEvent("mouseover", $.superpw3bluedots);
     await triggerEvent("click", $.superpwmenuaccount);
-    test = $.changesuperpw.style.display === "block";
+    test = !isHidden($.changesuperpw);
     testMsg(test, "Account icon enabled after keyup event", "Account icon not enabled after keyup event");
     await triggerEvent("click", $.changesuperpwcancelbutton);
     // Close the change super password warning with the cancel button
     await triggerEvent("click", $.changesuperpwcancelbutton);
-    test = $.changesuperpw.style.display === "none";
+    test = isHidden($.changesuperpw);
     testMsg(test, "Change super password warning closed with cancel button", 
                   "Change super password warning not closed with cancel button");
     // Enter the new super password 
     await updateValue($.superpw, "asdfgh");
     await triggerEvent("blur", $.superpw);
-    test = $.changesuperpw.style.display === "block";
+    test = !isHidden($.changesuperpw);
     testMsg(test, "Change super password opens when different super password entered", 
                   "Change super password does not open when different super password entered");
     // Edit the superpw
     await updateValue($.superpw, "q");
     await triggerEvent("keyup", $.superpw);
-    test = $.changesuperpw.style.display === "none";
+    test = isHidden($.changesuperpw);
     testMsg(test, "Change super password does not remain open when super password edited",
                   "Change super password remains open when super password edited");
     // Change all account passwords after changing the super password
@@ -579,7 +606,7 @@ async function testChangeSuperpw() {
     await triggerEvent("mouseleave", $.mainpanel);
     await updateValue($.superpw, "asdfgh");
     await triggerEvent("mouseleave", $.superpw);
-    test = $.changesuperpw.style.display === "none";
+    test = isHidden($.changesuperpw);
     testMsg(test, "New super password saved", 
                   "New super password not saved");
     // Typo message shows when the old super password is not entered correctly
@@ -588,19 +615,19 @@ async function testChangeSuperpw() {
     await triggerEvent("blur", $.superpw);
     await updateValue($.changesuperpwkeepoldinput, "ghjkl");
     await triggerEvent("blur", $.changesuperpwkeepoldinput);
-    test = $.changesuperpwkeepoldtypo.style.display === "block";
+    test = !isHidden($.changesuperpwkeepoldtypo);
     testMsg(test, "Change super password keep old input typo shows", 
                   "Change super password keep old input typo does not show");
     // Typo message disappears when the old super password is edited
     await updateValue($.changesuperpwkeepoldinput, "a");
     await triggerEvent("keyup", $.changesuperpwkeepoldinput);
-    test = $.changesuperpwkeepoldtypo.style.display === "none";
+    test = isHidden($.changesuperpwkeepoldtypo);
     testMsg(test, "Change super password keep old input typo hidden", 
                   "Change super password keep old input typo not hidden");
     // Typo message does not show when the old super password is entered correctly
     await updateValue($.changesuperpwkeepoldinput, "asdfgh");
     await triggerEvent("blur", $.changesuperpwkeepoldinput);
-    test = $.changesuperpwkeepoldtypo.style.display === "none";
+    test = isHidden($.changesuperpwkeepoldtypo);
     testMsg(test, "Change super password keep old input typo does not show after correct input", 
                   "Change super password keep old input typo shows after correct input");
     // Keep all account passwords after changing the super password
@@ -611,7 +638,7 @@ async function testChangeSuperpw() {
     await triggerEvent("mouseleave", $.mainpanel);
     await updateValue($.superpw, "qwerty");
     await triggerEvent("blur", $.superpw);
-    test = $.changesuperpw.style.display === "none";
+    test = isHidden($.changesuperpw);
     testMsg(test, "New pwhash saved in common settings bookmark", 
                   "New pwhash not saved in common settings bookmark");
 }

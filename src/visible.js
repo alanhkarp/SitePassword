@@ -235,7 +235,7 @@ function hasLabel(element) {
     if (!element.id) return false;
     return !!document.querySelector(`label[for="${element.id}"]`);
 }
-// Expose functions to window for content scripts
+// Expose functions to window for content scripts and popup
 if (typeof window !== 'undefined') {
     window.isHidden = isHidden;
 }

@@ -1060,8 +1060,10 @@ $.maininfo.onclick = function (e) {
         showInstructions();
         hidesettings();
         helpAllOff();
+        hideWarnings();
     } else {
         hideInstructions();
+        showWarnings();
     }
     autoclose = false;
     return done(e);
@@ -1215,6 +1217,7 @@ function helpItemOn(which) {
         element.style.display = "block";
         hideInstructions();
         hidesettings();
+        hideWarnings();
         autoclose = false;
     }
 }
@@ -1226,7 +1229,8 @@ function helpAllOff() {
     let helps = document.getElementsByName("help");
     for (let help of helps) {
         helpItemOff(help.id); 
-    } 
+    }
+    showWarnings();
 }
 function hidesitepw() {
     if (logging) console.log("popup checking hidesitepw", $.hidesitepw.checked, database.hidesitepw);
@@ -1247,6 +1251,7 @@ function showInstructions() {
     $.maininfo.title = "Close Instructions";
     $.instructionopen.classList.add("nodisplay");
     $.instructionclose.classList.remove("nodisplay");
+    hideWarnings();
     // I need to adjust the width of the main panel when the scrollbar appears.
 }
 function hideInstructions() {
@@ -1258,6 +1263,7 @@ function hideInstructions() {
     $.instructionclose.classList.add("nodisplay");
     // I need to adjust the width of the main panel when the scrollbar disappears.
     $.main.style.padding = "6px " + scrollbarWidth() + "px 9px 12px";
+    showWarnings();
 }
 // End of generic code for menus: other utility functions
 async function getPhishingDomain(sitename) {
@@ -1629,6 +1635,7 @@ async function showsettings() {
     $.settingsmenu.style.display = "block";
     helpAllOff();
     hideInstructions();
+    hideWarnings();
     let height = $.settingsmenu.getBoundingClientRect().height;
     $.main.style.height = height + "px";
     $.superpw.value = bg.superpw || "";
@@ -1639,8 +1646,15 @@ function hidesettings() {
     $.settingsshow.style.display = "inline";
     $.settingssave.style.display = "none";
     $.settingsmenu.style.display = "none";
+    showWarnings();
     let height = mainHeight();
     $.main.style.height = height + "px";
+}
+function showWarnings() {
+    $.warnings.style.display = "block";
+}
+function hideWarnings() {
+    $.warnings.style.display = "none";
 }
 function pwoptions(options) {
     for (let x in options) {
