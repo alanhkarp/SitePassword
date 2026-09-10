@@ -127,6 +127,12 @@ async function testInstructions() {
     async function testVisibility(which) {
         await triggerEvent("click", $[which + "info"]);
         let test = !isHidden($[which + "div"]);
+        await triggerEvent("click", $[which + "info"]);
+        test = test && isHidden($[which + "div"]);
+        await triggerEvent("click", $["open" + which]);
+        test = test && !isHidden($[which + "div"]);
+        await triggerEvent("click", $["close" + which]);
+        test = test && isHidden($[which + "div"]);
         testMsg(test, which + " instructions visible", which + " instructions not visible");
     }
 }

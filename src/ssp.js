@@ -9,7 +9,7 @@ let testMode = false; // testMode must start as false.  Its value will come in a
 const debugMode = false; // Keeps the popup from closing when the mouse leaves the main panel.  Adds a 3 second delay before form fills in.
 
 const logging = false;
-const recordEvents = false; // Set to true to write UI events to the console.
+const recordEvents = true; // Set to true to write UI events to the console.
 if (logging) console.log("Version 3.4");
 
 let messageQueue = Promise.resolve();
@@ -1994,20 +1994,14 @@ function sectionClick(which) {
         closeAllInstructions();
         showInstructions();
         element.style.display = "block";
-        get("open" + which).style.display = "none";
-        get("close" + which).style.display = "block";
         get(which + "info").scrollIntoView();
     } else {
         element.style.display = "none";
-        get("open" + which).style.display = "block";
-        get("close" + which).style.display = "none";
     }
 }
 function closeInstructionSection(which) {
     const element = get(which + "div");
     element.style.display = "none";
-    get("open" + which).style.display = "block";
-    get("close" + which).style.display = "none";
 }
 function closeAllInstructions() {
     let instructions = document.getElementsByName("instructions");
