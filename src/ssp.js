@@ -1212,6 +1212,10 @@ function dotsAllOn() {
 }
 function helpItemOn(which) {
     let element = get(which + "helptext");
+    if (element.style.display === "block") {
+        helpItemOff(element);
+        return;
+    }
     helpAllOff();
     if (!element.style.display || element.style.display === "none") {
         element.style.display = "block";
@@ -1221,14 +1225,14 @@ function helpItemOn(which) {
         autoclose = false;
     }
 }
-function helpItemOff(which) {
-    get(which).style.display = "none";
+function helpItemOff(element) {
+    element.style.display = "none";
     autoclose = false;
 }
 function helpAllOff() {
     let helps = document.getElementsByName("help");
     for (let help of helps) {
-        helpItemOff(help.id); 
+        helpItemOff(help); 
     }
     showWarnings();
 }
@@ -1935,6 +1939,9 @@ function msgoff(msgname) {
 function warning(msgname, turnon) {
     let element = get(msgname);
     if (turnon) {
+        closeInstructions();
+        helpAllOff();
+        hidesettings();
         for (let warning of warnings) {
             get(warning.name).style.display = "none";
         }
@@ -2009,6 +2016,10 @@ function closeAllInstructions() {
         let section = instruction.id.replace("info", "");
         closeInstructionSection(section);
     }
+}
+function closeInstructions() {
+    $.instructionpanel.style.display = "none";
+    closeAllInstructions();
 }
 // Tests generate events that wait for a promise.  Each event handler 
 // needs to resolve the promise before returning, but that's inconvenient
