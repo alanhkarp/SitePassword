@@ -50,8 +50,8 @@ export async function runTests() {
     await triggerEvent("click", $.settingsshow);  // For debugging
     if (!restart) {
         await testCalculation(); 
-        await testInstructions();
-        // await testHelpText();
+        // await testInstructions();
+        await testHelpText();
         // await testRememberSuperpw();
         // await testChangePassword();
         // await testRememberForm();
@@ -106,6 +106,11 @@ async function testHelpText() {
         await triggerEvent("click", $[which + "helptextclose"]);
         test = isHidden($[which + "helptext"]);
         testMsg(test, which + " help text closed", which + " help text not closed");
+        await triggerEvent("mouseover", $[which + "3bluedots"]);
+        await triggerEvent("click", $[which + "menuhelp"]);
+        await triggerEvent("click", $[which + "menuhelp"]);
+        test = isHidden($[which + "helptext"]);
+        testMsg(test, which + " help text closed by menu", which + " help text not closed by menu");
         await triggerEvent("click", $[which + "menuhelp"]);
         await triggerEvent("click", $[which + "helptextmore"]);
         test = isHidden($[which + "helptext"]) && !isHidden($[which + "div"]);
