@@ -51,7 +51,7 @@ export async function runTests() {
     if (!restart) {
         await testCalculation(); 
         // await testInstructions();
-        await testHelpText();
+        // await testHelpText();
         // await testRememberSuperpw();
         // await testChangePassword();
         // await testRememberForm();
@@ -64,7 +64,7 @@ export async function runTests() {
         // await testLegacyBkmks();
         // await testDuplicateBkmks();
         // await testSafeSuffixes();
-        // await testChangeSuperpw();
+        await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
         // await testSaveAsDefault();
@@ -234,7 +234,7 @@ async function testRememberForm() {
 }
 async function testProvidedpw() {
     await resetState();
-    const providedpw = "MyStrongPassword";
+    const providedpw = "MyVeryStrongPassword";
     // Test remembering provided password longer than computed password
     if (loggingProvide) console.log("testProvidedpw state reset");
     let unprovided = await providepwSetup("qwerty", providedpw, "alantheguru.alanhkarp.com", "Guru", "Alan");
@@ -625,9 +625,18 @@ async function testChangeSuperpw() {
     await updateValue($.superpw, "asdfgh");
     await triggerEvent("blur", $.superpw);
     await triggerEvent("click", $.changesuperpwlosebutton);
-    test = !await checkSitepws(sitepws);
+    let tests = await checkSitepws(sitepws);
+    test = tests.every(t => t === false);
     testMsg(test, "Change all account passwords after changing the super password", 
                   "Change all account passwords after changing the super password failed");
+    // Put back the old super password
+    await updateValue($.superpw, "qwerty");
+    await triggerEvent("blur", $.superpw);
+    await triggerEvent("click", $.changesuperpwlosebutton);
+    tests = await checkSitepws(sitepws);
+    test = tests.every(t => t);
+    testMsg(test, "Site passwords remain unchanged after putting back the old super password",
+                  "Site passwords changed after putting back the old super password");
     // Make sure new superpwhash is saved
     await triggerEvent("mouseleave", $.mainpanel);
     await updateValue($.superpw, "asdfgh");
@@ -658,7 +667,8 @@ async function testChangeSuperpw() {
                   "Change super password keep old input typo shows after correct input");
     // Keep all account passwords after changing the super password
     await triggerEvent("click", $.changesuperpwkeepbutton);
-    test = await checkSitepws(sitepws);
+    tests = await checkSitepws(sitepws);
+    test = tests.every(t => t);
     testMsg(test, "Keep all account passwords when changing the super password");
     // Is the pwdhash updated in the common settings bookmark?
     await triggerEvent("mouseleave", $.mainpanel);
@@ -810,22 +820,27 @@ async function changeSuperpwSetup(superpw) {
 }
 async function checkSitepws(sitepws) {
     await clearForm();
+    let tests = [];
     $.domainname.value = "notprovided.example.com";
     await triggerEvent("blur", $.domainname);
     let test = $.sitepw.value === sitepws.unprovideds[0];
+    tests.push(test);
     await clearForm();
     $.domainname.value = "provided1.example.com";
     await triggerEvent("blur", $.domainname);
     test = test && $.sitepw.value === sitepws.provideds[1];
+    tests.push(test);
     await clearForm();
     $.domainname.value = "provided2.example.com";
     await triggerEvent("blur", $.domainname);
     test = test && $.sitepw.value === sitepws.provideds[2];
+    tests.push(test);
     await clearForm();
     $.domainname.value = "provided3.example.com";
     await triggerEvent("blur", $.domainname);
     test = test && $.sitepw.value === sitepws.provideds[3];
-    return test;
+    tests.push(test);
+    return tests;
 }
 // Just setting the value of a DOM element doeesn't take effed immediately
 async function updateValue(element, value, eventName = "focus") {

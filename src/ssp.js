@@ -229,6 +229,7 @@ $.mainpanel.onmouseleave = async function (e) {
     // Don't save a typo superpw
     let same = await sameSuperpw($.superpw.value);
     if (!same) return done(e);
+    database.common.superpwHash = await computeSuperpwHash($.superpw.value);
     // In case the user tries to type when the mouse is outside the popup
     let element = e ? (e.pageX ? document.elementFromPoint(e.pageX || 0, e.pageY || 0) : null) : null;
     if (!element) {
@@ -1345,9 +1346,9 @@ function sortList(list) {
 // Reset the database value for the super password hash if it has changed or is not set
 async function sameSuperpw(superpwValue) {
     let oldSuperPwHash = database.common.superpwHash || "";
+    if (!oldSuperPwHash) return true; // If there is no old super password hash, consider it the same
     let superpwHash = await computeSuperpwHash(superpwValue);
-    if (!oldSuperPwHash) database.common.superpwHash = superpwHash;
-    let same = superpwHash === database.common.superpwHash;
+    let same = superpwHash === oldSuperPwHash;
     return same;
 }
 async function computeSuperpwHash(superpwValue) {
