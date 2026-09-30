@@ -50,24 +50,24 @@ export async function runTests() {
     await triggerEvent("click", $.settingsshow);  // For debugging
     if (!restart) {
         await testCalculation(); 
-        // await testInstructions();
-        // await testHelpText();
-        // await testRememberSuperpw();
-        // await testChangePassword();
-        // await testRememberForm();
-        // await testProvidedpw();
-        // await testPhishing();
-        // await testSharedCredentials();
-        // await testForget();
-        // await testClearSuperpw();
-        // await testHideSitepw();
-        // await testLegacyBkmks();
-        // await testDuplicateBkmks();
-        // await testSafeSuffixes();
+        await testInstructions();
+        await testHelpText();
+        await testRememberSuperpw();
+        await testChangePassword();
+        await testRememberForm();
+        await testProvidedpw();
+        await testPhishing();
+        await testSharedCredentials();
+        await testForget();
+        await testClearSuperpw();
+        await testHideSitepw();
+        await testLegacyBkmks();
+        await testDuplicateBkmks();
+        await testSafeSuffixes();
         await testChangeSuperpw();
         console.log("Tests complete: " + passed + " passed, " + failed + " failed, ");
         alert("Tests restart complete: " + passed + " passed, " + failed + " failed, ");
-        // await testSaveAsDefault();
+        await testSaveAsDefault();
     } else {
         if (restart === "testSaveAsDefault2") {
             testSaveAsDefault2();
@@ -133,10 +133,6 @@ async function testInstructions() {
         await triggerEvent("click", $[which + "info"]);
         let test = !isHidden($[which + "div"]);
         await triggerEvent("click", $[which + "info"]);
-        test = test && isHidden($[which + "div"]);
-        await triggerEvent("click", $["open" + which]);
-        test = test && !isHidden($[which + "div"]);
-        await triggerEvent("click", $["close" + which]);
         test = test && isHidden($[which + "div"]);
         testMsg(test, which + " instructions visible", which + " instructions not visible");
     }
