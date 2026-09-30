@@ -1095,6 +1095,7 @@ $.sameacctbutton.onclick = async function (e) {
             database.common.safeSuffixes[suffix] = sitenameNorm;
     }
     bg.settings = clone(database.sites[sitenameNorm]);
+    bg.settings.pwlength = $.pwlength.value;
     bg.settings.sitename = $.sitename.value;
     if (testMode) bg.domainname = $.domainname.value;
     database.domains[normalize($.domainname.value)] = normalize(bg.settings.sitename);
