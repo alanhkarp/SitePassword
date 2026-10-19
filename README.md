@@ -6,13 +6,13 @@ SitePassword is a password manager that calculates your passwords from a super p
 
 It's too hard for you to remember a strong password for every account you use. Password managers take care of this problem for you. Most of them store your passwords in encrypted form, either on your machine or in the cloud.
 
-SitePassword is different. Instead of storing your passwords, it calculates them from a single super password and your nickname and user name for the account. That means you can usually get your password if you remember those three things. (Some web pages require additional settings.) SitePassword automatically saves your settings, so you don't have to remember them.
+SitePassword is different. Instead of storing your passwords, it calculates them from a single super password and your nickname and user name for the account. That means you can usually get your password if you remember those three things. (Some accounts require additional settings.) SitePassword automatically saves your settings, so you don't have to remember them.
 
 The <img src="images/instructionsopen.png" style="width: 16px; height: 16px; vertical-align: middle;"> icon opens these instructions, and the <img src="images/instructionsclose.bmp" style="width: 16px; height: 16px; vertical-align: middle;"> icon closes them.
 
 ### Using the Extension
 
-After you install the Chrome extension and visit a page with a login form, you'll see that the password field tells you to _Click SitePassword_. When you click on the SitePassword icon <img src="images/icon128.png" style="width: 16px; height: 16px; vertical-align: middle;">, you'll see a form with the domain name field filled in. Enter your super password, an easy to remember nickname for the account, and your user name for the account. You will see your username being filled into the login form and your site password being calculated as you type.
+After you install the Chrome extension and visit a page with a login form, you'll see that the password field tells you to _Click the SitePassword icon_. When you click on the SitePassword icon <img src="images/icon128.png" style="width: 16px; height: 16px; vertical-align: middle;">, you'll see a form with the domain name field filled in. Enter your super password, an easy to remember nickname for the account, and your user name for the account. You will see your username being filled into the login form and your site password being calculated as you type.
 
 Mouse over to the login form's password field, which now should tell you to _Click here for password_. Click, and your password gets filled in. When you return to the same web page on any machine that you synchronize bookmarks with and that has the extenstion installed, you'll see your user name filled in and instructions to _Click here for password_. Click, and your password gets filled in.
 
@@ -50,20 +50,19 @@ You [change an account password](#changing-an-account-password) by changing the 
 
 Your user name is the name you use to log in to the account. It is associated with the nickname for the account and is used to calculate your account password. That means you can only have a single user name for a given nickname. If you want to use different user names for the same site, follow the instructions for [Shared Machines](#shared-machines).
 
-Some sites make you fill in your user name manually before they show you the password field. In those cases, SitePassword can usually fill in the field if you dbl-click on it. If that doesn't work, you can copy your user name to the clipboard or type it in manually.
+SitePassword will attempt to fill in the user name field of a login form. If you don't see it, one of a few things happened.
 
-SitePassword will attempt to fill in the userid field of a login form. If you don't see it, one of a few things happened.
-
-1.  You never provided your settings for this domain name.
-
+1. You never provided your settings for this domain name.
     * This is the first time you've used SitePassword for this account.
     * This is a different domain name for logging into the same account.
     * You are at a fake site that is trying to steal your password.
+2. SitePassword incorrectly guessed the location of the user name field.
+3. SitePassword couldn't find the user name field.
+4. There is more than one non-password input field on the page.
 
-3.  SitePassword incorrectly guessed the location of the userid field.
-4.  SitePassword couldn't find the userid field.
+In the last three cases, your can double click where you want your user name to go. If that doesn't work, you'll have to fill in your user name manually, which you can do by typing it in or copying it to the clipboard using the <img src="images/clipboard.png" style="width: 16px; height: 16px; vertical-align: middle;"> icon in the user name field.
 
-In the last two cases, you'll have to fill in your userid manually, which you can do by typing it in or copying it to the clipboard using the <img src="images/clipboard.png" style="width: 16px; height: 16px; vertical-align: middle;"> icon in the userid field.
+Some sites make you fill in your user name manually before they show you the password field. In those cases, SitePassword can usually fill in the field if you dbl-click on it.
 
 ### Your Account Password
 
@@ -93,7 +92,7 @@ Each of the input fields has a menu that shows up when you mouse over (or tap on
 
 <img src="images/clipboard.png" style="width: 16px; height: 16px; vertical-align: middle;">   The user name and account password fields have a Copy option, which copies the contents of the field to the clipboard.
 
-<img src="images/account.png" style="width: 16px; height: 16px; vertical-align: middle;">   Although you can change your account password by editing the nickname, the account nickname and account password fields have a Change Password option.
+<img src="images/account.png" style="width: 16px; height: 16px; vertical-align: middle;">   Although you can change your account password by editing the nickname, the account nickname and account password fields have a Change Password option. There is also an account icon in the superpassword field menu for changing your super password.
 
 <img src="images/show.png" style="width: 16px; height: 16px; vertical-align: middle;">   <img src="images/hide.png" style="width: 16px; height: 16px; vertical-align: middle;">   The super and account password fields give you the option of showing or hiding the contents of the field.
 
@@ -147,11 +146,27 @@ If you go to the same login page on a different machine that you synchronize boo
 
 **You must turn on synchronization in your browser to use this feature.**
 
+If your SitePasswordData bookmarks folder is not synchronizing across your machines, follow the instructions for your browser to turn on synchronization for it.
+
+### Sites that Use the Same Password
+
+Some accounts are used for multiple sites. For example, Hulu, Disney+, and ESPN+ all use the same user name and password. SitePassword can handle these sites by using the same nickname for the account on those sites.
+
+You don't have to do anything special to use this feature. Once you've set up an account on one site, those settings will be used for all the other sites that use the same user name and password. So, set up Hulu, and Disney+ and ESPN+ will work automatically.
+
 ### Shared Machines
 
 Many households have one machine shared by everybody. It's likely that everyone uses the same user name and password for certain accounts, such as streaming services. It's also likely that those people use their individual user names and passwords for other accounts, such as social media.
 
 SitePassword accomodates those uses with a feature provided by your browser called _profiles_. Simply create one profile for the shared account and one for each individual.
+
+### Changing Your Super Password
+
+There are two times you may want to change your super password. The first is when you use different super passwords for different kinds of accounts. For example, you might use one super password for important accounts, such as banking, and another one for sites you worry may be malicious. The second is when you think your super password has been compromised. In that case, you should change it immediately and go to each website and change your account passwords.
+
+You can change your super password by entering the new super password or by clicking on the account icon <img src="images/account.png" style="width: 16px; height: 16px; vertical-align: middle;"> in the super password field menu. You'll be given a form to change it. You will also see this form if you mistype your super password. Just click Cancel and try agaion.
+
+There are two ways you can change your super password. The first changes all your account passwords except those you provided. Don't worry, you get them back when you enter your original super password. The second keeps your account passwords the same by treating them as if you provided them.
 
 ### Downloading Your Settings
 
@@ -198,7 +213,9 @@ If you like SitePassword, please make a contribution to the [Nancy Lee Hurtt '70
 ### Credits
 
 * Alan Karp is the princple culprit. He stared with a very simple password calculator in 2002 that he turned into a Chrome extension in 2012. What you see today is the result of many improvements over the years, a lot of them suggested by the other contributors. Don't blame anyone else for bugs or usablity problems, but do credit them with the improvements they suggested. Please send any feedback to [alanhkarp@gmail.com](mailto:alanhkarp@gmail.com).
-* Douglas Crockford provided useful suggestions for improvements, many of which were resisted but make SitePassword much better, both in terms of functionality and usability. Two features stand out: the ability to provide your own account password and the Forget menu option. The look and feel is much improved due to Doug's constant nitpicking of seeminly minor details. It's what takes a tool from "Meh" to "Yeah." That kind of feedback is almost impossible to get even if you offer to pay. Getting that kind of feedback for free is rare.
+* Douglas Crockford provided useful suggestions for improvements, many of which were resisted but make SitePassword much better, both in terms of functionality and usability. Two features stand out: the ability to provide your own account password and the Forget menu option. The look and feel is much improved due to Douglass's constant nitpicking of seeminly minor details. It's what takes a tool from "Meh" to "Yeah." That kind of feedback is almost impossible to get even if you offer to pay. Getting that kind of feedback for free is rare. The SitePassword icon design is Douglass's.
 * Dale Schumacker wrote most of the code for [https://sitepassword.info](https://sitepassword.info) and made many useful suggestions. His code has been changed enough that he is not responsible for any issues, but he deserves kudos for its overall design. As an early user of SitePassword, Dale provide critical feedback.
+* Jasvir Nagra put up with my constant questions about how to mke the content script work before AI was available to answer them. Even after that he often had to explain what the AI was telling me.
+* Sjorerd Langkemper identified several algorithmic weaknesses in an earlier version.
 * Michael Josefik provided the professional design for this web page. He showed remarkable patience as his ideas were resisted but then implemented when he was proven right.
-* Important security improvements came from the people at the Stanford Security Lunch. They did not do anything approaching a security review and are not responsible for any vulnerabilities.
+* Important security improvements came from the people at the Stanford Security Lunch. Rohit Nema did several sanity checks that saved me from several errors. They did not do anything approaching a security review and are not responsible for any vulnerabilities.
