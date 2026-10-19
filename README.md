@@ -12,7 +12,7 @@ The <img src="images/instructionsopen.png" style="width: 16px; height: 16px; ver
 
 ### Using the Extension
 
-After you install the Chrome extension and visit a page with a login form, you'll see that the password field tells you to _Click the SitePassword icon_. When you click on the SitePassword icon <img src="images/icon128.png" style="width: 16px; height: 16px; vertical-align: middle;">, you'll see a form with the domain name field filled in. Enter your super password, an easy to remember nickname for the account, and your user name for the account. You will see your username being filled into the login form and your site password being calculated as you type.
+After you install the Chrome extension and visit a page with a login form, you'll see that the password field tells you to _Click the SitePassword icon_. When you click on the SitePassword icon <img src="images/icon128.png" style="width: 16px; height: 16px; vertical-align: middle;">, you'll see a form with the domain name field filled in. Enter your super password, an easy to remember nickname for the account, and your user name for the account. You will see your username being filled into the login form and your account password being calculated as you type.
 
 Mouse over to the login form's password field, which now should tell you to _Click here for password_. Click, and your password gets filled in. When you return to the same web page on any machine that you synchronize bookmarks with and that has the extenstion installed, you'll see your user name filled in and instructions to _Click here for password_. Click, and your password gets filled in.
 
@@ -26,7 +26,7 @@ You may have more than one domain name for a given account because some web site
 
 You should choose a strong super password, one with upper and lower case letters, numbers, and special characters. You can also use a passphrase that's either randomly generated or that's meaningful to you. The stronger the better.
 
-The reason is simple. A bad guy who knows one site password and can guess your nickname and user name for that account can start guessing super passwords. You want to make that job has hard as you can.
+The reason is simple. A bad guy who knows one account password and can guess your nickname and user name for that account can start guessing super passwords. You want to make that job has hard as you can.
 
 You can protect yourself further by using different super passwords for different kinds of accounts. You could have one that you use for banking, another for subscriptions, and a third for sites you find sketchy.
 
@@ -102,7 +102,7 @@ The settings panel is divided into three sections. The first section is about yo
 
 The top section of the settings panel has three settings related to your super and account passwords. SitePassword allows you to provide your own password as explained in [Providing a Password](#providing-a-password),
 
-You usually leave your super password filled in for the entire browser session, but you might not want to do that on a shared machine. Checking the _Clear super password on use_ means don't have to remember to clear it.
+You usually leave your super password filled in for the entire browser session, but you might not want to do that on a shared machine. Checking the _Clear super password on use_ means you don't have to remember to clear it.
 
 Your account password is not hidden by default. Surprisingly, people develop the ability to recognize their account passwords, allowing them detect typos when re-entering their super passwords. Check the _Hide account password by default_ button to hide it.
 
@@ -128,7 +128,7 @@ If you forget this trick for changing your account password, you can open the me
 
 There are two times when you won't be able to fill in your password in the login form by clicking on it. The first is when SitePassword can't find the password field. The second is when there is more than one password field on the page. In most cases, you can dbl-click. If that doesn't work, you can copy your password to the clipboard. Click on the SitePassword icon <img src="images/icon128.png" style="width: 16px; height: 16px; vertical-align: middle;"> and copy your account password to the clipboard by clicking on <img src="images/clipboard.png" style="width: 16px; height: 16px; vertical-align: middle;">.
 
-Leaving your site password on the clipboard for any length of time can be dangerous. SitePassword will alert you to this danger by changing its icon to <img src="images/icon128pw.png" style="width: 16px; height: 16px; vertical-align: middle;"> when you use the clipboard icon. You can always clear the clipbord and reset the warning by using the SitePassword _Clear Clipboard_ button or by copying something else to the clipboard. (These steps only clear the top item if the clipboard provides a stack of items.)
+Leaving your account password on the clipboard for any length of time can be dangerous. SitePassword will alert you to this danger by changing its icon to <img src="images/icon128pw.png" style="width: 16px; height: 16px; vertical-align: middle;"> when you use the clipboard icon. You can always clear the clipbord and reset the warning by using the SitePassword _Clear Clipboard_ button or by copying something else to the clipboard. (These steps only clear the top item if the clipboard provides a stack of items.)
 
 ### Phishing Warning
 
@@ -146,7 +146,7 @@ If you go to the same login page on a different machine that you synchronize boo
 
 **You must turn on synchronization in your browser to use this feature.**
 
-If your SitePasswordData bookmarks folder is not synchronizing across your machines, follow the instructions for your browser to turn on synchronization for it.
+If your SitePasswordData bookmarks folder is not synchronizing across your machines, follow the instructions for your browser to turn on synchronization for it or keep your bookmarks synched manually.
 
 ### Sites that Use the Same Password
 
@@ -212,10 +212,10 @@ If you like SitePassword, please make a contribution to the [Nancy Lee Hurtt '70
 
 ### Credits
 
-* Alan Karp is the princple culprit. He stared with a very simple password calculator in 2002 that he turned into a Chrome extension in 2012. What you see today is the result of many improvements over the years, a lot of them suggested by the other contributors. Don't blame anyone else for bugs or usablity problems, but do credit them with the improvements they suggested. Please send any feedback to [alanhkarp@gmail.com](mailto:alanhkarp@gmail.com).
+* Alan Karp is the princple culprit. He started with a very simple password calculator in 2002 that he turned into a Chrome extension in 2012. What you see today is the result of many improvements over the years, a lot of them suggested by the other contributors. Don't blame anyone else for bugs or usablity problems, but do credit them with the improvements they suggested. Please send any feedback to [alanhkarp@gmail.com](mailto:alanhkarp@gmail.com).
 * Douglas Crockford provided useful suggestions for improvements, many of which were resisted but make SitePassword much better, both in terms of functionality and usability. Two features stand out: the ability to provide your own account password and the Forget menu option. The look and feel is much improved due to Douglass's constant nitpicking of seeminly minor details. It's what takes a tool from "Meh" to "Yeah." That kind of feedback is almost impossible to get even if you offer to pay. Getting that kind of feedback for free is rare. The SitePassword icon design is Douglass's.
 * Dale Schumacker wrote most of the code for [https://sitepassword.info](https://sitepassword.info) and made many useful suggestions. His code has been changed enough that he is not responsible for any issues, but he deserves kudos for its overall design. As an early user of SitePassword, Dale provide critical feedback.
 * Jasvir Nagra put up with my constant questions about how to mke the content script work before AI was available to answer them. Even after that he often had to explain what the AI was telling me.
 * Sjorerd Langkemper identified several algorithmic weaknesses in an earlier version.
-* Michael Josefik provided the professional design for this web page. He showed remarkable patience as his ideas were resisted but then implemented when he was proven right.
+* Michael Josefik provided the professional design for SitePassword. He showed remarkable patience as his ideas were resisted but then implemented when he was proven right.
 * Important security improvements came from the people at the Stanford Security Lunch. Rohit Nema did several sanity checks that saved me from several errors. They did not do anything approaching a security review and are not responsible for any vulnerabilities.
